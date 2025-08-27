@@ -12,10 +12,10 @@
 
 ● 1.1.1. **배경**: JSP·Spring·Java·MyBatis·Oracle DB 기반 레거시/현행 시스템의 대규모 소스를 정적 분석하여 **정확하고 풍부한 메타정보**를 생성하고, 이를 기반으로 **자연어 질의/영향평가**를 제공합니다.
 ● 1.1.2. **핵심 목표**:
-○ 1.1.2.1. (1단계) 원문 코드/SQL 미저장(경로/라인Range·구조만) 원칙 하에 메타정보 생성/저장 (재현율 우선(보수적 포괄 응답))
-○ 1.1.2.2. (2단계) Qwen2.5 기반 RAG+오케스트레이터로 요약/탐색/영향평가 제공
-○ 1.1.2.3. 대규모 소스/다국어(한국어/영어) 인식·검색, **성능·스토리지 효율** 및 **증분 분석** 지원
-○ 1.1.2.4. **CONFIDENCE** 및 **LLM 보강 이력**(추론 전/후 신뢰도) 전구간 추적
+  ○ 1.1.2.1. (1단계) 원문 코드/SQL 미저장(경로/라인Range·구조만) 원칙 하에 메타정보 생성/저장 (재현율 우선(보수적 포괄 응답))
+  ○ 1.1.2.2. (2단계) Qwen2.5 기반 RAG+오케스트레이터로 요약/탐색/영향평가 제공
+  ○ 1.1.2.3. 대규모 소스/다국어(한국어/영어) 인식·검색, **성능·스토리지 효율** 및 **증분 분석** 지원
+  ○ 1.1.2.4. **CONFIDENCE** 및 **LLM 보강 이력**(추론 전/후 신뢰도) 전구간 추적
 
 ## 1.2. 용어 정의
 
@@ -188,21 +188,23 @@ CREATE INDEX idx_filters_sql ON required_filters(sql_id);
 
 ## 3.1. 분석 대상 및 지원 언어/프레임워크
 
-3.1.1. **지원 언어/프레임워크**: Java(8 호환), JSP, Spring Framework, MyBatis XML, SQL(Oracle 방언), PL/SQL, Python, JavaScript/TypeScript/React/Vue.js
+● 3.1.1. **지원 언어/프레임워크**: Java(8 호환), JSP, Spring Framework, MyBatis XML, SQL(Oracle 방언), PL/SQL, Python, JavaScript/TypeScript/React/Vue.js
 ● 3.1.2. **제안 기술 스택**:
-○ 3.1.2.1. **백엔드 (핵심 로직 및 오케스트레이터)**:
-- **언어**: Python 3.10+
-- **웹 프레임워크**: FastAPI (OpenAPI, 고성능, 비동기 지원)
-- **RAG/오케스트레이션**: LangChain 또는 LangGraph
-- **정적 분석**:
-· **Java AST**: JavaParser (또는 유사 라이브러리)
-· **JSP/MyBatis/SQL**: ANTLR 기반 커스텀 파서, JSQLParser (PL/SQL)
-· **Python AST**: Python 내장 `ast` 모듈
-○ 3.1.2.2. **데이터베이스**:
-- **메타데이터**: SQLite (개발/테스트) -> Oracle 11g (운영)
-- **벡터 스토어**: FAISS
-- **그래프 데이터베이스**: Neo4j Community Edition (무료 라이선스 준수)
-○ 3.1.2.3. **LLM 서빙**: vLLM
+  ○ 3.1.2.1. **백엔드 (핵심 로직 및 오케스트레이터)**:
+    - **언어**: Python 3.10+
+    - **웹 프레임워크**: FastAPI (OpenAPI, 고성능, 비동기 지원)
+    - **RAG/오케스트레이션**: LangChain 또는 LangGraph
+    - **정적 분석**:
+      · **Java AST**: JavaParser (또는 유사 라이브러리)
+      · **JSP/MyBatis/SQL**: ANTLR 기반 커스텀 파서, JSQLParser (PL/SQL)
+      · **Python AST**: Python 내장 `ast` 모듈
+
+  ○ 3.1.2.2. **데이터베이스**:
+    - **메타데이터**: SQLite (개발/테스트) -> Oracle 11g (운영)
+    - **벡터 스토어**: FAISS
+    - **그래프 데이터베이스**: Neo4j Community Edition (무료 라이선스 준수)
+
+  ○ 3.1.2.3. **LLM 서빙**: vLLM
 ● 3.1.3. **분석 대상 소스 관리**: PROJECTS 폴더 하위에 프로젝트명 폴더에 저장되며 1단계 메타정보 생성 및 2단계 검색 단계에서 활용. CLOB 성격의 데이터는 PROJECTS 폴더 내 정보를 이용. (e.g. .\PROJECT\sample-app)
 ● 3.1.4. **스토리지 효율**: 메타 정보에 원문 코드/SQL 저장 금지(경로·라인 범위·파생 구조만 저장)
 ● 3.1.5. **DB 사전 CSV**: PROJECT폴더 하위 프로젝트명 폴더 아래 DB_SCHEMA 폴더(e.g. .\PROJECT\sample-app\DB_SCHEMA)에 ALL_TABLES, ALL_TAB_COLUMNS, ALL_TAB_COMMENTS, ALL_COL_COMMENTS, PK 정보(테이블별 PK컬럼) CSV 파일 업로드 (사용자 수작업)
@@ -214,13 +216,13 @@ CREATE INDEX idx_filters_sql ON required_filters(sql_id);
 
 ● 3.2.1. **입력**: 프로젝트 Root(매개변수), 파일 필터: `*.java, *.jsp, *.xml(MyBatis), *.properties`, DB 사전 CSV: `ALL_TABLES, ALL_TAB_COLUMNS, ALL_TAB_COMMENTS, ALL_COL_COMMENTS, PK정보`
 ● 3.2.2. **구문/의미 분석 (다중 언어 및 프레임워크 지원)**
-○ 3.2.2.1. **Java / Spring Framework**: JavaParser를 활용한 Java AST 분석을 기반으로, `@RestController`, `@GetMapping`, `@Autowired` 등 Spring의 핵심 어노테이션을 심층 분석하여 HTTP API 엔드포인트, 서비스 간 의존성(DI) 등 프레임워크 수준의 컨텍스트를 추출하고 의존성 그래프를 고도화합니다.
+  ○ 3.2.2.1. **Java / Spring Framework**: JavaParser를 활용한 Java AST 분석을 기반으로, `@RestController`, `@GetMapping`, `@Autowired` 등 Spring의 핵심 어노테이션을 심층 분석하여 HTTP API 엔드포인트, 서비스 간 의존성(DI) 등 프레임워크 수준의 컨텍스트를 추출하고 의존성 그래프를 고도화합니다.
 
-○ 3.2.2.2. **JSP, MyBatis, SQL**: 다른 언어와의 연관 관계 분석을 강화합니다. ANTLR 기반 커스텀 파서를 활용한 JSP 태그, 스크립틀릿, JSTL 등 구문 분석 및 정보 추출. JSP 페이지 간 포함 관계 (`<jsp:include>`) 및 백엔드 Java 코드(Servlet, Spring Controller)와의 연동 관계 분석 및 `edges` 테이블 저장.
-- **의존성 연결**: Java(JDBC `CallableStatement`) 또는 MyBatis(`<select statementType="CALLABLE">`)에서 SP/SF를 호출하는 구문을 탐지합니다. 탐지된 호출 정보를 바탕으로, 해당 Java 메소드나 MyBatis 쿼리와 SP/SF 간의 `calls_sp` 의존성 관계를 `edges` 테이블에 기록하여 전체 호출 흐름을 연결합니다.
+  ○ 3.2.2.2. **JSP, MyBatis, SQL**: 다른 언어와의 연관 관계 분석을 강화합니다. ANTLR 기반 커스텀 파서를 활용한 JSP 태그, 스크립틀릿, JSTL 등 구문 분석 및 정보 추출. JSP 페이지 간 포함 관계 (`<jsp:include>`) 및 백엔드 Java 코드(Servlet, Spring Controller)와의 연동 관계 분석 및 `edges` 테이블 저장.
+    - **의존성 연결**: Java(JDBC `CallableStatement`) 또는 MyBatis(`<select statementType="CALLABLE">`)에서 SP/SF를 호출하는 구문을 탐지합니다. 탐지된 호출 정보를 바탕으로, 해당 Java 메소드나 MyBatis 쿼리와 SP/SF 간의 `calls_sp` 의존성 관계를 `edges` 테이블에 기록하여 전체 호출 흐름을 연결합니다.
 ● 3.2.3. **요약 생성 및 보안 취약점 분석 (고도화)**
-○ 3.2.3.1. **로직/성능 요약**: 정적 규칙의 신뢰도가 떨어지는 경우 LLM 보강을 통해 로직, 성능 이슈 가능성에 대한 요약을 생성.
-○ 3.2.3.2. **결과 통합**: 모든 로직 분석 결과는 `summaries` 테이블에 통합 저장되어 RAG 파이프라인에서 일관성 있게 활용됩니다.
+  ○ 3.2.3.1. **로직/성능 요약**: 정적 규칙의 신뢰도가 떨어지는 경우 LLM 보강을 통해 로직, 성능 이슈 가능성에 대한 요약을 생성.
+  ○ 3.2.3.2. **결과 통합**: 모든 로직 분석 결과는 `summaries` 테이블에 통합 저장되어 RAG 파이프라인에서 일관성 있게 활용됩니다.
 ● 3.2.4. **정교한 코드 품질 메트릭 분석**
 ● 3.2.5. **데이터 흐름 분석 (Source to Sink 추적)**: 코드 내 데이터의 이동 경로를 정적으로 추적하여, "어떤 데이터가 어디에서 와서 어디로 흘러가는지"를 분석합니다. AST와 심볼 테이블을 기반으로 메소드 내 데이터 흐름을 분석하며, 식별된 데이터 흐름(Source to Sink)은 메타정보에 저장됩니다. 이는 정밀 영향 평가 및 Taint Analysis(오염원 분석) 탐지에 활용됩니다.
 ● 3.2.6. **호출·의존 그래프 고도화**: Java 메서드 호출 및 MyBatis SQL 유닛 간 `<include>`, `<sql>` 참조 관계 등 명시적인 의존성 관계를 파서에서 추출하여 `edges` 테이블에 저장. 메소드↔메소드 (Java 메서드 호출), MyBatis SQL 유닛 간 `<include>` 및 `<sql>` 참조 관계, 메소드↔ SQL, SQL↔테이블 /컬럼(읽기/쓰기) 방향성/가중치/CONFIDENCE 저장. 신뢰도가 낮은 경우만 더 정교한 방법으로 처리하도록 구상.
@@ -339,12 +341,12 @@ conf = w_ast*q_ast + w_static*q_static + w_db*q_db + w_llm*q_llm
 
 ## 7.1. 성능 최적화
 
-• **파서/ETL**: CPU 다코어 활용(멀티스레드); LLM 요청은 배치/비동기
-• **메모리**: SQLite WAL 모드, 인덱스 일괄 생성, 요약/코멘트 분리 저장으로 I/O 절감
+● **파서/ETL**: CPU 다코어 활용(멀티스레드); LLM 요청은 배치/비동기
+● **메모리**: SQLite WAL 모드, 인덱스 일괄 생성, 요약/코멘트 분리 저장으로 I/O 절감
 
 ## 7.2. 용량 추정 (1M LOC, SQL 5k개 기준)
-● 7.3.1. **SQLite DB**: 1~3GB
-● 7.3.2. **FAISS**: 1~2GB(임베딩 dim/압축에 의존)
+● 7.2.1. **SQLite DB**: 1~3GB
+● 7.2.2. **FAISS**: 1~2GB(임베딩 dim/압축에 의존)
 
 ---
 
@@ -428,43 +430,41 @@ def answer(question, project, recall_priority=True):
 ## 1. 분석 대상 및 언어/프레임워크 확장
 
 ### 1.1. Oracle Stored Procedure 및 Stored Function 분석 기능 확장
-- Python `antlr-plsql` 라이브러리 활용 (ANTLR, Docker, Java 필요)을 통한 PL/SQL 문법 기반 AST 생성 및 정보 추출.
-
-- **PL/SQL 파싱**: `SP/` 디렉토리의 `.sql` 파일들을 `antlr-plsql` 및 JSQLParser를 통해 파싱하여, 프로시저/함수의 이름, 파라미터, 그리고 내부에서 CRUD 작업을 수행하는 테이블 및 뷰 목록을 추출합니다.
-- **SP/SF 간 호출 관계**: `calls_sp` 및 다른 아티팩트(예: Java 메서드)와의 의존성 분석 및 `edges` 테이블 저장.
+● Python `antlr-plsql` 라이브러리 활용 (ANTLR, Docker, Java 필요)을 통한 PL/SQL 문법 기반 AST 생성 및 정보 추출.
+● **PL/SQL 파싱**: `SP/` 디렉토리의 `.sql` 파일들을 `antlr-plsql` 및 JSQLParser를 통해 파싱하여, 프로시저/함수의 이름, 파라미터, 그리고 내부에서 CRUD 작업을 수행하는 테이블 및 뷰 목록을 추출합니다.
+● **SP/SF 간 호출 관계**: `calls_sp` 및 다른 아티팩트(예: Java 메서드)와의 의존성 분석 및 `edges` 테이블 저장.
 ### 1.2. DB 사전 확장
-- 프로젝트 폴더 DB_SCHEMA폴더에 ALL_VIEWS(뷰소스는 부명칭을 파일명으로 해서 별도 파일), ALL_PROCEDURES, SP/SF 소스는 SP/SF명을 파일명으로 해서 별도 업로드
+● 프로젝트 폴더 DB_SCHEMA폴더에 ALL_VIEWS(뷰소스는 부명칭을 파일명으로 해서 별도 파일), ALL_PROCEDURES, SP/SF 소스는 SP/SF명을 파일명으로 해서 별도 업로드
 ### 1.3. 확장된 언어 및 프레임워크 지원
-- **Python**: 파이썬 표준 라이브러리인 `ast` 모듈을 사용하여 소스 코드를 AST로 파싱합니다. 클래스, 함수 정의, 임포트 구문 등을 추출하여 구조적 정보를 DB에 저장합니다.
-- **JavaScript/TypeScript/React/Vue.js** (아키텍처 정의): 컴포넌트, props, state, `import`/`require` 구문 등을 분석하여 웹 프론트엔드 애플리케이션의 구조와 의존성을 파악하고 결과를 DB에 통합합니다.
+● **Python**: 파이썬 표준 라이브러리인 `ast` 모듈을 사용하여 소스 코드를 AST로 파싱합니다. 클래스, 함수 정의, 임포트 구문 등을 추출하여 구조적 정보를 DB에 저장합니다.
+● **JavaScript/TypeScript/React/Vue.js** (아키텍처 정의): 컴포넌트, props, state, `import`/`require` 구문 등을 분석하여 웹 프론트엔드 애플리케이션의 구조와 의존성을 파악하고 결과를 DB에 통합합니다.
 ### 1.4. 프론트엔드 프레임워크 특화 분석 기능 (TypeScript, React, Vue.js) 확장
-- **TypeScript 분석**: `tsc`, ESLint, FTA(Fast TypeScript Analyzer) 등 도구 통합을 통한 TypeScript 타입 정보, 코드 품질 및 스타일 분석.
-- **React/Vue.js**: Best Practices, 접근성, JSX/Vue 구문 분석 및 컴포넌트 간 의존성, 데이터 흐름 분석.
+● **TypeScript 분석**: `tsc`, ESLint, FTA(Fast TypeScript Analyzer) 등 도구 통합을 통한 TypeScript 타입 정보, 코드 품질 및 스타일 분석.
+● **React/Vue.js**: Best Practices, 접근성, JSX/Vue 구문 분석 및 컴포넌트 간 의존성, 데이터 흐름 분석.
 
 ## 2. 품질 및 보안 분석 고도화
 ### 2.1. 메타 정보에 취약점·오류/성능 이슈 가능성 포함
 ### 2.2. 보안 취약점 분석 (OWASP Top 10 초점)
-- **SAST 통합**: Java 코드에 대해 정적 분석 보안, SQL Injection, 보안 미흡 설정, 취약한 접근 제어 등 다양한 잠재적 보안 취약점을 탐지합니다. 탐지된 내용은 신뢰도와 함께 `summaries` 테이블에 `vuln_*` 타입으로 저장됩니다.
-- **커스텀 규칙 (SQL Injection)**: MyBatis 매퍼 파일(`*.xml`) 분석 시, `${...}`와 같이 파라미터가 안전하게 처리되지 않는 패턴을 탐지하여 SQL Injection 취약점을 식별하고 보고합니다.
+● **SAST 통합**: Java 코드에 대해 정적 분석 보안, SQL Injection, 보안 미흡 설정, 취약한 접근 제어 등 다양한 잠재적 보안 취약점을 탐지합니다. 탐지된 내용은 신뢰도와 함께 `summaries` 테이블에 `vuln_*` 타입으로 저장됩니다.
+● **커스텀 규칙 (SQL Injection)**: MyBatis 매퍼 파일(`*.xml`) 분석 시, `${...}`와 같이 파라미터가 안전하게 처리되지 않는 패턴을 탐지하여 SQL Injection 취약점을 식별하고 보고합니다.
 ### 2.3. 정교한 코드 품질 메트릭 분석 기능 확장
-- **품질 지표 분석**: PMD의 중복 코드 탐지(CPD), 순환 복잡도 등 다양한 코드 품질 지표 분석 및 `duplicates`, `duplicate_instances` 테이블 스키마 정의 및 저장.
+● **품질 지표 분석**: PMD의 중복 코드 탐지(CPD), 순환 복잡도 등 다양한 코드 품질 지표 분석 및 `duplicates`, `duplicate_instances` 테이블 스키마 정의 및 저장.
 ### 2.4. 결과 저장 및 시각화
-- **메트릭 저장**: 분석된 메트릭(예: 복잡도)은 `code_metrics` 테이블에, 중복 코드 정보는 `duplicates` 및 `duplicate_instances` 테이블에 정량적으로 저장됩니다.
-- **시각화**: 위반 사항은 `summaries` 테이블에 `quality_*` 타입으로 저장되며, 대시보드의 '코드 품질 위반 유형' 차트를 통해 시각적으로 확인할 수 있습니다.
+● **메트릭 저장**: 분석된 메트릭(예: 복잡도)은 `code_metrics` 테이블에, 중복 코드 정보는 `duplicates` 및 `duplicate_instances` 테이블에 정량적으로 저장됩니다.
+● **시각화**: 위반 사항은 `summaries` 테이블에 `quality_*` 타입으로 저장되며, 대시보드의 '코드 품질 위반 유형' 차트를 통해 시각적으로 확인할 수 있습니다.
 
 ## 3. LLM 활용 및 기타 기능
 ### 3.1. LLM 기반 지능형 분석 및 저장
-- 각 소스 및 쿼리에서 오류 발생 가능 부분, 테이블 설계 문제점 등을 LLM으로 지능적으로 파악하여 별도 메타 테이블에 저장.
-- LLM 기반 분석 작업의 선택적 실행 및 특정 폴더/파일 지정 기능 구현.
+● 각 소스 및 쿼리에서 오류 발생 가능 부분, 테이블 설계 문제점 등을 LLM으로 지능적으로 파악하여 별도 메타 테이블에 저장.
+● LLM 기반 분석 작업의 선택적 실행 및 특정 폴더/파일 지정 기능 구현.
 ### 3.2. 변경 분석 기능
-
-- 수정 전/후 비교를 통한 변경 내역 요약 및 수정에 대한 영향에 대한 지능적 분석 기능 개발.
+● 수정 전/후 비교를 통한 변경 내역 요약 및 수정에 대한 영향에 대한 지능적 분석 기능 개발.
 
 ## 4. UI/시각화 대시보드
 ### 4.1. 의존성 그래프 시각화
-- 파일, 클래스, 메소드, SQL 유닛 등 시스템의 모든 주요 구성 요소를 노드(Node)로 표현합니다.
-- 각 구성 요소 간의 호출 및 참조 관계(call, use_table 등)를 엣지(Edge)로 시각화합니다.
-- 사용자는 그래프를 통해 전체 시스템의 구조와 특정 컴포넌트의 연결 관계를 한눈에 파악할 수 있습니다. (줌, 이동, 노드 클릭 등 인터랙션 지원)
+● 파일, 클래스, 메소드, SQL 유닛 등 시스템의 모든 주요 구성 요소를 노드(Node)로 표현합니다.
+● 각 구성 요소 간의 호출 및 참조 관계(call, use_table 등)를 엣지(Edge)로 시각화합니다.
+● 사용자는 그래프를 통해 전체 시스템의 구조와 특정 컴포넌트의 연결 관계를 한눈에 파악할 수 있습니다. (줌, 이동, 노드 클릭 등 인터랙션 지원)
 ### 4.2. 코드 메트릭 차트
-- 파일별 코드 라인 수(LOC)와 같은 기본적인 코드 메트릭을 막대 차트로 시각화합니다.
-- 이를 통해 코드베이스의 복잡도 분포나 규모가 큰 파일을 쉽게 식별할 수 있습니다.
+● 파일별 코드 라인 수(LOC)와 같은 기본적인 코드 메트릭을 막대 차트로 시각화합니다.
+● 이를 통해 코드베이스의 복잡도 분포나 규모가 큰 파일을 쉽게 식별할 수 있습니다.

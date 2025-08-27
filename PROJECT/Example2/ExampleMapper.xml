@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="ExampleMapper">
+
+  <select id="getUserOrders" resultType="Order">
+    SELECT U.ID, U.NAME, O.ORDER_ID, O.AMOUNT
+    FROM USER U 
+    JOIN ORDER O ON U.ID = O.USER_ID
+    WHERE U.STATUS = 'ACTIVE'
+  </select>
+
+  <select id="getAvailableProducts" resultType="Product">
+    SELECT P.ID, P.NAME, P.PRICE
+    FROM PRODUCT P
+    WHERE P.DEL_YN = 'N'
+  </select>
+
+</mapper>

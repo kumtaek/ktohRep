@@ -1,0 +1,63 @@
+# Source Analyzer Configuration
+project:
+  root_path: "./PROJECT"
+  supported_extensions:
+    java: [".java"]
+    jsp: [".jsp", ".jspx"]
+    mybatis: [".xml"]
+    sql: [".sql"]
+    properties: [".properties"]
+
+database:
+  type: "sqlite"
+  path: "./data/metadata.db"
+  # Future Oracle migration settings
+  # oracle:
+  #   host: "localhost"
+  #   port: 1521
+  #   service_name: "ORCL"
+  #   username: "metadata_user"
+  #   password: "password"
+
+parsing:
+  java:
+    thread_count: 4
+    max_file_size_mb: 10
+  
+  sql:
+    oracle_dialect: true
+    extract_joins: true
+    extract_filters: true
+  
+  mybatis:
+    namespace_extraction: true
+    dynamic_sql_analysis: true
+
+confidence:
+  thresholds:
+    high: 0.8
+    medium: 0.5
+    low: 0.2
+  
+  weights:
+    ast_quality: 0.4
+    static_analysis: 0.3
+    db_schema_match: 0.2
+    llm_enhancement: 0.1  # Placeholder for future
+
+logging:
+  level: "INFO"
+  file: "./logs/analyzer.log"
+  max_size_mb: 100
+  backup_count: 5
+
+# CSV Schema files location
+db_schema:
+  base_path: "./PROJECT/{project_name}/DB_SCHEMA"
+  files:
+    tables: "ALL_TABLES.csv"
+    columns: "ALL_TAB_COLUMNS.csv"
+    table_comments: "ALL_TAB_COMMENTS.csv"
+    column_comments: "ALL_COL_COMMENTS.csv"
+    primary_keys: "PK_INFO.csv"
+    views: "ALL_VIEWS.csv"

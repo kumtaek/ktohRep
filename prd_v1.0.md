@@ -41,14 +41,14 @@
 
 ```mermaid
 flowchart LR
-  A[프로젝트 Root 경로] -->|파서/정적해석| B(메타정보 생성기 - 1단계)
-  B --> C[(SQLite 메타DB)]
-  B --> D[(FAISS 임베딩 인덱스)]
-  C --> E{오케스트레이터/에이전트 - 2단계}
+  A["프로젝트 Root 경로"] -->|파서/정적해석| B("메타정보 생성기 - 1단계")
+  B --> C[("SQLite 메타DB")]
+  B --> D[("FAISS 임베딩 인덱스")]
+  C --> E{"오케스트레이터/에이전트 - 2단계"}
   D --> E
-  E --> F[Qwen2.5 7B(vLLM)]
-  E --> G[Qwen2.5 32B(양자화) 폴백]
-  E --> H[[OpenAPI 질의/영향평가]]
+  E --> F["Qwen2.5 7B(vLLM)"]
+  E --> G["Qwen2.5 32B(양자화) 폴백"]
+  E --> H[["OpenAPI 질의/영향평가"]]
 ```
 
 • 2.1.1. 1단계: 정적 파이프라인(멀티스레드) + 선택적 LLM 보강 워커(동일 서버)
@@ -245,6 +245,7 @@ CREATE INDEX idx_vuln_fixes_target ON vulnerability_fixes(target_type, target_id
 
 • 3.2.2. **구문/의미 분석 (다중 언어 및 프레임워크 지원)**
   ○ 3.2.2.1. **Java / Spring Framework**: JavaParser를 활용한 Java AST 분석을 기반으로, `@RestController`, `@GetMapping`, `@Autowired` 등 Spring의 핵심 어노테이션을 심층 분석하여 HTTP API 엔드포인트, 서비스 간 의존성(DI) 등 프레임워크 수준의 컨텍스트를 추출하고 의존성 그래프를 고도화합니다.
+
   ○ 3.2.2.2. **JSP, MyBatis, SQL**: 다른 언어와의 연관 관계 분석을 강화합니다. ANTLR 기반 커스텀 파서를 활용한 JSP 태그, 스크립틀릿, JSTL 등 구문 분석 및 정보 추출. JSP 페이지 간 포함 관계 (`<jsp:include>`) 및 백엔드 Java 코드(Servlet, Spring Controller)와의 연동 관계 분석 및 `edges` 테이블 저장.
     - **의존성 연결**: Java(JDBC `CallableStatement`) 또는 MyBatis(`<select statementType="CALLABLE">`)에서 SP/SF를 호출하는 구문을 탐지합니다. 탐지된 호출 정보를 바탕으로, 해당 Java 메소드나 MyBatis 쿼리와 SP/SF 간의 `calls_sp` 의존성 관계를 `edges` 테이블에 기록하여 전체 호출 흐름을 연결합니다.
 

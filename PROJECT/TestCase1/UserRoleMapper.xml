@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="UserRoleMapper">
+  <select id="getUserRole" resultType="UserRole">
+    SELECT USER_ID, ROLE_ID
+    FROM USER_ROLE
+    WHERE USER_ID = #{userId}
+      AND ROLE_ID = #{roleId}
+  </select>
+</mapper>

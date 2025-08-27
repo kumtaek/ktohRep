@@ -1,0 +1,2649 @@
+2025-08-27 23:30:41,238 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:30:41,239 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:30:41,240 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:30:41,240 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:30:41,289 - main - CRITICAL - [logger.py:85] - 시스템 초기화 실패: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 3298, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 713, in checkout
+    rec = pool._do_get()
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 675, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 901, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 897, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py", line 646, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 625, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: unable to open database file
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 52, in __init__
+    self.db_manager.initialize()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 348, in initialize
+    Base.metadata.create_all(self.engine)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\schema.py", line 5925, in create_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 3248, in _run_ddl_visitor
+    with self.begin() as conn:
+         ~~~~~~~~~~^^
+  File "C:\Python313\Lib\contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 3238, in begin
+    with self.connect() as conn:
+         ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 3274, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 148, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        err, dialect, engine
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2439, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 3298, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 449, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 713, in checkout
+    rec = pool._do_get()
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 675, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 901, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\pool\base.py", line 897, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py", line 646, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 625, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-27 23:31:02,017 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:31:02,017 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:31:02,017 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:31:02,017 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:31:02,148 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:31:02,149 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:31:02,149 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:31:02,150 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:31:02,150 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:31:02,152 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:31:02,181 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:31:02,181 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TABLES.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 74, in _load_tables
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 352, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:31:02,183 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TAB_COLUMNS.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 112, in _load_columns
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 352, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:31:02,184 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TAB_COMMENTS.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 165, in _load_table_comments
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 352, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:31:02,184 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:31:02,185 - main - ERROR - [logger.py:78] - CSV 로드 실패: PK_INFO.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 268, in _load_pk_info
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 352, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:31:02,185 - main - WARNING - [logger.py:73] - DB 스키마 파일이 로드되지 않았습니다.
+2025-08-27 23:31:02,190 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:31:02,190 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:31:02,190 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:31:02,195 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\pom.xml: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,197 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\CustomerController.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,200 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\CustomerMapper.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,203 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\OrderController.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,204 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\OrderMapper.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,205 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\ReportMapper.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,207 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\CustomerMapper.xml: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,209 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\Customer.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,211 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\OrderMapper.xml: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,213 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\Order.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,214 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\OrderFilter.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,215 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\ReportMapper.xml: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,217 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\CustomerService.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,219 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\OrderService.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,220 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\adminDashboard.jsp: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,222 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\AdminController.java: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 228, in _analyze_single_file_sync
+    saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_java_analysis_sync'. Did you mean: 'save_java_analysis'?
+2025-08-27 23:31:02,223 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:31:02,223 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\home.jsp: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,228 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orderDetail.jsp: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,231 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orders.jsp: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 250, in _analyze_single_file_sync
+    saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, confidence)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MetadataEngine' object has no attribute '_save_jsp_mybatis_analysis_sync'. Did you mean: 'save_jsp_mybatis_analysis'?
+2025-08-27 23:31:02,231 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:31:02,232 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 0, 실패 19
+2025-08-27 23:31:02,232 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.04초, 453.5건/초
+2025-08-27 23:31:02,232 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:31:02,248 - main - INFO - [logger.py:69] - 프로젝트 분석 완료: sample-app (0.10초)
+2025-08-27 23:31:02,248 - main - INFO - [logger.py:69] - 성능: 프로젝트 'sample-app' 전체 분석 | 0.10초
+2025-08-27 23:33:11,138 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:33:11,138 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:33:11,138 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:33:11,139 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:33:11,156 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:33:11,157 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:33:11,157 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:33:11,158 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:33:11,158 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:33:11,160 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:33:11,188 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:33:11,188 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TABLES.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 74, in _load_tables
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 354, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:33:11,190 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TAB_COLUMNS.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 112, in _load_columns
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 354, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:33:11,191 - main - ERROR - [logger.py:78] - CSV 로드 실패: ALL_TAB_COMMENTS.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 165, in _load_table_comments
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 354, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:33:11,192 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:33:11,192 - main - ERROR - [logger.py:78] - CSV 로드 실패: PK_INFO.csv: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 268, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 58, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\src\utils\csv_loader.py", line 268, in _load_pk_info
+    session = db_manager.get_session()
+  File "E:\SourceAnalyzer.git\src\models\database.py", line 354, in get_session
+    return self.Session()
+           ~~~~~~~~~~~~^^
+TypeError: 'NoneType' object is not callable
+2025-08-27 23:33:11,193 - main - WARNING - [logger.py:73] - DB 스키마 파일이 로드되지 않았습니다.
+2025-08-27 23:33:11,197 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:33:11,197 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:33:11,197 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:33:11,199 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\pom.xml: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,201 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\CustomerController.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,202 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\CustomerMapper.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,205 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\OrderController.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,207 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\OrderMapper.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,208 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\CustomerMapper.xml: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,209 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\mapper\ReportMapper.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,210 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\OrderMapper.xml: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,212 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\Customer.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,213 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\resources\mybatis\ReportMapper.xml: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,215 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\Order.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,216 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\adminDashboard.jsp: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,218 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\model\OrderFilter.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,218 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\home.jsp: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,220 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\CustomerService.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,220 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orderDetail.jsp: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,223 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\OrderService.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,223 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orders.jsp: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_jsp_mybatis_analysis() takes 6 positional arguments but 7 were given
+2025-08-27 23:33:11,224 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:33:11,224 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\AdminController.java: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges, confidence))
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MetadataEngine.save_java_analysis() takes 5 positional arguments but 6 were given
+2025-08-27 23:33:11,225 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:33:11,225 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 0, 실패 19
+2025-08-27 23:33:11,225 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.03초, 678.0건/초
+2025-08-27 23:33:11,225 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:33:11,243 - main - INFO - [logger.py:69] - 프로젝트 분석 완료: sample-app (0.08초)
+2025-08-27 23:33:11,243 - main - INFO - [logger.py:69] - 성능: 프로젝트 'sample-app' 전체 분석 | 0.08초
+2025-08-27 23:34:20,176 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:34:20,176 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:34:20,176 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:34:20,177 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:34:20,195 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:34:20,195 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:34:20,195 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:34:20,196 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:34:20,196 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:34:20,198 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:34:20,226 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:34:20,238 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TABLES.csv (5건)
+2025-08-27 23:34:20,258 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (27건)
+2025-08-27 23:34:20,269 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COMMENTS.csv (5건)
+2025-08-27 23:34:20,269 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:34:20,280 - main - INFO - [logger.py:69] - CSV 로드 완료: PK_INFO.csv (5건)
+2025-08-27 23:34:20,281 - main - INFO - [logger.py:69] - DB 스키마 로딩 완료: 4/5 파일
+2025-08-27 23:34:20,285 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:34:20,285 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:34:20,285 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:34:20,301 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\CustomerController.java: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 332, in save_java_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 327, in save_java_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,337 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\web\OrderController.java: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 332, in save_java_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 327, in save_java_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,383 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\adminDashboard.jsp: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 398, in save_jsp_mybatis_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 393, in save_jsp_mybatis_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,397 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orderDetail.jsp: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 398, in save_jsp_mybatis_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 393, in save_jsp_mybatis_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,404 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\webapp\WEB-INF\jsp\orders.jsp: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 254, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 398, in save_jsp_mybatis_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 393, in save_jsp_mybatis_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: ('file', None, 'file', None, 'includes', 0.9)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,407 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:34:20,445 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\CustomerService.java: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 332, in save_java_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 327, in save_java_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,455 - engine.metadata - ERROR - [logger.py:78] - 파싱 실패: unknown | PROJECT/sample-app\src\main\java\com\example\service\OrderService.java: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.src_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 230, in _analyze_single_file_sync
+    saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 332, in save_java_analysis
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 327, in save_java_analysis
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: edges.src_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('method', None, 'method', None, 'call', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,466 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:34:20,466 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 12, 실패 7
+2025-08-27 23:34:20,466 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.18초, 104.8건/초
+2025-08-27 23:34:20,466 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:34:20,472 - main - ERROR - [logger.py:78] - 프로젝트 분석 실패: sample-app: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 426, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 420, in build_dependency_graph
+    await self._infer_pk_fk_relationships(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 486, in _infer_pk_fk_relationships
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:34:20,483 - main - ERROR - [logger.py:78] - 성능 측정 중단: 프로젝트 'sample-app' 전체 분석 | 0.29초 후 오류 발생: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 426, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 420, in build_dependency_graph
+    await self._infer_pk_fk_relationships(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 486, in _infer_pk_fk_relationships
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:35:22,659 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:35:22,659 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:35:22,659 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:35:22,659 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:35:22,676 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:35:22,676 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:35:22,676 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:35:22,677 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:35:22,677 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:35:22,679 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:35:22,707 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:35:22,713 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-27 23:35:22,727 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-27 23:35:22,736 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COMMENTS.csv (5건)
+2025-08-27 23:35:22,737 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:35:22,743 - main - INFO - [logger.py:69] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-27 23:35:22,743 - main - INFO - [logger.py:69] - DB 스키마 로딩 완료: 4/5 파일
+2025-08-27 23:35:22,748 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:35:22,748 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:35:22,748 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:35:22,812 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,812 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,822 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,829 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,829 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,830 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,838 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,839 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: method(None) -> method(None)
+2025-08-27 23:35:22,865 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:35:22,884 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: file(None) -> file(None)
+2025-08-27 23:35:22,896 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: file(None) -> file(None)
+2025-08-27 23:35:22,902 - engine.metadata - WARNING - [logger.py:73] - 유효하지 않은 엣지 건너뛰기: file(None) -> file(None)
+2025-08-27 23:35:22,905 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:35:22,906 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 19, 실패 0
+2025-08-27 23:35:22,906 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.16초, 120.3건/초
+2025-08-27 23:35:22,906 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:35:22,912 - main - ERROR - [logger.py:78] - 프로젝트 분석 실패: sample-app: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 433, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 424, in build_dependency_graph
+    await self._resolve_table_usage(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 472, in _resolve_table_usage
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:35:22,922 - main - ERROR - [logger.py:78] - 성능 측정 중단: 프로젝트 'sample-app' 전체 분석 | 0.24초 후 오류 발생: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 433, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 424, in build_dependency_graph
+    await self._resolve_table_usage(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 472, in _resolve_table_usage
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:36:34,187 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:36:34,187 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:36:34,187 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:36:34,187 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:36:34,202 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:36:34,202 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:36:34,203 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:36:34,204 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:36:34,204 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:36:34,206 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:36:34,235 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:36:34,241 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-27 23:36:34,253 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-27 23:36:34,262 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COMMENTS.csv (5건)
+2025-08-27 23:36:34,262 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:36:34,269 - main - INFO - [logger.py:69] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-27 23:36:34,269 - main - INFO - [logger.py:69] - DB 스키마 로딩 완료: 4/5 파일
+2025-08-27 23:36:34,273 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:36:34,273 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:36:34,273 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:36:34,357 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:36:34,446 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:36:34,447 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 19, 실패 0
+2025-08-27 23:36:34,447 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.17초, 109.4건/초
+2025-08-27 23:36:34,447 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:36:34,453 - main - ERROR - [logger.py:78] - 프로젝트 분석 실패: sample-app: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 437, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 428, in build_dependency_graph
+    await self._resolve_table_usage(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 476, in _resolve_table_usage
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:36:34,463 - main - ERROR - [logger.py:78] - 성능 측정 중단: 프로젝트 'sample-app' 전체 분석 | 0.26초 후 오류 발생: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: edges.dst_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\improved_main.py", line 195, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 437, in build_dependency_graph
+    raise e
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 428, in build_dependency_graph
+    await self._resolve_table_usage(session, project_id)
+  File "E:\SourceAnalyzer.git\src\database\metadata_engine.py", line 476, in _resolve_table_usage
+    ).all()
+      ~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2230, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        False,
+        ^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3065, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 3054, in _autoflush
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1143, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_insertmany_context(dialect, context)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2123, in _exec_insertmany_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e,
+        ^^
+    ...<4 lines>...
+        is_sub_exec=True,
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2115, in _exec_insertmany_context
+    dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.IntegrityError) NOT NULL constraint failed: edges.dst_id
+[SQL: INSERT INTO edges (src_type, src_id, dst_type, dst_id, edge_kind, confidence) VALUES (?, ?, ?, ?, ?, ?) RETURNING edge_id]
+[parameters: ('sql_unit', 7, 'table', None, 'use_table', 0.8)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-27 23:37:00,615 - main - INFO - [logger.py:69] - 로깅 시스템 초기화 완료
+2025-08-27 23:37:00,615 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:37:00,615 - main - INFO - [logger.py:69] - 개선된 소스 분석기 시작
+2025-08-27 23:37:00,615 - main - INFO - [logger.py:69] - ============================================================
+2025-08-27 23:37:00,631 - main - INFO - [logger.py:69] - 데이터베이스 연결 성공
+2025-08-27 23:37:00,631 - main - INFO - [logger.py:69] - Java 파서 초기화 완료
+2025-08-27 23:37:00,631 - main - INFO - [logger.py:69] - JSP/MyBatis 파서 초기화 완료
+2025-08-27 23:37:00,632 - main - INFO - [logger.py:69] - SQL 파서 초기화 완료
+2025-08-27 23:37:00,632 - main - INFO - [logger.py:69] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-27 23:37:00,634 - main - INFO - [logger.py:69] - 프로젝트 등록 중: sample-app (PROJECT/sample-app)
+2025-08-27 23:37:00,662 - main - INFO - [logger.py:69] - DB 스키마 정보 로딩 중: PROJECT/sample-app\DB_SCHEMA
+2025-08-27 23:37:00,667 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-27 23:37:00,680 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-27 23:37:00,689 - main - INFO - [logger.py:69] - CSV 로드 완료: ALL_TAB_COMMENTS.csv (5건)
+2025-08-27 23:37:00,689 - main - WARNING - [logger.py:73] - CSV 파일 없음: PROJECT/sample-app\DB_SCHEMA\ALL_COL_COMMENTS.csv
+2025-08-27 23:37:00,697 - main - INFO - [logger.py:69] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-27 23:37:00,698 - main - INFO - [logger.py:69] - DB 스키마 로딩 완료: 4/5 파일
+2025-08-27 23:37:00,702 - main - INFO - [logger.py:69] - 발견된 소스 파일: 19개
+2025-08-27 23:37:00,702 - main - INFO - [logger.py:69] - 병렬 파일 분석 시작
+2025-08-27 23:37:00,702 - engine.metadata - INFO - [logger.py:69] - 병렬 파일 분석 시작: 19개 파일, 4개 워커
+2025-08-27 23:37:00,812 - engine.metadata - INFO - [logger.py:69] - 배치 2/2 완료
+2025-08-27 23:37:00,851 - engine.metadata - INFO - [logger.py:69] - 배치 1/2 완료
+2025-08-27 23:37:00,852 - engine.metadata - INFO - [logger.py:69] - 병렬 분석 완료: 성공 19, 실패 0
+2025-08-27 23:37:00,852 - engine.metadata - INFO - [logger.py:69] - 성능: 병렬 파일 분석 | 0.15초, 126.9건/초
+2025-08-27 23:37:00,852 - main - INFO - [logger.py:69] - 의존성 그래프 구축 중
+2025-08-27 23:37:00,858 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: o
+2025-08-27 23:37:00,859 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: T_ORDER
+2025-08-27 23:37:00,860 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: o
+2025-08-27 23:37:00,861 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: T_ORDER
+2025-08-27 23:37:00,863 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: o
+2025-08-27 23:37:00,863 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: T_ORDER
+2025-08-27 23:37:00,865 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: o
+2025-08-27 23:37:00,865 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: T_ORDER
+2025-08-27 23:37:00,883 - main - INFO - [logger.py:69] - 프로젝트 분석 완료: sample-app (0.25초)
+2025-08-27 23:37:00,884 - main - INFO - [logger.py:69] - 성능: 프로젝트 'sample-app' 전체 분석 | 0.25초

@@ -8,17 +8,23 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
 import java.util.List;
 
+/**
+ * Web controller exposing endpoints to view and manage orders.
+ */
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService service;
-    public OrderController(OrderService service) { this.service = service; }
+
+    public OrderController(OrderService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    public String list(@RequestParam(required=false) String status,
-                       @RequestParam(required=false) String from,
-                       @RequestParam(required=false) String to,
-                       @RequestParam(required=false) List<String> statuses,
+    public String list(@RequestParam(required = false) String status,
+                       @RequestParam(required = false) String from,
+                       @RequestParam(required = false) String to,
+                       @RequestParam(required = false) List<String> statuses,
                        Model model) {
         OrderFilter f = new OrderFilter();
         f.setStatus(status);

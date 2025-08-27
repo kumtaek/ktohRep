@@ -247,6 +247,62 @@ class VulnerabilityFix(Base):
     confidence = Column(Float, default=1.0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class CodeMetric(Base):
+    __tablename__ = 'code_metrics'
+    
+    metric_id = Column(Integer, primary_key=True)
+    target_type = Column(String(50), nullable=False)  # file, class, method
+    target_id = Column(Integer, nullable=False)
+    metric_type = Column(String(50), nullable=False)  # complexity, loc, duplication
+    metric_name = Column(String(100), nullable=False)  # cyclomatic_complexity, lines_of_code
+    value = Column(Float, nullable=False)
+    threshold = Column(Float)  # Warning threshold
+    severity = Column(String(20))  # info, warning, error
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Duplicate(Base):
+    __tablename__ = 'duplicates'
+    
+    duplicate_id = Column(Integer, primary_key=True)
+    hash_signature = Column(String(64), nullable=False)  # Hash of duplicate code block
+    token_count = Column(Integer)
+    line_count = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    instances = relationship("DuplicateInstance", back_populates="duplicate", cascade="all, delete-orphan")
+
+class DuplicateInstance(Base):
+    __tablename__ = 'duplicate_instances'
+    
+    instance_id = Column(Integer, primary_key=True)
+    duplicate_id = Column(Integer, ForeignKey('duplicates.duplicate_id'), nullable=False)
+    file_id = Column(Integer, ForeignKey('files.file_id'), nullable=False)
+    start_line = Column(Integer, nullable=False)
+    end_line = Column(Integer, nullable=False)
+    
+    # Relationships
+    duplicate = relationship("Duplicate", back_populates="instances")
+    file = relationship("File")
+
+class ParseResult(Base):
+    __tablename__ = 'parse_results'
+    
+    result_id = Column(Integer, primary_key=True)
+    file_id = Column(Integer, ForeignKey('files.file_id'), nullable=False)
+    parser_type = Column(String(50), nullable=False)  # javalang, tree_sitter, antlr
+    success = Column(Boolean, default=True)
+    parse_time = Column(Float)  # Seconds
+    ast_complete = Column(Boolean, default=False)
+    partial_ast = Column(Boolean, default=False)
+    fallback_used = Column(Boolean, default=False)
+    error_message = Column(Text)
+    confidence = Column(Float, default=1.0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    file = relationship("File")
+
 # Indexes for performance
 Index('idx_edges_src', Edge.src_type, Edge.src_id)
 Index('idx_edges_dst', Edge.dst_type, Edge.dst_id)
@@ -286,10 +342,12 @@ class DatabaseManager:
             raise ValueError(f"Unsupported database type: {db_config['type']}")
             
         self.engine = create_engine(db_url, **engine_args)
-        self.Session = sessionmaker(bind=self.engine)
         
-        # Create all tables
+        # Create all tables first
         Base.metadata.create_all(self.engine)
+        
+        # Initialize Session after tables are created
+        self.Session = sessionmaker(bind=self.engine)
         
     def get_session(self):
         """Get a new database session."""

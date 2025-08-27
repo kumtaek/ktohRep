@@ -9,11 +9,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
 import java.util.List;
 
+/**
+ * Web controller for managing customers.
+ */
 @Controller
 @RequestMapping("/customers")
 public class CustomerController {
     private final CustomerService service;
-    public CustomerController(CustomerService service) { this.service = service; }
+
+    public CustomerController(CustomerService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public String list(Model model) {

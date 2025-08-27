@@ -1,20 +1,26 @@
 """
-메타데이터 엔진
+메타데이터 엔진 (개선된 병렬 처리 버전)
 분석된 메타데이터를 데이터베이스에 저장하고 관리하는 엔진
+병렬 처리 및 개선된 예외 처리 포함
 """
 
 from typing import Dict, List, Any, Optional, Tuple
 import asyncio
 import hashlib
+import concurrent.futures
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import and_, or_, func
+import time
+import os
 
 from ..models.database import (
     DatabaseManager, Project, File, Class, Method, SqlUnit, 
     Join, RequiredFilter, Edge, Summary, EnrichmentLog,
-    DbTable, DbColumn, DbPk, DbView
+    DbTable, DbColumn, DbPk, DbView, ParseResult
 )
+from ..utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
+from ..utils.improved_confidence_calculator import ImprovedConfidenceCalculator, ParseResult as ConfidenceParseResult
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -22,6 +28,12 @@ class MetadataEngine:
     def __init__(self, config: Dict[str, Any], db_manager: DatabaseManager):
         self.config = config
         self.db_manager = db_manager
+        self.logger = LoggerFactory.get_engine_logger()
+        self.confidence_calculator = ImprovedConfidenceCalculator(config)
+        
+        # 병렬 처리 설정
+        self.max_workers = config.get('processing', {}).get('max_workers', 4)
+        self.batch_size = config.get('processing', {}).get('batch_size', 10)
         
     async def create_project(self, project_path: str, project_name: str) -> int:
         """
@@ -61,9 +73,207 @@ class MetadataEngine:
                 
         except Exception as e:
             session.rollback()
+            self.logger.error("프로젝트 생성 중 오류", exception=e)
             raise e
         finally:
             session.close()
+            
+    async def analyze_files_parallel(self, file_paths: List[str], project_id: int,
+                                   parsers: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        파일들을 병렬로 분석
+        
+        Args:
+            file_paths: 분석할 파일 경로 리스트
+            project_id: 프로젝트 ID
+            parsers: 파서 객체들 딕셔너리
+            
+        Returns:
+            분석 결과 요약
+        """
+        
+        with PerformanceLogger(self.logger, "병렬 파일 분석", len(file_paths)):
+            self.logger.info(f"병렬 파일 분석 시작: {len(file_paths)}개 파일, {self.max_workers}개 워커")
+            
+            results = {
+                'total_files': len(file_paths),
+                'success_count': 0,
+                'error_count': 0,
+                'java_files': 0,
+                'jsp_files': 0,
+                'xml_files': 0,
+                'total_classes': 0,
+                'total_methods': 0,
+                'total_sql_units': 0,
+                'errors': []
+            }
+            
+            # 파일들을 배치로 나누기
+            batches = [file_paths[i:i + self.batch_size] 
+                      for i in range(0, len(file_paths), self.batch_size)]
+            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                # 각 배치를 병렬로 처리
+                future_to_batch = {
+                    executor.submit(self._analyze_batch_sync, batch, project_id, parsers): batch_idx
+                    for batch_idx, batch in enumerate(batches)
+                }
+                
+                for future in concurrent.futures.as_completed(future_to_batch):
+                    batch_idx = future_to_batch[future]
+                    try:
+                        batch_result = future.result()
+                        
+                        # 결과 집계
+                        results['success_count'] += batch_result['success_count']
+                        results['error_count'] += batch_result['error_count']
+                        results['java_files'] += batch_result['java_files']
+                        results['jsp_files'] += batch_result['jsp_files']
+                        results['xml_files'] += batch_result['xml_files']
+                        results['total_classes'] += batch_result['total_classes']
+                        results['total_methods'] += batch_result['total_methods']
+                        results['total_sql_units'] += batch_result['total_sql_units']
+                        results['errors'].extend(batch_result['errors'])
+                        
+                        self.logger.info(f"배치 {batch_idx + 1}/{len(batches)} 완료")
+                        
+                    except Exception as e:
+                        batch = batches[batch_idx]
+                        self.logger.error(f"배치 {batch_idx + 1} 처리 실패", exception=e)
+                        results['error_count'] += len(batch)
+                        results['errors'].append({
+                            'batch': batch_idx,
+                            'files': batch,
+                            'error': str(e)
+                        })
+            
+            self.logger.info(f"병렬 분석 완료: 성공 {results['success_count']}, 실패 {results['error_count']}")
+            return results
+            
+    def _analyze_batch_sync(self, file_paths: List[str], project_id: int, 
+                           parsers: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        파일 배치를 동기적으로 분석 (스레드에서 실행)
+        """
+        batch_result = {
+            'success_count': 0,
+            'error_count': 0,
+            'java_files': 0,
+            'jsp_files': 0,
+            'xml_files': 0,
+            'total_classes': 0,
+            'total_methods': 0,
+            'total_sql_units': 0,
+            'errors': []
+        }
+        
+        for file_path in file_paths:
+            try:
+                result = self._analyze_single_file_sync(file_path, project_id, parsers)
+                if result:
+                    batch_result['success_count'] += 1
+                    
+                    # 파일 타입별 카운팅
+                    if file_path.endswith('.java'):
+                        batch_result['java_files'] += 1
+                    elif file_path.endswith('.jsp'):
+                        batch_result['jsp_files'] += 1
+                    elif file_path.endswith('.xml'):
+                        batch_result['xml_files'] += 1
+                    
+                    # 요소 카운팅
+                    batch_result['total_classes'] += result.get('classes', 0)
+                    batch_result['total_methods'] += result.get('methods', 0)
+                    batch_result['total_sql_units'] += result.get('sql_units', 0)
+                else:
+                    batch_result['error_count'] += 1
+                    
+            except Exception as e:
+                batch_result['error_count'] += 1
+                batch_result['errors'].append({
+                    'file': file_path,
+                    'error': str(e)
+                })
+                
+        return batch_result
+        
+    def _analyze_single_file_sync(self, file_path: str, project_id: int, 
+                                 parsers: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        단일 파일 동기 분석
+        """
+        start_time = time.time()
+        
+        try:
+            # 파일 타입에 따른 파서 선택
+            if file_path.endswith('.java') and 'java' in parsers:
+                file_obj, classes, methods, edges = parsers['java'].parse_file(file_path, project_id)
+                parse_time = time.time() - start_time
+                
+                # 파싱 결과를 ParseResult 객체로 저장
+                parse_result_data = ConfidenceParseResult(
+                    file_path=file_path,
+                    parser_type='javalang',
+                    success=True,
+                    parse_time=parse_time,
+                    ast_complete=True,
+                    classes=len(classes),
+                    methods=len(methods)
+                )
+                
+                # 신뢰도 계산
+                confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
+                
+                # 데이터베이스에 저장
+                # 동기 함수에서 동기 저장 메서드 호출
+                import asyncio
+                saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+                
+                return saved_counts
+                
+            elif (file_path.endswith('.jsp') or file_path.endswith('.xml')) and 'jsp_mybatis' in parsers:
+                file_obj, sql_units, joins, filters, edges = parsers['jsp_mybatis'].parse_file(file_path, project_id)
+                parse_time = time.time() - start_time
+                
+                # 파싱 결과 저장
+                parse_result_data = ConfidenceParseResult(
+                    file_path=file_path,
+                    parser_type='mybatis_xml' if file_path.endswith('.xml') else 'jsp',
+                    success=True,
+                    parse_time=parse_time,
+                    ast_complete=True,
+                    sql_units=len(sql_units)
+                )
+                
+                # 신뢰도 계산
+                confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
+                
+                # 데이터베이스에 저장
+                # 동기 함수에서 동기 저장 메서드 호출
+                import asyncio
+                saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges))
+                
+                return saved_counts
+                
+            return None
+            
+        except Exception as e:
+            parse_time = time.time() - start_time
+            
+            # 실패한 파싱 결과도 기록
+            parse_result_data = ConfidenceParseResult(
+                file_path=file_path,
+                parser_type='unknown',
+                success=False,
+                parse_time=parse_time,
+                error_message=str(e)
+            )
+            
+            # 낮은 신뢰도로 기록
+            confidence = 0.1
+            
+            self.logger.log_parsing_failure(file_path, 'unknown', e)
+            raise e
             
     async def save_java_analysis(self, 
                                 file_obj: File, 
@@ -108,9 +318,14 @@ class MetadataEngine:
                 
             saved_counts['methods'] = len(methods)
             
-            # 의존성 엣지 저장 (ID 해결 후)
-            for edge in edges:
-                # 임시로 저장, 나중에 ID 해결 필요
+            # 의존성 엣지 저장 (유효한 엣지만)
+            valid_edges = [edge for edge in edges 
+                          if edge.src_id is not None and edge.dst_id is not None 
+                          and edge.src_id != 0 and edge.dst_id != 0]
+            
+            self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
+            
+            for edge in valid_edges:
                 session.add(edge)
                 saved_counts['edges'] += 1
                 
@@ -175,8 +390,14 @@ class MetadataEngine:
             saved_counts['joins'] = len(joins)
             saved_counts['filters'] = len(filters)
             
-            # 의존성 엣지 저장
-            for edge in edges:
+            # 의존성 엣지 저장 (유효한 엣지만)
+            valid_edges = [edge for edge in edges 
+                          if edge.src_id is not None and edge.dst_id is not None 
+                          and edge.src_id != 0 and edge.dst_id != 0]
+            
+            self.logger.debug(f"JSP/MyBatis 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
+            
+            for edge in valid_edges:
                 session.add(edge)
                 saved_counts['edges'] += 1
                 
@@ -255,17 +476,26 @@ class MetadataEngine:
             ).all()
             
             for join in joins:
-                # SQL -> 테이블 사용 엣지 생성
+                # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
                 if join.l_table:
-                    table_edge = Edge(
-                        src_type='sql_unit',
-                        src_id=sql_unit.sql_id,
-                        dst_type='table',
-                        dst_id=None,  # 테이블 ID 해결 필요
-                        edge_kind='use_table',
-                        confidence=0.8
-                    )
-                    session.add(table_edge)
+                    # DB 스키마에서 테이블 찾기
+                    db_table = session.query(DbTable).filter(
+                        DbTable.table_name == join.l_table.upper(),
+                        DbTable.owner == 'SAMPLE'  # 기본 스키마, 설정에서 가져와야 함
+                    ).first()
+                    
+                    if db_table:
+                        table_edge = Edge(
+                            src_type='sql_unit',
+                            src_id=sql_unit.sql_id,
+                            dst_type='table',
+                            dst_id=db_table.table_id,
+                            edge_kind='use_table',
+                            confidence=0.8
+                        )
+                        session.add(table_edge)
+                    else:
+                        self.logger.warning(f"테이블을 찾을 수 없음: {join.l_table}")
                     
     async def _infer_pk_fk_relationships(self, session, project_id: int):
         """PK-FK 관계 추론"""

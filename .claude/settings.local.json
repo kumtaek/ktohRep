@@ -25,7 +25,8 @@
       "Bash(./gh-cli/bin/gh.exe api repos/kumtaek/ktohRep/contents)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(./gh-cli/bin/gh.exe api repos/kumtaek/ktohRep/contents/prd_v1.0.md)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

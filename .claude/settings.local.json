@@ -26,7 +26,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(./gh-cli/bin/gh.exe api repos/kumtaek/ktohRep/contents/prd_v1.0.md)",
       "Bash(git log:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

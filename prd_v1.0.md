@@ -174,11 +174,32 @@ CREATE TABLE embeddings (
   model TEXT, dim INTEGER, faiss_vector_id INTEGER, created_at TEXT,
   FOREIGN KEY(chunk_id) REFERENCES chunks(chunk_id)
 );
+
+-- 취약점 수정 제안
+CREATE TABLE vulnerability_fixes (
+  fix_id INTEGER PRIMARY KEY,
+  target_type TEXT, target_id INTEGER,
+  vulnerability_type TEXT, -- sql_injection, xss, path_traversal, etc.
+  severity TEXT, -- critical, high, medium, low
+  owasp_category TEXT, -- A01, A02, A03 등 OWASP Top 10 분류
+  cwe_id TEXT, -- CWE-89, CWE-79 등
+  reference_urls TEXT, -- 관련 OWASP, CVE URL (JSON 배열)
+  description TEXT, -- 취약점 상세 설명
+  fix_description TEXT, -- 해결방법 설명
+  original_code TEXT, -- 취약한 원본 코드 (라인 범위)
+  fixed_code TEXT, -- 수정 제안 코드
+  start_line INTEGER, end_line INTEGER,
+  confidence REAL,
+  created_at TEXT,
+  FOREIGN KEY target based on target_type
+);
+
 CREATE INDEX idx_edges_src ON edges(src_type, src_id);
 CREATE INDEX idx_edges_dst ON edges(dst_type, dst_id);
 CREATE INDEX idx_sql_units_file ON sql_units(file_id);
 CREATE INDEX idx_joins_sql ON joins(sql_id);
 CREATE INDEX idx_filters_sql ON required_filters(sql_id);
+CREATE INDEX idx_vuln_fixes_target ON vulnerability_fixes(target_type, target_id);
 ```
 
 • 2.2.2. Oracle 11g 전환 가이드: INTEGER→NUMBER, TEXT→CLOB/VARCHAR2, BOOLEAN은 NUMBER(1)로 매핑, FK/INDEX 동일.
@@ -475,6 +496,7 @@ def answer(question, project, recall_priority=True):
 • 2.2. 보안 취약점 분석 (OWASP Top 10 초점)
   ○ 2.2.1. SAST 통합: Java 코드에 대해 정적 분석 보안, SQL Injection, 보안 미흡 설정, 취약한 접근 제어 등 다양한 잠재적 보안 취약점을 탐지합니다. 탐지된 내용은 신뢰도와 함께 `summaries` 테이블에 `vuln_*` 타입으로 저장됩니다.
   ○ 2.2.2. 커스텀 규칙 (SQL Injection): MyBatis 매퍼 파일(`*.xml`) 분석 시, `${...}`와 같이 파라미터가 안전하게 처리되지 않는 패턴을 탐지하여 SQL Injection 취약점을 식별하고 보고합니다.
+  ○ 2.2.3. 취약점 상세 정보 및 개선안 제공: 발견된 취약점에 대한 요약 설명(관련 OWASP URL, CVE 정보 등 명시)과 구체적인 해결방법을 메타정보에 저장합니다. 취약점 개선 전후 소스코드 비교를 위한 수정 제안 코드도 함께 생성하여 `vulnerability_fixes` 테이블에 저장하고, 개발자가 취약점 개선 전/후 소스를 비교 확인할 수 있는 기능을 제공합니다.
 
 • 2.3. 정교한 코드 품질 메트릭 분석 기능 확장
   ○ 2.3.1. PMD의 중복 코드 탐지(CPD), 순환 복잡도 등 다양한 코드 품질 지표 분석 및 `duplicates`, `duplicate_instances` 테이블 스키마 정의 및 저장.

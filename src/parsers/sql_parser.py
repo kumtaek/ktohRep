@@ -23,6 +23,12 @@ class SqlParser:
     """SQL 구문을 분석하는 파서"""
     
     def __init__(self, config: Dict[str, Any]):
+        """
+        SQL 파서 초기화
+        
+        Args:
+            config: 설정 딕셔너리
+        """
         self.config = config
         self.confidence_calc = ConfidenceCalculator(config)
         
@@ -99,7 +105,15 @@ class SqlParser:
         return joins, filters, tables, columns
         
     def _normalize_sql(self, sql_content: str) -> str:
-        """SQL 구문 정규화"""
+        """
+        SQL 구문을 분석하기 쉽게 정규화
+        
+        Args:
+            sql_content: 원본 SQL 구문
+            
+        Returns:
+            정규화된 SQL 구문
+        """
         
         # 여러 공백을 하나로 통일
         normalized = re.sub(r'\s+', ' ', sql_content.strip())
@@ -114,7 +128,15 @@ class SqlParser:
         return normalized
         
     def _handle_oracle_syntax(self, sql: str) -> str:
-        """Oracle 특수 구문 처리"""
+        """
+        Oracle 데이터베이스 특수 구문을 처리
+        
+        Args:
+            sql: SQL 구문
+            
+        Returns:
+            Oracle 구문이 처리된 SQL
+        """
         
         # DUAL 테이블 처리
         sql = re.sub(r'\bFROM\s+DUAL\b', 'FROM DUAL', sql, flags=re.IGNORECASE)
@@ -128,7 +150,18 @@ class SqlParser:
         return sql
         
     def _parse_with_jsqlparser(self, sql: str) -> Optional[Tuple[List[Join], List[RequiredFilter], List[str], List[str]]]:
-        """JSQLParser를 사용한 SQL 분석 (구현 예정)"""
+        """
+        JSQLParser 라이브러리를 사용한 정확한 SQL 분석
+        
+        Args:
+            sql: 분석할 SQL 구문
+            
+        Returns:
+            파싱된 조인, 필터, 테이블, 컬럼 정보 또는 None
+        
+        Note:
+            현재는 구현 예정 상태로 None을 반환
+        """
         
         # JSQLParser Python 바인딩 사용한 구현
         # 현재는 스켈레톤만 제공
@@ -136,7 +169,15 @@ class SqlParser:
         return None
         
     def _extract_joins_regex(self, sql: str) -> List[Join]:
-        """정규식을 사용한 조인 조건 추출"""
+        """
+        정규식 패턴을 사용하여 SQL에서 조인 조건을 추출
+        
+        Args:
+            sql: SQL 구문
+            
+        Returns:
+            추출된 조인 정보 리스트
+        """
         
         joins = []
         
@@ -180,7 +221,15 @@ class SqlParser:
         return joins
         
     def _extract_filters_regex(self, sql: str) -> List[RequiredFilter]:
-        """정규식을 사용한 필터 조건 추출"""
+        """
+        정규식 패턴을 사용하여 WHERE 절의 필터 조건을 추출
+        
+        Args:
+            sql: SQL 구문
+            
+        Returns:
+            추출된 필터 조건 리스트
+        """
         
         filters = []
         
@@ -236,7 +285,15 @@ class SqlParser:
         return filters
         
     def _extract_tables_regex(self, sql: str) -> List[str]:
-        """정규식을 사용한 테이블 추출"""
+        """
+        정규식 패턴을 사용하여 SQL에서 테이블명을 추출
+        
+        Args:
+            sql: SQL 구문
+            
+        Returns:
+            추출된 테이블명 리스트
+        """
         
         tables = set()
         
@@ -260,7 +317,15 @@ class SqlParser:
         return list(tables)
         
     def _extract_columns_regex(self, sql: str) -> List[str]:
-        """정규식을 사용한 컬럼 추출"""
+        """
+        정규식 패턴을 사용하여 SQL에서 컬럼 참조를 추출
+        
+        Args:
+            sql: SQL 구문
+            
+        Returns:
+            테이블명.컬럼명 형태의 컬럼 참조 리스트
+        """
         
         columns = set()
         
@@ -278,7 +343,15 @@ class SqlParser:
         return list(columns)
         
     def _normalize_filter_value(self, value: str) -> str:
-        """필터 값 정규화"""
+        """
+        필터 조건의 값을 표준화된 형태로 정규화
+        
+        Args:
+            value: 원본 필터 값
+            
+        Returns:
+            정규화된 필터 값 표현
+        """
         
         value = value.strip()
         
@@ -300,7 +373,15 @@ class SqlParser:
             return value
             
     def _has_dynamic_condition(self, condition: str) -> bool:
-        """조건이 동적인지 판단"""
+        """
+        필터 조건이 동적(런타임에 변하는)인지 판단
+        
+        Args:
+            condition: 필터 조건 문자열
+            
+        Returns:
+            동적 조건이면 True, 정적 조건이면 False
+        """
         
         # MyBatis 동적 파라미터
         if '${' in condition or '#{' in condition:
@@ -317,7 +398,15 @@ class SqlParser:
         return False
         
     def detect_plsql_elements(self, sql_content: str) -> Dict[str, List[str]]:
-        """PL/SQL 요소들 감지"""
+        """
+        Oracle PL/SQL 특수 요소들을 감지하여 분류
+        
+        Args:
+            sql_content: PL/SQL을 포함한 SQL 구문
+            
+        Returns:
+            PL/SQL 요소별 감지된 이름들의 딕셔너리
+        """
         
         elements = {
             'procedures': [],

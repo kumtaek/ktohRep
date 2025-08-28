@@ -17,10 +17,10 @@ import os
 from ..models.database import (
     DatabaseManager, Project, File, Class, Method, SqlUnit, 
     Join, RequiredFilter, Edge, Summary, EnrichmentLog,
-    DbTable, DbColumn, DbPk, DbView, ParseResult
+    DbTable, DbColumn, DbPk, DbView, ParseResultModel, VulnerabilityFix
 )
 from ..utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
-from ..utils.improved_confidence_calculator import ImprovedConfidenceCalculator, ParseResult as ConfidenceParseResult
+from ..utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -29,7 +29,7 @@ class MetadataEngine:
         self.config = config
         self.db_manager = db_manager
         self.logger = LoggerFactory.get_engine_logger()
-        self.confidence_calculator = ImprovedConfidenceCalculator(config)
+        self.confidence_calculator = ConfidenceCalculator(config)
         
         # 병렬 처리 설정
         self.max_workers = config.get('processing', {}).get('max_workers', 4)
@@ -232,7 +232,7 @@ class MetadataEngine:
                 return saved_counts
                 
             elif (file_path.endswith('.jsp') or file_path.endswith('.xml')) and 'jsp_mybatis' in parsers:
-                file_obj, sql_units, joins, filters, edges = parsers['jsp_mybatis'].parse_file(file_path, project_id)
+                file_obj, sql_units, joins, filters, edges, vulnerabilities = parsers['jsp_mybatis'].parse_file(file_path, project_id)
                 parse_time = time.time() - start_time
                 
                 # 파싱 결과 저장
@@ -251,7 +251,7 @@ class MetadataEngine:
                 # 데이터베이스에 저장
                 # 동기 함수에서 동기 저장 메서드 호출
                 import asyncio
-                saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges))
+                saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, vulnerabilities))
                 
                 return saved_counts
                 
@@ -343,7 +343,8 @@ class MetadataEngine:
                                        sql_units: List[SqlUnit], 
                                        joins: List[Join], 
                                        filters: List[RequiredFilter],
-                                       edges: List[Edge]) -> Dict[str, int]:
+                                       edges: List[Edge],
+                                       vulnerabilities: List[Dict] = None) -> Dict[str, int]:
         """
         JSP/MyBatis 분석 결과 저장
         
@@ -400,6 +401,27 @@ class MetadataEngine:
             for edge in valid_edges:
                 session.add(edge)
                 saved_counts['edges'] += 1
+            
+            # 취약점 저장 (새로운 기능)
+            saved_counts['vulnerabilities'] = 0
+            if vulnerabilities:
+                for vuln in vulnerabilities:
+                    vuln_fix = VulnerabilityFix(
+                        target_type='file',
+                        target_id=file_obj.file_id,
+                        vulnerability_type=vuln.get('type', 'UNKNOWN'),
+                        severity=vuln.get('severity', 'MEDIUM'),
+                        owasp_category=vuln.get('owasp_category', ''),
+                        cwe_id=vuln.get('cwe_id', ''),
+                        description=vuln.get('message', ''),
+                        original_code=vuln.get('pattern', ''),
+                        start_line=vuln.get('line_number', 0),
+                        confidence=vuln.get('confidence', 0.8)
+                    )
+                    session.add(vuln_fix)
+                    saved_counts['vulnerabilities'] += 1
+                    
+                self.logger.info(f"취약점 저장 완료: {saved_counts['vulnerabilities']}개")
                 
             session.commit()
             return saved_counts
@@ -458,8 +480,40 @@ class MetadataEngine:
                 
                 if src_method:
                     # 같은 프로젝트 내에서 호출 대상 메서드 찾기
-                    # 이는 단순화된 구현으로, 실제로는 더 정교한 매칭 필요
-                    pass
+                    called_method_name = getattr(edge, 'metadata', {}).get('called_method_name', '')
+                    
+                    if called_method_name:
+                        # 1) 동일 클래스 내 메서드 우선 검색
+                        target_method = session.query(Method).filter(
+                            and_(
+                                Method.class_id == src_method.class_id,
+                                Method.name == called_method_name
+                            )
+                        ).first()
+                        
+                        # 2) 전역 검색 (패키지/임포트 정보 고려 필요)
+                        if not target_method:
+                            target_method = session.query(Method).join(Class).join(File).filter(
+                                and_(
+                                    Method.name == called_method_name,
+                                    File.project_id == project_id
+                                )
+                            ).first()
+                        
+                        # 3) 호출 관계 엣지 업데이트
+                        if target_method:
+                            edge.dst_type = 'method'
+                            edge.dst_id = target_method.method_id
+                            edge.confidence = min(1.0, edge.confidence + 0.2)  # 해결된 호출에 신뢰도 보너스
+                            
+                            self.logger.debug(f"메서드 호출 해결: {src_method.name} -> {target_method.name}")
+                        else:
+                            # 해결되지 않은 호출은 신뢰도 감소
+                            edge.confidence = max(0.1, edge.confidence - 0.3)
+                            self.logger.debug(f"미해결 메서드 호출: {src_method.name} -> {called_method_name}")
+                    
+        session.commit()
+        self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
                     
     async def _resolve_table_usage(self, session, project_id: int):
         """테이블 사용 관계 해결"""

@@ -16,6 +16,13 @@ class AnalyzerLogger:
     """소스 분석기 전용 로거"""
     
     def __init__(self, name: str, config: Optional[Dict[str, Any]] = None):
+        """
+        분석기 로거 초기화
+        
+        Args:
+            name: 로거 이름
+            config: 로거 설정 딕셔너리
+        """
         self.name = name
         self.config = config or {}
         self.logger = self._setup_logger()
@@ -168,17 +175,27 @@ class PerformanceLogger:
     
     def __init__(self, logger: AnalyzerLogger, operation: str, 
                  items_count: int = 0):
+        """
+        성능 측정 로거 초기화
+        
+        Args:
+            logger: 사용할 로거 인스턴스
+            operation: 측정할 작업명
+            items_count: 처리할 아이템 수
+        """
         self.logger = logger
         self.operation = operation
         self.items_count = items_count
         self.start_time = None
         
     def __enter__(self):
+        """컨텍스트 진입 시 성능 측정 시작"""
         self.start_time = datetime.now()
         self.logger.debug(f"성능 측정 시작: {self.operation}")
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """컨텍스트 종료 시 성능 계산 및 로깅"""
         if self.start_time:
             duration = (datetime.now() - self.start_time).total_seconds()
             
@@ -227,7 +244,15 @@ class ExceptionHandler:
 
 
 def setup_logging(config: Dict[str, Any]):
-    """전역 로깅 설정"""
+    """
+    전체 시스템의 로깅 설정 초기화
+    
+    Args:
+        config: 로깅 설정이 포함된 전체 설정 딕셔너리
+        
+    Returns:
+        초기화된 메인 로거 인스턴스
+    """
     LoggerFactory.setup_default_config(config)
     
     # 메인 로거 초기화

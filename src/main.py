@@ -1,5 +1,5 @@
 """
-개선된 소스 분석기 메인 모듈
+소스 분석기 메인 모듈
 리뷰 의견을 반영한 개선사항들이 적용된 1단계 메타정보 생성 시스템
 """
 
@@ -13,8 +13,8 @@ from typing import Dict, Any, List
 import time
 from datetime import datetime
 
-# 프로젝트 루트를 Python 패스에 추가
-project_root = Path(__file__).parent
+# 프로젝트 루트를 Python 패스에 추가 (수정됨: src의 부모 디렉토리 추가)
+project_root = Path(__file__).parent.parent  # src의 부모 디렉토리
 sys.path.insert(0, str(project_root))
 
 from src.models.database import DatabaseManager
@@ -24,11 +24,11 @@ from src.parsers.sql_parser import SqlParser
 from src.database.metadata_engine import MetadataEngine
 from src.utils.csv_loader import CsvLoader
 from src.utils.logger import setup_logging, LoggerFactory, PerformanceLogger
-from src.utils.improved_confidence_calculator import ImprovedConfidenceCalculator
+from src.utils.confidence_calculator import ConfidenceCalculator
 
 
 class SourceAnalyzer:
-    """개선된 소스 분석기 메인 클래스"""
+    """소스 분석기 메인 클래스"""
     
     def __init__(self, config_path: str):
         """
@@ -63,7 +63,7 @@ class SourceAnalyzer:
             self.csv_loader = CsvLoader(self.config)
             
             # 신뢰도 계산기 초기화
-            self.confidence_calculator = ImprovedConfidenceCalculator(self.config)
+            self.confidence_calculator = ConfidenceCalculator(self.config)
             
         except Exception as e:
             self.logger.critical("시스템 초기화 실패", exception=e)
@@ -107,7 +107,7 @@ class SourceAnalyzer:
             config['logging'] = {}
         logging_config = config['logging']
         logging_config.setdefault('level', 'INFO')
-        logging_config.setdefault('file', './logs/improved_analyzer.log')
+        logging_config.setdefault('file', './logs/analyzer.log')
         
         # 기본 신뢰도 설정
         if 'confidence' not in config:
@@ -440,10 +440,10 @@ class SourceAnalyzer:
                     result['methods'] = len(methods)
                     
                 elif 'jsp_mybatis' in self.parsers and self.parsers['jsp_mybatis'].can_parse(file_path):
-                    file_obj, sql_units, joins, filters, edges = self.parsers['jsp_mybatis'].parse_file(file_path, project_id)
+                    file_obj, sql_units, joins, filters, edges, vulnerabilities = self.parsers['jsp_mybatis'].parse_file(file_path, project_id)
                     
                     # 데이터베이스에 저장
-                    await self.metadata_engine.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges)
+                    await self.metadata_engine.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, vulnerabilities)
                     
                     result['sql_units'] = len(sql_units)
                     
@@ -454,10 +454,10 @@ class SourceAnalyzer:
                 raise
 
 def main():
-    """메인 함수 (개선된 CLI)"""
+    """메인 함수"""
     
     parser = argparse.ArgumentParser(
-        description='개선된 소스 코드 분석 도구 - 1단계 메타정보 생성',
+        description='소스 코드 분석 도구 - 1단계 메타정보 생성',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 예시 사용법:
@@ -491,10 +491,10 @@ def main():
         
     try:
         # 소스 분석기 초기화
-        print("개선된 소스 분석기 초기화 중...")
+        print("소스 분석기 초기화 중...")
         analyzer = SourceAnalyzer(args.config)
         
-        # 로그 레벨 조정 (개선된 로거가 없으면 기본 로깅 사용)
+        # 로그 레벨 조정 (로거가 없으면 기본 로깅 사용)
         if hasattr(analyzer.logger, 'logger'):
             if args.verbose:
                 analyzer.logger.logger.setLevel('DEBUG')

@@ -1,6 +1,6 @@
 """
-Java source code parser using JavaParser library.
-Extracts classes, methods, annotations, and dependencies.
+JavaParser 라이브러리를 사용한 Java 소스 코드 파서
+클래스, 메서드, 어노테이션, 의존성 정보를 추출합니다.
 """
 
 import hashlib
@@ -14,44 +14,58 @@ import re
 try:
     import javalang
 except ImportError:
-    # Fallback for environments without javalang
+    # javalang이 설치되지 않은 환경을 위한 대체 처리
     javalang = None
 
 from ..models.database import File, Class, Method, Edge
 from ..utils.confidence_calculator import ConfidenceCalculator
 
 class JavaParser:
-    """Parser for Java source files using javalang library."""
+    """javalang 라이브러리를 사용한 Java 소스 파일 파서"""
     
     def __init__(self, config: Dict[str, Any]):
+        """
+        Java 파서 초기화
+        
+        Args:
+            config: 설정 딕셔너리
+        """
         self.config = config
         self.confidence_calc = ConfidenceCalculator(config)
         
     def can_parse(self, file_path: str) -> bool:
-        """Check if file can be parsed by this parser."""
+        """
+        이 파서로 파일을 처리할 수 있는지 확인
+        
+        Args:
+            file_path: 파일 경로
+            
+        Returns:
+            처리 가능 여부
+        """
         return file_path.endswith('.java') and javalang is not None
         
     def parse_file(self, file_path: str, project_id: int) -> Tuple[File, List[Class], List[Method], List[Edge]]:
         """
-        Parse a Java file and extract metadata.
+        Java 파일을 파싱하여 메타데이터 추출
         
         Args:
-            file_path: Path to Java file
-            project_id: Project ID from database
+            file_path: Java 파일 경로
+            project_id: 데이터베이스 프로젝트 ID
             
         Returns:
-            Tuple of (File, Classes, Methods, Edges)
+            (File, Classes, Methods, Edges) 튜플
         """
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 
-            # Calculate file metadata
+            # 파일 메타데이터 계산
             file_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
             file_stat = os.stat(file_path)
             loc = len([line for line in content.split('\n') if line.strip()])
             
-            # Create File object
+            # File 객체 생성
             file_obj = File(
                 project_id=project_id,
                 path=file_path,
@@ -61,33 +75,33 @@ class JavaParser:
                 mtime=datetime.fromtimestamp(file_stat.st_mtime)
             )
             
-            # Parse Java AST
+            # Java AST 파싱
             try:
                 tree = javalang.parse.parse(content)
             except Exception as e:
-                # If parsing fails, create file with low confidence
-                print(f"Failed to parse {file_path}: {e}")
+                # 파싱 실패 시 낮은 신뢰도로 파일 생성
+                print(f"파일 파싱 실패 {file_path}: {e}")
                 return file_obj, [], [], []
                 
             classes = []
             methods = []
             edges = []
             
-            # Extract classes and methods
+            # 클래스와 메서드 추출
             for path, node in tree.filter(javalang.tree.ClassDeclaration):
                 class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
                 classes.append(class_obj)
                 methods.extend(class_methods)
                 edges.extend(class_edges)
                 
-            # Extract interface declarations
+            # 인터페이스 선언 추출
             for path, node in tree.filter(javalang.tree.InterfaceDeclaration):
                 interface_obj, interface_methods, interface_edges = self._extract_interface(node, file_obj, path)
                 classes.append(interface_obj)
                 methods.extend(interface_methods)
                 edges.extend(interface_edges)
                 
-            # Extract enum declarations
+            # 열거형 선언 추출
             for path, node in tree.filter(javalang.tree.EnumDeclaration):
                 enum_obj, enum_methods, enum_edges = self._extract_enum(node, file_obj, path)
                 classes.append(enum_obj)
@@ -101,17 +115,27 @@ class JavaParser:
             return file_obj, [], [], []
             
     def _extract_class(self, node: javalang.tree.ClassDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
-        """Extract class information and its methods."""
+        """
+        클래스 정보와 메서드들을 추출
         
-        # Build fully qualified name
+        Args:
+            node: 클래스 선언 AST 노드
+            file_obj: 파일 객체
+            path: AST 경로
+            
+        Returns:
+            (Class, Methods, Edges) 튜플
+        """
+        
+        # 완전한 클래스명 구성
         package_name = self._get_package_name(path)
         fqn = f"{package_name}.{node.name}" if package_name else node.name
         
-        # Extract modifiers and annotations
+        # 수식어와 어노테이션 추출
         modifiers = [mod for mod in node.modifiers] if node.modifiers else []
         annotations = self._extract_annotations(node.annotations)
         
-        # Estimate line numbers (javalang doesn't provide exact positions)
+        # 라인 번호 추정 (javalang은 정확한 위치 정보를 제공하지 않음)
         start_line, end_line = self._estimate_line_numbers(node, file_obj)
         
         class_obj = Class(
@@ -167,7 +191,17 @@ class JavaParser:
         return class_obj, methods, edges
         
     def _extract_interface(self, node: javalang.tree.InterfaceDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
-        """Extract interface information."""
+        """
+        인터페이스 정보와 메서드들을 추출
+        
+        Args:
+            node: 인터페이스 선언 AST 노드
+            file_obj: 파일 객체
+            path: AST 경로
+            
+        Returns:
+            (Interface, Methods, Edges) 튜플
+        """
         
         package_name = self._get_package_name(path)
         fqn = f"{package_name}.{node.name}" if package_name else node.name
@@ -177,7 +211,7 @@ class JavaParser:
         
         start_line, end_line = self._estimate_line_numbers(node, file_obj)
         
-        interface_obj = Class(  # Using Class table for interfaces too
+        interface_obj = Class(  # 인터페이스도 Class 테이블 사용
             file_id=None,
             fqn=fqn,
             name=node.name,
@@ -190,7 +224,7 @@ class JavaParser:
         methods = []
         edges = []
         
-        # Extract interface methods
+        # 인터페이스 메서드 추출
         if hasattr(node, 'body') and node.body:
             for member in node.body:
                 if isinstance(member, javalang.tree.MethodDeclaration):
@@ -201,7 +235,17 @@ class JavaParser:
         return interface_obj, methods, edges
         
     def _extract_enum(self, node: javalang.tree.EnumDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
-        """Extract enum information."""
+        """
+        열거형(enum) 정보와 메서드들을 추출
+        
+        Args:
+            node: 열거형 선언 AST 노드
+            file_obj: 파일 객체
+            path: AST 경로
+            
+        Returns:
+            (Enum, Methods, Edges) 튜플
+        """
         
         package_name = self._get_package_name(path)
         fqn = f"{package_name}.{node.name}" if package_name else node.name
@@ -211,7 +255,7 @@ class JavaParser:
         
         start_line, end_line = self._estimate_line_numbers(node, file_obj)
         
-        enum_obj = Class(  # Using Class table for enums too
+        enum_obj = Class(  # 열거형도 Class 테이블 사용
             file_id=None,
             fqn=fqn,
             name=node.name,
@@ -224,7 +268,7 @@ class JavaParser:
         methods = []
         edges = []
         
-        # Extract enum methods
+        # 열거형 메서드 추출
         if hasattr(node, 'body') and node.body:
             for member in node.body.declarations if hasattr(node.body, 'declarations') else []:
                 if isinstance(member, javalang.tree.MethodDeclaration):
@@ -235,9 +279,18 @@ class JavaParser:
         return enum_obj, methods, edges
         
     def _extract_method(self, node: javalang.tree.MethodDeclaration, class_obj: Class) -> Tuple[Method, List[Edge]]:
-        """Extract method information."""
+        """
+        메서드 정보와 호출 관계를 추출
         
-        # Build method signature
+        Args:
+            node: 메서드 선언 AST 노드
+            class_obj: 소속 클래스 객체
+            
+        Returns:
+            (Method, Edges) 튜플
+        """
+        
+        # 메서드 시그니처 구성
         params = []
         if node.parameters:
             for param in node.parameters:
@@ -245,13 +298,13 @@ class JavaParser:
                 params.append(f"{param_type} {param.name}")
         signature = f"{node.name}({', '.join(params)})"
         
-        # Extract return type
+        # 반환 타입 추출
         return_type = self._get_type_string(node.return_type) if node.return_type else 'void'
         
-        # Extract annotations
+        # 어노테이션 추출
         annotations = self._extract_annotations(node.annotations)
         
-        # Estimate line numbers
+        # 라인 번호 추정
         start_line, end_line = self._estimate_line_numbers(node, None)
         
         method_obj = Method(
@@ -266,7 +319,7 @@ class JavaParser:
         
         edges = []
         
-        # Extract method calls from body
+        # 메서드 본문에서 호출 관계 추출
         if node.body:
             method_calls = self._extract_method_calls(node.body)
             for call in method_calls:
@@ -276,16 +329,25 @@ class JavaParser:
                     dst_type='method',
                     dst_id=None,  # Need to resolve later
                     edge_kind='call',
-                    confidence=0.8  # Method calls are usually clear
+                    confidence=0.8  # 메서드 호출은 대체로 명확함
                 )
                 edges.append(call_edge)
                 
         return method_obj, edges
         
     def _extract_constructor(self, node: javalang.tree.ConstructorDeclaration, class_obj: Class) -> Tuple[Method, List[Edge]]:
-        """Extract constructor information."""
+        """
+        생성자 정보와 호출 관계를 추출
         
-        # Build constructor signature
+        Args:
+            node: 생성자 선언 AST 노드
+            class_obj: 소속 클래스 객체
+            
+        Returns:
+            (Constructor, Edges) 튜플
+        """
+        
+        # 생성자 시그니처 구성
         params = []
         if node.parameters:
             for param in node.parameters:
@@ -298,7 +360,7 @@ class JavaParser:
         
         constructor_obj = Method(
             class_id=None,
-            name=f"<init>",  # Constructor indicator
+            name=f"<init>",  # 생성자 식별자
             signature=signature,
             return_type=class_obj.name,
             start_line=start_line,
@@ -308,7 +370,7 @@ class JavaParser:
         
         edges = []
         
-        # Extract method calls from constructor body
+        # 생성자 본문에서 메서드 호출 관계 추출
         if node.body:
             method_calls = self._extract_method_calls(node.body)
             for call in method_calls:
@@ -325,14 +387,30 @@ class JavaParser:
         return constructor_obj, edges
         
     def _get_package_name(self, path: List) -> Optional[str]:
-        """Extract package name from AST path."""
+        """
+        AST 경로에서 패키지 이름을 추출
+        
+        Args:
+            path: AST 경로 리스트
+            
+        Returns:
+            패키지 이름 (없으면 None)
+        """
         for node in path:
             if isinstance(node, javalang.tree.CompilationUnit) and node.package:
                 return node.package.name
         return None
         
     def _extract_annotations(self, annotations) -> List[Dict[str, Any]]:
-        """Extract annotation information."""
+        """
+        어노테이션 정보를 추출
+        
+        Args:
+            annotations: 어노테이션 노드 리스트
+            
+        Returns:
+            어노테이션 정보 딕셔너리 리스트
+        """
         if not annotations:
             return []
             
@@ -344,7 +422,7 @@ class JavaParser:
             }
             
             if hasattr(annotation, 'element') and annotation.element:
-                # Extract annotation parameters
+                # 어노테이션 매개변수 추출
                 if isinstance(annotation.element, list):
                     annotation_info['element'] = [str(elem) for elem in annotation.element]
                 else:
@@ -355,14 +433,22 @@ class JavaParser:
         return result
         
     def _get_type_string(self, type_node) -> str:
-        """Convert type node to string representation."""
+        """
+        타입 노드를 문자열 표현으로 변환
+        
+        Args:
+            type_node: 타입 AST 노드
+            
+        Returns:
+            타입 문자열 표현
+        """
         if not type_node:
             return 'unknown'
             
         if hasattr(type_node, 'name'):
             return type_node.name
         elif hasattr(type_node, 'arguments') and type_node.arguments:
-            # Generic type
+            # 제네릭 타입
             base_type = getattr(type_node, 'name', 'unknown')
             args = [self._get_type_string(arg) for arg in type_node.arguments]
             return f"{base_type}<{', '.join(args)}>"
@@ -371,28 +457,42 @@ class JavaParser:
             
     def _estimate_line_numbers(self, node, file_obj: Optional[File]) -> Tuple[int, int]:
         """
-        Estimate line numbers for AST nodes.
-        Since javalang doesn't provide exact positions, this is a rough estimate.
+        AST 노드의 라인 번호를 추정
+        javalang이 정확한 위치 정보를 제공하지 않으므로 대략적인 추정값
+        
+        Args:
+            node: AST 노드
+            file_obj: 파일 객체 (옵션)
+            
+        Returns:
+            (시작_라인, 종료_라인) 튜플
         """
-        # This is a placeholder - in real implementation you'd need
-        # to track line numbers during parsing or use a different parser
+        # 실제 구현에서는 파싱 중 라인 번호 추적이나 다른 파서 사용 필요
         start_line = getattr(node, 'position', None)
         if start_line and hasattr(start_line, 'line'):
             start_line = start_line.line
         else:
             start_line = 1
             
-        # Rough estimate for end line
-        end_line = start_line + 10  # Default estimate
+        # 종료 라인 대략 추정
+        end_line = start_line + 10  # 기본 추정값
         
         return start_line, end_line
         
     def _extract_method_calls(self, body) -> List[str]:
-        """Extract method calls from method body."""
+        """
+        메서드 본문에서 메서드 호출을 추출
+        
+        Args:
+            body: 메서드 본문 AST 노드
+            
+        Returns:
+            호출된 메서드 이름 리스트
+        """
         method_calls = []
         
-        # This is a simplified implementation
-        # In practice, you'd traverse the AST more thoroughly
+        # 단순화된 구현
+        # 실제로는 AST를 더 철저하게 순회해야 함
         if hasattr(body, '__iter__'):
             for statement in body:
                 if hasattr(statement, 'expression'):
@@ -402,13 +502,21 @@ class JavaParser:
         return method_calls
         
     def _find_method_invocations(self, node) -> List[str]:
-        """Find method invocation nodes in AST."""
+        """
+        AST에서 메서드 호출 노드를 찾음
+        
+        Args:
+            node: 검색할 AST 노드
+            
+        Returns:
+            발견된 메서드 호출 이름 리스트
+        """
         invocations = []
         
         if isinstance(node, javalang.tree.MethodInvocation):
             invocations.append(node.member)
             
-        # Recursively search child nodes
+        # 자식 노드들을 재귀적으로 검색
         if hasattr(node, '__dict__'):
             for attr_value in node.__dict__.values():
                 if isinstance(attr_value, list):

@@ -285,7 +285,7 @@ class DuplicateInstance(Base):
     duplicate = relationship("Duplicate", back_populates="instances")
     file = relationship("File")
 
-class ParseResult(Base):
+class ParseResultModel(Base):
     __tablename__ = 'parse_results'
     
     result_id = Column(Integer, primary_key=True)

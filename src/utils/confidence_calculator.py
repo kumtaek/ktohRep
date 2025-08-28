@@ -1,5 +1,5 @@
 """
-개선된 신뢰도 계산기
+신뢰도 계산기
 리뷰 의견을 반영하여 실제 계산 로직이 구현된 신뢰도 계산 시스템
 """
 
@@ -55,8 +55,8 @@ class ParseResult:
             self.confirmed_tables = []
 
 
-class ImprovedConfidenceCalculator:
-    """개선된 신뢰도 계산기"""
+class ConfidenceCalculator:
+    """신뢰도 계산기"""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config

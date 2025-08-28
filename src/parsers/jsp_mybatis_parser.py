@@ -1,5 +1,5 @@
-""
-개선된 JSP 및 MyBatis XML 파서 (3차 개발)
+"""
+JSP 및 MyBatis XML 파서 (3차 개발)
 Tree-Sitter AST 기반으로 정확도를 향상시킨 파서
 
 주요 개선사항:
@@ -8,7 +8,7 @@ Tree-Sitter AST 기반으로 정확도를 향상시킨 파서
 3. SQL Injection 취약점 탐지 기능
 4. JSP Include 의존성 정확한 추적
 5. 대용량 파일 청크 단위 처리 최적화
-""
+"""
 
 import hashlib
 import os
@@ -177,7 +177,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         
     def parse_file(self, file_path: str, project_id: int) -> Tuple[File, List[SqlUnit], List[Join], List[RequiredFilter], List[Edge], List[Dict]]:
         """
-        개선된 파일 파싱 메서드
+        파일 파싱 메서드
         
         Returns:
             Tuple of (File, SqlUnits, Joins, RequiredFilters, Edges, Vulnerabilities)
@@ -325,7 +325,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     sql_content = self._extract_sql_content_lxml(element)
                     
                     # 동적 SQL 분석 개선
-                    has_dynamic = self._has_dynamic_sql_improved(element)
+                    has_dynamic = self._has_dynamic_sql(element)
                     confidence = 0.9 if not has_dynamic else 0.7
                     
                     # SQL 유닛 생성
@@ -366,35 +366,35 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
     def _optimize_dynamic_sql_dfa(self, element) -> str:
         """DFA 기반 동적 SQL 최적화 (조합 폭발 문제 해결)"""
         
-        # 동적 태그를 DFA 상태로 모델링
+        # 동적 태그를 DFA 상태로 모델링: XML 요소를 문자열로 변환하여 텍스트 처리 가능
         text_content = etree.tostring(element, encoding='unicode')
         
-        # <choose> 조건별 노드 생성 (모든 when 조건 포함)
+        # MyBatis <choose> 조건별 노드 생성: switch-case 처럼 작동하는 모든 when 분기 처리
         choose_pattern = r'<choose[^>]*>(.*?)</choose>'
         choose_matches = re.finditer(choose_pattern, text_content, re.DOTALL)
         
         for match in choose_matches:
             choose_content = match.group(1)
             
-            # 각 when 조건을 별도 노드로 처리 (OR 관계)
+            # 각 when 조건을 별도 노드로 처리: 동적 SQL 분석에서 OR 논리 관계 처리
             when_pattern = r'<when[^>]*>(.*?)</when>'
             when_contents = re.findall(when_pattern, choose_content, re.DOTALL)
             
-            # 모든 when 조건을 합침 (superset)
+            # 모든 when 조건을 합침: superset 방식으로 조합 폭발 방지
             combined_when = ' '.join(when_contents)
             
-            # otherwise 조건도 포함
+            # otherwise 조건도 포함: default case를 병합하여 완전한 커버리지 보장
             otherwise_match = re.search(r'<otherwise[^>]*>(.*?)</otherwise>', choose_content, re.DOTALL)
             if otherwise_match:
                 combined_when += ' ' + otherwise_match.group(1)
             
             text_content = text_content.replace(match.group(), combined_when)
         
-        # <foreach>는 0회/n회 두 가지 패턴으로 제한
+        # MyBatis <foreach> 루프 처리: 0회/n회 두 가지 패턴으로 제한하여 무한 루프 방지
         foreach_pattern = r'<foreach[^>]*>(.*?)</foreach>'
         text_content = re.sub(foreach_pattern, r'\1', text_content, flags=re.DOTALL)
         
-        # <if> 태그 내용을 모두 포함
+        # MyBatis <if> 조건문: 동적 생성되는 SQL 내용을 모두 포함하여 worst-case 분석
         text_content = re.sub(r'<if[^>]*>(.*?)</if>', r'\1', text_content, flags=re.DOTALL)
         
         # XML 태그 제거
@@ -478,8 +478,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         
         return min(1.0, max(0.1, confidence))
     
-    def _has_dynamic_sql_improved(self, element) -> bool:
-        """개선된 동적 SQL 탐지"""
+    def _has_dynamic_sql(self, element) -> bool:
+        """동적 SQL 탐지"""
         
         # 동적 태그 존재 확인
         for tag in self.dynamic_tags:
@@ -557,16 +557,16 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
     def _create_sql_fingerprint(self, sql_content: str) -> str:
         """SQL 구조적 지문 생성 (원문 저장 금지 원칙)"""
         
-        # SQL을 정규화하여 구조적 패턴만 추출
+        # SQL을 정규화: 대소문자 통일, 다중 공백 제거하여 구조적 패턴만 추출
         normalized = re.sub(r'\s+', ' ', sql_content.lower().strip())
         
-        # 파라미터와 리터럴 값을 플레이스홀더로 대체
-        normalized = re.sub(r':\w+', ':PARAM', normalized)  # MyBatis 파라미터
-        normalized = re.sub(r'\$\{\w+\}', '${PARAM}', normalized)  # MyBatis 동적 파라미터
-        normalized = re.sub(r'\'[^\\]*\'',''VALUE''', normalized)  # 문자열 리터럴
-        normalized = re.sub(r'\b\d+\b', 'NUMBER', normalized)  # 숫자 리터럴
+        # 값의 다양성에 관계없이 구조만 보존: 파라미터와 리터럴 값을 플레이스홀더로 대체
+        normalized = re.sub(r':\w+', ':PARAM', normalized)  # MyBatis 정적 파라미터 :name 형태
+        normalized = re.sub(r'\$\{\w+\}', '${PARAM}', normalized)  # MyBatis 동적 파라미터 ${} 형태
+        normalized = re.sub(r'\'[^\\]*\'',''VALUE''', normalized)  # SQL 문자열 리터럴 '원본값' -> 'VALUE'
+        normalized = re.sub(r'\b\d+\b', 'NUMBER', normalized)  # 숫자 리터럴 123 -> NUMBER
         
-        # 해시 생성
+        # MD5 해시로 최종 지문 생성: 동일 구조 SQL은 같은 지문 생성
         return hashlib.md5(normalized.encode('utf-8')).hexdigest()
     
     def _extract_sql_patterns_regex(self, sql_content: str, sql_unit: SqlUnit) -> Tuple[List[Join], List[RequiredFilter]]:
@@ -576,17 +576,17 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         filters = []
         
         try:
-            # 기본 JOIN 패턴
+            # 기본 JOIN 패턴: 암시적 JOIN(WHERE 절)과 명시적 JOIN 모두 감지
             join_patterns = [
-                r'(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)',
-                r'join\s+(\w+)\s+\w+\s+on\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)',
+                r'(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)',  # WHERE a.id = b.fk 방식 암시적 JOIN
+                r'join\s+(\w+)\s+\w+\s+on\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)',  # JOIN table ON condition 명시적 JOIN
             ]
             
             for pattern in join_patterns:
                 matches = re.finditer(pattern, sql_content, re.IGNORECASE)
                 for match in matches:
-                    groups = match.groups()
-                    if len(groups) >= 4:
+                    groups = match.groups()  # 정규식 그룹으로 테이블명과 컬럼들 추출
+                    if len(groups) >= 4:  # 최소 4개 그룹 필요: table1, col1, table2, col2
                         join = Join(
                             sql_id=None,
                             l_table=groups[0],
@@ -595,7 +595,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                             r_table=groups[2] if len(groups) > 2 else groups[0],
                             r_col=groups[3] if len(groups) > 3 else groups[1],
                             inferred_pkfk=0,
-                            confidence=0.7  # 정규식 기반은 신뢰도 낮춤
+                            confidence=0.7  # 정규식 기반은 AST 대비 신뢰도 낮춤 (폴백용)
                         )
                         joins.append(join)
             

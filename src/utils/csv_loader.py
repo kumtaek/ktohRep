@@ -15,6 +15,12 @@ class CsvLoader:
     """CSV 파일을 로드하여 DB 스키마 정보를 저장하는 클래스"""
     
     def __init__(self, config: Dict[str, Any]):
+        """
+        CSV 로더 초기화
+        
+        Args:
+            config: 데이터베이스 설정 딕셔너리
+        """
         self.config = config
         self.logger = logging.getLogger(__name__)
         
@@ -65,7 +71,16 @@ class CsvLoader:
             raise
             
     async def _load_tables(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
-        """ALL_TABLES.csv 로드"""
+        """
+        Oracle ALL_TABLES.csv 파일을 로드하여 테이블 정보를 데이터베이스에 저장
+        
+        Args:
+            rows: CSV에서 읽은 데이터 행들
+            project_id: 프로젝트 ID
+            
+        Returns:
+            로드된 레코드 수 정보
+        """
         
         from ..models.database import DatabaseManager
         

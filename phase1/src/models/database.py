@@ -227,6 +227,19 @@ class Embedding(Base):
     # Relationships
     chunk = relationship("Chunk", back_populates="embedding")
 
+class EdgeHint(Base):
+    """Edge hints for resolving relationships during build phase"""
+    __tablename__ = 'edge_hints'
+    
+    hint_id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey('projects.project_id'), nullable=False)
+    src_type = Column(String(50), nullable=False)   # 'method', 'file', 'sql_unit'
+    src_id = Column(Integer, nullable=False)
+    hint_type = Column(String(50), nullable=False)  # 'method_call', 'jsp_include', 'mybatis_include'
+    hint = Column(Text, nullable=False)             # JSON: { called_name, arg_count, target_path, namespace, line, ... }
+    confidence = Column(Float, default=0.5)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 class VulnerabilityFix(Base):
     __tablename__ = 'vulnerability_fixes'
     
@@ -310,6 +323,8 @@ Index('idx_sql_units_file', SqlUnit.file_id)
 Index('idx_joins_sql', Join.sql_id)
 Index('idx_filters_sql', RequiredFilter.sql_id)
 Index('idx_vuln_fixes_target', VulnerabilityFix.target_type, VulnerabilityFix.target_id)
+Index('idx_edge_hints_project', EdgeHint.project_id)
+Index('idx_edge_hints_type', EdgeHint.hint_type)
 
 class DatabaseManager:
     """Database manager for handling SQLite/Oracle connections and operations."""

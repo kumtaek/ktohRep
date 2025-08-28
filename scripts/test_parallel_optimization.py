@@ -7,6 +7,7 @@ Phase 1 Priority 2: 병렬 처리 성능 검증 및 최적화 테스트
 import sys
 import os
 import asyncio
+import pytest
 import logging
 from pathlib import Path
 
@@ -148,7 +149,8 @@ def cleanup_test_files(test_files: list):
         pass
 
 
-async def run_parallel_processing_test():
+@pytest.mark.asyncio
+async def test_run_parallel_processing():
     """병렬 처리 검증 테스트 실행"""
     
     setup_logging()

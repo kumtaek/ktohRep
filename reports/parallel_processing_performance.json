@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-28 14:28:05",
+  "timestamp": "2025-08-28 17:32:59",
   "system_info": {},
   "performance_verification": {
     "verification": {
@@ -11,9 +11,9 @@
       "performance_tests": [
         {
           "total_files": 50,
-          "processing_time": 0.6042475700378418,
+          "processing_time": 0.6036903858184814,
           "cpu_usage_avg": 0.0,
-          "memory_usage_peak": 30.38671875,
+          "memory_usage_peak": 266.015625,
           "thread_count": 1,
           "process_count": 0,
           "success_count": 50,
@@ -24,9 +24,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.8033220767974854,
-          "cpu_usage_avg": 5.8375,
-          "memory_usage_peak": 31.0859375,
+          "processing_time": 0.8046817779541016,
+          "cpu_usage_avg": 3.9,
+          "memory_usage_peak": 266.26171875,
           "thread_count": 0,
           "process_count": 1,
           "success_count": 50,
@@ -37,9 +37,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.30189967155456543,
+          "processing_time": 0.30259156227111816,
           "cpu_usage_avg": 0.0,
-          "memory_usage_peak": 31.0859375,
+          "memory_usage_peak": 266.265625,
           "thread_count": 2,
           "process_count": 0,
           "success_count": 50,
@@ -50,9 +50,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.502875566482544,
-          "cpu_usage_avg": 6.24,
-          "memory_usage_peak": 31.0859375,
+          "processing_time": 0.5027575492858887,
+          "cpu_usage_avg": 3.12,
+          "memory_usage_peak": 266.265625,
           "thread_count": 0,
           "process_count": 2,
           "success_count": 50,
@@ -63,9 +63,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.20141339302062988,
+          "processing_time": 0.20095252990722656,
           "cpu_usage_avg": 0.0,
-          "memory_usage_peak": 31.13671875,
+          "memory_usage_peak": 266.3125,
           "thread_count": 4,
           "process_count": 0,
           "success_count": 50,
@@ -76,9 +76,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.40219569206237793,
-          "cpu_usage_avg": 11.675,
-          "memory_usage_peak": 31.08984375,
+          "processing_time": 0.4022057056427002,
+          "cpu_usage_avg": 15.6,
+          "memory_usage_peak": 266.27734375,
           "thread_count": 0,
           "process_count": 4,
           "success_count": 50,
@@ -89,9 +89,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.10111784934997559,
+          "processing_time": 0.10115432739257812,
           "cpu_usage_avg": 0.0,
-          "memory_usage_peak": 31.04296875,
+          "memory_usage_peak": 266.23046875,
           "thread_count": 8,
           "process_count": 0,
           "success_count": 50,
@@ -102,9 +102,9 @@
         },
         {
           "total_files": 50,
-          "processing_time": 0.40178918838500977,
-          "cpu_usage_avg": 19.475,
-          "memory_usage_peak": 31.10546875,
+          "processing_time": 0.40173864364624023,
+          "cpu_usage_avg": 31.175,
+          "memory_usage_peak": 266.3515625,
           "thread_count": 0,
           "process_count": 8,
           "success_count": 50,
@@ -132,24 +132,24 @@
       "processing_results": {
         ".java": {
           "files_processed": 50,
-          "processing_time": 0.07593870162963867,
+          "processing_time": 0.07696914672851562,
           "workers_used": 8,
           "batch_size": 6
         },
         ".jsp": {
           "files_processed": 30,
-          "processing_time": 0.08565092086791992,
+          "processing_time": 0.08848047256469727,
           "workers_used": 8,
           "batch_size": 3
         },
         ".xml": {
           "files_processed": 40,
-          "processing_time": 0.07972574234008789,
+          "processing_time": 0.0802760124206543,
           "workers_used": 8,
           "batch_size": 5
         }
       },
-      "total_processing_time": 0.2415754795074463,
+      "total_processing_time": 0.2457575798034668,
       "optimization_applied": [
         "기본 병렬 처리 최적화 적용"
       ]

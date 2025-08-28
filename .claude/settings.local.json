@@ -28,7 +28,8 @@
       "Bash(git log:*)",
       "Bash(python:*)",
       "Bash(npm install:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(del improved_main.py)"
     ],
     "deny": [],
     "ask": []

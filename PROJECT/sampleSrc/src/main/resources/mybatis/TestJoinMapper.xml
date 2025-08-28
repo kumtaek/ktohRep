@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TestJoinMapper">
+
+  <sql id="commonWhere">
+    WHERE u.USER_ID = o.USER_ID
+  </sql>
+
+  <select id="selectUserOrders" resultType="map">
+    SELECT u.USER_ID, o.ORDER_ID
+    FROM USERS u
+    JOIN ORDERS o ON u.USER_ID = o.USER_ID
+  </select>
+
+  <select id="selectUserOrdersWithInclude" resultType="map">
+    SELECT u.USER_ID, o.ORDER_ID
+    FROM USERS u
+    JOIN ORDERS o ON u.USER_ID = o.USER_ID
+    <include refid="commonWhere"/>
+  </select>
+
+  <select id="selectCompositeJoin" resultType="map">
+    SELECT oi.ORDER_ID, oi.PRODUCT_ID, p.PRODUCT_NAME
+    FROM ORDER_ITEMS oi
+    JOIN ORDERS o ON oi.ORDER_ID = o.ORDER_ID
+    JOIN PRODUCTS p ON oi.PRODUCT_ID = p.PRODUCT_ID
+  </select>
+
+</mapper>
+

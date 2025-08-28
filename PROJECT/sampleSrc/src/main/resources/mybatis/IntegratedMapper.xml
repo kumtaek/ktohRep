@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.integrated.IntegratedMapper">
+
+    <!-- ==================================================================== -->
+    <!-- 통합 서비스에서 호출되는 정적/동적 SQL 실행 (분석기 테스트용) -->
+    <!-- ==================================================================== -->
+    <select id="executeStaticQuery" resultType="map">
+        ${sql}
+    </select>
+
+    <select id="executeDynamicQuery" resultType="map">
+        ${sql}
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 기존 DynamicMyBatis 프로젝트의 동적 SQL 통합 -->
+    <!-- ==================================================================== -->
+    <select id="findDynamicData" resultType="map">
+        <!--
+            @TableName : DYNAMIC_TABLE - 동적 데이터 관리 테이블
+            @ColumnName : ID - 고유 식별자 (PK)
+            @ColumnName : NAME - 데이터 이름
+            @ColumnName : TYPE - 데이터 유형 (A, B, C)
+            @ColumnName : STATUS - 데이터 상태 (ACTIVE, INACTIVE, DELETED)
+            @ColumnName : DEL_YN - 삭제 여부 (Y/N) - 필수 필터
+            @Description : 이 쿼리는 다양한 조건에 따라 DYNAMIC_TABLE에서 데이터를 조회합니다.
+                           특히 TYPE과 STATUS는 동적으로 변경될 수 있습니다.
+        -->
+        SELECT
+            dt.ID, dt.NAME, dt.TYPE, dt.STATUS, dt.CREATED_DATE
+        FROM DYNAMIC_TABLE dt
+        <where>
+            <if test="params.id != null">
+                AND dt.ID = #{params.id}
+            </if>
+            <if test="params.name != null and params.name != ''">
+                AND dt.NAME LIKE '%' || #{params.name} || '%'
+            </if>
+            <choose>
+                <when test="params.type == 'A'">
+                    AND dt.TYPE = 'TYPE_A'
+                </when>
+                <when test="params.type == 'B'">
+                    AND dt.TYPE = 'TYPE_B'
+                </when>
+                <otherwise>
+                    AND dt.TYPE IN ('TYPE_A', 'TYPE_B', 'TYPE_C')
+                </otherwise>
+            </choose>
+            <if test="params.statuses != null and params.statuses.size > 0">
+                AND dt.STATUS IN
+                <foreach item="status" collection="params.statuses" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            AND dt.DEL_YN = 'N' <!-- 필수 필터: 삭제되지 않은 데이터만 조회 -->
+        </where>
+        ORDER BY dt.CREATED_DATE DESC
+    </select>
+
+    <update id="updateDynamicStatus">
+        <!--
+            @TableName : DYNAMIC_TABLE - 동적 데이터 관리 테이블
+            @ColumnName : STATUS - 데이터 상태
+            @Description : 지정된 ID 목록에 해당하는 데이터의 상태를 업데이트합니다.
+                           삭제되지 않은 데이터만 업데이트합니다.
+        -->
+        UPDATE DYNAMIC_TABLE
+        SET STATUS = #{status},
+            UPDATED_DATE = SYSDATE
+        WHERE ID IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DEL_YN = 'N' <!-- 필수 필터 -->
+    </update>
+
+    <!-- ==================================================================== -->
+    <!-- 기존 MixedTechLegacy 프로젝트의 레거시 데이터 조회 통합 -->
+    <!-- ==================================================================== -->
+    <select id="selectLegacyRecords" resultType="map">
+        <!--
+            @TableName : LEGACY_DATA - 레거시 시스템 데이터
+            @ColumnName : ID - 레거시 데이터 고유 ID
+            @ColumnName : TYPE - 레거시 데이터 유형
+            @ColumnName : NAME - 레거시 데이터 이름
+            @ColumnName : VALUE - 레거시 데이터 값
+            @ColumnName : STATUS - 레거시 데이터 상태
+            @ColumnName : ACTIVE_FLAG - 활성 여부 (Y/N) - 필수 필터
+            @ColumnName : CREATED_DATE - 생성일
+            @Description : 레거시 시스템의 데이터를 동적으로 필터링하여 조회합니다.
+                           항상 활성 상태의 데이터만 조회하며, 생성일 역순으로 정렬합니다.
+        -->
+        SELECT
+            t.ID, t.TYPE, t.NAME, t.VALUE, t.STATUS, t.CREATED_DATE
+        FROM LEGACY_DATA t
+        <where>
+            t.ACTIVE_FLAG = 'Y' <!-- 필수 필터: 활성 데이터만 조회 -->
+            <if test="params.dataType != null and params.dataType != ''">
+                AND t.TYPE = #{params.dataType}
+            </if>
+            <if test="params.dataStatus != null and params.dataStatus != ''">
+                AND t.STATUS = #{params.dataStatus}
+            </if>
+        </where>
+        ORDER BY t.CREATED_DATE DESC
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 기존 TC_008_ComplexSQLParsing 프로젝트의 복잡 SQL 통합 -->
+    <!-- ==================================================================== -->
+    <select id="getComplexReport" resultType="map">
+        <!--
+            @TableName : ORDERS - 주문 정보
+            @TableName : CUSTOMERS - 고객 정보
+            @Description : 일별 판매량과 상위 고객 판매량을 결합한 복합 보고서를 생성합니다.
+                           CTE와 서브쿼리, 조인을 활용하여 데이터를 집계합니다.
+        -->
+        WITH DailySales AS (
+            SELECT
+                TRUNC(ORDER_DATE) AS SALE_DATE,
+                SUM(AMOUNT) AS TOTAL_SALES
+            FROM ORDERS
+            WHERE ORDER_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            GROUP BY TRUNC(ORDER_DATE)
+        ),
+        TopCustomers AS (
+            SELECT
+                c.CUSTOMER_ID,
+                c.CUSTOMER_NAME,
+                SUM(o.AMOUNT) AS CUSTOMER_TOTAL_SALES
+            FROM CUSTOMERS c
+            INNER JOIN ORDERS o ON c.CUSTOMER_ID = o.CUSTOMER_ID
+            GROUP BY c.CUSTOMER_ID, c.CUSTOMER_NAME
+            HAVING SUM(o.AMOUNT) > 1000
+        )
+        SELECT
+            ds.SALE_DATE,
+            ds.TOTAL_SALES,
+            tc.CUSTOMER_NAME,
+            tc.CUSTOMER_TOTAL_SALES
+        FROM DailySales ds
+        LEFT JOIN (
+            SELECT SALE_DATE, MAX(CUSTOMER_NAME) AS CUSTOMER_NAME, MAX(CUSTOMER_TOTAL_SALES) AS CUSTOMER_TOTAL_SALES
+            FROM TopCustomers
+            CROSS JOIN DailySales
+            WHERE ROWNUM = 1 -- Simplified for example
+            GROUP BY SALE_DATE
+        ) tc ON ds.SALE_DATE = tc.SALE_DATE
+        ORDER BY ds.SALE_DATE
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 일반적인 테스트 케이스 (기존 Example2, TestCase1, TestCase2 통합 및 확장) -->
+    <!-- ==================================================================== -->
+    <select id="getActiveUsers" resultType="map">
+        <!--
+            @TableName : USER_TABLE - 사용자 정보 테이블
+            @ColumnName : ID - 사용자 고유 ID
+            @ColumnName : NAME - 사용자 이름
+            @ColumnName : STATUS - 사용자 상태 (ACTIVE, INACTIVE)
+            @Description : 활성 상태의 사용자 목록을 조회합니다.
+        -->
+        SELECT ID, NAME, STATUS
+        FROM USER_TABLE
+        WHERE STATUS = 'ACTIVE'
+    </select>
+
+    <select id="getOrdersByStatus" resultType="map">
+        <!--
+            @TableName : ORDERS - 주문 정보 테이블
+            @ColumnName : ORDER_ID - 주문 고유 ID
+            @ColumnName : USER_ID - 주문한 사용자 ID
+            @ColumnName : STATUS - 주문 상태 (COMPLETE, PENDING, CANCELLED)
+            @ColumnName : AMOUNT - 주문 금액
+            @Description : 특정 상태의 주문 목록을 조회합니다.
+        -->
+        SELECT ORDER_ID, USER_ID, STATUS, AMOUNT
+        FROM ORDERS
+        WHERE STATUS = #{status}
+    </select>
+
+    <select id="getProductDetails" resultType="map">
+        <!--
+            @TableName : PRODUCT_TABLE - 상품 정보 테이블
+            @ColumnName : ID - 상품 고유 ID
+            @ColumnName : NAME - 상품 이름
+            @ColumnName : PRICE - 상품 가격
+            @ColumnName : DEL_YN - 삭제 여부 (Y/N) - 필수 필터
+            @Description : 특정 상품 ID에 해당하는 상품의 상세 정보를 조회합니다.
+                           삭제되지 않은 상품만 조회합니다.
+        -->
+        SELECT ID, NAME, PRICE
+        FROM PRODUCT_TABLE
+        WHERE ID = #{productId}
+        AND DEL_YN = 'N' <!-- 필수 필터 -->
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- ANSI JOIN 및 Oracle Implicit JOIN 쿼리 케이스 -->
+    <!-- ==================================================================== -->
+    <select id="getComplexOrdersWithCustomerImplicitJoin" resultType="map">
+        <!--
+            @TableName : ORDERS - 주문 정보
+            @TableName : CUSTOMER - 고객 정보
+            @TableName : ORDER_ITEMS - 주문 항목 (새로 추가된 테이블)
+            @TableName : PRODUCTS - 상품 정보 (새로 추가된 테이블)
+            @Description : Oracle Implicit JOIN 방식을 사용하여 주문, 고객, 주문 항목, 상품 정보를 복합적으로 조인합니다.
+                           주문 상태가 'COMPLETED'이고 특정 카테고리의 상품을 포함하는 주문만 조회합니다.
+                           이 쿼리는 DB_SCHEMA에 정의되지 않은 테이블(ORDER_ITEMS, PRODUCTS)을 포함합니다.
+        -->
+        SELECT
+            o.ORDER_ID, o.ORDER_DATE, o.TOTAL_AMOUNT,
+            c.NAME AS CUSTOMER_NAME, c.EMAIL AS CUSTOMER_EMAIL,
+            oi.QUANTITY, p.PRODUCT_NAME, p.PRICE
+        FROM ORDERS o, CUSTOMER c, ORDER_ITEMS oi, PRODUCTS p
+        WHERE o.CUSTOMER_ID = c.CUSTOMER_ID
+          AND o.ORDER_ID = oi.ORDER_ID
+          AND oi.PRODUCT_ID = p.PRODUCT_ID
+          AND o.STATUS = 'COMPLETED'
+          AND c.STATUS = 'ACTIVE'
+          AND p.CATEGORY = 'ELECTRONICS'
+        ORDER BY o.ORDER_DATE DESC, c.NAME
+    </select>
+
+    <select id="getDetailedCustomerOrdersImplicitJoin" resultType="map">
+        <!--
+            @TableName : ORDERS - 주문 정보
+            @TableName : CUSTOMER - 고객 정보
+            @TableName : SHIPPING_ADDRESSES - 배송 주소 (새로 추가된 테이블)
+            @TableName : PAYMENT_TRANSACTIONS - 결제 거래 (새로 추가된 테이블)
+            @Description : Oracle Implicit JOIN 방식을 사용하여 고객의 상세 주문 정보를 조회합니다.
+                           주문, 고객, 배송 주소, 결제 거래 정보를 조인하며, 특정 기간 내의 주문만 필터링합니다.
+                           이 쿼리는 DB_SCHEMA에 정의되지 않은 테이블(SHIPPING_ADDRESSES, PAYMENT_TRANSACTIONS)을 포함합니다.
+        -->
+        SELECT
+            o.ORDER_ID, o.ORDER_DATE, o.TOTAL_AMOUNT, o.STATUS AS ORDER_STATUS,
+            c.NAME AS CUSTOMER_NAME, c.EMAIL AS CUSTOMER_EMAIL,
+            sa.CITY AS SHIPPING_CITY, sa.ZIP_CODE AS SHIPPING_ZIP,
+            pt.TRANSACTION_DATE, pt.AMOUNT AS PAYMENT_AMOUNT, pt.STATUS AS PAYMENT_STATUS
+        FROM ORDERS o, CUSTOMER c, SHIPPING_ADDRESSES sa, PAYMENT_TRANSACTIONS pt
+        WHERE o.CUSTOMER_ID = c.CUSTOMER_ID
+          AND o.SHIPPING_ADDRESS_ID = sa.ADDRESS_ID
+          AND o.ORDER_ID = pt.ORDER_ID
+          AND o.ORDER_DATE BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD') AND TO_DATE('2024-12-31', 'YYYY-MM-DD')
+          AND c.STATUS = 'ACTIVE'
+        ORDER BY o.ORDER_DATE DESC, c.NAME
+    </select>
+
+    <!-- 새로운 복잡 Oracle Implicit JOIN 쿼리: 지역별 상품 판매량 상세 -->
+    <select id="getDetailedProductSalesImplicitJoin" resultType="map">
+        <!--
+            @TableName : SALES_DATA - 판매 데이터 (DB_SCHEMA에 없음)
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : CATEGORIES - 카테고리 정보
+            @TableName : STORES - 매장 정보
+            @TableName : REGIONS - 지역 정보
+            @TableName : EMPLOYEES - 직원 정보
+            @TableName : CUSTOMERS - 고객 정보
+            @Description : Oracle Implicit JOIN 방식을 사용하여 특정 지역의 상품 판매량을 상세하게 분석합니다.
+                           판매 데이터, 상품, 카테고리, 매장, 지역, 직원, 고객 정보를 조인합니다.
+                           이 쿼리는 DB_SCHEMA에 정의되지 않은 테이블(SALES_DATA)을 포함합니다.
+        -->
+        SELECT
+            sd.SALE_ID, sd.SALE_DATE, sd.QUANTITY, sd.PRICE,
+            p.PRODUCT_NAME, cat.CATEGORY_NAME,
+            s.STORE_NAME, r.REGION_NAME,
+            e.EMPLOYEE_NAME, c.CUSTOMER_NAME
+        FROM SALES_DATA sd, PRODUCTS p, CATEGORIES cat, STORES s, REGIONS r, EMPLOYEES e, CUSTOMERS c
+        WHERE sd.PRODUCT_ID = p.PRODUCT_ID
+          AND p.CATEGORY_ID = cat.CATEGORY_ID
+          AND sd.STORE_ID = s.STORE_ID
+          AND s.REGION_ID = r.REGION_ID
+          AND sd.EMPLOYEE_ID = e.EMPLOYEE_ID
+          AND sd.CUSTOMER_ID = c.CUSTOMER_ID
+          AND r.REGION_NAME = 'ASIA'
+          AND sd.SALE_DATE BETWEEN ADD_MONTHS(SYSDATE, -6) AND SYSDATE
+        ORDER BY sd.SALE_DATE DESC, p.PRODUCT_NAME
+    </select>
+
+    <!-- 새로운 복잡 Oracle Implicit JOIN 쿼리: 감사 로그와 사용자 및 시스템 정보 -->
+    <select id="getAuditLogWithUserAndSystemInfo" resultType="map">
+        <!--
+            @TableName : AUDIT_LOGS - 감사 로그 (DB_SCHEMA에 없음)
+            @TableName : USERS - 사용자 정보
+            @TableName : SYSTEM_EVENTS - 시스템 이벤트 (DB_SCHEMA에 없음)
+            @TableName : APPLICATIONS - 애플리케이션 정보 (DB_SCHEMA에 없음)
+            @Description : Oracle Implicit JOIN 방식을 사용하여 감사 로그, 사용자 정보, 시스템 이벤트, 애플리케이션 정보를 조인합니다.
+                           특정 사용자의 최근 감사 활동을 추적하며, DB_SCHEMA에 정의되지 않은 여러 테이블을 포함합니다.
+        -->
+        SELECT
+            al.LOG_ID, al.EVENT_DATE, al.ACTION_TYPE, al.DETAIL,
+            u.USERNAME, u.EMAIL,
+            se.EVENT_NAME AS SYSTEM_EVENT_NAME, se.SEVERITY,
+            app.APP_NAME, app.VERSION AS APP_VERSION
+        FROM AUDIT_LOGS al, USERS u, SYSTEM_EVENTS se, APPLICATIONS app
+        WHERE al.USER_ID = u.USER_ID
+          AND al.EVENT_ID = se.EVENT_ID
+          AND al.APP_ID = app.APP_ID
+          AND u.USERNAME = 'admin'
+          AND al.EVENT_DATE > SYSDATE - 7
+        ORDER BY al.EVENT_DATE DESC
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 10개 테이블 조인, 서브쿼리, 스칼라 쿼리, SF 함수 호출하는 복잡 쿼리 5개 -->
+    <!-- ==================================================================== -->
+
+    <!-- 복잡 쿼리 1: 판매 실적 보고서 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <select id="getSalesPerformanceReport" resultType="map">
+        <!--
+            @TableName : SALES_TRANSACTIONS - 판매 거래 기록 (DB_SCHEMA에 없음)
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : CATEGORIES - 상품 카테고리
+            @TableName : CUSTOMERS - 고객 정보
+            @TableName : EMPLOYEES - 직원 정보
+            @TableName : STORES - 매장 정보
+            @TableName : REGIONS - 지역 정보
+            @TableName : PROMOTIONS - 프로모션 정보 (DB_SCHEMA에 없음)
+            @TableName : INVENTORY - 재고 정보
+            @TableName : SUPPLIERS - 공급업체 정보
+            @Description : 특정 기간 동안의 판매 실적을 고객, 상품, 직원, 매장, 프로모션 등 다양한 관점에서 분석합니다.
+                           복잡한 조인과 집계 함수, 스칼라 서브쿼리를 활용하여 상세한 보고서를 생성합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            st.TRANSACTION_ID,
+            st.TRANSACTION_DATE,
+            c.CUSTOMER_NAME,
+            p.PRODUCT_NAME,
+            cat.CATEGORY_NAME,
+            e.EMPLOYEE_NAME,
+            s.STORE_NAME,
+            r.REGION_NAME,
+            pr.PROMOTION_NAME,
+            st.QUANTITY,
+            st.UNIT_PRICE,
+            (st.QUANTITY * st.UNIT_PRICE) AS TOTAL_SALE_AMOUNT,
+            (SELECT SUM(i.STOCK_QUANTITY) FROM INVENTORY i, PRODUCTS p_sub WHERE i.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS CURRENT_STOCK,
+            (SELECT sup.SUPPLIER_NAME FROM SUPPLIERS sup, PRODUCTS p_sub WHERE sup.SUPPLIER_ID = p_sub.SUPPLIER_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS SUPPLIER_NAME,
+            TO_CHAR(st.TRANSACTION_DATE, 'YYYY-MM') AS SALES_MONTH,
+            GET_FISCAL_YEAR(st.TRANSACTION_DATE) AS FISCAL_YEAR_SF -- 스칼라 함수 호출
+        FROM SALES_TRANSACTIONS st, PRODUCTS p, CATEGORIES cat, CUSTOMERS c, EMPLOYEES e, STORES s, REGIONS r, PROMOTIONS pr
+        WHERE st.PRODUCT_ID = p.PRODUCT_ID
+          AND p.CATEGORY_ID = cat.CATEGORY_ID
+          AND st.CUSTOMER_ID = c.CUSTOMER_ID
+          AND st.EMPLOYEE_ID = e.EMPLOYEE_ID (+)
+          AND st.STORE_ID = s.STORE_ID (+)
+          AND s.REGION_ID = r.REGION_ID (+)
+          AND st.PROMOTION_ID = pr.PROMOTION_ID (+)
+          AND st.TRANSACTION_DATE BETWEEN TO_DATE(#{reportDate}, 'YYYY-MM-DD') AND SYSDATE
+          AND p.IS_ACTIVE = 'Y'
+        ORDER BY st.TRANSACTION_DATE DESC, c.CUSTOMER_NAME
+    </select>
+
+    <!-- 복잡 쿼리 2: 고객 활동 요약 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <select id="getCustomerActivitySummary" resultType="map">
+        <!--
+            @TableName : CUSTOMERS - 고객 정보
+            @TableName : ORDERS - 주문 정보
+            @TableName : ORDER_ITEMS - 주문 항목 (DB_SCHEMA에 없음)
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : REVIEWS - 상품 리뷰 (DB_SCHEMA에 없음)
+            @TableName : WISHLISTS - 위시리스트 (DB_SCHEMA에 없음)
+            @TableName : ADDRESSES - 주소 정보 (DB_SCHEMA에 없음)
+            @TableName : CONTACTS - 연락처 정보 (DB_SCHEMA에 없음)
+            @TableName : LOYALTY_PROGRAMS - 로열티 프로그램 (DB_SCHEMA에 없음)
+            @TableName : CAMPAIGNS - 마케팅 캠페인 (DB_SCHEMA에 없음)
+            @Description : 특정 활동 유형에 따른 고객의 상세 활동 내역을 요약합니다.
+                           고객의 주문, 리뷰, 위시리스트, 주소, 연락처, 로열티 프로그램 참여, 캠페인 반응 등
+                           다양한 데이터를 통합하여 고객의 행동 패턴을 분석합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            c.CUSTOMER_ID,
+            c.CUSTOMER_NAME,
+            c.EMAIL,
+            (SELECT COUNT(o.ORDER_ID) FROM ORDERS o, CUSTOMERS c_sub WHERE o.CUSTOMER_ID = c_sub.CUSTOMER_ID AND c_sub.CUSTOMER_ID = c.CUSTOMER_ID) AS TOTAL_ORDERS,
+            (SELECT SUM(o.TOTAL_AMOUNT) FROM ORDERS o, CUSTOMERS c_sub WHERE o.CUSTOMER_ID = c_sub.CUSTOMER_ID AND c_sub.CUSTOMER_ID = c.CUSTOMER_ID) AS TOTAL_SPENT,
+            (SELECT COUNT(r.REVIEW_ID) FROM REVIEWS r, PRODUCTS p_sub WHERE r.PRODUCT_ID = p_sub.PRODUCT_ID AND r.CUSTOMER_ID = c.CUSTOMER_ID) AS TOTAL_REVIEWS,
+            (SELECT COUNT(w.WISHLIST_ID) FROM WISHLISTS w, PRODUCTS p_sub WHERE w.PRODUCT_ID = p_sub.PRODUCT_ID AND w.CUSTOMER_ID = c.CUSTOMER_ID) AS TOTAL_WISHLIST_ITEMS,
+            a.CITY AS CUSTOMER_CITY,
+            ct.PHONE_NUMBER AS CUSTOMER_PHONE,
+            lp.PROGRAM_LEVEL AS LOYALTY_LEVEL,
+            (SELECT GET_LAST_CAMPAIGN_RESPONSE(c_sub.CUSTOMER_ID) FROM CAMPAIGNS ca_sub, CUSTOMERS c_sub WHERE ca_sub.CUSTOMER_ID = c_sub.CUSTOMER_ID AND c_sub.CUSTOMER_ID = c.CUSTOMER_ID) AS LAST_CAMPAIGN_RESPONSE_SF -- 스칼라 함수 호출
+        FROM CUSTOMERS c, ADDRESSES a, CONTACTS ct, LOYALTY_PROGRAMS lp
+        WHERE c.CUSTOMER_ID = a.CUSTOMER_ID (+)
+          AND a.IS_PRIMARY (+) = 'Y'
+          AND c.CUSTOMER_ID = ct.CUSTOMER_ID (+)
+          AND ct.CONTACT_TYPE (+) = 'MOBILE'
+          AND c.CUSTOMER_ID = lp.CUSTOMER_ID (+)
+          AND c.STATUS = 'ACTIVE'
+          AND (SELECT COUNT(ca.CAMPAIGN_ID) FROM CAMPAIGNS ca, CUSTOMERS c_sub WHERE ca.CUSTOMER_ID = c_sub.CUSTOMER_ID AND c_sub.CUSTOMER_ID = c.CUSTOMER_ID AND ca.ACTIVITY_TYPE = #{activityType}) > 0
+        ORDER BY c.CUSTOMER_NAME
+    </select>
+
+    <!-- 복잡 쿼리 3: 프로젝트 자원 활용도 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <select id="getProjectResourceUtilization" resultType="map">
+        <!--
+            @TableName : PROJECTS - 프로젝트 기본 정보
+            @TableName : TASKS - 프로젝트 내 작업
+            @TableName : ASSIGNMENTS - 작업 할당
+            @TableName : RESOURCES - 자원 정보 (직원, 장비) (DB_SCHEMA에 없음)
+            @TableName : EMPLOYEES - 직원 상세 정보
+            @TableName : SKILLS - 직원 스킬 (DB_SCHEMA에 없음)
+            @TableName : DEPARTMENTS - 부서 정보
+            @TableName : EQUIPMENT - 장비 정보 (DB_SCHEMA에 없음)
+            @TableName : RESOURCE_ALLOCATIONS - 자원 할당 기록 (DB_SCHEMA에 없음)
+            @TableName : TIME_LOGS - 시간 기록 (DB_SCHEMA에 없음)
+            @Description : 특정 프로젝트의 자원 활용도를 상세하게 분석합니다.
+                           작업 할당, 직원 스킬, 부서, 장비 사용, 시간 기록 등
+                           다양한 데이터를 통합하여 프로젝트의 효율성을 평가합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            p.PROJECT_ID,
+            p.PROJECT_NAME,
+            t.TASK_NAME,
+            e.EMPLOYEE_NAME,
+            d.DEPARTMENT_NAME,
+            eq.EQUIPMENT_NAME,
+            ra.ALLOCATED_HOURS,
+            tl.ACTUAL_HOURS,
+            (SELECT GET_EMPLOYEE_SKILLS_CSV(e_sub.EMPLOYEE_ID) FROM SKILLS s_sub, EMPLOYEES e_sub WHERE s_sub.EMPLOYEE_ID = e_sub.EMPLOYEE_ID AND e_sub.EMPLOYEE_ID = e.EMPLOYEE_ID) AS EMPLOYEE_SKILLS_SF, -- 스칼라 함수 호출
+            (SELECT SUM(tl_sub.ACTUAL_HOURS) FROM TIME_LOGS tl_sub, ASSIGNMENTS a_sub WHERE tl_sub.ASSIGNMENT_ID = a_sub.ASSIGNMENT_ID AND a_sub.ASSIGNMENT_ID = a.ASSIGNMENT_ID) AS TOTAL_TASK_HOURS
+        FROM PROJECTS p, TASKS t, ASSIGNMENTS a, RESOURCES res, EMPLOYEES e, DEPARTMENTS d, EQUIPMENT eq, RESOURCE_ALLOCATIONS ra, TIME_LOGS tl
+        WHERE p.PROJECT_ID = t.PROJECT_ID
+          AND t.TASK_ID = a.TASK_ID
+          AND a.RESOURCE_ID = res.RESOURCE_ID
+          AND res.RESOURCE_TYPE = 'EMPLOYEE'
+          AND res.RESOURCE_REF_ID = e.EMPLOYEE_ID (+)
+          AND e.DEPARTMENT_ID = d.DEPARTMENT_ID (+)
+          AND res.RESOURCE_TYPE = 'EQUIPMENT'
+          AND res.RESOURCE_REF_ID = eq.EQUIPMENT_ID (+)
+          AND a.ASSIGNMENT_ID = ra.ASSIGNMENT_ID (+)
+          AND a.ASSIGNMENT_ID = tl.ASSIGNMENT_ID (+)
+          AND p.PROJECT_ID = #{projectId}
+          AND t.STATUS = 'IN_PROGRESS'
+        ORDER BY p.PROJECT_NAME, t.TASK_NAME, e.EMPLOYEE_NAME
+    </select>
+
+    <!-- 복잡 쿼리 4: 재무 거래 감사 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <select id="getFinancialTransactionAudit" resultType="map">
+        <!--
+            @TableName : TRANSACTIONS - 거래 기본 정보 (DB_SCHEMA에 없음)
+            @TableName : ACCOUNTS - 계좌 정보
+            @TableName : TRANSACTION_TYPES - 거래 유형 (DB_SCHEMA에 없음)
+            @TableName : USERS - 사용자 정보
+            @TableName : AUDIT_LOGS - 감사 로그 (DB_SCHEMA에 없음)
+            @TableName : CURRENCIES - 통화 정보 (DB_SCHEMA에 없음)
+            @TableName : EXCHANGE_RATES - 환율 정보 (DB_SCHEMA에 없음)
+            @TableName : LEDGER_ENTRIES - 원장 항목 (DB_SCHEMA에 없음)
+            @TableName : BUSINESS_UNITS - 사업부 정보 (DB_SCHEMA에 없음)
+            @TableName : COST_CENTERS - 비용 센터 정보 (DB_SCHEMA에 없음)
+            @Description : 특정 날짜의 재무 거래에 대한 상세 감사 보고서를 생성합니다.
+                           거래, 계좌, 사용자, 감사 로그, 통화, 환율, 원장 항목 등
+                           다양한 재무 데이터를 통합하여 거래의 유효성과 규정 준수 여부를 확인합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            t.TRANSACTION_ID,
+            t.TRANSACTION_DATE,
+            a.ACCOUNT_NUMBER,
+            tt.TYPE_NAME AS TRANSACTION_TYPE,
+            u.USERNAME AS APPROVED_BY,
+            al.ACTION_DETAIL AS AUDIT_ACTION,
+            c.CURRENCY_CODE,
+            er.RATE AS EXCHANGE_RATE,
+            le.DEBIT_AMOUNT,
+            le.CREDIT_AMOUNT,
+            bu.UNIT_NAME AS BUSINESS_UNIT,
+            cc.CENTER_NAME AS COST_CENTER,
+            (SELECT GET_TRANSACTION_RISK_SCORE(t_sub.TRANSACTION_ID) FROM TRANSACTIONS t_sub, AUDIT_LOGS al_sub WHERE t_sub.TRANSACTION_ID = al_sub.TRANSACTION_ID AND t_sub.TRANSACTION_ID = t.TRANSACTION_ID) AS RISK_SCORE_SF, -- 스칼라 함수 호출
+            (SELECT SUM(le_sub.DEBIT_AMOUNT) FROM LEDGER_ENTRIES le_sub, TRANSACTIONS t_sub WHERE le_sub.TRANSACTION_ID = t_sub.TRANSACTION_ID AND t_sub.TRANSACTION_ID = t.TRANSACTION_ID) AS TOTAL_DEBIT
+        FROM TRANSACTIONS t, ACCOUNTS a, TRANSACTION_TYPES tt, USERS u, AUDIT_LOGS al, CURRENCIES c, EXCHANGE_RATES er, LEDGER_ENTRIES le, BUSINESS_UNITS bu, COST_CENTERS cc
+        WHERE t.ACCOUNT_ID = a.ACCOUNT_ID
+          AND t.TYPE_ID = tt.TYPE_ID
+          AND t.APPROVED_BY_USER_ID = u.USER_ID (+)
+          AND t.TRANSACTION_ID = al.TRANSACTION_ID (+)
+          AND al.LOG_TYPE (+) = 'APPROVAL'
+          AND t.CURRENCY_ID = c.CURRENCY_ID (+)
+          AND t.CURRENCY_ID = er.FROM_CURRENCY_ID (+)
+          AND er.TO_CURRENCY_ID (+) = (SELECT GET_BASE_CURRENCY() FROM DUAL)
+          AND t.TRANSACTION_ID = le.TRANSACTION_ID (+)
+          AND a.BUSINESS_UNIT_ID = bu.BUSINESS_UNIT_ID (+)
+          AND a.COST_CENTER_ID = cc.COST_CENTER_ID (+)
+          AND TRUNC(t.TRANSACTION_DATE) = TO_DATE(#{auditDate}, 'YYYY-MM-DD')
+          AND t.STATUS = 'COMPLETED'
+        ORDER BY t.TRANSACTION_DATE, t.TRANSACTION_ID
+    </select>
+
+    <!-- 복잡 쿼리 5: 공급망 최적화 분석 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <select id="getSupplyChainOptimization" resultType="map">
+        <!--
+            @TableName : PURCHASE_ORDERS - 구매 주문 (DB_SCHEMA에 없음)
+            @TableName : SUPPLIERS - 공급업체 정보
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : INVENTORY - 재고 정보
+            @TableName : WAREHOUSES - 창고 정보
+            @TableName : SHIPMENTS - 배송 정보 (DB_SCHEMA에 없음)
+            @TableName : CARRIERS - 운송업체 정보 (DB_SCHEMA에 없음)
+            @TableName : CUSTOMER_ORDERS - 고객 주문 (판매) (DB_SCHEMA에 없음)
+            @TableName : PRODUCTION_SCHEDULES - 생산 계획 (DB_SCHEMA에 없음)
+            @TableName : QUALITY_CHECKS - 품질 검사 (DB_SCHEMA에 없음)
+            @Description : 특정 공급업체에 대한 공급망 전반의 최적화 기회를 분석합니다.
+                           구매, 재고, 배송, 생산, 품질 등 다양한 데이터를 통합하여
+                           공급망의 효율성과 문제점을 파악합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            po.PO_ID,
+            po.ORDER_DATE,
+            s.SUPPLIER_NAME,
+            p.PRODUCT_NAME,
+            inv.STOCK_QUANTITY AS CURRENT_STOCK,
+            w.WAREHOUSE_NAME,
+            sh.SHIPMENT_DATE,
+            c.CARRIER_NAME,
+            co.ORDER_QUANTITY AS CUSTOMER_DEMAND,
+            ps.SCHEDULED_QUANTITY AS PRODUCTION_PLAN,
+            qc.RESULT AS LAST_QUALITY_CHECK_RESULT,
+            (SELECT GET_LEAD_TIME(s_sub.SUPPLIER_ID, p_sub.PRODUCT_ID) FROM SUPPLIERS s_sub, PRODUCTS p_sub WHERE s_sub.SUPPLIER_ID = p_sub.SUPPLIER_ID AND s_sub.SUPPLIER_ID = s.SUPPLIER_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS LEAD_TIME_SF, -- 스칼라 함수 호출
+            (SELECT AVG(qc_sub.SCORE) FROM QUALITY_CHECKS qc_sub, PRODUCTS p_sub WHERE qc_sub.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS AVG_QUALITY_SCORE
+        FROM PURCHASE_ORDERS po, SUPPLIERS s, PRODUCTS p, INVENTORY inv, WAREHOUSES w, SHIPMENTS sh, CARRIERS c, CUSTOMER_ORDERS co, PRODUCTION_SCHEDULES ps, QUALITY_CHECKS qc
+        WHERE po.SUPPLIER_ID = s.SUPPLIER_ID
+          AND po.PRODUCT_ID = p.PRODUCT_ID
+          AND p.PRODUCT_ID = inv.PRODUCT_ID (+)
+          AND inv.WAREHOUSE_ID = po.DELIVERY_WAREHOUSE_ID (+)
+          AND inv.WAREHOUSE_ID = w.WAREHOUSE_ID (+)
+          AND po.PO_ID = sh.PO_ID (+)
+          AND sh.CARRIER_ID = c.CARRIER_ID (+)
+          AND p.PRODUCT_ID = co.PRODUCT_ID (+)
+          AND co.ORDER_DATE BETWEEN po.ORDER_DATE AND SYSDATE
+          AND p.PRODUCT_ID = ps.PRODUCT_ID (+)
+          AND ps.SCHEDULE_DATE BETWEEN po.ORDER_DATE AND SYSDATE
+          AND p.PRODUCT_ID = qc.PRODUCT_ID (+)
+          AND qc.CHECK_DATE (+) = (SELECT MAX(qc_sub2.CHECK_DATE) FROM QUALITY_CHECKS qc_sub2 WHERE qc_sub2.PRODUCT_ID = p.PRODUCT_ID)
+          AND s.SUPPLIER_ID = #{supplierId}
+          AND po.STATUS = 'COMPLETED'
+        ORDER BY po.ORDER_DATE DESC, p.PRODUCT_NAME
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 새로운 복잡 SQL 쿼리 1: 지역별 상품 판매량 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <!-- ==================================================================== -->
+    <select id="getProductSalesByRegion" resultType="map">
+        <!--
+            @TableName : SALES_DATA - 판매 데이터 (DB_SCHEMA에 없음)
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : CATEGORIES - 카테고리 정보
+            @TableName : STORES - 매장 정보
+            @TableName : REGIONS - 지역 정보
+            @TableName : EMPLOYEES - 직원 정보
+            @TableName : CUSTOMERS - 고객 정보
+            @TableName : PROMOTIONS - 프로모션 정보 (DB_SCHEMA에 없음)
+            @TableName : INVENTORY - 재고 정보
+            @TableName : SUPPLIERS - 공급업체 정보
+            @Description : 특정 지역의 상품 판매량을 상세하게 분석합니다.
+                           상품, 카테고리, 매장, 지역, 직원, 고객, 프로모션, 재고, 공급업체 등
+                           다양한 데이터를 통합하여 판매 동향과 효율성을 파악합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            sd.SALE_ID,
+            sd.SALE_DATE,
+            p.PRODUCT_NAME,
+            cat.CATEGORY_NAME,
+            s.STORE_NAME,
+            r.REGION_NAME,
+            e.EMPLOYEE_NAME,
+            c.CUSTOMER_NAME,
+            pr.PROMOTION_NAME,
+            sd.QUANTITY,
+            sd.PRICE,
+            (sd.QUANTITY * sd.PRICE) AS TOTAL_SALE_AMOUNT,
+            (SELECT SUM(inv.STOCK_QUANTITY) FROM INVENTORY inv, PRODUCTS p_sub WHERE inv.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID AND inv.STORE_ID = s.STORE_ID) AS STORE_STOCK,
+            (SELECT sup.SUPPLIER_NAME FROM SUPPLIERS sup, PRODUCTS p_sub WHERE sup.SUPPLIER_ID = p_sub.SUPPLIER_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS SUPPLIER_NAME,
+            GET_SALES_RANK(sd.SALE_ID) AS SALES_RANK_SF -- 스칼라 함수 호출
+        FROM SALES_DATA sd, PRODUCTS p, CATEGORIES cat, STORES s, REGIONS r, EMPLOYEES e, CUSTOMERS c, PROMOTIONS pr
+        WHERE sd.PRODUCT_ID = p.PRODUCT_ID
+          AND p.CATEGORY_ID = cat.CATEGORY_ID
+          AND sd.STORE_ID = s.STORE_ID
+          AND s.REGION_ID = r.REGION_ID
+          AND sd.EMPLOYEE_ID = e.EMPLOYEE_ID (+)
+          AND sd.CUSTOMER_ID = c.CUSTOMER_ID (+)
+          AND sd.PROMOTION_ID = pr.PROMOTION_ID (+)
+          AND r.REGION_ID = #{regionId}
+          AND sd.SALE_DATE BETWEEN ADD_MONTHS(SYSDATE, -12) AND SYSDATE
+        ORDER BY sd.SALE_DATE DESC, p.PRODUCT_NAME
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 새로운 복잡 SQL 쿼리 2: 고객 주문 요약 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <!-- ==================================================================== -->
+    <select id="getCustomerOrderSummary" resultType="map">
+        <!--
+            @TableName : CUSTOMER_ORDERS - 고객 주문 (DB_SCHEMA에 없음)
+            @TableName : CUSTOMERS - 고객 정보
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : ORDER_ITEMS - 주문 항목 (DB_SCHEMA에 없음)
+            @TableName : SHIPPING_ADDRESSES - 배송 주소 (DB_SCHEMA에 없음)
+            @TableName : PAYMENT_TRANSACTIONS - 결제 거래 (DB_SCHEMA에 없음)
+            @TableName : PROMOTIONS - 프로모션 정보 (DB_SCHEMA에 없음)
+            @TableName : REVIEWS - 상품 리뷰 (DB_SCHEMA에 없음)
+            @TableName : LOYALTY_POINTS - 로열티 포인트 (DB_SCHEMA에 없음)
+            @TableName : COUPONS - 쿠폰 정보 (DB_SCHEMA에 없음)
+            @Description : 특정 고객의 주문 내역을 상세하게 요약합니다.
+                           주문, 상품, 배송, 결제, 프로모션, 리뷰, 로열티 포인트, 쿠폰 등
+                           다양한 데이터를 통합하여 고객의 구매 행동을 분석합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            co.ORDER_ID,
+            co.ORDER_DATE,
+            c.CUSTOMER_NAME,
+            p.PRODUCT_NAME,
+            oi.QUANTITY,
+            oi.UNIT_PRICE,
+            sa.CITY AS SHIPPING_CITY,
+            pt.TRANSACTION_STATUS AS PAYMENT_STATUS,
+            pr.PROMOTION_CODE,
+            (SELECT AVG(r.RATING) FROM REVIEWS r, PRODUCTS p_sub WHERE r.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID) AS AVG_PRODUCT_RATING,
+            lp.POINTS_EARNED AS LOYALTY_POINTS,
+            cp.COUPON_CODE,
+            GET_ORDER_DELIVERY_STATUS(co.ORDER_ID) AS DELIVERY_STATUS_SF -- 스칼라 함수 호출
+        FROM CUSTOMER_ORDERS co, CUSTOMERS c, ORDER_ITEMS oi, PRODUCTS p, SHIPPING_ADDRESSES sa, PAYMENT_TRANSACTIONS pt, PROMOTIONS pr, LOYALTY_POINTS lp, COUPONS cp
+        WHERE co.CUSTOMER_ID = c.CUSTOMER_ID
+          AND co.ORDER_ID = oi.ORDER_ID
+          AND oi.PRODUCT_ID = p.PRODUCT_ID
+          AND co.SHIPPING_ADDRESS_ID = sa.ADDRESS_ID (+)
+          AND co.ORDER_ID = pt.ORDER_ID (+)
+          AND co.PROMOTION_ID = pr.PROMOTION_ID (+)
+          AND co.CUSTOMER_ID = lp.CUSTOMER_ID (+)
+          AND co.COUPON_ID = cp.COUPON_ID (+)
+          AND co.CUSTOMER_ID = #{customerId}
+          AND co.STATUS = 'COMPLETED'
+        ORDER BY co.ORDER_DATE DESC, co.ORDER_ID
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 새로운 복잡 SQL 쿼리 3: 직원 성과 분석 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <!-- ==================================================================== -->
+    <select id="getEmployeePerformance" resultType="map">
+        <!--
+            @TableName : EMPLOYEES - 직원 정보
+            @TableName : DEPARTMENTS - 부서 정보
+            @TableName : POSITIONS - 직위 정보 (DB_SCHEMA에 없음)
+            @TableName : PERFORMANCE_REVIEWS - 성과 리뷰 (DB_SCHEMA에 없음)
+            @TableName : PROJECTS - 프로젝트 정보 (DB_SCHEMA에 없음)
+            @TableName : PROJECT_ASSIGNMENTS - 프로젝트 할당 (DB_SCHEMA에 없음)
+            @TableName : TASKS - 작업 정보 (DB_SCHEMA에 없음)
+            @TableName : SKILLS - 스킬 정보 (DB_SCHEMA에 없음)
+            @TableName : TRAINING_RECORDS - 교육 기록 (DB_SCHEMA에 없음)
+            @TableName : SALARY_HISTORY - 급여 이력 (DB_SCHEMA에 없음)
+            @Description : 특정 연도의 직원 성과를 다각도로 분석합니다.
+                           부서, 직위, 성과 리뷰, 프로젝트 참여, 스킬, 교육, 급여 이력 등
+                           다양한 데이터를 통합하여 직원의 역량과 기여도를 평가합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            e.EMPLOYEE_ID,
+            e.EMPLOYEE_NAME,
+            d.DEPARTMENT_NAME,
+            pos.POSITION_TITLE,
+            pr.REVIEW_SCORE AS LATEST_REVIEW_SCORE,
+            (SELECT COUNT(pa.PROJECT_ID) FROM PROJECT_ASSIGNMENTS pa, PROJECTS p_sub WHERE pa.PROJECT_ID = p_sub.PROJECT_ID AND pa.EMPLOYEE_ID = e.EMPLOYEE_ID AND pa.ASSIGNMENT_YEAR = #{year}) AS PROJECTS_COUNT,
+            (SELECT GET_EMPLOYEE_SKILLS_CSV(e_sub.EMPLOYEE_ID) FROM SKILLS s_sub, EMPLOYEES e_sub WHERE s_sub.EMPLOYEE_ID = e_sub.EMPLOYEE_ID AND e_sub.EMPLOYEE_ID = e.EMPLOYEE_ID) AS SKILLS_CSV_SF, -- 스칼라 함수 호출
+            (SELECT MAX(tr.COMPLETION_DATE) FROM TRAINING_RECORDS tr, EMPLOYEES e_sub WHERE tr.EMPLOYEE_ID = e_sub.EMPLOYEE_ID AND e_sub.EMPLOYEE_ID = e.EMPLOYEE_ID) AS LAST_TRAINING_DATE,
+            sh.SALARY_AMOUNT AS CURRENT_SALARY,
+            (SELECT AVG(pr_sub.REVIEW_SCORE) FROM PERFORMANCE_REVIEWS pr_sub, EMPLOYEES e_sub WHERE pr_sub.EMPLOYEE_ID = e_sub.EMPLOYEE_ID AND e_sub.EMPLOYEE_ID = e.EMPLOYEE_ID AND pr_sub.REVIEW_YEAR = #{year}) AS AVG_YEARLY_SCORE
+        FROM EMPLOYEES e, DEPARTMENTS d, POSITIONS pos, PERFORMANCE_REVIEWS pr, SALARY_HISTORY sh
+        WHERE e.DEPARTMENT_ID = d.DEPARTMENT_ID
+          AND e.POSITION_ID = pos.POSITION_ID (+)
+          AND e.EMPLOYEE_ID = pr.EMPLOYEE_ID (+)
+          AND pr.REVIEW_YEAR (+) = #{year}
+          AND pr.REVIEW_DATE (+) = (SELECT MAX(pr_sub2.REVIEW_DATE) FROM PERFORMANCE_REVIEWS pr_sub2 WHERE pr_sub2.EMPLOYEE_ID = e.EMPLOYEE_ID AND pr_sub2.REVIEW_YEAR = #{year})
+          AND e.EMPLOYEE_ID = sh.EMPLOYEE_ID (+)
+          AND sh.EFFECTIVE_DATE (+) = (SELECT MAX(sh_sub.EFFECTIVE_DATE) FROM SALARY_HISTORY sh_sub WHERE sh_sub.EMPLOYEE_ID = e.EMPLOYEE_ID)
+          AND e.HIRE_DATE <= TO_DATE(#{year} || '-12-31', 'YYYY-MM-DD')
+          AND e.STATUS = 'ACTIVE'
+        ORDER BY AVG_YEARLY_SCORE DESC NULLS LAST, e.EMPLOYEE_NAME
+    </select>
+
+    <!-- ==================================================================== -->
+    <!-- 새로운 복잡 SQL 쿼리 4: 재고 현황 분석 (10개 테이블 조인, 서브쿼리, 스칼라 함수) -->
+    <!-- ==================================================================== -->
+    <select id="getInventoryStatus" resultType="map">
+        <!--
+            @TableName : INVENTORY - 재고 정보
+            @TableName : PRODUCTS - 상품 정보
+            @TableName : WAREHOUSES - 창고 정보
+            @TableName : SUPPLIERS - 공급업체 정보
+            @TableName : CATEGORIES - 카테고리 정보
+            @TableName : ORDERS - 주문 정보 (판매)
+            @TableName : PURCHASE_ORDERS - 구매 주문 (입고) (DB_SCHEMA에 없음)
+            @TableName : SHIPMENTS - 배송 정보 (DB_SCHEMA에 없음)
+            @TableName : QUALITY_CHECKS - 품질 검사 (DB_SCHEMA에 없음)
+            @TableName : LOCATION_TRACKING - 위치 추적 (DB_SCHEMA에 없음)
+            @Description : 특정 창고의 재고 현황을 상세하게 분석합니다.
+                           상품, 창고, 공급업체, 카테고리, 판매 주문, 구매 주문, 배송, 품질 검사, 위치 추적 등
+                           다양한 데이터를 통합하여 재고의 흐름과 문제점을 파악합니다.
+                           서브쿼리 FROM 절에도 여러 테이블이 implicit join 방식으로 사용됩니다.
+        -->
+        SELECT
+            inv.INVENTORY_ID,
+            p.PRODUCT_NAME,
+            w.WAREHOUSE_NAME,
+            s.SUPPLIER_NAME,
+            cat.CATEGORY_NAME,
+            inv.STOCK_QUANTITY,
+            (SELECT SUM(o.QUANTITY) FROM ORDERS o, PRODUCTS p_sub WHERE o.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID AND o.ORDER_DATE BETWEEN ADD_MONTHS(SYSDATE, -3) AND SYSDATE) AS LAST_3_MONTH_SALES,
+            (SELECT SUM(po.QUANTITY) FROM PURCHASE_ORDERS po, PRODUCTS p_sub WHERE po.PRODUCT_ID = p_sub.PRODUCT_ID AND p_sub.PRODUCT_ID = p.PRODUCT_ID AND po.ORDER_DATE BETWEEN ADD_MONTHS(SYSDATE, -3) AND SYSDATE) AS LAST_3_MONTH_PURCHASES,
+            sh.SHIPMENT_DATE AS LAST_SHIPMENT_DATE,
+            qc.RESULT AS LAST_QUALITY_CHECK_RESULT,
+            lt.LOCATION_CODE AS CURRENT_LOCATION,
+            GET_REORDER_POINT(p.PRODUCT_ID) AS REORDER_POINT_SF -- 스칼라 함수 호출
+        FROM INVENTORY inv, PRODUCTS p, WAREHOUSES w, SUPPLIERS s, CATEGORIES cat, SHIPMENTS sh, QUALITY_CHECKS qc, LOCATION_TRACKING lt
+        WHERE inv.PRODUCT_ID = p.PRODUCT_ID
+          AND inv.WAREHOUSE_ID = w.WAREHOUSE_ID
+          AND p.SUPPLIER_ID = s.SUPPLIER_ID (+)
+          AND p.CATEGORY_ID = cat.CATEGORY_ID (+)
+          AND inv.PRODUCT_ID = sh.PRODUCT_ID (+)
+          AND sh.SHIPMENT_DATE (+) = (SELECT MAX(sh_sub.SHIPMENT_DATE) FROM SHIPMENTS sh_sub WHERE sh_sub.PRODUCT_ID = inv.PRODUCT_ID)
+          AND inv.PRODUCT_ID = qc.PRODUCT_ID (+)
+          AND qc.CHECK_DATE (+) = (SELECT MAX(qc_sub.CHECK_DATE) FROM QUALITY_CHECKS qc_sub WHERE qc_sub.PRODUCT_ID = inv.PRODUCT_ID)
+          AND inv.INVENTORY_ID = lt.INVENTORY_ID (+)
+          AND lt.TRACKING_DATE (+) = (SELECT MAX(lt_sub.TRACKING_DATE) FROM LOCATION_TRACKING lt_sub WHERE lt_sub.INVENTORY_ID = inv.INVENTORY_ID)
+          AND inv.WAREHOUSE_ID = #{warehouseId}
+          AND inv.STOCK_QUANTITY < GET_REORDER_POINT(p.PRODUCT_ID) -- 재주문 지점 이하 재고
+        ORDER BY p.PRODUCT_NAME
+    </select>
+
+</mapper>

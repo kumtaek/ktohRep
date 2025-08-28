@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="OrdersMapper">
-  <select id="getOrdersByUser" resultType="Order">
-    SELECT ORDER_ID, USER_ID, STATUS
-    FROM ORDERS
-    WHERE USER_ID = #{userId}
-      AND STATUS = 'COMPLETE'
-  </select>
-</mapper>

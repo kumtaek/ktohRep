@@ -8,10 +8,10 @@ from ..schema import create_node, create_edge, create_graph
 def build_erd_json(project_id: int, tables: str = None, owners: str = None, 
                    from_sql: str = None) -> Dict[str, Any]:
     """Build ERD JSON for visualization"""
-    print(f"Building ERD for project {project_id}")
-    print(f"  Tables filter: {tables}")
-    print(f"  Owners filter: {owners}")
-    print(f"  From SQL: {from_sql}")
+    print(f"ERD 생성: 프로젝트 {project_id}")
+    print(f"  테이블 필터: {tables}")
+    print(f"  오너 필터: {owners}")
+    print(f"  SQL 기준: {from_sql}")
     
     db = VizDB()
     
@@ -21,7 +21,7 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
     columns_info = db.fetch_columns()
     joins = db.fetch_joins_for_project(project_id)
     
-    print(f"  Found {len(db_tables)} tables, {len(joins)} joins")
+    print(f"  테이블 {len(db_tables)}개, 조인 {len(joins)}개 발견")
     
     # Special handling for --from-sql (SQLERD mode)
     sqlerd_mode = bool(from_sql)
@@ -95,7 +95,7 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                           join.r_table.upper(), join.r_col.upper())
                 join_patterns[pattern] += 1
         
-        print(f"  Found {len(join_patterns)} unique join patterns")
+        print(f"  고유 조인 패턴 {len(join_patterns)}개")
         
         # Create FK edges for frequently used joins
         for (l_table, l_col, r_table, r_col), frequency in join_patterns.items():
@@ -211,12 +211,12 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                         filtered_nodes[node_id] = node
                 
                 nodes_dict = filtered_nodes
-                print(f"  SQLERD: {len(nodes_dict)} tables, {len(required_filters)} filters from SQL: {from_sql}")
+                print(f"  SQLERD: 테이블 {len(nodes_dict)}개, 필수 필터 {len(required_filters)}개 (SQL: {from_sql})")
         except ValueError:
-            print(f"  Warning: Invalid from_sql format: {from_sql}")
+            print(f"  경고: 잘못된 from_sql 형식: {from_sql}")
     
     nodes_list = list(nodes_dict.values())
     
-    print(f"  Generated {len(nodes_list)} table nodes, {len(edges_list)} relationships")
+    print(f"  생성된 테이블 노드 {len(nodes_list)}개, 관계 {len(edges_list)}개")
     
     return create_graph(nodes_list, edges_list)

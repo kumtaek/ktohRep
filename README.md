@@ -1,208 +1,227 @@
-# 소스 분석기 - 1단계 메타정보 생성 시스템
+﻿# 소스 분석기 – 정적 분석/시각화 도구 (요약)
 
-레거시 Java/JSP/MyBatis/Oracle 소스 코드를 정적 분석하여 메타정보를 생성하는 시스템입니다.
+이 문서는 한국어 독자 기준으로 재정리되었습니다. 아래 요약과 빠른 시작을 참고하세요. 기존 상세 문서는 본문 하단에 유지되어 있습니다.
 
-## 프로젝트 개요
+## 빠른 시작
 
-### 주요 특징
-- **원문 비저장 원칙**: 소스 코드 원문을 저장하지 않고 경로, 라인 범위, 구조 정보만 메타데이터로 저장
-- **다중 언어 지원**: Java, JSP, MyBatis XML, SQL(Oracle 방언) 분석
-- **신뢰도 추적**: 모든 분석 결과에 신뢰도 점수 포함
-- **증분 분석**: 변경된 파일만 재분석하는 효율적인 처리
-- **병렬 처리**: 멀티스레드를 통한 고성능 분석
+1) 의존성 설치
+```bash
+pip install -r requirements.txt
+```
 
-### 분석 대상
-- **Java**: 클래스, 메서드, 어노테이션, 의존성 관계
-- **JSP**: 스크립틀릿 내 SQL, include 관계
-- **MyBatis XML**: SQL 매퍼, 동적 SQL, 조인 조건, 필터 조건
-- **DB 스키마**: Oracle 메타데이터 (CSV 형태)
+2) 시각화 생성 예시
+```bash
+# 의존성 그래프 (HTML)
+python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+  --kinds use_table,include --min-confidence 0.5 --max-nodes 1000
 
-## 시스템 구조
+# ERD (HTML) + Mermaid 문서(.md)
+python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+  --export-mermaid visualize/output/erd.md
+
+# Mermaid 코드(.mmd)만 출력
+python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+  --kinds use_table,include --export-mermaid visualize/output/graph.mmd
+```
+
+3) Mermaid 내보내기 옵션
+- --mermaid-label-max 라벨 최대 길이(기본 20)
+- --mermaid-erd-max-cols ERD 컬럼 최대 표기 수(기본 10)
+
+---
+
+# 기존 문서
+# ?뚯뒪 遺꾩꽍湲?- 1?④퀎 硫뷀??뺣낫 ?앹꽦 ?쒖뒪??
+?덇굅??Java/JSP/MyBatis/Oracle ?뚯뒪 肄붾뱶瑜??뺤쟻 遺꾩꽍?섏뿬 硫뷀??뺣낫瑜??앹꽦?섎뒗 ?쒖뒪?쒖엯?덈떎.
+
+## ?꾨줈?앺듃 媛쒖슂
+
+### 二쇱슂 ?뱀쭠
+- **?먮Ц 鍮꾩????먯튃**: ?뚯뒪 肄붾뱶 ?먮Ц????ν븯吏 ?딄퀬 寃쎈줈, ?쇱씤 踰붿쐞, 援ъ“ ?뺣낫留?硫뷀??곗씠?곕줈 ???- **?ㅼ쨷 ?몄뼱 吏??*: Java, JSP, MyBatis XML, SQL(Oracle 諛⑹뼵) 遺꾩꽍
+- **?좊ː??異붿쟻**: 紐⑤뱺 遺꾩꽍 寃곌낵???좊ː???먯닔 ?ы븿
+- **利앸텇 遺꾩꽍**: 蹂寃쎈맂 ?뚯씪留??щ텇?앺븯???⑥쑉?곸씤 泥섎━
+- **蹂묐젹 泥섎━**: 硫?곗뒪?덈뱶瑜??듯븳 怨좎꽦??遺꾩꽍
+
+### 遺꾩꽍 ???- **Java**: ?대옒?? 硫붿꽌?? ?대끂?뚯씠?? ?섏〈??愿怨?- **JSP**: ?ㅽ겕由쏀?由???SQL, include 愿怨?- **MyBatis XML**: SQL 留ㅽ띁, ?숈쟻 SQL, 議곗씤 議곌굔, ?꾪꽣 議곌굔
+- **DB ?ㅽ궎留?*: Oracle 硫뷀??곗씠??(CSV ?뺥깭)
+
+## ?쒖뒪??援ъ“
 
 ```
 src/
-├── models/
-│   └── database.py          # SQLAlchemy 모델 정의
-├── parsers/
-│   ├── java_parser.py       # Java AST 파서
-│   ├── jsp_mybatis_parser.py # JSP/MyBatis XML 파서
-│   └── sql_parser.py        # SQL 구문 파서
-├── database/
-│   └── metadata_engine.py   # 메타데이터 저장 엔진
-└── utils/
-    ├── confidence_calculator.py # 신뢰도 계산기
-    └── csv_loader.py        # DB 스키마 CSV 로더
+?쒋?? models/
+??  ?붴?? database.py          # SQLAlchemy 紐⑤뜽 ?뺤쓽
+?쒋?? parsers/
+??  ?쒋?? java_parser.py       # Java AST ?뚯꽌
+??  ?쒋?? jsp_mybatis_parser.py # JSP/MyBatis XML ?뚯꽌
+??  ?붴?? sql_parser.py        # SQL 援щЦ ?뚯꽌
+?쒋?? database/
+??  ?붴?? metadata_engine.py   # 硫뷀??곗씠??????붿쭊
+?붴?? utils/
+    ?쒋?? confidence_calculator.py # ?좊ː??怨꾩궛湲?    ?붴?? csv_loader.py        # DB ?ㅽ궎留?CSV 濡쒕뜑
 ```
 
-## 설치 및 실행
+## ?ㅼ튂 諛??ㅽ뻾
 
-### 1. 의존성 설치 (온라인 환경)
+### 1. ?섏〈???ㅼ튂 (?⑤씪???섍꼍)
 
-인터넷 연결이 가능한 환경에서는 다음 명령으로 Python 의존성을 설치합니다.
+?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌???ㅼ쓬 紐낅졊?쇰줈 Python ?섏〈?깆쓣 ?ㅼ튂?⑸땲??
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 오프라인 설치 가이드 (폐쇄망 환경)
+### 2. ?ㅽ봽?쇱씤 ?ㅼ튂 媛?대뱶 (?먯뇙留??섍꼍)
 
-본 시스템은 폐쇄망 환경에서 운영될 수 있도록 설계되었습니다. 모든 외부 의존성은 사전에 다운로드하여 오프라인으로 설치해야 합니다.
+蹂??쒖뒪?쒖? ?먯뇙留??섍꼍?먯꽌 ?댁쁺?????덈룄濡??ㅺ퀎?섏뿀?듬땲?? 紐⑤뱺 ?몃? ?섏〈?깆? ?ъ쟾???ㅼ슫濡쒕뱶?섏뿬 ?ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?댁빞 ?⑸땲??
 
-#### 2.1. Python 패키지
+#### 2.1. Python ?⑦궎吏
 
-1.  **Wheelhouse 생성**: 인터넷 연결이 가능한 환경에서 다음 명령을 사용하여 모든 Python 패키지의 휠(wheel) 파일을 다운로드합니다.
+1.  **Wheelhouse ?앹꽦**: ?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌 ?ㅼ쓬 紐낅졊???ъ슜?섏뿬 紐⑤뱺 Python ?⑦궎吏????wheel) ?뚯씪???ㅼ슫濡쒕뱶?⑸땲??
     ```bash
     pip wheel -r requirements.txt -w ./wheelhouse
-    # 2단계 LLM/RAG 관련 패키지 (requirements.txt에서 주석 해제 후)
+    # 2?④퀎 LLM/RAG 愿???⑦궎吏 (requirements.txt?먯꽌 二쇱꽍 ?댁젣 ??
     # pip wheel -r requirements.txt -w ./wheelhouse --only-binary :all:
     ```
-2.  **오프라인 설치**: 생성된 `wheelhouse` 폴더를 폐쇄망 환경으로 옮긴 후, 다음 명령으로 설치합니다.
+2.  **?ㅽ봽?쇱씤 ?ㅼ튂**: ?앹꽦??`wheelhouse` ?대뜑瑜??먯뇙留??섍꼍?쇰줈 ??릿 ?? ?ㅼ쓬 紐낅졊?쇰줈 ?ㅼ튂?⑸땲??
     ```bash
     pip install --no-index --find-links=./wheelhouse -r requirements.txt
     ```
-    **참고**: `lxml` 패키지는 빌드 환경에 따라 컴파일이 필요할 수 있습니다. `pip wheel` 명령 시 `lxml`에 대한 특정 플랫폼용 휠이 생성되었는지 확인하고, 필요한 경우 `lxml` 공식 문서(https://lxml.de/installation.html)를 참조하여 오프라인 빌드 방법을 따릅니다.
+    **李멸퀬**: `lxml` ?⑦궎吏??鍮뚮뱶 ?섍꼍???곕씪 而댄뙆?쇱씠 ?꾩슂?????덉뒿?덈떎. `pip wheel` 紐낅졊 ??`lxml`??????뱀젙 ?뚮옯?쇱슜 ?좎씠 ?앹꽦?섏뿀?붿? ?뺤씤?섍퀬, ?꾩슂??寃쎌슦 `lxml` 怨듭떇 臾몄꽌(https://lxml.de/installation.html)瑜?李몄“?섏뿬 ?ㅽ봽?쇱씤 鍮뚮뱶 諛⑸쾿???곕쫭?덈떎.
 
-#### 2.2. JavaScript 시각화 라이브러리
+#### 2.2. JavaScript ?쒓컖???쇱씠釉뚮윭由?
+?쒓컖??紐⑤뱢(`visualize/`)? Cytoscape.js, Dagre.js ?깆쓽 JavaScript ?쇱씠釉뚮윭由щ? ?ъ슜?⑸땲?? ?대뱾? `visualize/static/vendor/` 寃쎈줈??濡쒖뺄濡?踰덈뱾留곷릺?댁빞 ?⑸땲??
 
-시각화 모듈(`visualize/`)은 Cytoscape.js, Dagre.js 등의 JavaScript 라이브러리를 사용합니다. 이들은 `visualize/static/vendor/` 경로에 로컬로 번들링되어야 합니다.
-
-1.  **에셋 다운로드**: 인터넷 연결이 가능한 환경에서 다음 스크립트를 실행하여 필요한 JavaScript 에셋을 다운로드합니다.
+1.  **?먯뀑 ?ㅼ슫濡쒕뱶**: ?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌 ?ㅼ쓬 ?ㅽ겕由쏀듃瑜??ㅽ뻾?섏뿬 ?꾩슂??JavaScript ?먯뀑???ㅼ슫濡쒕뱶?⑸땲??
     ```bash
     python visualize/static/vendor/download_assets.py
     ```
-    이 스크립트는 `visualize/static/vendor/` 폴더에 `cytoscape.min.js`, `dagre.min.js`, `cytoscape-dagre.js` 등을 다운로드합니다.
-2.  **오프라인 배치**: 다운로드된 `visualize/static/vendor/` 폴더 전체를 폐쇄망 환경으로 옮겨 시스템의 `visualize/static/vendor/` 경로에 배치합니다.
+    ???ㅽ겕由쏀듃??`visualize/static/vendor/` ?대뜑??`cytoscape.min.js`, `dagre.min.js`, `cytoscape-dagre.js` ?깆쓣 ?ㅼ슫濡쒕뱶?⑸땲??
+2.  **?ㅽ봽?쇱씤 諛곗튂**: ?ㅼ슫濡쒕뱶??`visualize/static/vendor/` ?대뜑 ?꾩껜瑜??먯뇙留??섍꼍?쇰줈 ??꺼 ?쒖뒪?쒖쓽 `visualize/static/vendor/` 寃쎈줈??諛곗튂?⑸땲??
 
-#### 2.3. Java 개발 환경 (JDK)
+#### 2.3. Java 媛쒕컻 ?섍꼍 (JDK)
 
-Java 소스 코드(`*.java`)를 파싱하기 위해 `javalang` 라이브러리가 사용됩니다. `javalang` 자체는 Python 라이브러리이지만, Java 소스 코드 분석의 맥락상 Java 개발 환경(JDK)이 필요할 수 있습니다. 폐쇄망 환경에 맞는 JDK를 설치합니다.
+Java ?뚯뒪 肄붾뱶(`*.java`)瑜??뚯떛?섍린 ?꾪빐 `javalang` ?쇱씠釉뚮윭由ш? ?ъ슜?⑸땲?? `javalang` ?먯껜??Python ?쇱씠釉뚮윭由ъ씠吏留? Java ?뚯뒪 肄붾뱶 遺꾩꽍??留λ씫??Java 媛쒕컻 ?섍꼍(JDK)???꾩슂?????덉뒿?덈떎. ?먯뇙留??섍꼍??留욌뒗 JDK瑜??ㅼ튂?⑸땲??
 
-#### 2.4. Oracle 11g 데이터베이스
+#### 2.4. Oracle 11g ?곗씠?곕쿋?댁뒪
 
-운영 환경에서 Oracle 11g 데이터베이스를 사용하는 경우, 표준 오프라인 설치 절차에 따라 설치 및 구성합니다. `cx_oracle` Python 패키지는 Oracle Client 라이브러리에 의존하므로, Oracle Client도 오프라인으로 설치해야 합니다.
+?댁쁺 ?섍꼍?먯꽌 Oracle 11g ?곗씠?곕쿋?댁뒪瑜??ъ슜?섎뒗 寃쎌슦, ?쒖? ?ㅽ봽?쇱씤 ?ㅼ튂 ?덉감???곕씪 ?ㅼ튂 諛?援ъ꽦?⑸땲?? `cx_oracle` Python ?⑦궎吏??Oracle Client ?쇱씠釉뚮윭由ъ뿉 ?섏〈?섎?濡? Oracle Client???ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?댁빞 ?⑸땲??
 
-#### 2.5. LLM 관련 (2단계 개발 시 필요)
+#### 2.5. LLM 愿??(2?④퀎 媛쒕컻 ???꾩슂)
 
-현재 1단계 메타정보 생성 시스템에서는 LLM이 직접 사용되지 않습니다. 2단계 LLM 기반 질의응답 및 영향평가 기능 개발 시 다음 항목들이 추가로 필요합니다.
+?꾩옱 1?④퀎 硫뷀??뺣낫 ?앹꽦 ?쒖뒪?쒖뿉?쒕뒗 LLM??吏곸젒 ?ъ슜?섏? ?딆뒿?덈떎. 2?④퀎 LLM 湲곕컲 吏덉쓽?묐떟 諛??곹뼢?됯? 湲곕뒫 媛쒕컻 ???ㅼ쓬 ??ぉ?ㅼ씠 異붽?濡??꾩슂?⑸땲??
 
-1.  **LLM 및 임베딩 모델**: Qwen2.5 (7B/32B), BGE-m3, ko-sentence-transformers, BGE reranker v2와 같은 모델 가중치 파일을 Hugging Face 등에서 직접 다운로드하여 특정 경로(예: `models/llm`, `models/embedding`)에 배치해야 합니다.
-2.  **vLLM 설치**: LLM 서빙을 위한 vLLM 및 해당 종속성(CUDA, PyTorch 등)을 오프라인으로 설치합니다. vLLM 공식 문서를 참조하여 폐쇄망 환경에 맞는 설치 방법을 따릅니다.
-3.  **Python 패키지**: `openai`, `langchain`, `faiss-cpu`, `sentence-transformers`, `fastapi`, `uvicorn` 등 2단계 관련 Python 패키지들을 `requirements.txt`에서 주석 해제 후 2.1. Python 패키지 섹션의 오프라인 설치 절차를 따릅니다.
+1.  **LLM 諛??꾨쿋??紐⑤뜽**: Qwen2.5 (7B/32B), BGE-m3, ko-sentence-transformers, BGE reranker v2? 媛숈? 紐⑤뜽 媛以묒튂 ?뚯씪??Hugging Face ?깆뿉??吏곸젒 ?ㅼ슫濡쒕뱶?섏뿬 ?뱀젙 寃쎈줈(?? `models/llm`, `models/embedding`)??諛곗튂?댁빞 ?⑸땲??
+2.  **vLLM ?ㅼ튂**: LLM ?쒕튃???꾪븳 vLLM 諛??대떦 醫낆냽??CUDA, PyTorch ?????ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?⑸땲?? vLLM 怨듭떇 臾몄꽌瑜?李몄“?섏뿬 ?먯뇙留??섍꼍??留욌뒗 ?ㅼ튂 諛⑸쾿???곕쫭?덈떎.
+3.  **Python ?⑦궎吏**: `openai`, `langchain`, `faiss-cpu`, `sentence-transformers`, `fastapi`, `uvicorn` ??2?④퀎 愿??Python ?⑦궎吏?ㅼ쓣 `requirements.txt`?먯꽌 二쇱꽍 ?댁젣 ??2.1. Python ?⑦궎吏 ?뱀뀡???ㅽ봽?쇱씤 ?ㅼ튂 ?덉감瑜??곕쫭?덈떎.
 
-`config/config.yaml` 파일에서 데이터베이스와 분석 옵션을 설정합니다.
+`config/config.yaml` ?뚯씪?먯꽌 ?곗씠?곕쿋?댁뒪? 遺꾩꽍 ?듭뀡???ㅼ젙?⑸땲??
 
 ```yaml
-# 데이터베이스 설정
+# ?곗씠?곕쿋?댁뒪 ?ㅼ젙
 database:
-  type: sqlite  # 개발용
-  sqlite:
+  type: sqlite  # 媛쒕컻??  sqlite:
     path: "./data/metadata.db"
     
-# 파서 설정  
+# ?뚯꽌 ?ㅼ젙  
 parsers:
   java:
     enabled: true
     parser_type: "javaparser"
 ```
 
-### 3. 프로젝트 분석 실행
+### 3. ?꾨줈?앺듃 遺꾩꽍 ?ㅽ뻾
 
 ```bash
 python main.py /path/to/your/project --project-name "MyProject"
 ```
 
-### 4. DB 스키마 준비
-
-프로젝트 폴더 하위에 `DB_SCHEMA` 폴더를 생성하고 다음 CSV 파일들을 배치합니다:
+### 4. DB ?ㅽ궎留?以鍮?
+?꾨줈?앺듃 ?대뜑 ?섏쐞??`DB_SCHEMA` ?대뜑瑜??앹꽦?섍퀬 ?ㅼ쓬 CSV ?뚯씪?ㅼ쓣 諛곗튂?⑸땲??
 
 ```
 PROJECT/
-└── your-project/
-    └── DB_SCHEMA/
-        ├── ALL_TABLES.csv
-        ├── ALL_TAB_COLUMNS.csv
-        ├── ALL_TAB_COMMENTS.csv
-        ├── ALL_COL_COMMENTS.csv
-        └── PK_INFO.csv
+?붴?? your-project/
+    ?붴?? DB_SCHEMA/
+        ?쒋?? ALL_TABLES.csv
+        ?쒋?? ALL_TAB_COLUMNS.csv
+        ?쒋?? ALL_TAB_COMMENTS.csv
+        ?쒋?? ALL_COL_COMMENTS.csv
+        ?붴?? PK_INFO.csv
 ```
 
-## 주요 기능
+## 二쇱슂 湲곕뒫
 
-### 1. Java 소스 분석
-- JavaParser를 사용한 AST 기반 분석
-- 클래스, 메서드, 어노테이션 추출
-- 메서드 호출 관계 분석
-- Spring Framework 어노테이션 처리
+### 1. Java ?뚯뒪 遺꾩꽍
+- JavaParser瑜??ъ슜??AST 湲곕컲 遺꾩꽍
+- ?대옒?? 硫붿꽌?? ?대끂?뚯씠??異붿텧
+- 硫붿꽌???몄텧 愿怨?遺꾩꽍
+- Spring Framework ?대끂?뚯씠??泥섎━
 
-### 2. MyBatis XML 분석
-- SQL 매퍼 구문 추출 (`<select>`, `<insert>`, `<update>`, `<delete>`)
-- 동적 SQL 태그 처리 (`<if>`, `<choose>`, `<foreach>`)
-- 조인 조건 자동 추출
-- 필수 필터 조건 식별
+### 2. MyBatis XML 遺꾩꽍
+- SQL 留ㅽ띁 援щЦ 異붿텧 (`<select>`, `<insert>`, `<update>`, `<delete>`)
+- ?숈쟻 SQL ?쒓렇 泥섎━ (`<if>`, `<choose>`, `<foreach>`)
+- 議곗씤 議곌굔 ?먮룞 異붿텧
+- ?꾩닔 ?꾪꽣 議곌굔 ?앸퀎
 
-### 3. 신뢰도 기반 분석
-- AST 품질 기반 신뢰도 계산
-- 정적 규칙 매칭 신뢰도
-- DB 스키마 매칭 신뢰도
-- 복잡도에 따른 신뢰도 조정
+### 3. ?좊ː??湲곕컲 遺꾩꽍
+- AST ?덉쭏 湲곕컲 ?좊ː??怨꾩궛
+- ?뺤쟻 洹쒖튃 留ㅼ묶 ?좊ː??- DB ?ㅽ궎留?留ㅼ묶 ?좊ː??- 蹂듭옟?꾩뿉 ?곕Ⅸ ?좊ː??議곗젙
 
-### 4. 메타데이터 저장
-- 파일, 클래스, 메서드 구조 정보
-- SQL 구문, 조인, 필터 조건
-- 의존성 그래프 (호출, 참조 관계)
-- 분석 신뢰도 및 로그
+### 4. 硫뷀??곗씠?????- ?뚯씪, ?대옒?? 硫붿꽌??援ъ“ ?뺣낫
+- SQL 援щЦ, 議곗씤, ?꾪꽣 議곌굔
+- ?섏〈??洹몃옒??(?몄텧, 李몄“ 愿怨?
+- 遺꾩꽍 ?좊ː??諛?濡쒓렇
 
-## 데이터베이스 스키마
-
-주요 테이블:
-- `projects`: 프로젝트 정보
-- `files`: 소스 파일 메타데이터 
-- `classes`: Java 클래스 정보
-- `methods`: Java 메서드 정보
-- `sql_units`: SQL 구문 정보
-- `joins`: 조인 조건
-- `required_filters`: 필수 필터 조건
-- `edges`: 의존성 관계 그래프
-
-## 명령행 옵션
+## ?곗씠?곕쿋?댁뒪 ?ㅽ궎留?
+二쇱슂 ?뚯씠釉?
+- `projects`: ?꾨줈?앺듃 ?뺣낫
+- `files`: ?뚯뒪 ?뚯씪 硫뷀??곗씠??
+- `classes`: Java ?대옒???뺣낫
+- `methods`: Java 硫붿꽌???뺣낫
+- `sql_units`: SQL 援щЦ ?뺣낫
+- `joins`: 議곗씤 議곌굔
+- `required_filters`: ?꾩닔 ?꾪꽣 議곌굔
+- `edges`: ?섏〈??愿怨?洹몃옒??
+## 紐낅졊???듭뀡
 
 ```bash
 python main.py [OPTIONS] PROJECT_PATH
 
-인수:
-  PROJECT_PATH          분석할 프로젝트 경로
+?몄닔:
+  PROJECT_PATH          遺꾩꽍???꾨줈?앺듃 寃쎈줈
 
-옵션:
-  --config CONFIG       설정 파일 경로 (기본값: ./config/config.yaml)
-  --project-name NAME   프로젝트 이름 (기본값: 폴더명)
-  --incremental         증분 분석 모드
-  --help                도움말 표시
+?듭뀡:
+  --config CONFIG       ?ㅼ젙 ?뚯씪 寃쎈줈 (湲곕낯媛? ./config/config.yaml)
+  --project-name NAME   ?꾨줈?앺듃 ?대쫫 (湲곕낯媛? ?대뜑紐?
+  --incremental         利앸텇 遺꾩꽍 紐⑤뱶
+  --help                ?꾩?留??쒖떆
 ```
 
-## 분석 결과 예시
+## 遺꾩꽍 寃곌낵 ?덉떆
 
 ```
 ==========================================
-분석 완료!
-프로젝트: insurance-system
-분석된 파일 수: 234
-Java 파일: 156
-JSP 파일: 23
-XML 파일: 55
-클래스 수: 198
-메서드 수: 1,247  
-SQL 구문 수: 134
+遺꾩꽍 ?꾨즺!
+?꾨줈?앺듃: insurance-system
+遺꾩꽍???뚯씪 ?? 234
+Java ?뚯씪: 156
+JSP ?뚯씪: 23
+XML ?뚯씪: 55
+?대옒???? 198
+硫붿꽌???? 1,247  
+SQL 援щЦ ?? 134
 ==========================================
 ```
 
-## 설정 옵션
+## ?ㅼ젙 ?듭뀡
 
-### 파서 설정
+### ?뚯꽌 ?ㅼ젙
 ```yaml
 parsers:
   java:
     enabled: true
-    parser_type: "javaparser"  # 또는 "tree-sitter"
+    parser_type: "javaparser"  # ?먮뒗 "tree-sitter"
     
   jsp:
     enabled: true
@@ -213,15 +232,13 @@ parsers:
     oracle_dialect: true
 ```
 
-### 처리 설정
+### 泥섎━ ?ㅼ젙
 ```yaml
 processing:
-  max_workers: 4          # 병렬 처리 워커 수
-  chunk_size: 512         # 청킹 크기
-  confidence_threshold: 0.5 # 신뢰도 임계값
-```
+  max_workers: 4          # 蹂묐젹 泥섎━ ?뚯빱 ??  chunk_size: 512         # 泥?궧 ?ш린
+  confidence_threshold: 0.5 # ?좊ː???꾧퀎媛?```
 
-### 파일 패턴 설정
+### ?뚯씪 ?⑦꽩 ?ㅼ젙
 ```yaml
 file_patterns:
   include:
@@ -233,63 +250,59 @@ file_patterns:
     - "**/build/**"
 ```
 
-## 로깅 및 모니터링
+## 濡쒓퉭 諛?紐⑤땲?곕쭅
 
-- 분석 진행 상황 실시간 로깅
-- 오류 파일 및 원인 추적
-- 분석 성능 메트릭
-- 신뢰도 분포 통계
+- 遺꾩꽍 吏꾪뻾 ?곹솴 ?ㅼ떆媛?濡쒓퉭
+- ?ㅻ쪟 ?뚯씪 諛??먯씤 異붿쟻
+- 遺꾩꽍 ?깅뒫 硫뷀듃由?- ?좊ː??遺꾪룷 ?듦퀎
 
-## 향후 계획
+## ?ν썑 怨꾪쉷
 
-- Tree-sitter 기반 다국어 파서 지원
-- LLM 보강 기능 (2단계)
-- 벡터 임베딩 및 RAG 기능 (2단계)
-- 웹 대시보드 UI
-- Oracle 운영 환경 배포
+- Tree-sitter 湲곕컲 ?ㅺ뎅???뚯꽌 吏??- LLM 蹂닿컯 湲곕뒫 (2?④퀎)
+- 踰≫꽣 ?꾨쿋??諛?RAG 湲곕뒫 (2?④퀎)
+- ????쒕낫??UI
+- Oracle ?댁쁺 ?섍꼍 諛고룷
 
-## 라이선스
+## ?쇱씠?좎뒪
 
-이 프로젝트는 내부 사용을 위한 소스 분석 도구입니다.
+???꾨줈?앺듃???대? ?ъ슜???꾪븳 ?뚯뒪 遺꾩꽍 ?꾧뎄?낅땲??
 
 ---
 
-## 시각화(Visualize) 사용법 및 배치 PNG 안내
+## ?쒓컖??Visualize) ?ъ슜踰?諛?諛곗튂 PNG ?덈궡
 
-분석(DB 구축)이 끝난 후, `visualize` 모듈을 사용해 ERD/의존성/컴포넌트/시퀀스 다이어그램을 HTML로 생성할 수 있습니다. 엔트리 포인트는 저장소 루트의 `visualize_cli.py`입니다.
+遺꾩꽍(DB 援ъ텞)???앸궃 ?? `visualize` 紐⑤뱢???ъ슜??ERD/?섏〈??而댄룷?뚰듃/?쒗???ㅼ씠?닿렇?⑥쓣 HTML濡??앹꽦?????덉뒿?덈떎. ?뷀듃由??ъ씤?몃뒗 ??μ냼 猷⑦듃??`visualize_cli.py`?낅땲??
 
-### 1) 시각화 생성(HTML)
+### 1) ?쒓컖???앹꽦(HTML)
 
 ```bash
-# 의존성 그래프 (use_table, include 등 지정)
+# ?섏〈??洹몃옒??(use_table, include ??吏??
 python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
   --kinds use_table,include --min-confidence 0.5 --max-nodes 1000
 
-# ERD 전체 또는 부분(특정 SQL 기준)
+# ERD ?꾩껜 ?먮뒗 遺遺??뱀젙 SQL 湲곗?)
 python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html
 python visualize_cli.py erd --project-id 1 --out visualize/output/erd_from_sql.html \
   --from-sql MapperNamespace:selectUser
 
-# 컴포넌트 다이어그램
-python visualize_cli.py component --project-id 1 --out visualize/output/components.html
+# 而댄룷?뚰듃 ?ㅼ씠?닿렇??python visualize_cli.py component --project-id 1 --out visualize/output/components.html
 
-# 시퀀스(흐름) 다이어그램
-python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
+# ?쒗???먮쫫) ?ㅼ씠?닿렇??python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
   --start-file UserService.java --depth 3
 ```
 
-생성된 HTML은 브라우저에서 열어 인터랙티브하게 탐색할 수 있으며, 상단 툴바에서 PNG로 내보내기(수동)도 지원합니다.
+?앹꽦??HTML? 釉뚮씪?곗??먯꽌 ?댁뼱 ?명꽣?숉떚釉뚰븯寃??먯깋?????덉쑝硫? ?곷떒 ?대컮?먯꽌 PNG濡??대낫?닿린(?섎룞)??吏?먰빀?덈떎.
 
-### 2) 배치 PNG 생성(CI 아티팩트 용)
+### 2) 諛곗튂 PNG ?앹꽦(CI ?꾪떚?⑺듃 ??
 
-CI에서 HTML을 일괄 렌더링하여 PNG로 아카이브하려면 헤드리스 브라우저를 사용하는 방법을 권장합니다. 아래는 Python Playwright 예시입니다.
+CI?먯꽌 HTML???쇨큵 ?뚮뜑留곹븯??PNG濡??꾩뭅?대툕?섎젮硫??ㅻ뱶由ъ뒪 釉뚮씪?곗?瑜??ъ슜?섎뒗 諛⑸쾿??沅뚯옣?⑸땲?? ?꾨옒??Python Playwright ?덉떆?낅땲??
 
 ```bash
 pip install playwright && playwright install chromium
 ```
 
 ```python
-# tools/export_png_batch.py (예시 스니펫)
+# tools/export_png_batch.py (?덉떆 ?ㅻ땲??
 import base64, json, sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -299,7 +312,7 @@ def export_html_to_png(html_path: Path, png_path: Path):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(html_path.as_uri())
-        # 뷰어 내 cy.png() 실행(페이지에 따라 id가 다를 수 있음)
+        # 酉곗뼱 ??cy.png() ?ㅽ뻾(?섏씠吏???곕씪 id媛 ?ㅻ? ???덉쓬)
         b64 = page.evaluate("() => cy.png({full: true, scale: 2, bg: 'white'})")
         png_path.parent.mkdir(parents=True, exist_ok=True)
         png_path.write_bytes(base64.b64decode(b64.split(',')[1] if ',' in b64 else b64))
@@ -311,7 +324,7 @@ if __name__ == '__main__':
         export_html_to_png(html, out_dir / (html.stem + '.png'))
 ```
 
-CI 예시(GitHub Actions):
+CI ?덉떆(GitHub Actions):
 
 ```yaml
 - name: Export visualization PNGs
@@ -329,9 +342,21 @@ CI 예시(GitHub Actions):
     path: visualize/output/*.png
 ```
 
-참고: 오프라인/폐쇄망 환경에서는 뷰어 HTML 내 CDN 스크립트(예: cytoscape, dagre)를 로컬 번들로 교체하는 것을 권장합니다.
+李멸퀬: ?ㅽ봽?쇱씤/?먯뇙留??섍꼍?먯꽌??酉곗뼱 HTML ??CDN ?ㅽ겕由쏀듃(?? cytoscape, dagre)瑜?濡쒖뺄 踰덈뱾濡?援먯껜?섎뒗 寃껋쓣 沅뚯옣?⑸땲??
 
-### 3) 관련 문서
-- 구현 완료 보고: `Visualize_003_Implementation.md`
-- 구현 리뷰: `Visualize_004_Implementation_review.md`
-- 향후 구현 기획: `Visualize_005_Implementation_plan.md`
+### 3) 愿??臾몄꽌
+- 援ы쁽 ?꾨즺 蹂닿퀬: `Visualize_003_Implementation.md`
+- 援ы쁽 由щ럭: `Visualize_004_Implementation_review.md`
+- ?ν썑 援ы쁽 湲고쉷: `Visualize_005_Implementation_plan.md`
+
+## Mermaid/Markdown 내보내기
+- CLI 옵션: --export-mermaid (.md 전체 문서 또는 .mmd/.mermaid 코드만)
+- 예시:
+```bash
+python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+  --export-mermaid visualize/output/erd.md
+
+python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+  --kinds use_table,include --export-mermaid visualize/output/graph.mmd
+```
+

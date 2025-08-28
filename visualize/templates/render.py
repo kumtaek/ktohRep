@@ -10,7 +10,7 @@ def render_html(template_name: str, data: dict) -> str:
     template_path = template_dir / template_name
     
     if not template_path.exists():
-        raise FileNotFoundError(f"Template not found: {template_path}")
+        raise FileNotFoundError(f"템플릿을 찾을 수 없습니다: {template_path}")
     
     with open(template_path, 'r', encoding='utf-8') as f:
         template_content = f.read()

@@ -30,7 +30,7 @@ class VizDB:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f)
         except Exception as e:
-            print(f"Warning: Could not load config from {config_path}: {e}")
+            print(f"경고: 설정 파일을 불러올 수 없습니다: {config_path} ({e})")
             # Return default SQLite config
             return {
                 'database': {

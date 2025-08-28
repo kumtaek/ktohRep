@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Source Analyzer - Dependency Graph</title>
+    <title>Source Analyzer - 의존성 그래프</title>
     <style>
         body, html { 
             margin: 0; 
@@ -90,6 +90,22 @@
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btns = [
+                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
+                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
+                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
+                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
+                { sel: 'button[onclick="togglePhysics()"]', text: '물리 레이아웃', title: '물리 레이아웃 토글' }
+            ];
+            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text; el.title = b.title; } });
+            const search = document.getElementById('search'); if (search) search.placeholder = '노드 검색...';
+            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '노드: <span id="node-count">0</span> | 엣지: <span id="edge-count">0</span>';
+            const h = document.getElementById('info-title'); if (h) h.textContent = '노드 정보';
+            document.title = 'Source Analyzer - 의존성 그래프';
+        });
     </script>
 </head>
 <body>
@@ -402,8 +418,8 @@
             
             title.textContent = data.label || data.id;
             
-            let html = `<p><strong>Type:</strong> ${data.type}</p>`;
-            html += `<p><strong>Group:</strong> ${data.group}</p>`;
+            let html = `<p><strong>유형:</strong> ${data.type}</p>`;
+            html += `<p><strong>그룹:</strong> ${data.group}</p>`;
             html += `<p><strong>ID:</strong> ${data.id}</p>`;
             
             if (data.meta) {
@@ -419,13 +435,13 @@
                 
                 // Special handling for component entities
                 if (data.meta.entities && data.meta.entities.length > 0) {
-                    html += `<p><strong>Entities (${data.meta.total_entities || data.meta.entities.length}):</strong></p>`;
+                    html += `<p><strong>엔티티 (${data.meta.total_entities || data.meta.entities.length}):</strong></p>`;
                     html += '<ul>';
                     data.meta.entities.forEach(entity => {
                         html += `<li>${entity.label} (${entity.type})</li>`;
                     });
                     if (data.meta.total_entities > data.meta.entities.length) {
-                        html += `<li>... and ${data.meta.total_entities - data.meta.entities.length} more</li>`;
+                        html += `<li>... 외 ${data.meta.total_entities - data.meta.entities.length}개</li>`;
                     }
                     html += '</ul>';
                 }
@@ -448,7 +464,7 @@
             cy.fit(node, 100);
         });
 
-        console.log('Dependency graph loaded with', DATA.nodes?.length || 0, 'nodes and', DATA.edges?.length || 0, 'edges');
+        console.log('의존성 그래프 로드 완료:', DATA.nodes?.length || 0, '노드,', DATA.edges?.length || 0, '엣지');
     </script>
 </body>
 </html>

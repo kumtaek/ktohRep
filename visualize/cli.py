@@ -1,4 +1,4 @@
-# visualize/cli.py
+﻿# visualize/cli.py
 import argparse
 import json
 import logging
@@ -12,6 +12,7 @@ from .builders.erd import build_erd_json
 from .builders.component_diagram import build_component_graph_json
 from .builders.sequence_diagram import build_sequence_graph_json
 from .templates.render import render_html
+from .exporters.mermaid_exporter import MermaidExporter
 
 
 def setup_logging(args) -> logging.Logger:
@@ -102,93 +103,138 @@ def export_csv(data: Dict[str, Any], csv_dir: str, logger: logging.Logger) -> No
         raise
 
 
+def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str, 
+                  logger: logging.Logger, metadata: Dict[str, Any] = None,
+                  label_max: int = 20, erd_cols_max: int = 10) -> None:
+    """Mermaid/Markdown ?대낫?닿린 (?뺤옣?먯뿉 ?곕씪 .md ?먮뒗 .mmd)"""
+    try:
+        exporter = MermaidExporter(label_max=label_max, erd_cols_max=erd_cols_max)
+        
+        # Prepare metadata
+        meta_info = metadata or {}
+        title = f"Source Analyzer {diagram_type.upper()} Diagram"
+        if meta_info.get('project_id'):
+            title += f" (Project {meta_info['project_id']})"
+
+        out_path = Path(markdown_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # ?뺤옣?먯뿉 ?곕씪 ?대낫?닿린 ?뺥깭 寃곗젙
+        if out_path.suffix.lower() in ['.mmd', '.mermaid']:
+            content = exporter.export_mermaid(data, diagram_type)
+        else:
+            content = exporter.export_to_markdown(data, diagram_type, title, meta_info)
+        
+        # Write to file
+        with open(out_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        logger.info(f"Mermaid/Markdown ?대낫?닿린 ?꾨즺: {out_path.absolute()}")
+        
+    except Exception as e:
+        logger.error(f"Mermaid/Markdown ?대낫?닿린 ?ㅽ뙣: {e}")
+        raise
+
+
 def main():
-    p = argparse.ArgumentParser(prog='visualize', description='Source Analyzer Visualization Tool')
+    p = argparse.ArgumentParser(prog='visualize', description='Source Analyzer ?쒓컖???꾧뎄')
     sub = p.add_subparsers(dest='cmd', required=True)
 
     def add_common(sp):
-        sp.add_argument('--project-id', type=int, required=True, help='Project ID')
-        sp.add_argument('--out', required=True, help='Output HTML path')
-        sp.add_argument('--min-confidence', type=float, default=0.5, help='Minimum confidence threshold')
-        sp.add_argument('--max-nodes', type=int, default=2000, help='Maximum nodes to display')
+        sp.add_argument('--project-id', type=int, required=True, help='?꾨줈?앺듃 ID')
+        sp.add_argument('--out', required=True, help='異쒕젰 HTML 寃쎈줈')
+        sp.add_argument('--min-confidence', type=float, default=0.5, help='理쒖냼 ?좊ː???꾧퀎媛?)
+        sp.add_argument('--max-nodes', type=int, default=2000, help='理쒕? ?몃뱶 ??)
+        # Mermaid ?듭뀡
+        sp.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid ?쇰꺼 理쒕? 湲몄씠')
+        sp.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 而щ읆 理쒕? ?쒓린 ??)
         # Logging options
         sp.add_argument('-v', '--verbose', action='count', default=0, 
-                       help='Increase verbosity: -v=INFO, -vv=DEBUG')
+                       help='濡쒓렇 ?곸꽭??利앷?: -v=INFO, -vv=DEBUG')
         sp.add_argument('-q', '--quiet', action='store_true', 
-                       help='Quiet mode: only show warnings and errors')
-        sp.add_argument('--log-file', help='Log to file instead of stderr')
+                       help='議곗슜 紐⑤뱶: 寃쎄퀬/?ㅻ쪟留?異쒕젰')
+        sp.add_argument('--log-file', help='?쒖??ㅻ쪟 ????뚯씪濡?濡쒓퉭')
         # Export options
-        sp.add_argument('--export-json', help='Export data as JSON to specified path')
-        sp.add_argument('--export-csv-dir', help='Export data as CSV files to specified directory')
+        sp.add_argument('--export-json', help='JSON?쇰줈 ?대낫?닿린(?뚯씪 寃쎈줈)')
+        sp.add_argument('--export-csv-dir', help='CSV濡??대낫?닿린(?붾젆?좊━ 寃쎈줈)')
+        sp.add_argument('--export-mermaid', help='Mermaid/Markdown?쇰줈 ?대낫?닿린(.md/.mmd 寃쎈줈)')
     
     # Graph command
-    g = sub.add_parser('graph', help='Generate dependency graph')
+    g = sub.add_parser('graph', help='?섏〈??洹몃옒???앹꽦')
     add_common(g)
     g.add_argument('--kinds', default='use_table,include,extends,implements', 
-                   help='Edge kinds to include (comma-separated)')
-    g.add_argument('--focus', help='Start node (name/path/table)')
-    g.add_argument('--depth', type=int, default=2, help='Maximum depth from focus node')
+                   help='?ы븿???ｌ? 醫낅쪟(肄ㅻ쭏 援щ텇)')
+    g.add_argument('--focus', help='?쒖옉 ?몃뱶(?대쫫/寃쎈줈/?뚯씠釉?')
+    g.add_argument('--depth', type=int, default=2, help='?ъ빱??湲곗? 理쒕? 源딆씠')
 
     # ERD command
-    e = sub.add_parser('erd', help='Generate ERD')
+    e = sub.add_parser('erd', help='ERD ?앹꽦')
     add_common(e)
-    e.add_argument('--tables', help='Specific tables to include (comma-separated)')
-    e.add_argument('--owners', help='Specific schema owners (comma-separated)')
-    e.add_argument('--from-sql', help='Generate ERD from SQL (format: mapper_ns:stmt_id)')
+    e.add_argument('--tables', help='?ы븿???뚯씠釉?紐⑸줉(肄ㅻ쭏 援щ텇)')
+    e.add_argument('--owners', help='?ы븿???ㅽ궎留??뚯쑀??紐⑸줉(肄ㅻ쭏 援щ텇)')
+    e.add_argument('--from-sql', help='?뱀젙 SQL 湲곗? ERD (?뺤떇: mapper_ns:stmt_id)')
 
     # Component diagram command
-    c = sub.add_parser('component', help='Generate component diagram')
+    c = sub.add_parser('component', help='而댄룷?뚰듃 ?ㅼ씠?닿렇???앹꽦')
     add_common(c)
 
     # Sequence diagram command
-    s = sub.add_parser('sequence', help='Generate sequence diagram')
+    s = sub.add_parser('sequence', help='?쒗???ㅼ씠?닿렇???앹꽦')
     add_common(s)
-    s.add_argument('--start-file', help='Starting file path')
-    s.add_argument('--start-method', help='Starting method name')
-    s.add_argument('--depth', type=int, default=3, help='Maximum call depth')
+    s.add_argument('--start-file', help='?쒖옉 ?뚯씪 寃쎈줈')
+    s.add_argument('--start-method', help='?쒖옉 硫붿꽌???대쫫')
+    s.add_argument('--depth', type=int, default=3, help='理쒕? ?몄텧 源딆씠')
 
     try:
         args = p.parse_args()
         logger = setup_logging(args)
         
-        logger.info(f"Starting visualization generation: {args.cmd}")
-        logger.debug(f"Arguments: {vars(args)}")
+        logger.info(f"?쒓컖???앹꽦 ?쒖옉: {args.cmd}")
+        logger.debug(f"?몄옄: {vars(args)}")
         
         kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
 
         # Generate visualization data
         if args.cmd == 'graph':
-            logger.info(f"Generating dependency graph for project {args.project_id}")
+            logger.info(f"?섏〈??洹몃옒???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_dependency_graph_json(args.project_id, kinds, args.min_confidence, 
                                              args.focus, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
+            diagram_type = 'graph'
             
         elif args.cmd == 'erd':
-            logger.info(f"Generating ERD for project {args.project_id}")
+            logger.info(f"ERD ?앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_erd_json(args.project_id, args.tables, args.owners, args.from_sql)
             html = render_html('erd_view.html', data)
+            diagram_type = 'erd'
             
         elif args.cmd == 'component':
-            logger.info(f"Generating component diagram for project {args.project_id}")
+            logger.info(f"而댄룷?뚰듃 ?ㅼ씠?닿렇???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_component_graph_json(args.project_id, args.min_confidence, args.max_nodes)
             html = render_html('graph_view.html', data)
+            diagram_type = 'component'
             
         else:  # sequence
-            logger.info(f"Generating sequence diagram for project {args.project_id}")
+            logger.info(f"?쒗???ㅼ씠?닿렇???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_sequence_graph_json(args.project_id, args.start_file, 
                                            args.start_method, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
+            diagram_type = 'sequence'
 
         logger.debug(f"Generated {len(data.get('nodes', []))} nodes and {len(data.get('edges', []))} edges")
 
         # Export data if requested
         if args.export_json:
-            logger.info(f"Exporting JSON to {args.export_json}")
+            logger.info(f"JSON ?대낫?닿린: {args.export_json}")
             export_json(data, args.export_json, logger)
             
         if args.export_csv_dir:
-            logger.info(f"Exporting CSV to {args.export_csv_dir}")
+            logger.info(f"CSV ?대낫?닿린: {args.export_csv_dir}")
             export_csv(data, args.export_csv_dir, logger)
+
+        if args.export_mermaid:
+            logger.info(f"Mermaid/Markdown ?대낫?닿린: {args.export_mermaid}")
+            export_mermaid(data, args.export_mermaid, diagram_type, logger, {'project_id': args.project_id}, label_max=getattr(args, 'mermaid_label_max', 20), erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10))
 
         # Generate and save HTML
         output_path = Path(args.out)
@@ -197,21 +243,21 @@ def main():
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html)
             
-        logger.info(f"Visualization saved to: {output_path.absolute()}")
+        logger.info(f"?쒓컖??HTML ??? {output_path.absolute()}")
         
     except KeyboardInterrupt:
-        print('Interrupted by user', file=sys.stderr)
+        print('?ъ슜?먯뿉 ?섑빐 以묐떒??, file=sys.stderr)
         return 130
     except SystemExit as e:
         # argparse error
         return e.code if isinstance(e.code, int) else 2
     except FileNotFoundError as e:
-        print(f"ERROR: File not found: {e}", file=sys.stderr)
-        print("Check: file paths, permissions, and --project-id argument", file=sys.stderr)
+        print(f"?ㅻ쪟: ?뚯씪??李얠쓣 ???놁뒿?덈떎: {e}", file=sys.stderr)
+        print("?뺤씤: ?뚯씪 寃쎈줈, 沅뚰븳, --project-id ?몄옄", file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"ERROR: Unexpected error during execution: {e}", file=sys.stderr)
-        print("Check: input arguments, data preparation status, use -v for verbose logging", file=sys.stderr)
+        print(f"?ㅻ쪟: ?ㅽ뻾 以??덇린移?紐삵븳 ?ㅻ쪟: {e}", file=sys.stderr)
+        print("?뺤씤: ?낅젰 ?몄옄, ?곗씠??以鍮??곹깭, -v 濡쒓퉭 ?듭뀡", file=sys.stderr)
         return 1
     
     return 0
@@ -219,3 +265,4 @@ def main():
 
 if __name__ == '__main__':
     exit(main())
+

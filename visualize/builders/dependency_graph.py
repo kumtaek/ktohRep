@@ -7,18 +7,18 @@ from ..schema import create_node, create_edge, create_graph, guess_group, filter
 def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: float, 
                                focus: str = None, depth: int = 2, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build dependency graph JSON for visualization"""
-    print(f"Building dependency graph for project {project_id}")
-    print(f"  Kinds: {kinds}")
-    print(f"  Min confidence: {min_conf}")
-    print(f"  Focus: {focus}")
-    print(f"  Max depth: {depth}")
-    print(f"  Max nodes: {max_nodes}")
+    print(f"의존성 그래프 생성: 프로젝트 {project_id}")
+    print(f"  종류: {kinds}")
+    print(f"  최소 신뢰도: {min_conf}")
+    print(f"  포커스: {focus}")
+    print(f"  최대 깊이: {depth}")
+    print(f"  최대 노드 수: {max_nodes}")
     
     db = VizDB()
     
     # Fetch edges based on criteria
     edges = db.fetch_edges(project_id, kinds, min_conf)
-    print(f"  Found {len(edges)} edges")
+    print(f"  엣지 {len(edges)}개 조회")
     
     # Build node and edge collections
     nodes_dict = {}
@@ -58,17 +58,17 @@ def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: flo
         json_edges.append(create_edge(edge_id, src_id, dst_id, edge.edge_kind, edge.confidence))
     
     nodes_list = list(nodes_dict.values())
-    print(f"  Created {len(nodes_list)} nodes")
+    print(f"  노드 {len(nodes_list)}개 생성")
     
     # Apply focus filtering if specified
     if focus:
         nodes_list, json_edges = filter_nodes_by_focus(nodes_list, json_edges, focus, depth)
-        print(f"  After focus filtering: {len(nodes_list)} nodes, {len(json_edges)} edges")
+        print(f"  포커스 필터 후: 노드 {len(nodes_list)}개, 엣지 {len(json_edges)}개")
     
     # Apply node limit
     if len(nodes_list) > max_nodes:
         nodes_list, json_edges = limit_nodes(nodes_list, json_edges, max_nodes)
-        print(f"  After node limit: {len(nodes_list)} nodes, {len(json_edges)} edges")
+        print(f"  노드 제한 적용 후: 노드 {len(nodes_list)}개, 엣지 {len(json_edges)}개")
     
     return create_graph(nodes_list, json_edges)
 

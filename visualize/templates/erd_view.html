@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Source Analyzer - Entity Relationship Diagram</title>
+    <title>Source Analyzer - 엔터티 관계도(ERD)</title>
     <style>
         body, html { 
             margin: 0; 
@@ -90,6 +90,22 @@
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btns = [
+                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
+                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
+                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
+                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
+                { sel: 'button[onclick="toggleLayout()"]', text: '레이아웃', title: '레이아웃 전환' }
+            ];
+            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text + (b.sel.includes('toggleLayout') ? ' (' + (document.getElementById('current-layout')?.textContent || 'dagre') + ')' : ''); el.title = b.title; } });
+            const search = document.getElementById('search'); if (search) search.placeholder = '테이블 검색...';
+            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '테이블: <span id="node-count">0</span> | 관계: <span id="edge-count">0</span>';
+            const h = document.getElementById('info-title'); if (h) h.textContent = '테이블 정보';
+            document.title = 'Source Analyzer - 엔터티 관계도(ERD)';
+        });
     </script>
 </head>
 <body>
@@ -402,33 +418,33 @@
             
             title.textContent = data.label || data.id;
             
-            let html = `<p><strong>Type:</strong> ${data.type}</p>`;
+            let html = `<p><strong>유형:</strong> ${data.type}</p>`;
             
             if (data.meta) {
                 if (data.meta.owner) {
-                    html += `<p><strong>Owner:</strong> ${data.meta.owner}</p>`;
+                    html += `<p><strong>소유자:</strong> ${data.meta.owner}</p>`;
                 }
                 if (data.meta.table_name) {
-                    html += `<p><strong>Table Name:</strong> ${data.meta.table_name}</p>`;
+                    html += `<p><strong>테이블명:</strong> ${data.meta.table_name}</p>`;
                 }
                 if (data.meta.status) {
-                    html += `<p><strong>Status:</strong> ${data.meta.status}</p>`;
+                    html += `<p><strong>상태:</strong> ${data.meta.status}</p>`;
                 }
                 if (data.meta.comment) {
-                    html += `<p><strong>Comment:</strong> ${data.meta.comment}</p>`;
+                    html += `<p><strong>설명:</strong> ${data.meta.comment}</p>`;
                 }
                 if (data.meta.pk_columns && data.meta.pk_columns.length > 0) {
-                    html += `<p><strong>Primary Keys:</strong></p><ul>`;
+                    html += `<p><strong>기본키(PK):</strong></p><ul>`;
                     data.meta.pk_columns.forEach(col => {
                         html += `<li>${col}</li>`;
                     });
                     html += '</ul>';
                 }
                 if (data.meta.columns && data.meta.columns.length > 0) {
-                    html += `<p><strong>Columns:</strong></p>`;
+                    html += `<p><strong>컬럼:</strong></p>`;
                     html += `<div style="max-height: 200px; overflow-y: auto;">`;
                     html += `<table style="width: 100%; border-collapse: collapse;">`;
-                    html += `<tr style="background: #f5f5f5;"><th>Name</th><th>Type</th><th>PK</th><th>Null</th><th>Comment</th></tr>`;
+                    html += `<tr style="background: #f5f5f5;"><th>컬럼명</th><th>타입</th><th>PK</th><th>Null</th><th>설명</th></tr>`;
                     data.meta.columns.slice(0, 50).forEach(col => {
                         const pkMark = col.is_pk ? '✓' : '';
                         const nullMark = col.nullable === 'Y' ? 'Y' : 'N';
@@ -508,16 +524,16 @@
             
             title.textContent = `${sourceLabel} → ${targetLabel}`;
             
-            let html = `<p><strong>Relationship Type:</strong> ${data.kind}</p>`;
-            html += `<p><strong>Confidence:</strong> ${Math.round(data.confidence * 100)}%</p>`;
+            let html = `<p><strong>관계 유형:</strong> ${data.kind}</p>`;
+            html += `<p><strong>신뢰도:</strong> ${Math.round(data.confidence * 100)}%</p>`;
             
             if (data.meta) {
                 if (data.meta.left_column && data.meta.right_column) {
-                    html += `<p><strong>Join Condition:</strong><br/>`;
+                    html += `<p><strong>조인 조건:</strong><br/>`;
                     html += `${data.meta.left_table}.${data.meta.left_column} = ${data.meta.right_table}.${data.meta.right_column}</p>`;
                 }
                 if (data.meta.frequency) {
-                    html += `<p><strong>Join Frequency:</strong> ${data.meta.frequency}</p>`;
+                    html += `<p><strong>조인 빈도:</strong> ${data.meta.frequency}</p>`;
                 }
             }
             

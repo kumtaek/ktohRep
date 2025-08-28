@@ -267,6 +267,89 @@ edge[kind = "call_unresolved"] {
 
 ---
 
+## 추가 구현 내역 (v1.1+)
+
+### 7. fetch_edges() 쿼리 최적화
+**문제**: 복잡한 OR + subquery 구조로 인한 성능 저하
+
+**해결책**:
+```python
+# visualize/data_access.py
+def _get_project_scoped_ids(self, session, project_id: int) -> Dict[str, List[int]]:
+    """Get all project-scoped IDs for efficient edge filtering"""
+    # Step 1: 프로젝트별 ID를 메모리에 사전 로드
+    # Step 2: 단순한 IN 절로 필터링 (복잡한 JOIN 제거)
+```
+
+**효과**: 대규모 프로젝트에서 쿼리 성능 50-80% 향상 예상.
+
+### 8. 키보드 네비게이션 및 다중 레이아웃 지원
+**추가 기능**:
+- 4개 레이아웃 순환: dagre → circle → cose-bilkent → grid
+- 키보드 단축키: `/` (검색), `Ctrl+F` (검색 포커스), `L` (레이아웃 토글), `R` (뷰 재설정)
+- 검색 결과 네비게이션: `↑`/`↓` (이전/다음), `Enter` (선택)
+
+```javascript
+// ERD 뷰에 추가된 기능
+let layoutOptions = {
+    'dagre': { name: 'dagre', rankDir: 'TB', nodeSep: 60, rankSep: 100 },
+    'circle': { name: 'circle', radius: 200 },
+    'cose-bilkent': { name: 'cose-bilkent', idealEdgeLength: 100, nodeRepulsion: 4500 },
+    'grid': { name: 'grid', rows: Math.ceil(Math.sqrt(nodeCount)) }
+};
+```
+
+**사유**: 대규모 그래프에서 cose-bilkent가 더 나은 성능을 제공하며, 키보드 네비게이션으로 접근성 향상.
+
+### 9. 컴포넌트 분류 규칙 외부화
+**구현**:
+```yaml
+# visualize/config/visualization_config.yaml
+component_classification:
+  rules:
+    Controller: ['.*\.controller\..*', '.*Controller\.java$']
+    Service: ['.*\.service\..*', '.*Service\.java$']
+    # ... 기타 규칙들
+  default_component: 'Other'
+  log_mismatches: true
+```
+
+**로깅 기능**:
+```python
+# 매칭 결과 로깅
+print(f"COMPONENT_MATCH: file='{file_path}' -> '{component}' (via PATH:{pattern})")
+print(f"COMPONENT_MISMATCH: No match for file='{file_path}' -> using 'Other'")
+```
+
+**사유**: 프로젝트별 컴포넌트 분류 규칙을 커스터마이징 가능하며, 미매칭 케이스를 로깅하여 규칙 개선에 활용.
+
+### 10. SQLERD 추적 (부분 ERD)
+**기능**: `--from-sql mapper_ns:stmt_id`로 특정 SQL의 부분 ERD 생성
+
+**구현**:
+```python
+# visualize/builders/erd.py
+if target_sql:
+    # 1. 해당 SQL의 조인 대상 테이블만 추출
+    # 2. RequiredFilter 조회하여 필수필터 컬럼 하이라이트
+    # 3. 메타데이터에 sql_context와 required_filters 추가
+```
+
+**UI 개선**:
+- 필터된 컬럼에 🔍 아이콘 및 오렌지 하이라이트
+- 사이드패널에 "Required Filters" 섹션 표시
+- SQL 컨텍스트 정보 표시
+
+**사용 예시**:
+```bash
+python -m visualize erd --project-id 1 --out result.html \
+    --from-sql com.example.UserMapper:selectUsersByRole
+```
+
+**사유**: 특정 SQL 단위의 테이블 의존성을 시각적으로 파악하고, WHERE 절 필수 조건을 명확히 표시하여 SQL 분석 효율성 향상.
+
+---
+
 ## 마이그레이션 가이드
 
 ### 데이터베이스 마이그레이션
@@ -321,9 +404,12 @@ python download_assets.py
 Visualize_006 구현을 통해 Source Analyzer의 시각화 시스템이 안정적이고 실용적인 수준으로 발전했습니다. 
 
 **주요 성과**:
-- ✅ 9개 중요 이슈 100% 해결 완료
+- ✅ **13개 주요 이슈 100% 해결 완료** (Visualize_004: 9개 + 추가: 4개)
 - ✅ 오프라인 환경 지원으로 운영 안정성 확보  
 - ✅ 풍부한 메타데이터 제공으로 분석 효율성 향상
 - ✅ 표준 형식 내보내기로 확장성 확보
+- ✅ 쿼리 성능 최적화로 대규모 프로젝트 지원
+- ✅ 키보드 네비게이션으로 접근성 향상
+- ✅ SQLERD 기능으로 SQL 분석 정확도 향상
 
 이제 실제 프로젝트에서 신뢰성 있게 사용할 수 있는 시각화 도구로 거듭났으며, 향후 더욱 발전된 분석 기능의 토대가 마련되었습니다.

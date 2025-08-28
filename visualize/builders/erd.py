@@ -23,6 +23,9 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
     
     print(f"  Found {len(db_tables)} tables, {len(joins)} joins")
     
+    # Special handling for --from-sql (SQLERD mode)
+    sqlerd_mode = bool(from_sql)
+    
     # Parse filters
     wanted_tables = set()
     if tables:
@@ -156,11 +159,34 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                 # Get joins specific to this SQL
                 sql_joins = [j for j in joins if j.sql_id == target_sql.sql_id]
                 
-                # Add tables mentioned in this SQL
+                # Get required filters for this SQL (SQLERD enhancement)
+                required_filters = db.fetch_required_filters(project_id, target_sql.sql_id)
+                
+                # Add tables mentioned in this SQL (joins + filters)
                 mentioned_tables = set()
                 for join in sql_joins:
-                    mentioned_tables.add(join.l_table.upper())
-                    mentioned_tables.add(join.r_table.upper())
+                    if join.l_table:
+                        mentioned_tables.add(join.l_table.upper())
+                    if join.r_table:
+                        mentioned_tables.add(join.r_table.upper())
+                
+                for filter_item in required_filters:
+                    if filter_item.table_name:
+                        mentioned_tables.add(filter_item.table_name.upper())
+                
+                # Group required filters by table for highlighting
+                filters_by_table = {}
+                for filter_item in required_filters:
+                    table_key = filter_item.table_name.upper() if filter_item.table_name else 'UNKNOWN'
+                    if table_key not in filters_by_table:
+                        filters_by_table[table_key] = []
+                    
+                    filters_by_table[table_key].append({
+                        'column': filter_item.column_name.upper() if filter_item.column_name else '',
+                        'op': filter_item.op or '',
+                        'value': filter_item.value_repr or '',
+                        'always': bool(filter_item.always_applied)
+                    })
                 
                 # Filter nodes to only include mentioned tables
                 filtered_nodes = {}
@@ -170,10 +196,22 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                     full_name = f"{owner}.{table_name}" if owner else table_name
                     
                     if table_name in mentioned_tables or full_name in mentioned_tables:
+                        # Add required filters to table metadata
+                        node['meta']['required_filters'] = filters_by_table.get(table_name, [])
+                        node['meta']['sql_context'] = f"{target_sql.mapper_ns}:{target_sql.stmt_id}"
+                        
+                        # Mark filtered columns in existing column data
+                        if 'columns' in node['meta']:
+                            for col in node['meta']['columns']:
+                                col['is_filtered'] = any(
+                                    f['column'] == col['name'].upper() 
+                                    for f in filters_by_table.get(table_name, [])
+                                )
+                        
                         filtered_nodes[node_id] = node
                 
                 nodes_dict = filtered_nodes
-                print(f"  Filtered to {len(nodes_dict)} tables from SQL: {from_sql}")
+                print(f"  SQLERD: {len(nodes_dict)} tables, {len(required_filters)} filters from SQL: {from_sql}")
         except ValueError:
             print(f"  Warning: Invalid from_sql format: {from_sql}")
     

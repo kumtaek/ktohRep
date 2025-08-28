@@ -53,25 +53,43 @@ class VizDB:
         finally:
             session.close()
 
+    def _get_project_scoped_ids(self, session, project_id: int) -> Dict[str, List[int]]:
+        """Get all project-scoped IDs for efficient edge filtering"""
+        # Get file IDs
+        file_ids = [f.file_id for f in session.query(File.file_id).filter(File.project_id == project_id).all()]
+        
+        # Get class IDs
+        class_ids = [c.class_id for c in session.query(Class.class_id).join(File).filter(File.project_id == project_id).all()]
+        
+        # Get method IDs  
+        method_ids = [m.method_id for m in session.query(Method.method_id).join(Class).join(File).filter(File.project_id == project_id).all()]
+        
+        # Get SQL unit IDs
+        sql_ids = [s.sql_id for s in session.query(SqlUnit.sql_id).join(File).filter(File.project_id == project_id).all()]
+        
+        return {
+            'file_ids': file_ids,
+            'class_ids': class_ids,
+            'method_ids': method_ids,
+            'sql_ids': sql_ids
+        }
+
     def fetch_edges(self, project_id: int, kinds: List[str] = None, min_conf: float = 0.0) -> List[Edge]:
-        """Fetch edges with optional filtering by kind and confidence"""
+        """Fetch edges with optional filtering by kind and confidence (optimized)"""
         session = self.session()
         try:
-            # Build base query - join with File to filter by project
-            query = session.query(Edge).join(File, 
+            # Step 1: Get all project-scoped IDs in memory (much faster)
+            project_ids = self._get_project_scoped_ids(session, project_id)
+            
+            # Step 2: Filter edges using simple IN clauses
+            query = session.query(Edge).filter(
                 or_(
-                    and_(Edge.src_type == 'file', Edge.src_id == File.file_id),
-                    and_(Edge.src_type == 'class', Edge.src_id.in_(
-                        session.query(Class.class_id).join(File).filter(File.project_id == project_id).subquery()
-                    )),
-                    and_(Edge.src_type == 'method', Edge.src_id.in_(
-                        session.query(Method.method_id).join(Class).join(File).filter(File.project_id == project_id).subquery()
-                    )),
-                    and_(Edge.src_type == 'sql_unit', Edge.src_id.in_(
-                        session.query(SqlUnit.sql_id).join(File).filter(File.project_id == project_id).subquery()
-                    ))
+                    and_(Edge.src_type == 'file', Edge.src_id.in_(project_ids['file_ids'])),
+                    and_(Edge.src_type == 'class', Edge.src_id.in_(project_ids['class_ids'])),
+                    and_(Edge.src_type == 'method', Edge.src_id.in_(project_ids['method_ids'])),
+                    and_(Edge.src_type == 'sql_unit', Edge.src_id.in_(project_ids['sql_ids']))
                 )
-            ).filter(File.project_id == project_id)
+            )
             
             # Apply confidence filter
             if min_conf > 0:
@@ -141,6 +159,19 @@ class VizDB:
             sorted_joins = sorted(join_patterns.values(), key=lambda x: (-x['frequency'], -x['confidence']))
             return sorted_joins[:limit]
             
+        finally:
+            session.close()
+
+    def fetch_required_filters(self, project_id: int, sql_id: int = None) -> List[RequiredFilter]:
+        """Fetch required filters, optionally for a specific SQL unit"""
+        session = self.session()
+        try:
+            query = session.query(RequiredFilter).join(SqlUnit).join(File).filter(File.project_id == project_id)
+            
+            if sql_id:
+                query = query.filter(RequiredFilter.sql_id == sql_id)
+                
+            return query.all()
         finally:
             session.close()
 

@@ -1,23 +1,55 @@
 # visualize/builders/component_diagram.py
 from typing import Dict, Any, List
 import re
+import yaml
+import logging
+from pathlib import Path
 from collections import defaultdict
 from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph
 
 
-# Component classification rules
-COMPONENT_RULES = {
-    'Controller': [r'.*\.controller\..*', r'.*Controller\.java$'],
-    'Service': [r'.*\.service\..*', r'.*Service\.java$'],
-    'Repository': [r'.*\.repository\..*', r'.*Repository\.java$'],
-    'Mapper': [r'.*Mapper\.xml$', r'.*\.mapper\..*'],
-    'JSP': [r'.*/WEB-INF/jsp/.*\.jsp$', r'.*\.jsp$'],
-    'Entity': [r'.*\.entity\..*', r'.*\.model\..*', r'.*\.domain\..*'],
-    'Util': [r'.*\.util\..*', r'.*Utils?\.java$'],
-    'Config': [r'.*\.config\..*', r'.*Config\.java$'],
-    'DB': [r'^TABLE:.*']
-}
+def load_component_config() -> Dict[str, Any]:
+    """Load component classification configuration"""
+    config_path = Path(__file__).parent.parent / "config" / "visualization_config.yaml"
+    
+    # Default configuration (fallback)
+    default_config = {
+        'component_classification': {
+            'rules': {
+                'Controller': [r'.*\.controller\..*', r'.*Controller\.java$'],
+                'Service': [r'.*\.service\..*', r'.*Service\.java$'],
+                'Repository': [r'.*\.repository\..*', r'.*Repository\.java$'],
+                'Mapper': [r'.*Mapper\.xml$', r'.*\.mapper\..*'],
+                'JSP': [r'.*/WEB-INF/jsp/.*\.jsp$', r'.*\.jsp$'],
+                'Entity': [r'.*\.entity\..*', r'.*\.model\..*', r'.*\.domain\..*'],
+                'Util': [r'.*\.util\..*', r'.*Utils?\.java$'],
+                'Config': [r'.*\.config\..*', r'.*Config\.java$'],
+                'DB': [r'^TABLE:.*']
+            },
+            'default_component': 'Other',
+            'log_mismatches': True
+        }
+    }
+    
+    try:
+        if config_path.exists():
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+                return config
+        else:
+            print(f"Config file not found: {config_path}, using defaults")
+    except Exception as e:
+        print(f"Error loading config: {e}, using defaults")
+    
+    return default_config
+
+
+# Load configuration at module level
+CONFIG = load_component_config()
+COMPONENT_RULES = CONFIG['component_classification']['rules']
+DEFAULT_COMPONENT = CONFIG['component_classification'].get('default_component', 'Other')
+LOG_MISMATCHES = CONFIG['component_classification'].get('log_mismatches', True)
 
 
 def build_component_graph_json(project_id: int, min_conf: float, max_nodes: int = 2000) -> Dict[str, Any]:
@@ -164,19 +196,37 @@ def build_component_graph_json(project_id: int, min_conf: float, max_nodes: int 
 
 def decide_component_group(file_path: str, fqn: str = None) -> str:
     """Decide which component group an entity belongs to"""
+    matched_component = None
+    matched_pattern = None
+    
     # Check FQN first if available
     if fqn:
         for component, patterns in COMPONENT_RULES.items():
             for pattern in patterns:
                 if re.search(pattern, fqn, re.IGNORECASE):
-                    return component
+                    matched_component = component
+                    matched_pattern = f"FQN:{pattern}"
+                    break
+            if matched_component:
+                break
     
-    # Check file path
-    if file_path:
+    # Check file path if no FQN match
+    if not matched_component and file_path:
         for component, patterns in COMPONENT_RULES.items():
             for pattern in patterns:
                 if re.search(pattern, file_path, re.IGNORECASE):
-                    return component
+                    matched_component = component
+                    matched_pattern = f"PATH:{pattern}"
+                    break
+            if matched_component:
+                break
     
-    # Default classification
-    return 'Code'
+    # Use default if no match
+    if not matched_component:
+        matched_component = DEFAULT_COMPONENT
+        if LOG_MISMATCHES:
+            print(f"COMPONENT_MISMATCH: No match for file='{file_path}', fqn='{fqn}' -> using '{DEFAULT_COMPONENT}'")
+    elif LOG_MISMATCHES:
+        print(f"COMPONENT_MATCH: file='{file_path}', fqn='{fqn}' -> '{matched_component}' (via {matched_pattern})")
+    
+    return matched_component

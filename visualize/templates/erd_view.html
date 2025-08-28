@@ -98,7 +98,7 @@
         <button onclick="cy.center()" title="Center view">🎯 Center</button>
         <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
         <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
-        <button onclick="toggleLayout()" title="Toggle layout">📐 Layout</button>
+        <button onclick="toggleLayout()" title="Toggle layout">📐 Layout (<span id="current-layout">dagre</span>)</button>
         <input id="search" placeholder="Search tables..." oninput="searchNode(this.value)" />
         <div class="stats" id="stats">
             Tables: <span id="node-count">0</span> | 
@@ -146,6 +146,34 @@
         }
 
         let currentLayout = 'dagre';
+        let layoutOptions = {
+            'dagre': {
+                name: 'dagre',
+                rankDir: 'TB',
+                nodeSep: 60,
+                rankSep: 100,
+                animate: true
+            },
+            'circle': {
+                name: 'circle',
+                animate: true,
+                radius: 200
+            },
+            'cose-bilkent': {
+                name: 'cose-bilkent',
+                idealEdgeLength: 100,
+                nodeRepulsion: 4500,
+                animate: true,
+                animationDuration: 1000
+            },
+            'grid': {
+                name: 'grid',
+                animate: true,
+                rows: Math.ceil(Math.sqrt(elements.filter(e => e.data.id.startsWith('table')).length))
+            }
+        };
+        let searchResults = [];
+        let currentSearchIndex = -1;
 
         // Initialize Cytoscape
         const cy = cytoscape({
@@ -247,6 +275,16 @@
                         'target-arrow-color': '#ff6b6b',
                         'width': 5
                     }
+                },
+                
+                // Search result highlighting
+                {
+                    selector: 'node.search-selected',
+                    style: {
+                        'border-width': 6,
+                        'border-color': '#00c851',
+                        'background-color': '#e8f5e8'
+                    }
                 }
             ],
             layout: {
@@ -313,37 +351,32 @@
         }
 
         function resetView() {
-            const layoutOptions = currentLayout === 'dagre' ? 
-                {
-                    name: 'dagre',
-                    rankDir: 'TB',
-                    nodeSep: 60,
-                    rankSep: 100,
-                    animate: true
-                } :
-                {
-                    name: 'circle',
-                    animate: true,
-                    radius: 200
-                };
-            
-            cy.layout(layoutOptions).run();
+            cy.layout(layoutOptions[currentLayout]).run();
         }
 
         function toggleLayout() {
-            currentLayout = currentLayout === 'dagre' ? 'circle' : 'dagre';
+            const layouts = ['dagre', 'circle', 'cose-bilkent', 'grid'];
+            const currentIndex = layouts.indexOf(currentLayout);
+            const nextIndex = (currentIndex + 1) % layouts.length;
+            currentLayout = layouts[nextIndex];
+            
+            // Update UI
+            document.getElementById('current-layout').textContent = currentLayout;
+            
             resetView();
         }
 
         function searchNode(query) {
             cy.nodes().removeClass('highlighted');
+            currentSearchIndex = -1;
+            searchResults = [];
             
             if (!query.trim()) {
                 cy.nodes().unselect();
                 return;
             }
             
-            const matchedNodes = cy.nodes().filter(node => {
+            searchResults = cy.nodes().filter(node => {
                 const label = node.data('label') || '';
                 const meta = node.data('meta') || {};
                 
@@ -400,8 +433,12 @@
                         const pkMark = col.is_pk ? '✓' : '';
                         const nullMark = col.nullable === 'Y' ? 'Y' : 'N';
                         const comment = col.comment || '';
-                        html += `<tr style="border-bottom: 1px solid #ddd;">`;
-                        html += `<td style="padding: 2px 4px; font-weight: ${col.is_pk ? 'bold' : 'normal'};">${col.name}</td>`;
+                        const isFiltered = col.is_filtered || false;
+                        const rowStyle = isFiltered ? 'border-bottom: 1px solid #ddd; background-color: #fff3e0;' : 'border-bottom: 1px solid #ddd;';
+                        const nameStyle = `padding: 2px 4px; font-weight: ${col.is_pk ? 'bold' : 'normal'}; ${isFiltered ? 'color: #ff6900; font-weight: bold;' : ''}`;
+                        
+                        html += `<tr style="${rowStyle}">`;
+                        html += `<td style="${nameStyle}">${col.name}${isFiltered ? ' 🔍' : ''}</td>`;
                         html += `<td style="padding: 2px 4px;">${col.data_type || ''}</td>`;
                         html += `<td style="padding: 2px 4px; text-align: center;">${pkMark}</td>`;
                         html += `<td style="padding: 2px 4px; text-align: center;">${nullMark}</td>`;
@@ -418,6 +455,17 @@
                         html += ` <small>(freq: ${j.frequency}, conf: ${confidence}%)</small></li>`;
                     });
                     html += '</ul>';
+                }
+                if (data.meta.required_filters && data.meta.required_filters.length > 0) {
+                    html += `<p><strong>Required Filters:</strong></p><ul>`;
+                    data.meta.required_filters.forEach(f => {
+                        const alwaysMark = f.always ? ' (ALWAYS)' : '';
+                        html += `<li><strong>${f.column}</strong> ${f.op} <code>${f.value}</code>${alwaysMark}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                if (data.meta.sql_context) {
+                    html += `<p><strong>SQL Context:</strong> <code>${data.meta.sql_context}</code></p>`;
                 }
             }
             
@@ -489,6 +537,72 @@
             const node = evt.target;
             const connectedNodes = node.neighborhood().union(node);
             cy.fit(connectedNodes, 50);
+        });
+
+        // Keyboard navigation
+        function navigateSearchResults(direction) {
+            if (searchResults.length === 0) return;
+            
+            // Remove previous selection
+            if (currentSearchIndex >= 0 && currentSearchIndex < searchResults.length) {
+                searchResults[currentSearchIndex].removeClass('search-selected');
+            }
+            
+            // Move to next/previous
+            if (direction === 'next') {
+                currentSearchIndex = (currentSearchIndex + 1) % searchResults.length;
+            } else if (direction === 'prev') {
+                currentSearchIndex = currentSearchIndex <= 0 ? searchResults.length - 1 : currentSearchIndex - 1;
+            }
+            
+            // Highlight and focus on current result
+            const selectedNode = searchResults[currentSearchIndex];
+            selectedNode.addClass('search-selected');
+            cy.center(selectedNode);
+            
+            // Update search info
+            document.getElementById('search').placeholder = 
+                `Result ${currentSearchIndex + 1} of ${searchResults.length}`;
+        }
+        
+        // Global keyboard event handler
+        document.addEventListener('keydown', function(event) {
+            // Only handle if search has focus or results exist
+            const searchInput = document.getElementById('search');
+            const isSearchFocused = document.activeElement === searchInput;
+            
+            if (isSearchFocused && searchResults.length > 0) {
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    navigateSearchResults('next');
+                } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    navigateSearchResults('prev');
+                } else if (event.key === 'Enter' && currentSearchIndex >= 0) {
+                    event.preventDefault();
+                    // Select the current search result
+                    const selectedNode = searchResults[currentSearchIndex];
+                    selectedNode.select();
+                    searchInput.blur(); // Remove focus from search
+                }
+            }
+            
+            // Global shortcuts (work anywhere)
+            if (!isSearchFocused) {
+                if (event.key === '/') {
+                    event.preventDefault();
+                    searchInput.focus();
+                } else if (event.key === 'f' && event.ctrlKey) {
+                    event.preventDefault();
+                    searchInput.focus();
+                } else if (event.key === 'l') {
+                    event.preventDefault();
+                    toggleLayout();
+                } else if (event.key === 'r') {
+                    event.preventDefault();
+                    resetView();
+                }
+            }
         });
 
         console.log('ERD loaded with', DATA.nodes?.length || 0, 'tables and', DATA.edges?.length || 0, 'relationships');

@@ -1,0 +1,77 @@
+```yaml
+# Visualization Configuration for Source Analyzer
+# This file contains customizable rules and settings for visualization components
+
+component_classification:
+  # Component classification rules
+  # Each rule is a list of regex patterns that match file paths or entity types
+  rules:
+    Controller:
+      - '.*\.controller\..*'
+      - '.*Controller\.java$'
+    Service:
+      - '.*\.service\..*' 
+      - '.*Service\.java$'
+    Repository:
+      - '.*\.repository\..*'
+      - '.*Repository\.java$'
+    Mapper:
+      - '.*Mapper\.xml$'
+      - '.*\.mapper\..*'
+    JSP:
+      - '.*/WEB-INF/jsp/.*\.jsp$'
+      - '.*\.jsp$'
+    Entity:
+      - '.*\.entity\..*'
+      - '.*\.model\..*'
+      - '.*\.domain\..*'
+    Util:
+      - '.*\.util\..*'
+      - '.*Utils?\.java$'
+    Config:
+      - '.*\.config\..*'
+      - '.*Config\.java$'
+    DB:
+      - '^TABLE:.*'
+  
+  # Default component for unmatched entities
+  default_component: 'Other'
+  
+  # Enable logging for mismatched classifications
+  log_mismatches: true
+
+layout_options:
+  # Default layout for each visualization type
+  default_layouts:
+    erd: 'dagre'
+    graph: 'cose-bilkent'
+    component: 'circle'
+    sequence: 'dagre'
+  
+  # Available layouts for each type
+  available_layouts:
+    erd: ['dagre', 'circle', 'cose-bilkent', 'grid']
+    graph: ['dagre', 'circle', 'cose-bilkent', 'concentric']
+    component: ['circle', 'dagre', 'cose-bilkent', 'concentric']
+    sequence: ['dagre', 'breadthfirst']
+
+ui_settings:
+  # Search and navigation
+  search:
+    highlight_color: '#00c851'
+    max_results: 100
+  
+  # Keyboard shortcuts
+  shortcuts:
+    search: '/'
+    focus_search: 'Ctrl+F'
+    toggle_layout: 'L'
+    reset_view: 'R'
+    export_png: 'Ctrl+S'
+  
+  # Performance settings
+  performance:
+    max_nodes_default: 2000
+    lazy_rendering_threshold: 500
+    animation_duration: 1000
+```

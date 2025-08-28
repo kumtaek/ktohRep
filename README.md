@@ -53,39 +53,41 @@ pip install -r requirements.txt
 1.  **Wheelhouse 생성**: 인터넷 연결이 가능한 환경에서 다음 명령을 사용하여 모든 Python 패키지의 휠(wheel) 파일을 다운로드합니다.
     ```bash
     pip wheel -r requirements.txt -w ./wheelhouse
-    # 2단계 LLM/RAG 관련 패키지 (주석 해제 후)
+    # 2단계 LLM/RAG 관련 패키지 (requirements.txt에서 주석 해제 후)
     # pip wheel -r requirements.txt -w ./wheelhouse --only-binary :all:
     ```
 2.  **오프라인 설치**: 생성된 `wheelhouse` 폴더를 폐쇄망 환경으로 옮긴 후, 다음 명령으로 설치합니다.
     ```bash
     pip install --no-index --find-links=./wheelhouse -r requirements.txt
     ```
+    **참고**: `lxml` 패키지는 빌드 환경에 따라 컴파일이 필요할 수 있습니다. `pip wheel` 명령 시 `lxml`에 대한 특정 플랫폼용 휠이 생성되었는지 확인하고, 필요한 경우 `lxml` 공식 문서(https://lxml.de/installation.html)를 참조하여 오프라인 빌드 방법을 따릅니다.
 
-#### 2.2. LLM 및 임베딩 모델
+#### 2.2. JavaScript 시각화 라이브러리
 
-Qwen2.5 (7B/32B), BGE-m3, ko-sentence-transformers, BGE reranker v2와 같은 LLM 및 임베딩 모델은 Hugging Face 등에서 모델 가중치 파일을 직접 다운로드하여 특정 경로(예: `models/llm`, `models/embedding`)에 배치해야 합니다. vLLM 설정 시 해당 로컬 경로를 지정합니다.
+시각화 모듈(`visualize/`)은 Cytoscape.js, Dagre.js 등의 JavaScript 라이브러리를 사용합니다. 이들은 `visualize/static/vendor/` 경로에 로컬로 번들링되어야 합니다.
 
-#### 2.3. vLLM 설치
+1.  **에셋 다운로드**: 인터넷 연결이 가능한 환경에서 다음 스크립트를 실행하여 필요한 JavaScript 에셋을 다운로드합니다.
+    ```bash
+    python visualize/static/vendor/download_assets.py
+    ```
+    이 스크립트는 `visualize/static/vendor/` 폴더에 `cytoscape.min.js`, `dagre.min.js`, `cytoscape-dagre.js` 등을 다운로드합니다.
+2.  **오프라인 배치**: 다운로드된 `visualize/static/vendor/` 폴더 전체를 폐쇄망 환경으로 옮겨 시스템의 `visualize/static/vendor/` 경로에 배치합니다.
 
-vLLM은 LLM 서빙을 위한 고성능 라이브러리입니다. Python 패키지 설치 외에 CUDA 환경 설정 및 특정 버전의 PyTorch/CUDA Toolkit이 필요할 수 있습니다. vLLM 공식 문서(https://vllm.ai/docs/getting_started/installation.html)를 참조하여 폐쇄망 환경에 맞는 설치 방법을 따릅니다. 필요한 경우 vLLM의 소스 코드를 다운로드하여 오프라인에서 빌드해야 할 수도 있습니다.
+#### 2.3. Java 개발 환경 (JDK)
 
-#### 2.4. Java 라이브러리 (JavaParser, ANTLR, JSQLParser)
+Java 소스 코드(`*.java`)를 파싱하기 위해 `javalang` 라이브러리가 사용됩니다. `javalang` 자체는 Python 라이브러리이지만, Java 소스 코드 분석의 맥락상 Java 개발 환경(JDK)이 필요할 수 있습니다. 폐쇄망 환경에 맞는 JDK를 설치합니다.
 
-Java 기반 파서(JavaParser, ANTLR, JSQLParser)를 사용하는 경우, 해당 `.jar` 파일을 다운로드하여 시스템의 클래스패스에 추가하거나, Python 바인딩이 필요한 경우 해당 바인딩의 오프라인 설치 절차를 따릅니다.
+#### 2.4. Oracle 11g 데이터베이스
 
-#### 2.5. Tree-Sitter
+운영 환경에서 Oracle 11g 데이터베이스를 사용하는 경우, 표준 오프라인 설치 절차에 따라 설치 및 구성합니다. `cx_oracle` Python 패키지는 Oracle Client 라이브러리에 의존하므로, Oracle Client도 오프라인으로 설치해야 합니다.
 
-Tree-Sitter 코어 라이브러리 및 Java, JSP, SQL 등 필요한 언어 문법 파일을 다운로드하여 로컬에 배치해야 합니다. Python `tree_sitter` 패키지 설치 시 해당 로컬 파일을 참조하도록 설정합니다.
+#### 2.5. LLM 관련 (2단계 개발 시 필요)
 
-#### 2.6. JavaScript 라이브러리 (Cytoscape.js, Dagre.js)
+현재 1단계 메타정보 생성 시스템에서는 LLM이 직접 사용되지 않습니다. 2단계 LLM 기반 질의응답 및 영향평가 기능 개발 시 다음 항목들이 추가로 필요합니다.
 
-시각화 모듈에서 사용하는 Cytoscape.js, cytoscape-dagre.js 등의 JavaScript 라이브러리는 외부 CDN에 의존하지 않도록, 해당 `.js` 파일을 다운로드하여 `visualize/static/` 폴더에 배치하고 HTML 템플릿에서 로컬 경로를 참조하도록 수정해야 합니다.
-
-#### 2.7. Oracle 11g 데이터베이스
-
-Oracle 11g 데이터베이스 시스템은 표준 오프라인 설치 절차에 따라 설치 및 구성합니다. `cx_oracle` Python 패키지는 Oracle Client 라이브러리에 의존하므로, Oracle Client도 오프라인으로 설치해야 합니다.
-
-### 3. 설정 파일 수정
+1.  **LLM 및 임베딩 모델**: Qwen2.5 (7B/32B), BGE-m3, ko-sentence-transformers, BGE reranker v2와 같은 모델 가중치 파일을 Hugging Face 등에서 직접 다운로드하여 특정 경로(예: `models/llm`, `models/embedding`)에 배치해야 합니다.
+2.  **vLLM 설치**: LLM 서빙을 위한 vLLM 및 해당 종속성(CUDA, PyTorch 등)을 오프라인으로 설치합니다. vLLM 공식 문서를 참조하여 폐쇄망 환경에 맞는 설치 방법을 따릅니다.
+3.  **Python 패키지**: `openai`, `langchain`, `faiss-cpu`, `sentence-transformers`, `fastapi`, `uvicorn` 등 2단계 관련 Python 패키지들을 `requirements.txt`에서 주석 해제 후 2.1. Python 패키지 섹션의 오프라인 설치 절차를 따릅니다.
 
 `config/config.yaml` 파일에서 데이터베이스와 분석 옵션을 설정합니다.
 

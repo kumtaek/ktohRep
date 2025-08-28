@@ -18,6 +18,7 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
     # Get database schema information
     db_tables = db.fetch_tables()
     pk_info = db.fetch_pk()
+    columns_info = db.fetch_columns()
     joins = db.fetch_joins_for_project(project_id)
     
     print(f"  Found {len(db_tables)} tables, {len(joins)} joins")
@@ -51,11 +52,29 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
             if pk.table_id == table.table_id:
                 pk_columns.append(pk.column_name)
         
+        # Get column details for this table
+        table_columns = []
+        for col in columns_info:
+            if col.table_id == table.table_id:
+                table_columns.append({
+                    'name': col.column_name,
+                    'data_type': col.data_type,
+                    'nullable': col.nullable,
+                    'is_pk': col.column_name in pk_columns,
+                    'comment': getattr(col, 'column_comment', None)
+                })
+        
+        # Get sample joins for this table
+        sample_joins = db.fetch_sample_joins_for_table(table.table_id, limit=5)
+        
         table_meta = {
             'owner': table.owner,
             'table_name': table.table_name,
             'status': getattr(table, 'status', 'VALID'),
-            'pk_columns': pk_columns
+            'pk_columns': pk_columns,
+            'comment': getattr(table, 'table_comment', None),
+            'columns': table_columns,
+            'sample_joins': sample_joins
         }
         
         node_id = f"table:{table_key}"

@@ -2,7 +2,7 @@
 
 # 데이터베이스
 sqlalchemy>=1.4.0
-sqlite3
+
 
 # 설정 및 로깅
 pyyaml>=6.0

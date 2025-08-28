@@ -99,6 +99,7 @@ class DbTable(Base):
     owner = Column(String(128))
     table_name = Column(String(128), nullable=False)
     status = Column(String(50))
+    table_comment = Column(Text)  # Table comment/description
     
     # Relationships
     columns = relationship("DbColumn", back_populates="table", cascade="all, delete-orphan")
@@ -112,6 +113,7 @@ class DbColumn(Base):
     column_name = Column(String(128), nullable=False)
     data_type = Column(String(128))
     nullable = Column(String(1))  # Y/N
+    column_comment = Column(Text)  # Column comment/description
     
     # Relationships
     table = relationship("DbTable", back_populates="columns")
@@ -141,7 +143,7 @@ class Edge(Base):
     src_type = Column(String(50), nullable=False)  # method, class, sql_unit, etc.
     src_id = Column(Integer, nullable=False)
     dst_type = Column(String(50), nullable=False)
-    dst_id = Column(Integer, nullable=False)
+    dst_id = Column(Integer, nullable=True)  # Allow NULL for unresolved edges
     edge_kind = Column(String(50), nullable=False)  # call, use_table, use_column, etc.
     confidence = Column(Float, default=1.0)
 

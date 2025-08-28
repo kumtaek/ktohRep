@@ -100,6 +100,49 @@ class VizDB:
             return session.query(DbPk).all()
         finally:
             session.close()
+    
+    def fetch_columns(self) -> List[DbColumn]:
+        """Fetch all column information"""
+        session = self.session()
+        try:
+            return session.query(DbColumn).all()
+        finally:
+            session.close()
+    
+    def fetch_sample_joins_for_table(self, table_id: int, limit: int = 5) -> List[Dict[str, Any]]:
+        """Fetch sample join information for a specific table"""
+        session = self.session()
+        try:
+            # Get join patterns for this table - both as left and right table
+            joins = session.query(Join).join(SqlUnit).join(File).filter(
+                or_(
+                    func.upper(Join.left_table).like(f'%{table_id}%'),  # Simplified for now
+                    func.upper(Join.right_table).like(f'%{table_id}%')
+                )
+            ).limit(limit * 2).all()  # Get more to filter and rank
+            
+            # Process and rank joins by frequency
+            join_patterns = {}
+            for join in joins:
+                key = f"{join.left_table}|{join.right_table}|{join.left_column}|{join.right_column}"
+                if key not in join_patterns:
+                    join_patterns[key] = {
+                        'left_table': join.left_table,
+                        'right_table': join.right_table,
+                        'left_column': join.left_column,
+                        'right_column': join.right_column,
+                        'frequency': 0,
+                        'confidence': join.confidence
+                    }
+                join_patterns[key]['frequency'] += 1
+                join_patterns[key]['confidence'] = max(join_patterns[key]['confidence'], join.confidence)
+            
+            # Sort by frequency and return top N
+            sorted_joins = sorted(join_patterns.values(), key=lambda x: (-x['frequency'], -x['confidence']))
+            return sorted_joins[:limit]
+            
+        finally:
+            session.close()
 
     def fetch_joins_for_project(self, project_id: int) -> List[Join]:
         """Fetch all joins for a specific project"""
@@ -174,11 +217,29 @@ class VizDB:
                         'line': sql.start_line
                     }
             elif node_type == 'table':
-                # For table nodes, node_id might be the table name
-                return {
-                    'name': node_id,
-                    'type': 'table'
-                }
+                # Handle table nodes by table_id or name lookup
+                if isinstance(node_id, int):
+                    # Lookup by table_id
+                    table = session.query(DbTable).filter(DbTable.table_id == node_id).first()
+                else:
+                    # Lookup by table name (fallback)
+                    table = session.query(DbTable).filter(DbTable.table_name.ilike(f'%{node_id}%')).first()
+                
+                if table:
+                    return {
+                        'name': f"{table.owner}.{table.table_name}" if table.owner else table.table_name,
+                        'type': 'table',
+                        'owner': table.owner,
+                        'table_name': table.table_name,
+                        'table_id': table.table_id,
+                        'status': getattr(table, 'status', 'VALID')
+                    }
+                else:
+                    # Fallback for unknown table
+                    return {
+                        'name': str(node_id),
+                        'type': 'table'
+                    }
         finally:
             session.close()
         return None

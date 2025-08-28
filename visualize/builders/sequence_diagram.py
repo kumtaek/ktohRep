@@ -16,8 +16,8 @@ def build_sequence_graph_json(project_id: int, start_file: str = None, start_met
     
     db = VizDB()
     
-    # Get all edges for call tracing
-    edges = db.fetch_edges(project_id, ['call', 'use_table', 'call_sql'], 0.3)
+    # Get all edges for call tracing (including unresolved calls)
+    edges = db.fetch_edges(project_id, ['call', 'call_unresolved', 'use_table', 'call_sql'], 0.0)
     
     # Find starting point
     start_nodes = _find_start_nodes(db, project_id, start_file, start_method)
@@ -122,8 +122,12 @@ def _trace_call_sequence(db: VizDB, edges: List, start_nodes: List[Dict[str, Any
             
             if target_id not in visited or current_depth == 0:  # Allow revisit at depth 0
                 # Get target node details
-                node_type, node_id = target_id.split(':', 1)
-                target_details = db.get_node_details(node_type, int(node_id))
+                node_type, raw_id = target_id.split(':', 1)
+                try:
+                    node_id = int(raw_id) if node_type in ('file', 'class', 'method', 'sql_unit') and raw_id.isdigit() else raw_id
+                except ValueError:
+                    node_id = raw_id
+                target_details = db.get_node_details(node_type, node_id)
                 
                 if target_details:
                     target_node = {
@@ -139,8 +143,9 @@ def _trace_call_sequence(db: VizDB, edges: List, start_nodes: List[Dict[str, Any
                         visited.add(target_id)
                         queue.append((target_id, current_depth + 1, path + [current_id]))
                     
-                    # Add edge
+                    # Add edge with unresolved marking
                     edge_id = f"seq_edge:{len(sequence_edges)}"
+                    is_unresolved = edge_info['kind'] == 'call_unresolved'
                     sequence_edges.append({
                         'id': edge_id,
                         'source': current_id,
@@ -148,7 +153,11 @@ def _trace_call_sequence(db: VizDB, edges: List, start_nodes: List[Dict[str, Any
                         'kind': edge_info['kind'],
                         'confidence': edge_info['confidence'],
                         'sequence_order': len(sequence_edges),
-                        'depth': current_depth
+                        'depth': current_depth,
+                        'meta': {
+                            'unresolved': is_unresolved,
+                            'style': 'dashed' if is_unresolved else 'solid'
+                        }
                     })
     
     return sequence_nodes, sequence_edges

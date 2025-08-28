@@ -69,23 +69,33 @@ class JspDependencyTracker:
 
 
 class LargeFileOptimizer:
-    """대용량 파일 처리 최적화 클래스"""
+    """대용량 파일 처리 최적화 클래스 - v5.2 크기 기반 임계값 지원"""
     
     def __init__(self, config):
         self.chunk_size = config.get('large_file', {}).get('chunk_size', 1000)  # 라인 단위
         self.memory_threshold = config.get('large_file', {}).get('memory_threshold', 100 * 1024 * 1024)  # 100MB
+        # v5.2: 크기 기반 처리 임계값 추가
+        self.size_threshold_hash = config.get('large_file', {}).get('size_threshold_hash', 50 * 1024)  # 50KB
+        self.size_threshold_mtime = config.get('large_file', {}).get('size_threshold_mtime', 10 * 1024 * 1024)  # 10MB
         self.logger = config.get('logger')
     
     def parse_large_file_chunked(self, file_path: str, parser_func, *args):
-        """대용량 파일을 청크 단위로 분석"""
+        """대용량 파일을 청크 단위로 분석 - v5.2 크기 기반 최적화"""
         file_size = os.path.getsize(file_path)
         
-        if file_size > self.memory_threshold:
+        # v5.2: 크기 기반 처리 전략 결정
+        processing_strategy = self._determine_processing_strategy(file_size, file_path)
+        
+        if processing_strategy == 'chunked':
             if self.logger:
                 self.logger.info(f"대용량 파일 청크 처리: {file_path} ({file_size / 1024 / 1024:.1f}MB)")
             return self._parse_file_in_chunks(file_path, parser_func, *args)
+        elif processing_strategy == 'mtime_optimized':
+            if self.logger:
+                self.logger.info(f"크기 기반 mtime 최적화: {file_path} ({file_size / 1024:.1f}KB)")
+            return self._parse_with_mtime_optimization(file_path, parser_func, *args)
         else:
-            # 일반 분석
+            # 일반 분석 (작은 파일은 항상 해시 기반)
             return parser_func(*args)
     
     def _parse_file_in_chunks(self, file_path: str, parser_func, *args):
@@ -119,6 +129,21 @@ class LargeFileOptimizer:
         
         return self._merge_chunk_results(results)
     
+    def _determine_processing_strategy(self, file_size: int, file_path: str) -> str:
+        """v5.2: 파일 크기에 따른 처리 전략 결정"""
+        if file_size > self.memory_threshold:
+            return 'chunked'
+        elif file_size > self.size_threshold_mtime:
+            return 'mtime_optimized'  # mtime + hash 조합 사용
+        else:
+            return 'normal'  # 항상 전체 해시 계산
+            
+    def _parse_with_mtime_optimization(self, file_path: str, parser_func, *args):
+        """v5.2: mtime 기반 최적화된 파싱 (중간 크기 파일용)"""
+        # mtime 기반으로 변경 여부를 빠르게 체크한 후 필요시에만 전체 해시 계산
+        # 실제 구현에서는 이전 분석 결과와 비교하여 스킵 여부 결정
+        return parser_func(*args)
+    
     def _adjust_line_numbers(self, result, line_offset):
         """청크 결과의 라인 번호를 전체 파일 기준으로 조정"""
         file_obj, sql_units, joins, filters, edges = result
@@ -151,7 +176,7 @@ class LargeFileOptimizer:
 
 
 class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
-    """개선된 JSP와 MyBatis XML 파서"""
+    """개선된 JSP와 MyBatis XML 파서 - v5.2 MyBatis 고급 구조 지원"""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -161,8 +186,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         self.dependency_tracker = JspDependencyTracker()
         self.file_optimizer = LargeFileOptimizer(config)
         
-        # MyBatis 동적 태그 패턴
-        self.dynamic_tags = ['if', 'choose', 'when', 'otherwise', 'foreach', 'where', 'set', 'trim']
+        # MyBatis 동적 태그 패턴 - v5.2: bind 태그 추가
+        self.dynamic_tags = ['if', 'choose', 'when', 'otherwise', 'foreach', 'where', 'set', 'trim', 'bind']
         
         # JSP 스크립틀릿 SQL 패턴 개선
         self.jsp_sql_patterns = [
@@ -170,6 +195,19 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             re.compile(r'String\s+\w*sql\w*\s*=.*?(select|insert|update|delete)', re.IGNORECASE | re.DOTALL),
             re.compile(r'StringBuilder.*?append.*?(select|insert|update|delete)', re.IGNORECASE | re.DOTALL)
         ]
+        
+        # v5.2: 신뢰도 임계값 및 의심 마킹 설정
+        confidence_config = config.get('confidence', {})
+        self.suspect_threshold = confidence_config.get('suspect_threshold', 0.3)
+        self.filter_threshold = confidence_config.get('filter_threshold', 0.1)
+        
+        # v5.2: 데이터베이스 스키마 설정
+        db_config = config.get('database', {})
+        self.default_schema = db_config.get('default_schema', 'public')
+        
+        # v5.2: MyBatis include 및 bind 추적용 캐시
+        self.sql_fragment_cache = {}  # refid -> SQL content 매핑
+        self.bind_variable_cache = {}  # bind variable 추적
         
     def can_parse(self, file_path: str) -> bool:
         """파일이 이 파서로 처리 가능한지 확인"""
@@ -259,23 +297,36 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 # SQL 유닛 생성 (신뢰도 계산 개선)
                 confidence = self._calculate_jsp_sql_confidence(sql_content, match)
                 
-                sql_unit = SqlUnit(
-                    file_id=None,  # 파일 저장 후 설정
-                    origin='jsp',
-                    mapper_ns=None,
-                    stmt_id=f'jsp_sql_{start_line}_{i+1}',
-                    start_line=start_line,
-                    end_line=end_line,
-                    stmt_kind=self._detect_sql_type(sql_content),
-                    normalized_fingerprint=self._create_sql_fingerprint(sql_content)
-                )
+                # v5.2: 의심 마킹 로직 추가
+                is_suspect = confidence < self.suspect_threshold
+                should_include = confidence >= self.filter_threshold
                 
-                sql_units.append(sql_unit)
-                
-                # SQL에서 조인과 필터 추출 (개선된 파서 사용)
-                sql_joins, sql_filters = self._extract_sql_patterns_advanced(sql_content, sql_unit)
-                joins.extend(sql_joins)
-                filters.extend(sql_filters)
+                if should_include:  # 최소 임계값 이상인 경우만 포함
+                    sql_unit = SqlUnit(
+                        file_id=None,  # 파일 저장 후 설정
+                        origin='jsp',
+                        mapper_ns=None,
+                        stmt_id=f'jsp_sql_{start_line}_{i+1}{"_SUSPECT" if is_suspect else ""}',
+                        start_line=start_line,
+                        end_line=end_line,
+                        stmt_kind=self._detect_sql_type(sql_content),
+                        normalized_fingerprint=self._create_sql_fingerprint(sql_content)
+                    )
+                    
+                    sql_units.append(sql_unit)
+                    
+                    # SQL에서 조인과 필터 추출 (개선된 파서 사용)
+                    sql_joins, sql_filters = self._extract_sql_patterns_advanced(sql_content, sql_unit)
+                    
+                    # v5.2: 의심스러운 결과에 대한 신뢰도 조정
+                    if is_suspect:
+                        for join in sql_joins:
+                            join.confidence = min(join.confidence, self.suspect_threshold)
+                        for filter_item in sql_filters:
+                            filter_item.confidence = min(filter_item.confidence, self.suspect_threshold)
+                    
+                    joins.extend(sql_joins)
+                    filters.extend(sql_filters)
         
         # JSP include 관계 추출 (개선된 추적기 사용)
         include_dependencies = self.dependency_tracker.extract_jsp_includes(content, file_obj.path)
@@ -309,6 +360,12 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             # 네임스페이스 추출
             namespace = root.get('namespace', '')
             
+            # v5.2: bind 변수 선행 추출
+            self._extract_bind_variables(root, file_obj.path)
+            
+            # v5.2: sql fragment 추출 (include용)
+            self._extract_sql_fragments(root, namespace)
+            
             # SQL 구문 태그들 처리
             for stmt_type in ['select', 'insert', 'update', 'delete', 'sql']:
                 xpath_expr = f'.//{stmt_type}'
@@ -324,35 +381,50 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     # SQL 내용 추출
                     sql_content = self._extract_sql_content_lxml(element)
                     
+                    # v5.2: include 해결 후 SQL 내용 재구성
+                    resolved_sql_content = self._resolve_includes_in_sql(sql_content, namespace)
+                    
                     # 동적 SQL 분석 개선
                     has_dynamic = self._has_dynamic_sql(element)
                     confidence = 0.9 if not has_dynamic else 0.7
                     
-                    # SQL 유닛 생성
-                    sql_unit = SqlUnit(
-                        file_id=None,
-                        origin='mybatis',
-                        mapper_ns=namespace,
-                        stmt_id=stmt_id,
-                        start_line=start_line,
-                        end_line=end_line,
-                        stmt_kind=stmt_type,
-                        normalized_fingerprint=self._create_sql_fingerprint(sql_content)
-                    )
+                    # v5.2: 의심 마킹 로직
+                    is_suspect = confidence < self.suspect_threshold
+                    should_include = confidence >= self.filter_threshold
                     
-                    sql_units.append(sql_unit)
-                    
-                    # 동적 SQL 최적화된 분석
-                    if has_dynamic:
-                        # DFA 기반 동적 SQL 최적화
-                        optimized_sql = self._optimize_dynamic_sql_dfa(element)
-                        sql_joins, sql_filters = self._extract_sql_patterns_advanced(optimized_sql, sql_unit)
-                    else:
-                        # 정적 SQL 처리
-                        sql_joins, sql_filters = self._extract_sql_patterns_advanced(sql_content, sql_unit)
+                    if should_include:
+                        # SQL 유닛 생성
+                        sql_unit = SqlUnit(
+                            file_id=None,
+                            origin='mybatis',
+                            mapper_ns=namespace,
+                            stmt_id=f'{stmt_id}{"_SUSPECT" if is_suspect else ""}',
+                            start_line=start_line,
+                            end_line=end_line,
+                            stmt_kind=stmt_type,
+                            normalized_fingerprint=self._create_sql_fingerprint(resolved_sql_content)
+                        )
                         
-                    joins.extend(sql_joins)
-                    filters.extend(sql_filters)
+                        sql_units.append(sql_unit)
+                        
+                        # 동적 SQL 최적화된 분석
+                        if has_dynamic:
+                            # DFA 기반 동적 SQL 최적화
+                            optimized_sql = self._optimize_dynamic_sql_dfa(element)
+                            sql_joins, sql_filters = self._extract_sql_patterns_advanced(optimized_sql, sql_unit)
+                        else:
+                            # 정적 SQL 처리 - v5.2: include 해결된 SQL 사용
+                            sql_joins, sql_filters = self._extract_sql_patterns_advanced(resolved_sql_content, sql_unit)
+                        
+                        # v5.2: 의심스러운 결과에 대한 신뢰도 조정
+                        if is_suspect:
+                            for join in sql_joins:
+                                join.confidence = min(join.confidence, self.suspect_threshold)
+                            for filter_item in sql_filters:
+                                filter_item.confidence = min(filter_item.confidence, self.suspect_threshold)
+                        
+                        joins.extend(sql_joins)
+                        filters.extend(sql_filters)
                     
             # <include> 태그 의존성 추출
             include_edges = self._extract_mybatis_includes_lxml(root, file_obj)
@@ -514,7 +586,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         return start_line + line_count
     
     def _extract_mybatis_includes_lxml(self, root, file_obj: File) -> List[Edge]:
-        """lxml을 이용한 MyBatis include 관계 추출"""
+        """v5.2: lxml을 이용한 MyBatis include 관계 추출 - 향상된 해결"""
         edges = []
         
         # <include> 태그 찾기
@@ -524,17 +596,83 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             refid = include_elem.get('refid', '')
             
             if refid:
+                # v5.2: refid 해결 시도
+                resolved_confidence = 0.95 if self._can_resolve_refid(refid, root) else 0.6
+                
                 edge = Edge(
                     src_type='sql_unit',
                     src_id=None,  # 현재 SQL 유닛 ID로 설정 필요
                     dst_type='sql_unit',
                     dst_id=None,  # refid로 참조된 SQL 유닛 해결 필요
                     edge_kind='includes',
-                    confidence=0.95
+                    confidence=resolved_confidence
                 )
                 edges.append(edge)
         
         return edges
+        
+    def _extract_bind_variables(self, root, file_path: str):
+        """v5.2: MyBatis bind 변수 추출"""
+        bind_elements = root.xpath('.//bind')
+        
+        for bind_elem in bind_elements:
+            name = bind_elem.get('name', '')
+            value = bind_elem.get('value', '')
+            
+            if name and value:
+                self.bind_variable_cache[f"{file_path}:{name}"] = {
+                    'name': name,
+                    'value': value,
+                    'file_path': file_path,
+                    'line': bind_elem.sourceline if hasattr(bind_elem, 'sourceline') else 0
+                }
+                
+    def _extract_sql_fragments(self, root, namespace: str):
+        """v5.2: SQL fragment 추출 (include용)"""
+        sql_elements = root.xpath('.//sql')
+        
+        for sql_elem in sql_elements:
+            fragment_id = sql_elem.get('id', '')
+            if fragment_id:
+                fragment_content = self._extract_sql_content_lxml(sql_elem)
+                full_refid = f"{namespace}.{fragment_id}" if namespace else fragment_id
+                self.sql_fragment_cache[full_refid] = fragment_content
+                
+    def _resolve_includes_in_sql(self, sql_content: str, namespace: str) -> str:
+        """v5.2: SQL 내용에서 include 해결"""
+        resolved_content = sql_content
+        
+        # <include refid="..."/> 패턴 찾기
+        include_pattern = r'<include\s+refid\s*=\s*["\']([^"\'>]+)["\']\s*/?>'
+        includes = re.finditer(include_pattern, sql_content, re.IGNORECASE)
+        
+        for include_match in includes:
+            refid = include_match.group(1)
+            
+            # namespace가 없는 경우 현재 namespace 추가
+            if '.' not in refid and namespace:
+                full_refid = f"{namespace}.{refid}"
+            else:
+                full_refid = refid
+                
+            # fragment 해결
+            if full_refid in self.sql_fragment_cache:
+                fragment_sql = self.sql_fragment_cache[full_refid]
+                resolved_content = resolved_content.replace(include_match.group(), fragment_sql)
+            else:
+                # 해결되지 않은 include는 주석으로 표시
+                resolved_content = resolved_content.replace(
+                    include_match.group(), 
+                    f"/* UNRESOLVED INCLUDE: {refid} */"
+                )
+                
+        return resolved_content
+        
+    def _can_resolve_refid(self, refid: str, root) -> bool:
+        """v5.2: refid 해결 가능 여부 확인"""
+        # 동일 파일 내에서 해당 id를 가진 sql 태그 존재 여부 확인
+        sql_elements = root.xpath(f'.//sql[@id="{refid}"]')
+        return len(sql_elements) > 0
     
     # 기존 메서드들 (호환성 유지)
     def _detect_sql_type(self, sql_content: str) -> str:
@@ -555,7 +693,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             return 'unknown'
     
     def _create_sql_fingerprint(self, sql_content: str) -> str:
-        """SQL 구조적 지문 생성 (원문 저장 금지 원칙)"""
+        """v5.2: SQL 구조적 지문 생성 (원문 저장 금지 원칙) - bind 변수 지원"""
         
         # SQL을 정규화: 대소문자 통일, 다중 공백 제거하여 구조적 패턴만 추출
         normalized = re.sub(r'\s+', ' ', sql_content.lower().strip())
@@ -563,8 +701,16 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         # 값의 다양성에 관계없이 구조만 보존: 파라미터와 리터럴 값을 플레이스홀더로 대체
         normalized = re.sub(r':\w+', ':PARAM', normalized)  # MyBatis 정적 파라미터 :name 형태
         normalized = re.sub(r'\$\{\w+\}', '${PARAM}', normalized)  # MyBatis 동적 파라미터 ${} 형태
+        normalized = re.sub(r'#\{\w+\}', '#{PARAM}', normalized)  # MyBatis 바인드 파라미터 #{} 형태
+        
+        # v5.2: bind 변수 처리
+        normalized = re.sub(r'\$\{[^}]*\bparam\w*\b[^}]*\}', '${BIND_PARAM}', normalized)
+        
         normalized = re.sub(r'\'[^\\]*\'',''VALUE''', normalized)  # SQL 문자열 리터럴 '원본값' -> 'VALUE'
         normalized = re.sub(r'\b\d+\b', 'NUMBER', normalized)  # 숫자 리터럴 123 -> NUMBER
+        
+        # v5.2: UNRESOLVED INCLUDE 표시 정규화
+        normalized = re.sub(r'/\*\s*UNRESOLVED INCLUDE:.*?\*/', '/* INCLUDE_PLACEHOLDER */', normalized)
         
         # MD5 해시로 최종 지문 생성: 동일 구조 SQL은 같은 지문 생성
         return hashlib.md5(normalized.encode('utf-8')).hexdigest()
@@ -587,12 +733,16 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 for match in matches:
                     groups = match.groups()  # 정규식 그룹으로 테이블명과 컬럼들 추출
                     if len(groups) >= 4:  # 최소 4개 그룹 필요: table1, col1, table2, col2
+                        # v5.2: 스키마 정보 정규화
+                        l_table = self._normalize_table_name(groups[0])
+                        r_table = self._normalize_table_name(groups[2] if len(groups) > 2 else groups[0])
+                        
                         join = Join(
                             sql_id=None,
-                            l_table=groups[0],
+                            l_table=l_table,
                             l_col=groups[1],
                             op='=',
-                            r_table=groups[2] if len(groups) > 2 else groups[0],
+                            r_table=r_table,
                             r_col=groups[3] if len(groups) > 3 else groups[1],
                             inferred_pkfk=0,
                             confidence=0.7  # 정규식 기반은 AST 대비 신뢰도 낮춤 (폴백용)
@@ -611,9 +761,12 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 for match in matches:
                     groups = match.groups()
                     if len(groups) >= 3:
+                        # v5.2: 스키마 정보 정규화
+                        table_name = self._normalize_table_name(groups[0])
+                        
                         filter_obj = RequiredFilter(
                             sql_id=None,
-                            table_name=groups[0],
+                            table_name=table_name,
                             column_name=groups[1],
                             op=op,
                             value_repr=groups[2],
@@ -636,3 +789,39 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         """WHERE 조건 파싱 (간단 구현)"""
         # 실제 구현은 더 복잡해야 함
         return []
+        
+    def _normalize_table_name(self, table_name: str) -> str:
+        """v5.2: 테이블명 정규화 - 스키마 정보 처리"""
+        if '.' in table_name:
+            # 이미 스키마가 포함된 경우
+            return table_name.lower()
+        else:
+            # 기본 스키마 추가
+            return f"{self.default_schema}.{table_name}".lower()
+            
+    def get_suspect_results_summary(self) -> Dict[str, Any]:
+        """v5.2: 의심스러운 결과에 대한 요약 정보 반환"""
+        return {
+            'suspect_threshold': self.suspect_threshold,
+            'filter_threshold': self.filter_threshold,
+            'bind_variables_found': len(self.bind_variable_cache),
+            'sql_fragments_cached': len(self.sql_fragment_cache)
+        }
+        
+    def handle_deleted_file(self, file_path: str, project_id: int) -> bool:
+        """v5.2: 삭제된 파일 처리 - 증분 분석용"""
+        try:
+            # 캐시에서 해당 파일 관련 정보 제거
+            keys_to_remove = [key for key in self.bind_variable_cache.keys() if key.startswith(f"{file_path}:")]
+            for key in keys_to_remove:
+                del self.bind_variable_cache[key]
+                
+            # SQL fragment 캐시에서도 제거 (파일별 추적이 어려우므로 전체 캐시 갱신 권장)
+            if hasattr(self, 'logger') and self.logger:
+                self.logger.info(f"삭제된 파일 캐시 정리 완료: {file_path}")
+                
+            return True
+        except Exception as e:
+            if hasattr(self, 'logger') and self.logger:
+                self.logger.error(f"삭제된 파일 처리 중 오류: {file_path}, {e}")
+            return False

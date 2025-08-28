@@ -105,6 +105,46 @@
 * **Description**: `IntegratedService.java`의 `processWithReflection` 메서드 (리플렉션 사용) 및 `getDynamicUserData` 메서드 (동적 SQL 사용)와 같이 신뢰도 감점 요인이 있는 코드에 대해 CONFIDENCE 점수가 낮게 측정되는지 확인합니다.
 * **Associated Source**: `IntegratedService.java` (`processWithReflection`, `getDynamicUserData` 메서드)
 
+### 2.9. TC_INTEGRATED_009_VulnerabilityDetection: 보안 취약점 탐지 및 저장
+
+* **Description**: `VulnerabilityTestService.java`에 포함된 다양한 보안 취약점 (SQL Injection, XSS, Path Traversal, 하드코딩된 자격증명, 약한 암호화 등)이 정확히 탐지되고 `vulnerability_fixes` 테이블에 저장되는지 확인합니다.
+* **Associated Source**: `VulnerabilityTestService.java` (모든 취약점 메서드)
+
+### 2.10. TC_INTEGRATED_010_IncrementalAnalysis: 증분 분석 기능
+
+* **Description**: `--incremental` 플래그를 사용하여 파일 해시 기반으로 변경된 파일만 분석하는 증분 분석 기능이 올바르게 동작하는지 확인합니다. 파일 변경 전후로 분석을 수행하여 변경된 파일만 처리되는지 검증합니다.
+* **Test Steps**: 
+  1. 전체 프로젝트 분석 수행
+  2. 특정 파일 수정 (예: IntegratedService.java의 메서드 하나 수정)
+  3. `--incremental` 플래그로 재분석 수행
+  4. 변경된 파일만 처리되는지 로그 확인
+
+### 2.11. TC_INTEGRATED_011_MethodCallResolution: 메서드 호출 관계 해결
+
+* **Description**: `IntegratedService.java`에서 `integratedMapper`의 메서드를 호출하는 관계가 올바르게 해결되어 `edges` 테이블에 저장되고, 신뢰도 점수가 적절히 계산되는지 확인합니다.
+* **Associated Source**: `IntegratedService.java`의 매퍼 메서드 호출 (`integratedMapper.executeStaticQuery()` 등)
+
+### 2.12. TC_INTEGRATED_012_ConfidenceThresholding: 신뢰도 임계값 필터링
+
+* **Description**: `config.yaml`에서 `confidence_threshold` 값을 설정하고, 설정값보다 낮은 신뢰도를 가진 엣지나 분석 결과가 필터링되어 저장되지 않는지 확인합니다.
+* **Test Steps**:
+  1. `confidence_threshold: 0.7`로 설정
+  2. 프로젝트 분석 수행
+  3. 저장된 `edges` 테이블에서 모든 레코드의 `confidence` 값이 0.7 이상인지 확인
+
+### 2.13. TC_INTEGRATED_013_DatabaseSchemaFlexibility: DB 스키마 소유자 유연화
+
+* **Description**: `config.yaml`에서 `database.default_schema` 설정을 통해 하드코딩된 'SAMPLE' 소유자 대신 설정 파일의 값을 사용하여 테이블을 매칭하는지 확인합니다.
+* **Test Steps**:
+  1. `config.yaml`에서 `database.default_schema: PUBLIC` 설정
+  2. 프로젝트 분석 수행  
+  3. PUBLIC 스키마의 테이블들이 올바르게 매칭되는지 확인
+
+### 2.14. TC_INTEGRATED_014_ComplexityAnalysis: 코드 복잡도 분석
+
+* **Description**: `VulnerabilityTestService.java`의 `processComplexBusiness` 메서드와 같이 중첩된 조건문, 복잡한 표현식을 포함한 메서드의 복잡도가 올바르게 계산되고 신뢰도에 반영되는지 확인합니다.
+* **Associated Source**: `VulnerabilityTestService.java` (`processComplexBusiness` 메서드)
+
 ## 3. DB 스키마 통합
 
 기존 `DB_SCHEMA` 폴더 하위의 여러 `ALL_TABLES.csv`, `ALL_TAB_COLUMNS.csv`, `ALL_TAB_COMMENTS.csv`, `PK_INFO.csv` 파일들을 `E:\SourceAnalyzer.git\DB_SCHEMA` 경로로 통합하였습니다. 이 파일들은 통합 샘플 소스에서 참조하는 모든 테이블 및 컬럼 정보를 포함합니다.

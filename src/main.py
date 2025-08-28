@@ -8,6 +8,7 @@ import sys
 import argparse
 import yaml
 import asyncio
+import hashlib
 from pathlib import Path
 from typing import Dict, Any, List
 import time
@@ -17,7 +18,7 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent  # src의 부모 디렉토리
 sys.path.insert(0, str(project_root))
 
-from src.models.database import DatabaseManager
+from src.models.database import DatabaseManager, File
 from src.parsers.java_parser import JavaParser
 from src.parsers.jsp_mybatis_parser import JspMybatisParser
 from src.parsers.sql_parser import SqlParser
@@ -149,13 +150,14 @@ class SourceAnalyzer:
             
         return parsers
         
-    async def analyze_project(self, project_root: str, project_name: str = None) -> Dict[str, Any]:
+    async def analyze_project(self, project_root: str, project_name: str = None, incremental: bool = False) -> Dict[str, Any]:
         """
         프로젝트 전체 분석 (개선된 병렬 처리)
         
         Args:
             project_root: 프로젝트 루트 경로
             project_name: 프로젝트 이름 (없으면 폴더명 사용)
+            incremental: 증분 분석 모드 (변경된 파일만 분석)
             
         Returns:
             분석 결과 딕셔너리
@@ -179,6 +181,11 @@ class SourceAnalyzer:
                 # 3. 소스 파일들 수집
                 source_files = self._collect_source_files(project_root)
                 self.logger.info(f"발견된 소스 파일: {len(source_files)}개")
+                
+                # 증분 분석 모드인 경우 변경된 파일만 선별
+                if incremental:
+                    source_files = await self._filter_changed_files(source_files, project_id)
+                    self.logger.info(f"증분 분석 대상 파일: {len(source_files)}개")
                 
                 if not source_files:
                     self.logger.warning("분석할 소스 파일이 없습니다.")
@@ -306,6 +313,42 @@ class SourceAnalyzer:
             
         self.logger.debug(f"수집된 파일 수: {len(source_files)}")
         return source_files
+        
+    async def _filter_changed_files(self, source_files: List[str], project_id: int) -> List[str]:
+        """증분 분석을 위한 변경된 파일 필터링"""
+        changed_files = []
+        
+        # 기존 파일 해시 정보 조회
+        session = self.db_manager.get_session()
+        try:
+            existing_files = session.query(File).filter(File.project_id == project_id).all()
+            existing_hashes = {f.path: f.hash for f in existing_files}
+            
+            for file_path in source_files:
+                try:
+                    # 현재 파일 해시 계산
+                    with open(file_path, 'rb') as f:
+                        content = f.read()
+                        current_hash = hashlib.sha256(content).hexdigest()
+                    
+                    # 해시 비교로 변경 여부 확인
+                    if file_path not in existing_hashes or existing_hashes[file_path] != current_hash:
+                        changed_files.append(file_path)
+                        self.logger.debug(f"변경된 파일 감지: {file_path}")
+                    
+                except Exception as e:
+                    # 파일 읽기 실패 시 안전하게 포함
+                    self.logger.warning(f"파일 해시 계산 실패 {file_path}: {e}")
+                    changed_files.append(file_path)
+            
+        except Exception as e:
+            self.logger.error("증분 분석 파일 필터링 중 오류", exception=e)
+            # 오류 시 전체 파일 반환
+            return source_files
+        finally:
+            session.close()
+            
+        return changed_files
         
     def _match_pattern(self, file_path: str, pattern: str) -> bool:
         """파일 패턴 매칭 (개선된 로직)"""
@@ -505,7 +548,8 @@ def main():
         print(f"프로젝트 분석 시작: {args.project_path}")
         result = asyncio.run(analyzer.analyze_project(
             args.project_path, 
-            args.project_name
+            args.project_name,
+            args.incremental
         ))
         
         # 결과 출력

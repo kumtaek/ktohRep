@@ -319,9 +319,11 @@ class MetadataEngine:
             saved_counts['methods'] = len(methods)
             
             # 의존성 엣지 저장 (유효한 엣지만)
+            confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             valid_edges = [edge for edge in edges 
                           if edge.src_id is not None and edge.dst_id is not None 
-                          and edge.src_id != 0 and edge.dst_id != 0]
+                          and edge.src_id != 0 and edge.dst_id != 0
+                          and edge.confidence >= confidence_threshold]
             
             self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
             
@@ -392,9 +394,11 @@ class MetadataEngine:
             saved_counts['filters'] = len(filters)
             
             # 의존성 엣지 저장 (유효한 엣지만)
+            confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             valid_edges = [edge for edge in edges 
                           if edge.src_id is not None and edge.dst_id is not None 
-                          and edge.src_id != 0 and edge.dst_id != 0]
+                          and edge.src_id != 0 and edge.dst_id != 0
+                          and edge.confidence >= confidence_threshold]
             
             self.logger.debug(f"JSP/MyBatis 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
             
@@ -533,10 +537,11 @@ class MetadataEngine:
                 # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
                 if join.l_table:
                     # DB 스키마에서 테이블 찾기
-                    db_table = session.query(DbTable).filter(
-                        DbTable.table_name == join.l_table.upper(),
-                        DbTable.owner == 'SAMPLE'  # 기본 스키마, 설정에서 가져와야 함
-                    ).first()
+                    default_owner = self.config.get('database', {}).get('default_schema')
+                    query = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper())
+                    if default_owner:
+                        query = query.filter(DbTable.owner == default_owner)
+                    db_table = query.first()
                     
                     if db_table:
                         table_edge = Edge(

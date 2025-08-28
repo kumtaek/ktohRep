@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.complexsql.ReportMapper">
+
+    <select id="getComplexReport" resultType="map">
+        WITH DailySales AS (
+            SELECT
+                TRUNC(ORDER_DATE) AS SALE_DATE,
+                SUM(AMOUNT) AS TOTAL_SALES
+            FROM ORDERS
+            WHERE ORDER_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            GROUP BY TRUNC(ORDER_DATE)
+        ),
+        TopCustomers AS (
+            SELECT
+                c.CUSTOMER_ID,
+                c.CUSTOMER_NAME,
+                SUM(o.AMOUNT) AS CUSTOMER_TOTAL_SALES
+            FROM CUSTOMERS c
+            INNER JOIN ORDERS o ON c.CUSTOMER_ID = o.CUSTOMER_ID
+            GROUP BY c.CUSTOMER_ID, c.CUSTOMER_NAME
+            HAVING SUM(o.AMOUNT) > 1000
+        )
+        SELECT
+            ds.SALE_DATE,
+            ds.TOTAL_SALES,
+            tc.CUSTOMER_NAME,
+            tc.CUSTOMER_TOTAL_SALES
+        FROM DailySales ds
+        LEFT JOIN (
+            SELECT SALE_DATE, MAX(CUSTOMER_NAME) AS CUSTOMER_NAME, MAX(CUSTOMER_TOTAL_SALES) AS CUSTOMER_TOTAL_SALES
+            FROM TopCustomers
+            CROSS JOIN DailySales
+            WHERE ROWNUM = 1 -- Simplified for example
+            GROUP BY SALE_DATE
+        ) tc ON ds.SALE_DATE = tc.SALE_DATE
+        ORDER BY ds.SALE_DATE
+    </select>
+
+</mapper>

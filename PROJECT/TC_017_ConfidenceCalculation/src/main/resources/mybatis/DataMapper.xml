@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.confidence.DataMapper">
+
+    <!-- 정적 SQL: 높은 신뢰도 예상 -->
+    <select id="getStaticData" resultType="map">
+        SELECT ID, NAME, STATUS
+        FROM STATIC_TABLE
+        WHERE ID = #{id}
+    </select>
+
+    <!-- 동적 SQL: ${...} 사용으로 낮은 신뢰도 예상 -->
+    <select id="getDynamicData" resultType="map">
+        SELECT ID, NAME, STATUS
+        FROM DYNAMIC_TABLE
+        WHERE ${columnName} = #{value}
+    </select>
+
+</mapper>

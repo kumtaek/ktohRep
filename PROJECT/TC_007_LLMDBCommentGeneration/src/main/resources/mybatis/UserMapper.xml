@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.llm.UserMapper">
+
+    <select id="findAllUsers" resultType="map">
+        SELECT ID, USERNAME, USER_STATUS, CREATED_DATE
+        FROM USER_INFO
+    </select>
+
+    <select id="findUsersByStatus" resultType="map">
+        SELECT ID, USERNAME, USER_STATUS, CREATED_DATE
+        FROM USER_INFO
+        WHERE USER_STATUS = #{status}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE USER_INFO
+        SET USER_STATUS = #{newStatus}
+        WHERE ID = #{userId}
+    </update>
+
+</mapper>

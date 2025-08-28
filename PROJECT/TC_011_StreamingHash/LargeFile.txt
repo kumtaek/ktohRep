@@ -1,0 +1,1 @@
+This is a dummy file to simulate a large file for streaming hash calculation. For actual testing, this file should be significantly larger (e.g., several MBs or GBs) to properly test memory efficiency. You can copy-paste this content many times or use a script to generate a large file.

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mapper.OrderMapper">
+    
+    <!-- 주문 기본 컬럼 -->
+    <sql id="orderColumns">
+        o.order_id, o.customer_id, o.order_date, o.status, 
+        o.total_amount, o.discount_amount, o.tax_amount, 
+        o.created_date, o.updated_date, o.del_yn
+    </sql>
+    
+    <!-- 고객 정보 컬럼 -->
+    <sql id="customerColumns">
+        c.customer_name, c.email as customer_email, c.phone as customer_phone
+    </sql>
+    
+    <!--
+        @QueryName: selectOrderById  
+        @TableName: ORDERS, CUSTOMERS
+        @ColumnName: order_id, customer_id, order_date, status, total_amount
+        @Description: 주문 ID로 주문 상세 정보를 조회합니다.
+                     고객 정보와 함께 JOIN하여 완전한 주문 정보를 제공합니다.
+        @JoinCondition: orders.customer_id = customers.customer_id
+    -->
+    <select id="selectOrderById" parameterType="String" resultType="OrderVO">
+        SELECT 
+            <include refid="orderColumns"/>,
+            <include refid="customerColumns"/>
+        FROM orders o
+        INNER JOIN customers c ON o.customer_id = c.customer_id
+        WHERE o.order_id = #{orderId}
+        AND o.del_yn = 'N'
+        AND c.del_yn = 'N'
+    </select>
+    
+    <select id="calculateOrderAmount" parameterType="String" resultType="BigDecimal">
+        SELECT 
+            SUM(oi.quantity * oi.unit_price) as total_amount
+        FROM order_items oi
+        WHERE oi.order_id = #{orderId}
+        AND oi.del_yn = 'N'
+    </select>
+    
+    <!-- 주문 상태별 조회 (ANSI JOIN 방식) -->
+    <select id="selectOrdersByStatus" parameterType="String" resultType="OrderVO">
+        SELECT 
+            <include refid="orderColumns"/>,
+            <include refid="customerColumns"/>
+        FROM orders o
+        INNER JOIN customers c ON o.customer_id = c.customer_id
+        WHERE o.status = #{status}
+        AND o.del_yn = 'N'
+        AND c.del_yn = 'N'
+        ORDER BY o.order_date DESC
+    </select>
+    
+    <!-- Oracle Implicit JOIN 방식 -->
+    <select id="getOrdersWithCustomerImplicitJoin" parameterType="String" resultType="OrderVO">
+        SELECT 
+            <include refid="orderColumns"/>,
+            <include refid="customerColumns"/>
+        FROM orders o, customers c
+        WHERE o.customer_id = c.customer_id
+        AND o.status = #{status}
+        AND o.del_yn = 'N'
+        AND c.del_yn = 'N'
+        ORDER BY o.order_date DESC
+    </select>
+    
+    <!-- 복잡한 보고서 쿼리 - CTE와 서브쿼리 사용 -->
+    <select id="getComplexOrderReport" parameterType="Map" resultType="Map">
+        <bind name="startDate" value="startDate"/>
+        <bind name="endDate" value="endDate"/>
+        
+        WITH order_summary AS (
+            SELECT 
+                o.status,
+                COUNT(*) as order_count,
+                SUM(o.total_amount) as total_revenue,
+                AVG(o.total_amount) as avg_order_amount
+            FROM orders o
+            WHERE o.order_date BETWEEN #{startDate} AND #{endDate}
+            AND o.del_yn = 'N'
+            GROUP BY o.status
+        ),
+        customer_summary AS (
+            SELECT 
+                c.customer_id,
+                c.customer_name,
+                COUNT(o.order_id) as order_count,
+                SUM(o.total_amount) as customer_revenue
+            FROM orders o
+            INNER JOIN customers c ON o.customer_id = c.customer_id
+            WHERE o.order_date BETWEEN #{startDate} AND #{endDate}
+            AND o.del_yn = 'N'
+            AND c.del_yn = 'N'
+            GROUP BY c.customer_id, c.customer_name
+        )
+        SELECT 
+            'ORDER_SUMMARY' as report_type,
+            os.status,
+            os.order_count,
+            os.total_revenue,
+            os.avg_order_amount,
+            (SELECT COUNT(*) FROM customer_summary) as total_customers
+        FROM order_summary os
+        
+        UNION ALL
+        
+        SELECT 
+            'TOP_CUSTOMERS' as report_type,
+            cs.customer_name as status,
+            cs.order_count,
+            cs.customer_revenue as total_revenue,
+            cs.customer_revenue / cs.order_count as avg_order_amount,
+            ROWNUM as total_customers
+        FROM customer_summary cs
+        WHERE ROWNUM <= 10
+        ORDER BY cs.customer_revenue DESC
+    </select>
+    
+    <!-- MyBatis 동적 SQL - 주문 검색 -->
+    <select id="searchOrdersWithCriteria" parameterType="Map" resultType="OrderVO">
+        <bind name="statusCondition" value="status != null ? status : 'ALL'"/>
+        
+        SELECT 
+            <include refid="orderColumns"/>,
+            <include refid="customerColumns"/>
+        FROM orders o
+        LEFT JOIN customers c ON o.customer_id = c.customer_id
+        <where>
+            o.del_yn = 'N'
+            <if test="status != null and status != '' and status != 'ALL'">
+                AND o.status = #{statusCondition}
+            </if>
+            <if test="customerName != null and customerName != ''">
+                AND c.customer_name LIKE '%' || #{customerName} || '%'
+            </if>
+            <if test="amountFrom != null">
+                AND o.total_amount >= #{amountFrom}
+            </if>
+            <if test="amountTo != null">
+                AND o.total_amount &lt;= #{amountTo}
+            </if>
+            <if test="orderDateFrom != null">
+                AND o.order_date >= #{orderDateFrom}
+            </if>
+            <if test="orderDateTo != null">
+                AND o.order_date &lt;= #{orderDateTo}
+            </if>
+        </where>
+        ORDER BY o.order_date DESC
+    </select>
+    
+    <!-- 동적 SQL 실행용 -->  
+    <select id="executeDynamicQuery" parameterType="String" resultType="Map">
+        ${sql}
+    </select>
+    
+</mapper>

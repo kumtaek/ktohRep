@@ -315,7 +315,7 @@ class SourceAnalyzer:
         return source_files
         
     async def _filter_changed_files(self, source_files: List[str], project_id: int) -> List[str]:
-        """증분 분석을 위한 변경된 파일 필터링"""
+        """증분 분석을 위한 변경된 파일 필터링 및 삭제된 파일 처리"""
         changed_files = []
         
         # 기존 파일 해시 정보 조회
@@ -323,22 +323,61 @@ class SourceAnalyzer:
         try:
             existing_files = session.query(File).filter(File.project_id == project_id).all()
             existing_hashes = {f.path: f.hash for f in existing_files}
+            current_files_set = set(source_files)
+            existing_files_set = set(existing_hashes.keys())
             
+            # 삭제된 파일 처리 (기존 DB에는 있지만 현재 파일 시스템에는 없는 파일들)
+            deleted_files = existing_files_set - current_files_set
+            if deleted_files:
+                self.logger.info(f"삭제된 파일 감지: {len(deleted_files)}개")
+                await self._handle_deleted_files(deleted_files, project_id)
+            
+            # 변경된 파일 또는 새로운 파일 감지
             for file_path in source_files:
                 try:
-                    # 현재 파일 해시 계산
-                    with open(file_path, 'rb') as f:
-                        content = f.read()
-                        current_hash = hashlib.sha256(content).hexdigest()
+                    # 파일 크기 확인으로 처리 전략 결정
+                    file_size = os.path.getsize(file_path)
+                    size_threshold_hash = self.config.get('processing', {}).get('size_threshold_hash', 50 * 1024)  # 50KB
+                    size_threshold_mtime = self.config.get('processing', {}).get('size_threshold_mtime', 10 * 1024 * 1024)  # 10MB
                     
-                    # 해시 비교로 변경 여부 확인
-                    if file_path not in existing_hashes or existing_hashes[file_path] != current_hash:
-                        changed_files.append(file_path)
-                        self.logger.debug(f"변경된 파일 감지: {file_path}")
+                    if file_size < size_threshold_hash:
+                        # 작은 파일: 항상 해시 계산
+                        with open(file_path, 'rb') as f:
+                            content = f.read()
+                            current_hash = hashlib.sha256(content).hexdigest()
+                        
+                        if file_path not in existing_hashes or existing_hashes[file_path] != current_hash:
+                            changed_files.append(file_path)
+                            self.logger.debug(f"변경된 파일 감지 (소형): {file_path}")
+                            
+                    elif file_size < size_threshold_mtime:
+                        # 중간 크기 파일: mtime 먼저 확인 후 필요시 해시
+                        file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+                        
+                        # 기존 파일의 mtime과 비교
+                        existing_file = next((f for f in existing_files if f.path == file_path), None)
+                        if not existing_file or existing_file.mtime < file_mtime:
+                            # mtime이 다르면 해시 확인
+                            with open(file_path, 'rb') as f:
+                                content = f.read()
+                                current_hash = hashlib.sha256(content).hexdigest()
+                            
+                            if file_path not in existing_hashes or existing_hashes[file_path] != current_hash:
+                                changed_files.append(file_path)
+                                self.logger.debug(f"변경된 파일 감지 (중형): {file_path}")
+                        
+                    else:
+                        # 대형 파일: mtime만 확인
+                        file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+                        existing_file = next((f for f in existing_files if f.path == file_path), None)
+                        
+                        if not existing_file or existing_file.mtime < file_mtime:
+                            changed_files.append(file_path)
+                            self.logger.debug(f"변경된 파일 감지 (대형): {file_path}")
                     
                 except Exception as e:
                     # 파일 읽기 실패 시 안전하게 포함
-                    self.logger.warning(f"파일 해시 계산 실패 {file_path}: {e}")
+                    self.logger.warning(f"파일 변경 감지 실패 {file_path}: {e}")
                     changed_files.append(file_path)
             
         except Exception as e:
@@ -349,6 +388,29 @@ class SourceAnalyzer:
             session.close()
             
         return changed_files
+    
+    async def _handle_deleted_files(self, deleted_files: set, project_id: int):
+        """삭제된 파일들의 메타데이터 정리"""
+        
+        self.logger.info(f"삭제된 파일 메타데이터 정리 시작: {len(deleted_files)}개 파일")
+        
+        try:
+            # 메타데이터 엔진을 통해 삭제 처리
+            cleaned_count = await self.metadata_engine.cleanup_deleted_files(deleted_files, project_id)
+            
+            # JSP/MyBatis 파서의 캐시도 정리 (있는 경우)
+            if 'jsp_mybatis' in self.parsers:
+                for file_path in deleted_files:
+                    try:
+                        self.parsers['jsp_mybatis'].handle_deleted_file(file_path)
+                    except Exception as e:
+                        self.logger.warning(f"파서 캐시 정리 실패 {file_path}: {e}")
+            
+            self.logger.info(f"삭제된 파일 메타데이터 정리 완료: {cleaned_count}개 정리됨")
+            
+        except Exception as e:
+            self.logger.error("삭제된 파일 처리 중 오류", exception=e)
+            raise
         
     def _match_pattern(self, file_path: str, pattern: str) -> bool:
         """파일 패턴 매칭 (개선된 로직)"""

@@ -29,7 +29,8 @@
       "Bash(python:*)",
       "Bash(npm install:*)",
       "WebSearch",
-      "Bash(del improved_main.py)"
+      "Bash(del improved_main.py)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

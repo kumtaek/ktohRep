@@ -35,6 +35,12 @@ class MetadataEngine:
         self.max_workers = config.get('processing', {}).get('max_workers', 4)
         self.batch_size = config.get('processing', {}).get('batch_size', 10)
         
+        # 삭제된 파일 정리 확장 로드
+        try:
+            from . import metadata_engine_cleanup
+        except ImportError:
+            self.logger.debug("삭제된 파일 정리 확장 모듈을 로드할 수 없습니다")
+        
     async def create_project(self, project_path: str, project_name: str) -> int:
         """
         새 프로젝트 생성 또는 기존 프로젝트 업데이트
@@ -536,12 +542,20 @@ class MetadataEngine:
             for join in joins:
                 # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
                 if join.l_table:
-                    # DB 스키마에서 테이블 찾기
-                    default_owner = self.config.get('database', {}).get('default_schema')
+                    # DB 스키마에서 테이블 찾기 (개선된 스키마 매칭)
+                    default_owner = self.config.get('database', {}).get('default_schema', 'SAMPLE')
+                    
+                    # 1차: 기본 스키마에서 검색
                     query = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper())
                     if default_owner:
-                        query = query.filter(DbTable.owner == default_owner)
-                    db_table = query.first()
+                        db_table = query.filter(DbTable.owner == default_owner.upper()).first()
+                        
+                        # 2차: 기본 스키마에서 못 찾으면 전역 검색
+                        if not db_table:
+                            self.logger.debug(f"기본 스키마 '{default_owner}'에서 테이블 '{join.l_table}' 못 찾음, 전역 검색 시도")
+                            db_table = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper()).first()
+                    else:
+                        db_table = query.first()
                     
                     if db_table:
                         table_edge = Edge(
@@ -554,7 +568,7 @@ class MetadataEngine:
                         )
                         session.add(table_edge)
                     else:
-                        self.logger.warning(f"테이블을 찾을 수 없음: {join.l_table}")
+                        self.logger.warning(f"테이블을 찾을 수 없음: {join.l_table} (스키마: {default_owner})")
                     
     async def _infer_pk_fk_relationships(self, session, project_id: int):
         """PK-FK 관계 추론"""

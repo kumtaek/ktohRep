@@ -1,6 +1,6 @@
 """
 대용량 파일 처리 최적화 모듈
-개선할내역_v2.md Phase 1 Priority 3: 대용량 파일 메모리 효율적 처리
+phase1_improvement_plan_v2.md Phase 1 Priority 3: 대용량 파일 메모리 효율적 처리
 """
 
 import os

@@ -7,7 +7,7 @@
 - `1단계_002차_개발후_2_개선안_chatGPT심층.md` (실무 구현 중심)  
 - `1단계_002차_개발후_2_개선안_geminiFlash.md` (포괄적 발전 방향)
 - **PROJECT/sampleSrc 샘플소스 분석 결과 (신규)**
-- **testcase/테스트케이스.md 요구사항 분석 (신규)**
+- **testcase/testcase/test_cases.md 요구사항 분석 (신규)**
 
 ## 2. 샘플소스 분석을 통한 새로운 발견사항
 

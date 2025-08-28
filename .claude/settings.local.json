@@ -30,7 +30,9 @@
       "Bash(npm install:*)",
       "WebSearch",
       "Bash(del improved_main.py)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(move visualizecli.py visualizecli_old.py)",
+      "Bash(move visualizecli_fixed.py visualizecli.py)"
     ],
     "deny": [],
     "ask": []

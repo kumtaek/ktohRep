@@ -401,9 +401,9 @@
                        (meta.owner && meta.owner.toLowerCase().includes(query.toLowerCase()));
             });
             
-            if (matchedNodes.length > 0) {
-                matchedNodes.select();
-                cy.fit(matchedNodes, 50);
+            if (searchResults.length > 0) {
+                searchResults.select();
+                cy.fit(searchResults, 50);
             }
         }
 

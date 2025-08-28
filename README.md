@@ -1,15 +1,15 @@
-﻿# 소스 분석기 – 정적 분석/시각화 도구 (요약)
+# 소스 분석기 - 정적 분석/시각화 도구
 
-이 문서는 한국어 독자 기준으로 재정리되었습니다. 아래 요약과 빠른 시작을 참고하세요. 기존 상세 문서는 본문 하단에 유지되어 있습니다.
+이 문서는 한국어 독자 기준으로 재정리되었습니다. 아래 요약과 빠른 시작을 참고하세요.
 
 ## 빠른 시작
 
-1) 의존성 설치
+### 1) 의존성 설치
 ```bash
 pip install -r requirements.txt
 ```
 
-2) 시각화 생성 예시
+### 2) 시각화 생성 예시
 ```bash
 # 의존성 그래프 (HTML)
 python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
@@ -19,209 +19,326 @@ python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
 python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
   --export-mermaid visualize/output/erd.md
 
+# 클래스 다이어그램 (신규 v1.3)
+python visualize_cli.py class --project-id 1 --out visualize/output/class.html \
+  --modules "database,models" --export-mermaid visualize/output/class.md
+
 # Mermaid 코드(.mmd)만 출력
 python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
   --kinds use_table,include --export-mermaid visualize/output/graph.mmd
 ```
 
-3) Mermaid 내보내기 옵션
-- --mermaid-label-max 라벨 최대 길이(기본 20)
-- --mermaid-erd-max-cols ERD 컬럼 최대 표기 수(기본 10)
+### 3) 지원되는 시각화 유형 (5종)
+- **의존성 그래프**: 파일 간 호출, import, extends 관계
+- **ERD**: 데이터베이스 테이블과 관계
+- **컴포넌트 다이어그램**: 모듈/패키지 단위 구조 
+- **시퀀스 다이어그램**: 메서드 호출 흐름
+- **클래스 다이어그램**: Python 클래스 구조와 상속 관계 (v1.3 신규)
+
+### 4) Mermaid 내보내기 옵션
+- `--mermaid-label-max` 라벨 최대 길이(기본 20)
+- `--mermaid-erd-max-cols` ERD 컬럼 최대 표기 수(기본 10)
 
 ---
 
-# 기존 문서
-# ?뚯뒪 遺꾩꽍湲?- 1?④퀎 硫뷀??뺣낫 ?앹꽦 ?쒖뒪??
-?덇굅??Java/JSP/MyBatis/Oracle ?뚯뒪 肄붾뱶瑜??뺤쟻 遺꾩꽍?섏뿬 硫뷀??뺣낫瑜??앹꽦?섎뒗 ?쒖뒪?쒖엯?덈떎.
+## 프로젝트 개요
 
-## ?꾨줈?앺듃 媛쒖슂
+### 주요 목표
+- **멀티 빅데이터 분석**: 레거시 코드를 자동 파싱하여 경로, 호출 범위, 구조 정보를 메타데이터로 생성
+- **다양한 언어 지원**: Java, JSP, MyBatis XML, SQL(Oracle 방언) 분석
+- **신뢰도 추론**: 모든 분석 결과에 신뢰도 수치 포함
+- **증분 분석**: 변경된 파일만 재분석하는 효율적인 처리
+- **병렬 분석**: 멀티스레드를 통한 고성능 분석
 
-### 二쇱슂 ?뱀쭠
-- **?먮Ц 鍮꾩????먯튃**: ?뚯뒪 肄붾뱶 ?먮Ц????ν븯吏 ?딄퀬 寃쎈줈, ?쇱씤 踰붿쐞, 援ъ“ ?뺣낫留?硫뷀??곗씠?곕줈 ???- **?ㅼ쨷 ?몄뼱 吏??*: Java, JSP, MyBatis XML, SQL(Oracle 諛⑹뼵) 遺꾩꽍
-- **?좊ː??異붿쟻**: 紐⑤뱺 遺꾩꽍 寃곌낵???좊ː???먯닔 ?ы븿
-- **利앸텇 遺꾩꽍**: 蹂寃쎈맂 ?뚯씪留??щ텇?앺븯???⑥쑉?곸씤 泥섎━
-- **蹂묐젹 泥섎━**: 硫?곗뒪?덈뱶瑜??듯븳 怨좎꽦??遺꾩꽍
+### 분석 대상
+- **Java**: 클래스 메서드, 어노테이션, 의존성 관계
+- **JSP**: 스크립틀릿 SQL, include 관계
+- **MyBatis XML**: SQL 매핑, 동적 SQL, 조인 조건, 필터 조건
+- **DB 스키마**: Oracle 메타데이터(CSV 형태)
+- **Python**: 클래스, 메서드, 상속 관계 (v1.3 신규)
 
-### 遺꾩꽍 ???- **Java**: ?대옒?? 硫붿꽌?? ?대끂?뚯씠?? ?섏〈??愿怨?- **JSP**: ?ㅽ겕由쏀?由???SQL, include 愿怨?- **MyBatis XML**: SQL 留ㅽ띁, ?숈쟻 SQL, 議곗씤 議곌굔, ?꾪꽣 議곌굔
-- **DB ?ㅽ궎留?*: Oracle 硫뷀??곗씠??(CSV ?뺥깭)
-
-## ?쒖뒪??援ъ“
+## 시스템 구조
 
 ```
 src/
-?쒋?? models/
-??  ?붴?? database.py          # SQLAlchemy 紐⑤뜽 ?뺤쓽
-?쒋?? parsers/
-??  ?쒋?? java_parser.py       # Java AST ?뚯꽌
-??  ?쒋?? jsp_mybatis_parser.py # JSP/MyBatis XML ?뚯꽌
-??  ?붴?? sql_parser.py        # SQL 援щЦ ?뚯꽌
-?쒋?? database/
-??  ?붴?? metadata_engine.py   # 硫뷀??곗씠??????붿쭊
-?붴?? utils/
-    ?쒋?? confidence_calculator.py # ?좊ː??怨꾩궛湲?    ?붴?? csv_loader.py        # DB ?ㅽ궎留?CSV 濡쒕뜑
+├── models/
+│   └── database.py          # SQLAlchemy 모델 정의
+├── parsers/
+│   ├── java_parser.py       # Java AST 파서
+│   ├── jsp_mybatis_parser.py # JSP/MyBatis XML 파서
+│   └── sql_parser.py        # SQL 구문 파서
+├── database/
+│   └── metadata_engine.py   # 메타데이터 관리 엔진
+├── utils/
+│   ├── confidence_calculator.py # 신뢰도 계산기
+│   └── csv_loader.py        # DB 스키마 CSV 로더
+└── visualize/
+    ├── builders/
+    │   ├── class_diagram.py   # 클래스 다이어그램 빌더 (v1.3 신규)
+    │   ├── dependency_graph.py
+    │   ├── erd.py
+    │   ├── component_diagram.py
+    │   └── sequence_diagram.py
+    ├── templates/
+    │   ├── class_view.html    # 클래스 다이어그램 템플릿 (v1.3 신규)
+    │   ├── graph_view.html
+    │   └── erd_view.html
+    └── exporters/
+        └── mermaid_exporter.py # Mermaid 내보내기
 ```
 
-## ?ㅼ튂 諛??ㅽ뻾
+## 설치 및 실행
 
-### 1. ?섏〈???ㅼ튂 (?⑤씪???섍꼍)
+### 1. 의존성 설치 (온라인 환경)
 
-?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌???ㅼ쓬 紐낅졊?쇰줈 Python ?섏〈?깆쓣 ?ㅼ튂?⑸땲??
+인터넷이 가능한 환경에서는 다음 명령으로 Python 의존성을 설치합니다:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. ?ㅽ봽?쇱씤 ?ㅼ튂 媛?대뱶 (?먯뇙留??섍꼍)
+### 2. 오프라인 설치 가이드 (에어갭 환경)
 
-蹂??쒖뒪?쒖? ?먯뇙留??섍꼍?먯꽌 ?댁쁺?????덈룄濡??ㅺ퀎?섏뿀?듬땲?? 紐⑤뱺 ?몃? ?섏〈?깆? ?ъ쟾???ㅼ슫濡쒕뱶?섏뿬 ?ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?댁빞 ?⑸땲??
+본 시스템은 에어갭 환경에서 운영되도록 설계되었습니다. 모든 외부 의존성을 사전에 다운로드하여 오프라인으로 설치해야 합니다.
 
-#### 2.1. Python ?⑦궎吏
+#### 2.1. Python 패키지
 
-1.  **Wheelhouse ?앹꽦**: ?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌 ?ㅼ쓬 紐낅졊???ъ슜?섏뿬 紐⑤뱺 Python ?⑦궎吏????wheel) ?뚯씪???ㅼ슫濡쒕뱶?⑸땲??
-    ```bash
-    pip wheel -r requirements.txt -w ./wheelhouse
-    # 2?④퀎 LLM/RAG 愿???⑦궎吏 (requirements.txt?먯꽌 二쇱꽍 ?댁젣 ??
-    # pip wheel -r requirements.txt -w ./wheelhouse --only-binary :all:
-    ```
-2.  **?ㅽ봽?쇱씤 ?ㅼ튂**: ?앹꽦??`wheelhouse` ?대뜑瑜??먯뇙留??섍꼍?쇰줈 ??릿 ?? ?ㅼ쓬 紐낅졊?쇰줈 ?ㅼ튂?⑸땲??
-    ```bash
-    pip install --no-index --find-links=./wheelhouse -r requirements.txt
-    ```
-    **李멸퀬**: `lxml` ?⑦궎吏??鍮뚮뱶 ?섍꼍???곕씪 而댄뙆?쇱씠 ?꾩슂?????덉뒿?덈떎. `pip wheel` 紐낅졊 ??`lxml`??????뱀젙 ?뚮옯?쇱슜 ?좎씠 ?앹꽦?섏뿀?붿? ?뺤씤?섍퀬, ?꾩슂??寃쎌슦 `lxml` 怨듭떇 臾몄꽌(https://lxml.de/installation.html)瑜?李몄“?섏뿬 ?ㅽ봽?쇱씤 鍮뚮뱶 諛⑸쾿???곕쫭?덈떎.
+1. **Wheelhouse 생성**: 인터넷이 가능한 환경에서 다음 명령을 사용하여 모든 Python 패키지를 wheel 파일로 다운로드합니다:
+   ```bash
+   pip wheel -r requirements.txt -w ./wheelhouse
+   ```
 
-#### 2.2. JavaScript ?쒓컖???쇱씠釉뚮윭由?
-?쒓컖??紐⑤뱢(`visualize/`)? Cytoscape.js, Dagre.js ?깆쓽 JavaScript ?쇱씠釉뚮윭由щ? ?ъ슜?⑸땲?? ?대뱾? `visualize/static/vendor/` 寃쎈줈??濡쒖뺄濡?踰덈뱾留곷릺?댁빞 ?⑸땲??
+2. **오프라인 설치**: 생성된 `wheelhouse` 폴더를 에어갭 환경으로 복사 후 다음 명령으로 설치합니다:
+   ```bash
+   pip install --no-index --find-links=./wheelhouse -r requirements.txt
+   ```
 
-1.  **?먯뀑 ?ㅼ슫濡쒕뱶**: ?명꽣???곌껐??媛?ν븳 ?섍꼍?먯꽌 ?ㅼ쓬 ?ㅽ겕由쏀듃瑜??ㅽ뻾?섏뿬 ?꾩슂??JavaScript ?먯뀑???ㅼ슫濡쒕뱶?⑸땲??
-    ```bash
-    python visualize/static/vendor/download_assets.py
-    ```
-    ???ㅽ겕由쏀듃??`visualize/static/vendor/` ?대뜑??`cytoscape.min.js`, `dagre.min.js`, `cytoscape-dagre.js` ?깆쓣 ?ㅼ슫濡쒕뱶?⑸땲??
-2.  **?ㅽ봽?쇱씤 諛곗튂**: ?ㅼ슫濡쒕뱶??`visualize/static/vendor/` ?대뜑 ?꾩껜瑜??먯뇙留??섍꼍?쇰줈 ??꺼 ?쒖뒪?쒖쓽 `visualize/static/vendor/` 寃쎈줈??諛곗튂?⑸땲??
+#### 2.2. JavaScript 시각화 라이브러리
 
-#### 2.3. Java 媛쒕컻 ?섍꼍 (JDK)
+시각화 모듈(`visualize/`)은 Cytoscape.js, Dagre.js 등의 JavaScript 라이브러리를 사용합니다. 이들은 `visualize/static/vendor/` 경로에 로컬 번들링되어야 합니다.
 
-Java ?뚯뒪 肄붾뱶(`*.java`)瑜??뚯떛?섍린 ?꾪빐 `javalang` ?쇱씠釉뚮윭由ш? ?ъ슜?⑸땲?? `javalang` ?먯껜??Python ?쇱씠釉뚮윭由ъ씠吏留? Java ?뚯뒪 肄붾뱶 遺꾩꽍??留λ씫??Java 媛쒕컻 ?섍꼍(JDK)???꾩슂?????덉뒿?덈떎. ?먯뇙留??섍꼍??留욌뒗 JDK瑜??ㅼ튂?⑸땲??
+1. **자산 다운로드**: 인터넷이 가능한 환경에서 다음 스크립트를 실행하여 필요한 JavaScript 자산을 다운로드합니다:
+   ```bash
+   python visualize/static/vendor/download_assets.py
+   ```
 
-#### 2.4. Oracle 11g ?곗씠?곕쿋?댁뒪
+2. **오프라인 배치**: 다운로드된 `visualize/static/vendor/` 폴더 전체를 에어갭 환경으로 복사하여 시스템의 `visualize/static/vendor/` 경로에 배치합니다.
 
-?댁쁺 ?섍꼍?먯꽌 Oracle 11g ?곗씠?곕쿋?댁뒪瑜??ъ슜?섎뒗 寃쎌슦, ?쒖? ?ㅽ봽?쇱씤 ?ㅼ튂 ?덉감???곕씪 ?ㅼ튂 諛?援ъ꽦?⑸땲?? `cx_oracle` Python ?⑦궎吏??Oracle Client ?쇱씠釉뚮윭由ъ뿉 ?섏〈?섎?濡? Oracle Client???ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?댁빞 ?⑸땲??
+### 3. 설정 파일
 
-#### 2.5. LLM 愿??(2?④퀎 媛쒕컻 ???꾩슂)
-
-?꾩옱 1?④퀎 硫뷀??뺣낫 ?앹꽦 ?쒖뒪?쒖뿉?쒕뒗 LLM??吏곸젒 ?ъ슜?섏? ?딆뒿?덈떎. 2?④퀎 LLM 湲곕컲 吏덉쓽?묐떟 諛??곹뼢?됯? 湲곕뒫 媛쒕컻 ???ㅼ쓬 ??ぉ?ㅼ씠 異붽?濡??꾩슂?⑸땲??
-
-1.  **LLM 諛??꾨쿋??紐⑤뜽**: Qwen2.5 (7B/32B), BGE-m3, ko-sentence-transformers, BGE reranker v2? 媛숈? 紐⑤뜽 媛以묒튂 ?뚯씪??Hugging Face ?깆뿉??吏곸젒 ?ㅼ슫濡쒕뱶?섏뿬 ?뱀젙 寃쎈줈(?? `models/llm`, `models/embedding`)??諛곗튂?댁빞 ?⑸땲??
-2.  **vLLM ?ㅼ튂**: LLM ?쒕튃???꾪븳 vLLM 諛??대떦 醫낆냽??CUDA, PyTorch ?????ㅽ봽?쇱씤?쇰줈 ?ㅼ튂?⑸땲?? vLLM 怨듭떇 臾몄꽌瑜?李몄“?섏뿬 ?먯뇙留??섍꼍??留욌뒗 ?ㅼ튂 諛⑸쾿???곕쫭?덈떎.
-3.  **Python ?⑦궎吏**: `openai`, `langchain`, `faiss-cpu`, `sentence-transformers`, `fastapi`, `uvicorn` ??2?④퀎 愿??Python ?⑦궎吏?ㅼ쓣 `requirements.txt`?먯꽌 二쇱꽍 ?댁젣 ??2.1. Python ?⑦궎吏 ?뱀뀡???ㅽ봽?쇱씤 ?ㅼ튂 ?덉감瑜??곕쫭?덈떎.
-
-`config/config.yaml` ?뚯씪?먯꽌 ?곗씠?곕쿋?댁뒪? 遺꾩꽍 ?듭뀡???ㅼ젙?⑸땲??
+`config/config.yaml` 파일에서 데이터베이스 및 분석 옵션을 설정합니다:
 
 ```yaml
-# ?곗씠?곕쿋?댁뒪 ?ㅼ젙
+# 데이터베이스 설정
 database:
-  type: sqlite  # 媛쒕컻??  sqlite:
+  type: sqlite  # 개발용
+  sqlite:
     path: "./data/metadata.db"
     
-# ?뚯꽌 ?ㅼ젙  
+# 파서 설정  
 parsers:
   java:
     enabled: true
     parser_type: "javaparser"
+  python:
+    enabled: true  # v1.3 신규
 ```
 
-### 3. ?꾨줈?앺듃 遺꾩꽍 ?ㅽ뻾
+### 4. 프로젝트 분석 실행
 
 ```bash
 python main.py /path/to/your/project --project-name "MyProject"
 ```
 
-### 4. DB ?ㅽ궎留?以鍮?
-?꾨줈?앺듃 ?대뜑 ?섏쐞??`DB_SCHEMA` ?대뜑瑜??앹꽦?섍퀬 ?ㅼ쓬 CSV ?뚯씪?ㅼ쓣 諛곗튂?⑸땲??
+### 5. DB 스키마 준비
+
+프로젝트 폴더 하위에 `DB_SCHEMA` 폴더를 생성하고 다음 CSV 파일들을 배치합니다:
 
 ```
 PROJECT/
-?붴?? your-project/
-    ?붴?? DB_SCHEMA/
-        ?쒋?? ALL_TABLES.csv
-        ?쒋?? ALL_TAB_COLUMNS.csv
-        ?쒋?? ALL_TAB_COMMENTS.csv
-        ?쒋?? ALL_COL_COMMENTS.csv
-        ?붴?? PK_INFO.csv
+└── your-project/
+    └── DB_SCHEMA/
+        ├── ALL_TABLES.csv
+        ├── ALL_TAB_COLUMNS.csv
+        ├── ALL_TAB_COMMENTS.csv
+        ├── ALL_COL_COMMENTS.csv
+        └── PK_INFO.csv
 ```
 
-## 二쇱슂 湲곕뒫
+## 시각화 사용법
 
-### 1. Java ?뚯뒪 遺꾩꽍
-- JavaParser瑜??ъ슜??AST 湲곕컲 遺꾩꽍
-- ?대옒?? 硫붿꽌?? ?대끂?뚯씠??異붿텧
-- 硫붿꽌???몄텧 愿怨?遺꾩꽍
-- Spring Framework ?대끂?뚯씠??泥섎━
+분석(DB 구축)이 완료된 후 `visualize` 모듈을 사용해 다양한 다이어그램을 HTML로 생성할 수 있습니다.
 
-### 2. MyBatis XML 遺꾩꽍
-- SQL 留ㅽ띁 援щЦ 異붿텧 (`<select>`, `<insert>`, `<update>`, `<delete>`)
-- ?숈쟻 SQL ?쒓렇 泥섎━ (`<if>`, `<choose>`, `<foreach>`)
-- 議곗씤 議곌굔 ?먮룞 異붿텧
-- ?꾩닔 ?꾪꽣 議곌굔 ?앸퀎
-
-### 3. ?좊ː??湲곕컲 遺꾩꽍
-- AST ?덉쭏 湲곕컲 ?좊ː??怨꾩궛
-- ?뺤쟻 洹쒖튃 留ㅼ묶 ?좊ː??- DB ?ㅽ궎留?留ㅼ묶 ?좊ː??- 蹂듭옟?꾩뿉 ?곕Ⅸ ?좊ː??議곗젙
-
-### 4. 硫뷀??곗씠?????- ?뚯씪, ?대옒?? 硫붿꽌??援ъ“ ?뺣낫
-- SQL 援щЦ, 議곗씤, ?꾪꽣 議곌굔
-- ?섏〈??洹몃옒??(?몄텧, 李몄“ 愿怨?
-- 遺꾩꽍 ?좊ː??諛?濡쒓렇
-
-## ?곗씠?곕쿋?댁뒪 ?ㅽ궎留?
-二쇱슂 ?뚯씠釉?
-- `projects`: ?꾨줈?앺듃 ?뺣낫
-- `files`: ?뚯뒪 ?뚯씪 硫뷀??곗씠??
-- `classes`: Java ?대옒???뺣낫
-- `methods`: Java 硫붿꽌???뺣낫
-- `sql_units`: SQL 援щЦ ?뺣낫
-- `joins`: 議곗씤 議곌굔
-- `required_filters`: ?꾩닔 ?꾪꽣 議곌굔
-- `edges`: ?섏〈??愿怨?洹몃옒??
-## 紐낅졊???듭뀡
+### 1) 시각화 생성 (HTML + Mermaid)
 
 ```bash
+# 의존성 그래프
+python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+  --kinds use_table,include --min-confidence 0.5 --max-nodes 1000 \
+  --export-mermaid visualize/output/graph.md
+
+# ERD (전체 또는 특정 SQL 기준)
+python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+  --export-mermaid visualize/output/erd.md
+
+python visualize_cli.py erd --project-id 1 --out visualize/output/erd_from_sql.html \
+  --from-sql MapperNamespace:selectUser
+
+# 컴포넌트 다이어그램
+python visualize_cli.py component --project-id 1 --out visualize/output/components.html \
+  --export-mermaid visualize/output/components.md
+
+# 시퀀스(호출 추적) 다이어그램
+python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
+  --start-file UserService.java --depth 3 \
+  --export-mermaid visualize/output/sequence.md
+
+# 클래스 다이어그램 (v1.3 신규)
+python visualize_cli.py class --project-id 1 --out visualize/output/class.html \
+  --modules "database,models" --include-private --max-methods 15 \
+  --export-mermaid visualize/output/class.md
+```
+
+### 2) 클래스 다이어그램 상세 옵션 (v1.3)
+
+```bash
+# 전체 프로젝트 Python 파일 분석
+python visualize_cli.py class --project-id 1 --out class.html
+
+# 특정 모듈만 포함
+python visualize_cli.py class --project-id 1 --modules "src.models,src.database" --out class.html
+
+# Private 멤버 포함하여 상세 분석
+python visualize_cli.py class --project-id 1 --include-private --max-methods 20 --out class.html
+
+# Mermaid 코드만 출력
+python visualize_cli.py class --project-id 1 --export-mermaid class.mmd --out /dev/null
+```
+
+**클래스 다이어그램 특징**:
+- Python AST 기반 정확한 파싱
+- 클래스, 메서드, 속성, 상속 관계 자동 추출
+- Private/Public 멤버 구분 시각화
+- 추상 클래스, 프로퍼티, 정적 메서드 표시
+- Mermaid `classDiagram` 문법 완전 지원
+
+### 3) Mermaid 내보내기
+
+모든 다이어그램은 Mermaid 형식으로 내보낼 수 있습니다:
+
+- **`.md` 파일**: 완전한 문서 (제목, 범례, Mermaid 코드블록 포함)
+- **`.mmd` 또는 `.mermaid` 파일**: Mermaid 코드만
+
+```bash
+# 완전한 Markdown 문서
+python visualize_cli.py erd --project-id 1 --out erd.html --export-mermaid erd.md
+
+# Mermaid 코드만 (GitHub/GitLab 등에서 직접 렌더링 가능)
+python visualize_cli.py class --project-id 1 --out class.html --export-mermaid class.mmd
+```
+
+### 4) CI/CD 자동화 예시
+
+```yaml
+# .github/workflows/visualize.yml
+name: Generate Documentation
+on: [push]
+jobs:
+  visualize:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Analyze project
+      run: python main.py . --project-name "MyApp"
+    - name: Generate visualizations
+      run: |
+        python visualize_cli.py erd --project-id 1 --out docs/erd.html --export-mermaid docs/erd.md
+        python visualize_cli.py class --project-id 1 --out docs/class.html --export-mermaid docs/class.md
+        python visualize_cli.py graph --project-id 1 --out docs/deps.html --export-mermaid docs/deps.md
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
+```
+
+## 주요 기능
+
+### 1. 다중 언어 파싱 지원
+- **Java**: JavaParser를 사용한 AST 기반 분석
+- **Python**: AST 기반 클래스 구조 분석 (v1.3)
+- **JSP/MyBatis**: ANTLR 기반 구문 분석
+- **SQL**: Oracle 방언 지원
+
+### 2. 신뢰도 기반 분석
+- AST 정보 기반 신뢰도 계산
+- 정적 규칙 매칭 신뢰도
+- DB 스키마 매칭 신뢰도
+- 복잡성에 따른 신뢰도 조정
+
+### 3. 메타데이터 관리
+- 파일, 클래스 메서드 구조 정보
+- SQL 구문, 조인, 필터 조건
+- 의존성 그래프 (호출, 참조 관계)
+- 분석 신뢰도 및 로그
+
+### 4. 고성능 처리
+- 병렬 파싱 및 분석
+- 증분 분석 (변경된 파일만)
+- 메모리 효율적인 청크 처리
+- 대용량 프로젝트 지원
+
+## 명령어 옵션
+
+```bash
+# 메인 분석 도구
 python main.py [OPTIONS] PROJECT_PATH
 
-?몄닔:
-  PROJECT_PATH          遺꾩꽍???꾨줈?앺듃 寃쎈줈
+인수:
+  PROJECT_PATH          분석할 프로젝트 경로
 
-?듭뀡:
-  --config CONFIG       ?ㅼ젙 ?뚯씪 寃쎈줈 (湲곕낯媛? ./config/config.yaml)
-  --project-name NAME   ?꾨줈?앺듃 ?대쫫 (湲곕낯媛? ?대뜑紐?
-  --incremental         利앸텇 遺꾩꽍 紐⑤뱶
-  --help                ?꾩?留??쒖떆
+옵션:
+  --config CONFIG       설정 파일 경로 (기본값: ./config/config.yaml)
+  --project-name NAME   프로젝트 이름 (기본값: 폴더명)
+  --incremental         증분 분석 모드
+  --help                도움말 표시
+
+# 시각화 도구
+python visualize_cli.py [COMMAND] [OPTIONS]
+
+명령어:
+  graph                의존성 그래프 생성
+  erd                  ERD 생성  
+  component            컴포넌트 다이어그램 생성
+  sequence             시퀀스 다이어그램 생성
+  class                클래스 다이어그램 생성 (v1.3)
+
+공통 옵션:
+  --project-id ID      프로젝트 ID (필수)
+  --out PATH           출력 HTML 파일 경로 (필수)
+  --export-mermaid PATH  Mermaid 내보내기 (.md/.mmd)
+  --min-confidence NUM  최소 신뢰도 임계값 (기본값: 0.5)
+  --max-nodes NUM      최대 노드 수 (기본값: 2000)
 ```
 
-## 遺꾩꽍 寃곌낵 ?덉떆
+## 설정 옵션
 
-```
-==========================================
-遺꾩꽍 ?꾨즺!
-?꾨줈?앺듃: insurance-system
-遺꾩꽍???뚯씪 ?? 234
-Java ?뚯씪: 156
-JSP ?뚯씪: 23
-XML ?뚯씪: 55
-?대옒???? 198
-硫붿꽌???? 1,247  
-SQL 援щЦ ?? 134
-==========================================
-```
-
-## ?ㅼ젙 ?듭뀡
-
-### ?뚯꽌 ?ㅼ젙
+### 파서 설정
 ```yaml
 parsers:
   java:
     enabled: true
-    parser_type: "javaparser"  # ?먮뒗 "tree-sitter"
+    parser_type: "javaparser"  # 또는 "tree-sitter"
+    
+  python:
+    enabled: true
+    parser_type: "ast"  # Python AST 파서
     
   jsp:
     enabled: true
@@ -232,131 +349,84 @@ parsers:
     oracle_dialect: true
 ```
 
-### 泥섎━ ?ㅼ젙
+### 처리 설정
 ```yaml
 processing:
-  max_workers: 4          # 蹂묐젹 泥섎━ ?뚯빱 ??  chunk_size: 512         # 泥?궧 ?ш린
-  confidence_threshold: 0.5 # ?좊ː???꾧퀎媛?```
+  max_workers: 4          # 병렬 처리 워커 수
+  chunk_size: 512         # 청크 크기
+  confidence_threshold: 0.5 # 신뢰도 임계값
+```
 
-### ?뚯씪 ?⑦꽩 ?ㅼ젙
+### 파일 필터 설정
 ```yaml
 file_patterns:
   include:
     - "**/*.java"
+    - "**/*.py"    # v1.3
     - "**/*.jsp"
     - "**/*.xml"
   exclude:
     - "**/target/**"
     - "**/build/**"
+    - "**/__pycache__/**"  # v1.3
 ```
 
-## 濡쒓퉭 諛?紐⑤땲?곕쭅
+## 버전 히스토리
 
-- 遺꾩꽍 吏꾪뻾 ?곹솴 ?ㅼ떆媛?濡쒓퉭
-- ?ㅻ쪟 ?뚯씪 諛??먯씤 異붿쟻
-- 遺꾩꽍 ?깅뒫 硫뷀듃由?- ?좊ː??遺꾪룷 ?듦퀎
+### v1.3 (Visualize_008) - 2025-08-28
+- ✅ **클래스 다이어그램 신규 추가**: Python 클래스 구조 자동 분석
+- ✅ **한글 인코딩 문제 완전 해결**: CLI 및 메시지 한글화
+- ✅ **HTML 템플릿 버그 수정**: ERD 검색 기능 안정화
+- ✅ **Mermaid 클래스 다이어그램 지원**: `classDiagram` 문법 완전 지원
 
-## ?ν썑 怨꾪쉷
+### v1.2 (Visualize_007) - 2025-08-28
+- ✅ **Mermaid/Markdown 내보내기 완성**: .md/.mmd 동시 지원
+- ✅ **CLI 한글화**: 사용자 인터페이스 현지화
+- ✅ **다이어그램 유형 확장**: ERD, 시퀀스, 그래프, 컴포넌트 지원
 
-- Tree-sitter 湲곕컲 ?ㅺ뎅???뚯꽌 吏??- LLM 蹂닿컯 湲곕뒫 (2?④퀎)
-- 踰≫꽣 ?꾨쿋??諛?RAG 湲곕뒫 (2?④퀎)
-- ????쒕낫??UI
-- Oracle ?댁쁺 ?섍꼍 諛고룷
+### v1.1 - 이전 버전
+- 기본 시각화 기능 구현
+- HTML 기반 인터랙티브 다이어그램
+- 데이터베이스 메타데이터 분석
 
-## ?쇱씠?좎뒪
+## 문제 해결
 
-???꾨줈?앺듃???대? ?ъ슜???꾪븳 ?뚯뒪 遺꾩꽍 ?꾧뎄?낅땲??
+### 한글 인코딩 문제
+v1.3에서 해결되었습니다. 만약 여전히 문제가 발생하면:
+```bash
+# Windows
+chcp 65001
+python visualize_cli.py --help
+
+# Linux/Mac
+export LANG=ko_KR.UTF-8
+python visualize_cli.py --help
+```
+
+### 메모리 부족
+대용량 프로젝트의 경우:
+```bash
+# 노드 수 제한
+python visualize_cli.py graph --project-id 1 --max-nodes 500 --out graph.html
+
+# 신뢰도 임계값 상향 조정
+python visualize_cli.py erd --project-id 1 --min-confidence 0.8 --out erd.html
+```
+
+### Python 파일 분석 제한
+현재 Python AST 파서는:
+- ✅ 지원: 클래스, 메서드, 상속, 속성, 데코레이터
+- ❌ 제한: 동적 속성 (`setattr`, `exec` 등)
+- ❌ 제한: 런타임 임포트
+
+## 라이선스
+
+이 프로젝트는 테스트 및 분석을 위한 도구입니다.
 
 ---
 
-## ?쒓컖??Visualize) ?ъ슜踰?諛?諛곗튂 PNG ?덈궡
+## 관련 문서
 
-遺꾩꽍(DB 援ъ텞)???앸궃 ?? `visualize` 紐⑤뱢???ъ슜??ERD/?섏〈??而댄룷?뚰듃/?쒗???ㅼ씠?닿렇?⑥쓣 HTML濡??앹꽦?????덉뒿?덈떎. ?뷀듃由??ъ씤?몃뒗 ??μ냼 猷⑦듃??`visualize_cli.py`?낅땲??
-
-### 1) ?쒓컖???앹꽦(HTML)
-
-```bash
-# ?섏〈??洹몃옒??(use_table, include ??吏??
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
-  --kinds use_table,include --min-confidence 0.5 --max-nodes 1000
-
-# ERD ?꾩껜 ?먮뒗 遺遺??뱀젙 SQL 湲곗?)
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd_from_sql.html \
-  --from-sql MapperNamespace:selectUser
-
-# 而댄룷?뚰듃 ?ㅼ씠?닿렇??python visualize_cli.py component --project-id 1 --out visualize/output/components.html
-
-# ?쒗???먮쫫) ?ㅼ씠?닿렇??python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
-  --start-file UserService.java --depth 3
-```
-
-?앹꽦??HTML? 釉뚮씪?곗??먯꽌 ?댁뼱 ?명꽣?숉떚釉뚰븯寃??먯깋?????덉쑝硫? ?곷떒 ?대컮?먯꽌 PNG濡??대낫?닿린(?섎룞)??吏?먰빀?덈떎.
-
-### 2) 諛곗튂 PNG ?앹꽦(CI ?꾪떚?⑺듃 ??
-
-CI?먯꽌 HTML???쇨큵 ?뚮뜑留곹븯??PNG濡??꾩뭅?대툕?섎젮硫??ㅻ뱶由ъ뒪 釉뚮씪?곗?瑜??ъ슜?섎뒗 諛⑸쾿??沅뚯옣?⑸땲?? ?꾨옒??Python Playwright ?덉떆?낅땲??
-
-```bash
-pip install playwright && playwright install chromium
-```
-
-```python
-# tools/export_png_batch.py (?덉떆 ?ㅻ땲??
-import base64, json, sys
-from pathlib import Path
-from playwright.sync_api import sync_playwright
-
-def export_html_to_png(html_path: Path, png_path: Path):
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(html_path.as_uri())
-        # 酉곗뼱 ??cy.png() ?ㅽ뻾(?섏씠吏???곕씪 id媛 ?ㅻ? ???덉쓬)
-        b64 = page.evaluate("() => cy.png({full: true, scale: 2, bg: 'white'})")
-        png_path.parent.mkdir(parents=True, exist_ok=True)
-        png_path.write_bytes(base64.b64decode(b64.split(',')[1] if ',' in b64 else b64))
-        browser.close()
-
-if __name__ == '__main__':
-    out_dir = Path('visualize/output')
-    for html in out_dir.glob('*.html'):
-        export_html_to_png(html, out_dir / (html.stem + '.png'))
-```
-
-CI ?덉떆(GitHub Actions):
-
-```yaml
-- name: Export visualization PNGs
-  run: |
-    pip install playwright && python -m playwright install chromium
-    python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html
-    python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html --kinds use_table
-    python visualize_cli.py component --project-id 1 --out visualize/output/components.html
-    python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html --depth 3
-    python tools/export_png_batch.py
-- name: Upload PNG artifacts
-  uses: actions/upload-artifact@v4
-  with:
-    name: visualize-pngs
-    path: visualize/output/*.png
-```
-
-李멸퀬: ?ㅽ봽?쇱씤/?먯뇙留??섍꼍?먯꽌??酉곗뼱 HTML ??CDN ?ㅽ겕由쏀듃(?? cytoscape, dagre)瑜?濡쒖뺄 踰덈뱾濡?援먯껜?섎뒗 寃껋쓣 沅뚯옣?⑸땲??
-
-### 3) 愿??臾몄꽌
-- 援ы쁽 ?꾨즺 蹂닿퀬: `Visualize_003_Implementation.md`
-- 援ы쁽 由щ럭: `Visualize_004_Implementation_review.md`
-- ?ν썑 援ы쁽 湲고쉷: `Visualize_005_Implementation_plan.md`
-
-## Mermaid/Markdown 내보내기
-- CLI 옵션: --export-mermaid (.md 전체 문서 또는 .mmd/.mermaid 코드만)
-- 예시:
-```bash
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
-  --export-mermaid visualize/output/erd.md
-
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
-  --kinds use_table,include --export-mermaid visualize/output/graph.mmd
-```
-
+- 구현 완료 보고서: `Visualize_008_Implementation.md` (최신)
+- 이전 버전: `Visualize_007_Implementation.md`, `Visualize_007_Implementation_review.md`
+- 향후 개발 계획: 다국어 클래스 분석, 고급 관계 추론, 성능 최적화

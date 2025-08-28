@@ -43,6 +43,8 @@ class MermaidExporter:
             return self._export_erd(data)
         elif diagram_type == 'sequence':
             return self._export_sequence(data)
+        elif diagram_type == 'class':
+            return self._export_class(data)
         elif diagram_type in ['graph', 'component']:
             return self._export_graph(data, diagram_type)
         else:
@@ -161,6 +163,19 @@ class MermaidExporter:
                 "- 실선 화살표: 해석된 메소드 호출",
                 "- 점선 화살표: 미해석 호출",
                 "- 숫자: 호출 순서"
+            ])
+
+        elif diagram_type == 'class':
+            legend.extend([
+                "### 클래스 다이어그램 범례",
+                "- 실선 화살표: 상속 관계",
+                "- 점선 화살표: 연관 관계",
+                "- 사각형: 일반 클래스",
+                "- 점선 사각형: 추상 클래스",
+                "- `+` : public 멤버",
+                "- `-` : private 멤버",
+                "- `#` : protected 멤버",
+                "- `*` : static 멤버"
             ])
 
         elif diagram_type in ['graph', 'component']:
@@ -326,6 +341,60 @@ class MermaidExporter:
             if node_type in ['table', 'method', 'component']:
                 lines.append(f"  class {node_id} {node_type}")
 
+        return "\n".join(lines)
+
+    def _export_class(self, data: Dict[str, Any]) -> str:
+        """클래스 다이어그램을 Mermaid classDiagram 문법으로 변환"""
+        lines: List[str] = ["classDiagram"]
+        
+        # 클래스 정의
+        for node in data.get('nodes', []):
+            if node.get('type') == 'class':
+                class_id = self._sanitize_id(node['id'])
+                class_name = self._sanitize_label(node.get('label', ''))
+                meta = node.get('meta', {})
+                
+                lines.append(f"  class {class_id} {{")
+                
+                # 속성 추가
+                attributes = meta.get('attributes', [])[:10]  # 최대 10개
+                for attr in attributes:
+                    visibility = '-' if attr.get('is_private') else '+'
+                    attr_type = '*' if attr.get('type') == 'class_variable' else ''
+                    lines.append(f"    {visibility}{attr_type}{attr['name']}")
+                
+                # 메서드 추가  
+                methods = meta.get('methods', [])[:self.erd_cols_max]  # 메서드 수 제한 재활용
+                for method in methods:
+                    if method.get('is_special'):
+                        continue  # __init__ 등은 생략
+                    
+                    visibility = '-' if method.get('is_private') else '+'
+                    method_type = ''
+                    if method.get('is_static'):
+                        method_type = '*'
+                    elif method.get('is_property'):
+                        method_type = '$'
+                    
+                    args = ', '.join(method.get('args', [])[1:])  # self 제외
+                    method_signature = f"{method['name']}({args})"
+                    lines.append(f"    {visibility}{method_type}{method_signature}")
+                
+                lines.append("  }")
+                
+                # 추상 클래스 표시
+                if meta.get('is_abstract'):
+                    lines.append(f"  {class_id} : <<abstract>>")
+        
+        lines.append("")
+        
+        # 상속 관계
+        for edge in data.get('edges', []):
+            if edge.get('kind') == 'inherits':
+                src_id = self._sanitize_id(edge['source'])
+                dst_id = self._sanitize_id(edge['target'])
+                lines.append(f"  {dst_id} <|-- {src_id}")
+        
         return "\n".join(lines)
 
     def _find_node_by_id(self, data: Dict[str, Any], node_id: str) -> Optional[Dict[str, Any]]:

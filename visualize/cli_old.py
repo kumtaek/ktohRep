@@ -1,4 +1,4 @@
-# visualize/cli.py
+﻿# visualize/cli.py
 import argparse
 import json
 import logging
@@ -106,7 +106,7 @@ def export_csv(data: Dict[str, Any], csv_dir: str, logger: logging.Logger) -> No
 def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str, 
                   logger: logging.Logger, metadata: Dict[str, Any] = None,
                   label_max: int = 20, erd_cols_max: int = 10) -> None:
-    """Mermaid/Markdown 내보내기 (확장자에 따라 .md 또는 .mmd)"""
+    """Mermaid/Markdown ?대낫?닿린 (?뺤옣?먯뿉 ?곕씪 .md ?먮뒗 .mmd)"""
     try:
         exporter = MermaidExporter(label_max=label_max, erd_cols_max=erd_cols_max)
         
@@ -119,7 +119,7 @@ def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str,
         out_path = Path(markdown_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # 확장자에 따라 내보내기 형태 결정
+        # ?뺤옣?먯뿉 ?곕씪 ?대낫?닿린 ?뺥깭 寃곗젙
         if out_path.suffix.lower() in ['.mmd', '.mermaid']:
             content = exporter.export_mermaid(data, diagram_type)
         else:
@@ -129,10 +129,10 @@ def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str,
         with open(out_path, 'w', encoding='utf-8') as f:
             f.write(content)
         
-        logger.info(f"Mermaid/Markdown 내보내기 완료: {out_path.absolute()}")
+        logger.info(f"Mermaid/Markdown ?대낫?닿린 ?꾨즺: {out_path.absolute()}")
         
     except Exception as e:
-        logger.error(f"Mermaid/Markdown 내보내기 실패: {e}")
+        logger.error(f"Mermaid/Markdown ?대낫?닿린 ?ㅽ뙣: {e}")
         raise
 
 
@@ -142,96 +142,80 @@ def main():
 
     def add_common(sp):
         sp.add_argument('--project-id', type=int, required=True, help='프로젝트 ID')
-        sp.add_argument('--out', required=True, help='출력 HTML 경로')
-        sp.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
-        sp.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
-        # Mermaid 옵션
-        sp.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
-        sp.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
+        sp.add_argument('--out', required=True, help='異쒕젰 HTML 寃쎈줈')
+        sp.add_argument('--min-confidence', type=float, default=0.5, help='理쒖냼 ?좊ː???꾧퀎媛?)
+        sp.add_argument('--max-nodes', type=int, default=2000, help='理쒕? ?몃뱶 ??)
+        # Mermaid ?듭뀡
+        sp.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid ?쇰꺼 理쒕? 湲몄씠')
+        sp.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 而щ읆 理쒕? ?쒓린 ??)
         # Logging options
         sp.add_argument('-v', '--verbose', action='count', default=0, 
-                       help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
+                       help='濡쒓렇 ?곸꽭??利앷?: -v=INFO, -vv=DEBUG')
         sp.add_argument('-q', '--quiet', action='store_true', 
-                       help='조용 모드: 경고/오류만 출력')
-        sp.add_argument('--log-file', help='로그를 파일로 기록')
+                       help='議곗슜 紐⑤뱶: 寃쎄퀬/?ㅻ쪟留?異쒕젰')
+        sp.add_argument('--log-file', help='?쒖??ㅻ쪟 ????뚯씪濡?濡쒓퉭')
         # Export options
-        sp.add_argument('--export-json', help='JSON으로 내보내기(파일 경로)')
-        sp.add_argument('--export-csv-dir', help='CSV로 내보내기(디렉토리 경로)')
-        sp.add_argument('--export-mermaid', help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
+        sp.add_argument('--export-json', help='JSON?쇰줈 ?대낫?닿린(?뚯씪 寃쎈줈)')
+        sp.add_argument('--export-csv-dir', help='CSV濡??대낫?닿린(?붾젆?좊━ 寃쎈줈)')
+        sp.add_argument('--export-mermaid', help='Mermaid/Markdown?쇰줈 ?대낫?닿린(.md/.mmd 寃쎈줈)')
     
     # Graph command
-    g = sub.add_parser('graph', help='의존성 그래프 생성')
+    g = sub.add_parser('graph', help='?섏〈??洹몃옒???앹꽦')
     add_common(g)
     g.add_argument('--kinds', default='use_table,include,extends,implements', 
-                   help='포함할 엣지 종류(콤마 구분)')
-    g.add_argument('--focus', help='시작 노드(이름/경로/테이블)')
-    g.add_argument('--depth', type=int, default=2, help='중심 기준 최대 깊이')
+                   help='?ы븿???ｌ? 醫낅쪟(肄ㅻ쭏 援щ텇)')
+    g.add_argument('--focus', help='?쒖옉 ?몃뱶(?대쫫/寃쎈줈/?뚯씠釉?')
+    g.add_argument('--depth', type=int, default=2, help='?ъ빱??湲곗? 理쒕? 源딆씠')
 
     # ERD command
-    e = sub.add_parser('erd', help='ERD 생성')
+    e = sub.add_parser('erd', help='ERD ?앹꽦')
     add_common(e)
-    e.add_argument('--tables', help='포함할 테이블명 목록(콤마 구분)')
-    e.add_argument('--owners', help='포함할 스키마/소유자 목록(콤마 구분)')
-    e.add_argument('--from-sql', help='특정 SQL 기준 ERD (형식: mapper_ns:stmt_id)')
+    e.add_argument('--tables', help='?ы븿???뚯씠釉?紐⑸줉(肄ㅻ쭏 援щ텇)')
+    e.add_argument('--owners', help='?ы븿???ㅽ궎留??뚯쑀??紐⑸줉(肄ㅻ쭏 援щ텇)')
+    e.add_argument('--from-sql', help='?뱀젙 SQL 湲곗? ERD (?뺤떇: mapper_ns:stmt_id)')
 
     # Component diagram command
-    c = sub.add_parser('component', help='컴포넌트 다이어그램 생성')
+    c = sub.add_parser('component', help='而댄룷?뚰듃 ?ㅼ씠?닿렇???앹꽦')
     add_common(c)
 
     # Sequence diagram command
-    s = sub.add_parser('sequence', help='시퀀스 다이어그램 생성')
+    s = sub.add_parser('sequence', help='?쒗???ㅼ씠?닿렇???앹꽦')
     add_common(s)
-    s.add_argument('--start-file', help='시작 파일 경로')
-    s.add_argument('--start-method', help='시작 메서드 이름')
-    s.add_argument('--depth', type=int, default=3, help='최대 추적 깊이')
-
-    # Class diagram command (NEW)
-    cl = sub.add_parser('class', help='클래스 다이어그램 생성')
-    add_common(cl)
-    cl.add_argument('--modules', help='포함할 모듈/파일 목록(콤마 구분)')
-    cl.add_argument('--include-private', action='store_true', help='private 멤버 포함')
-    cl.add_argument('--max-methods', type=int, default=10, help='클래스당 최대 메서드 표시 수')
+    s.add_argument('--start-file', help='?쒖옉 ?뚯씪 寃쎈줈')
+    s.add_argument('--start-method', help='?쒖옉 硫붿꽌???대쫫')
+    s.add_argument('--depth', type=int, default=3, help='理쒕? ?몄텧 源딆씠')
 
     try:
         args = p.parse_args()
         logger = setup_logging(args)
         
-        logger.info(f"시각화 생성 시작: {args.cmd}")
-        logger.debug(f"인자: {vars(args)}")
+        logger.info(f"?쒓컖???앹꽦 ?쒖옉: {args.cmd}")
+        logger.debug(f"?몄옄: {vars(args)}")
         
         kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
 
         # Generate visualization data
         if args.cmd == 'graph':
-            logger.info(f"의존성 그래프 생성: 프로젝트 {args.project_id}")
+            logger.info(f"?섏〈??洹몃옒???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_dependency_graph_json(args.project_id, kinds, args.min_confidence, 
                                              args.focus, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
             diagram_type = 'graph'
             
         elif args.cmd == 'erd':
-            logger.info(f"ERD 생성: 프로젝트 {args.project_id}")
+            logger.info(f"ERD ?앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_erd_json(args.project_id, args.tables, args.owners, args.from_sql)
             html = render_html('erd_view.html', data)
             diagram_type = 'erd'
             
         elif args.cmd == 'component':
-            logger.info(f"컴포넌트 다이어그램 생성: 프로젝트 {args.project_id}")
+            logger.info(f"而댄룷?뚰듃 ?ㅼ씠?닿렇???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_component_graph_json(args.project_id, args.min_confidence, args.max_nodes)
             html = render_html('graph_view.html', data)
             diagram_type = 'component'
             
-        elif args.cmd == 'class':
-            logger.info(f"클래스 다이어그램 생성: 프로젝트 {args.project_id}")
-            # Import the new class diagram builder
-            from .builders.class_diagram import build_class_diagram_json
-            data = build_class_diagram_json(args.project_id, args.modules, 
-                                          args.include_private, args.max_methods, args.max_nodes)
-            html = render_html('class_view.html', data)
-            diagram_type = 'class'
-            
         else:  # sequence
-            logger.info(f"시퀀스 다이어그램 생성: 프로젝트 {args.project_id}")
+            logger.info(f"?쒗???ㅼ씠?닿렇???앹꽦: ?꾨줈?앺듃 {args.project_id}")
             data = build_sequence_graph_json(args.project_id, args.start_file, 
                                            args.start_method, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
@@ -241,15 +225,15 @@ def main():
 
         # Export data if requested
         if args.export_json:
-            logger.info(f"JSON 내보내기: {args.export_json}")
+            logger.info(f"JSON ?대낫?닿린: {args.export_json}")
             export_json(data, args.export_json, logger)
             
         if args.export_csv_dir:
-            logger.info(f"CSV 내보내기: {args.export_csv_dir}")
+            logger.info(f"CSV ?대낫?닿린: {args.export_csv_dir}")
             export_csv(data, args.export_csv_dir, logger)
 
         if args.export_mermaid:
-            logger.info(f"Mermaid/Markdown 내보내기: {args.export_mermaid}")
+            logger.info(f"Mermaid/Markdown ?대낫?닿린: {args.export_mermaid}")
             export_mermaid(data, args.export_mermaid, diagram_type, logger, {'project_id': args.project_id}, label_max=getattr(args, 'mermaid_label_max', 20), erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10))
 
         # Generate and save HTML
@@ -259,21 +243,21 @@ def main():
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html)
             
-        logger.info(f"시각화 HTML 저장: {output_path.absolute()}")
+        logger.info(f"?쒓컖??HTML ??? {output_path.absolute()}")
         
     except KeyboardInterrupt:
-        print('사용자에 의해 중단됨', file=sys.stderr)
+        print('?ъ슜?먯뿉 ?섑빐 以묐떒??, file=sys.stderr)
         return 130
     except SystemExit as e:
         # argparse error
         return e.code if isinstance(e.code, int) else 2
     except FileNotFoundError as e:
-        print(f"오류: 파일을 찾을 수 없습니다: {e}", file=sys.stderr)
-        print("확인: 파일 경로, 권한, --project-id 인자", file=sys.stderr)
+        print(f"?ㅻ쪟: ?뚯씪??李얠쓣 ???놁뒿?덈떎: {e}", file=sys.stderr)
+        print("?뺤씤: ?뚯씪 寃쎈줈, 沅뚰븳, --project-id ?몄옄", file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"오류: 실행 중 예기치 못한 오류: {e}", file=sys.stderr)
-        print("확인: 입력 인자, 데이터베이스 상태, -v 로깅 옵션", file=sys.stderr)
+        print(f"?ㅻ쪟: ?ㅽ뻾 以??덇린移?紐삵븳 ?ㅻ쪟: {e}", file=sys.stderr)
+        print("?뺤씤: ?낅젰 ?몄옄, ?곗씠??以鍮??곹깭, -v 濡쒓퉭 ?듭뀡", file=sys.stderr)
         return 1
     
     return 0
@@ -281,3 +265,4 @@ def main():
 
 if __name__ == '__main__':
     exit(main())
+

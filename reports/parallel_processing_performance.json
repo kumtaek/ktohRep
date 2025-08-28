@@ -1,0 +1,165 @@
+{
+  "timestamp": "2025-08-28 14:28:05",
+  "system_info": {},
+  "performance_verification": {
+    "verification": {
+      "system_info": {
+        "cpu_count": 12,
+        "memory_gb": 15.374439239501953,
+        "test_files_count": 50
+      },
+      "performance_tests": [
+        {
+          "total_files": 50,
+          "processing_time": 0.6042475700378418,
+          "cpu_usage_avg": 0.0,
+          "memory_usage_peak": 30.38671875,
+          "thread_count": 1,
+          "process_count": 0,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ThreadPool",
+          "workers": 1
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.8033220767974854,
+          "cpu_usage_avg": 5.8375,
+          "memory_usage_peak": 31.0859375,
+          "thread_count": 0,
+          "process_count": 1,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ProcessPool",
+          "workers": 1
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.30189967155456543,
+          "cpu_usage_avg": 0.0,
+          "memory_usage_peak": 31.0859375,
+          "thread_count": 2,
+          "process_count": 0,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ThreadPool",
+          "workers": 2
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.502875566482544,
+          "cpu_usage_avg": 6.24,
+          "memory_usage_peak": 31.0859375,
+          "thread_count": 0,
+          "process_count": 2,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ProcessPool",
+          "workers": 2
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.20141339302062988,
+          "cpu_usage_avg": 0.0,
+          "memory_usage_peak": 31.13671875,
+          "thread_count": 4,
+          "process_count": 0,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ThreadPool",
+          "workers": 4
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.40219569206237793,
+          "cpu_usage_avg": 11.675,
+          "memory_usage_peak": 31.08984375,
+          "thread_count": 0,
+          "process_count": 4,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ProcessPool",
+          "workers": 4
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.10111784934997559,
+          "cpu_usage_avg": 0.0,
+          "memory_usage_peak": 31.04296875,
+          "thread_count": 8,
+          "process_count": 0,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ThreadPool",
+          "workers": 8
+        },
+        {
+          "total_files": 50,
+          "processing_time": 0.40178918838500977,
+          "cpu_usage_avg": 19.475,
+          "memory_usage_peak": 31.10546875,
+          "thread_count": 0,
+          "process_count": 8,
+          "success_count": 50,
+          "error_count": 0,
+          "errors": [],
+          "executor_type": "ProcessPool",
+          "workers": 8
+        }
+      ],
+      "optimal_workers": 8,
+      "recommendations": [
+        "다중 코어 시스템: ProcessPool을 고려하여 CPU 집약적 작업 처리",
+        "ThreadPool이 ProcessPool보다 20% 이상 빠름 - I/O 집약적 작업에 적합",
+        "CPU 코어 수(12) 범위 내 최적 워커 수: 8"
+      ],
+      "optimal_executor": "ThreadPool"
+    },
+    "optimization": {
+      "total_files": 120,
+      "file_groups": {
+        ".java": 50,
+        ".jsp": 30,
+        ".xml": 40
+      },
+      "processing_results": {
+        ".java": {
+          "files_processed": 50,
+          "processing_time": 0.07593870162963867,
+          "workers_used": 8,
+          "batch_size": 6
+        },
+        ".jsp": {
+          "files_processed": 30,
+          "processing_time": 0.08565092086791992,
+          "workers_used": 8,
+          "batch_size": 3
+        },
+        ".xml": {
+          "files_processed": 40,
+          "processing_time": 0.07972574234008789,
+          "workers_used": 8,
+          "batch_size": 5
+        }
+      },
+      "total_processing_time": 0.2415754795074463,
+      "optimization_applied": [
+        "기본 병렬 처리 최적화 적용"
+      ]
+    }
+  },
+  "summary": {
+    "optimal_configuration": {
+      "workers": 4,
+      "executor_type": "ThreadPool"
+    },
+    "recommendations": []
+  }
+}

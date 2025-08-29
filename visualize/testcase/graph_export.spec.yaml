@@ -1,0 +1,11 @@
+name: Visualize CLI exports graph markdown
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: use_table,include
+  export-mermaid: ./out/graph.md
+expected:
+  files_exist:
+    - out/graph.md
+

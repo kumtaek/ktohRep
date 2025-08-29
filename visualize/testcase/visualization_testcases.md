@@ -18,65 +18,147 @@
 ## 1. ERD 시나리오
 
 ### TC-ERD-01 기본 ERD 생성
--   목적: 전체 테이블 기반 ERD 생성
--   명령: `python -m visualize erd --project-id 1 --out visualize/output/erd_all.html`
--   기대:
-    -   HTML 파일 생성, 테이블 노드 다수 표시
-    -   노드 라벨: `OWNER.TABLE` 형식(대문자)
 
+---
+name: TC-ERD-01 기본 ERD 생성
+kind: visualize_cli
+params:
+  command: erd
+  project-id: 1
+  out: visualize/output/erd_all.html
+expected:
+  files_exist:
+    - visualize\output\erd_all.html
+---
 ### TC-ERD-02 소유자/테이블 필터
--   목적: 특정 오너/테이블만 표현
--   명령: `python -m visualize erd --project-id 1 --owners SAMPLE --tables USERS,ORDERS --out visualize/output/erd_subset.html`
--   기대: `SAMPLE.USERS`, `SAMPLE.ORDERS` 노드만 존재, 기타 노드는 없음
 
+---
+name: TC-ERD-02 소유자/테이블 필터
+kind: visualize_cli
+params:
+  command: erd
+  project-id: 1
+  owners: SAMPLE
+  tables: USERS,ORDERS
+  out: visualize/output/erd_subset.html
+expected:
+  files_exist:
+    - visualize\output\erd_subset.html
+---
 ### TC-ERD-03 FK 추론 시각화
--   목적: 조인 패턴 기반 FK 추론 엣지 확인
--   명령: `python -m visualize erd --project-id 1 --out visualize/output/erd_fk.html`
--   기대:
-    -   `fk_inferred` 엣지가 표시되고, confidence>0.85인 엣지는 진한 색/굵기
-    -   동일 테이블 페어에 복수 컬럼 조인(복합키 후보) 시 confidence가 소폭 상향
 
+---
+name: TC-ERD-03 FK 추론 시각화
+kind: visualize_cli
+params:
+  command: erd
+  project-id: 1
+  out: visualize/output/erd_fk.html
+expected:
+  files_exist:
+    - visualize\output\erd_fk.html
+---
 ### TC-ERD-04 SQL 기반 부분 ERD
--   목적: 특정 쿼리가 참조하는 테이블만 부분 ERD 생성
--   명령 예: `python -m visualize erd --project-id 1 --from-sql UserMapper:selectUser --out visualize/output/erd_from_sql.html`
--   기대: 해당 SQL이 참조하는 테이블만 노드로 표시
 
-## 2. 의존성 그래프 시나리오
-
+---
+name: TC-ERD-04 SQL 기반 부분 ERD
+kind: visualize_cli
+params:
+  command: erd
+  project-id: 1
+  from-sql: UserMapper:selectUser
+  out: visualize/output/erd_from_sql.html
+expected:
+  files_exist:
+    - visualize\output\erd_from_sql.html
+---
 ### TC-GRAPH-01 테이블 사용 그래프
--   목적: SQL→TABLE 의존 확인
--   명령: `python -m visualize graph --project-id 1 --kinds use_table --out visualize/output/graph_use_table.html`
--   기대: `sql` 타입 노드에서 `table` 노드로 향하는 엣지 존재
 
+---
+name: TC-GRAPH-01 테이블 사용 그래프
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: use_table
+  out: visualize/output/graph_use_table.html
+expected:
+  files_exist:
+    - visualize\output\graph_use_table.html
+---
 ### TC-GRAPH-02 include 그래프
--   목적: JSP/JSP 및 MyBatis include 엣지 표시
--   명령: `python -m visualize graph --project-id 1 --kinds include --out visualize/output/graph_include.html`
--   기대: 파일 간 include 엣지 존재(뷰어 클릭 시 대상 경로 표시)
 
+---
+name: TC-GRAPH-02 include 그래프
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: include
+  out: visualize/output/graph_include.html
+expected:
+  files_exist:
+    - visualize\output\graph_include.html
+---
 ### TC-GRAPH-03 confidence 필터
--   목적: `--min-confidence` 적용 확인
--   명령: `python -m visualize graph --project-id 1 --kinds use_table,include --min-confidence 0.9 --out visualize/output/graph_conf90.html`
--   기대: 낮은 신뢰도의 엣지는 제외되어 그래프가 간결해짐
 
+---
+name: TC-GRAPH-03 confidence 필터
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: use_table,include
+  min-confidence: 0.9
+  out: visualize/output/graph_conf90.html
+expected:
+  files_exist:
+    - visualize\output\graph_conf90.html
+---
 ### TC-GRAPH-04 포커스/깊이 제한
--   목적: 특정 노드를 기준으로 BFS 제한 적용
--   명령: `python -m visualize graph --project-id 1 --kinds use_table --focus SAMPLE.USERS --depth 1 --out visualize/output/graph_focus_users.html`
--   기대: `SAMPLE.USERS`와 1단계 이웃만 표시
 
+---
+name: TC-GRAPH-04 포커스/깊이 제한
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: use_table
+  focus: SAMPLE.USERS
+  depth: 1
+  out: visualize/output/graph_focus_users.html
+expected:
+  files_exist:
+    - visualize\output\graph_focus_users.html
+---
 ### TC-GRAPH-05 노드 상한(max_nodes)
--   목적: 대규모 그래프 상한 적용 확인
--   명령: `python -m visualize graph --project-id 1 --kinds use_table,include --max-nodes 200 --out visualize/output/graph_cap200.html`
--   기대: 200개 내 노드로 잘림(툴바/경고 표시)
 
-## 3. 컴포넌트 다이어그램 시나리오
-
+---
+name: TC-GRAPH-05 노드 상한(max_nodes)
+kind: visualize_cli
+params:
+  command: graph
+  project-id: 1
+  kinds: use_table,include
+  max-nodes: 200
+  out: visualize/output/graph_cap200.html
+expected:
+  files_exist:
+    - visualize\output\graph_cap200.html
+---
 ### TC-COMP-01 기본 컴포넌트 표시
--   목적: 규칙 기반 그룹핑 확인
--   명령: `python -m visualize component --project-id 1 --out visualize/output/components.html`
--   기대:
-    -   컨트롤러/서비스/레포지토리/매퍼/JSP/DB 그룹 노드 색 구분
-    -   교차 컴포넌트 엣지(집계) 표시, 툴팁에 집계 수/평균 confidence
 
+---
+name: TC-COMP-01 기본 컴포넌트 표시
+kind: visualize_cli
+params:
+  command: component
+  project-id: 1
+  out: visualize/output/components.html
+expected:
+  files_exist:
+    - visualize\output\components.html
+---
 ### TC-COMP-02 규칙 튜닝
 -   목적: 규칙 변경 시 그룹핑 변화 확인
 -   절차: `config/config.yaml`에 `visualize.component_rules` 추가/수정 → 재실행
@@ -85,17 +167,34 @@
 ## 4. 시퀀스(흐름) 다이어그램 시나리오
 
 ### TC-SEQ-01 JSP 중심 흐름
--   목적: JSP→SQL→TABLE 흐름 표시
--   명령: `python -m visualize sequence --project-id 1 --start-file PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/user/userList.jsp --out visualize/output/seq_jsp.html`
--   기대: 시작 JSP에서 관련 SQL, 그 SQL이 참조하는 TABLE로의 흐름이 레이어로 배치
 
+---
+name: TC-SEQ-01 JSP 중심 흐름
+kind: visualize_cli
+params:
+  command: sequence
+  project-id: 1
+  start-file: PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/user/userList.jsp
+  out: visualize/output/seq_jsp.html
+expected:
+  files_exist:
+    - visualize\output\seq_jsp.html
+---
 ### TC-SEQ-02 메서드 호출 반영(보강 후)
--   목적: Java call 해소 후 Controller→Service→Repository/Mapper 흐름 포함
--   명령: `python -m visualize sequence --project-id 1 --start-method com.example.service.UserService.listUsers --depth 3 --out visualize/output/seq_java.html`
--   기대: 메서드 간 call 체인이 시간축 유사 계층으로 표현(미해소 호출은 낮은 confidence 또는 점선 스타일)
 
-## 5. 메타 보강 기능 시나리오
-
+---
+name: TC-SEQ-02 메서드 호출 반영(보강 후)
+kind: visualize_cli
+params:
+  command: sequence
+  project-id: 1
+  start-method: com.example.service.UserService.listUsers
+  depth: 3
+  out: visualize/output/seq_java.html
+expected:
+  files_exist:
+    - visualize\output\seq_java.html
+---
 ### TC-META-01 edge_hints 생성/소비(메서드 호출)
 -   목적: 파서→edge_hints→edges(call) 파이프라인 검증
 -   절차:

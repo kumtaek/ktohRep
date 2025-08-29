@@ -1,0 +1,6 @@
+name: Engine saves parsed Java artifacts
+kind: engine_save
+input: tests/samples/java/ValidSimple.java
+expected:
+  files_min: 1
+

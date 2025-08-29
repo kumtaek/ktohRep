@@ -1,0 +1,6 @@
+name: Backend health endpoint reachable (optional)
+kind: http_get
+input: http://127.0.0.1:8000/api/health
+expected:
+  status_code: 200
+

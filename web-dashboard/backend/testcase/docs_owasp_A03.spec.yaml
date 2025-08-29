@@ -1,0 +1,6 @@
+name: Backend serves offline OWASP doc (optional)
+kind: http_get
+input: http://127.0.0.1:8000/api/docs/owasp/A03
+expected:
+  status_code: 200
+

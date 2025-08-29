@@ -7,17 +7,19 @@
 - DB에 분석 결과가 존재해야 합니다(예: `tests/run_tests.py`로 샘플 파싱 후 생성).
 
 ## 실행 예시
-- 의존 그래프 (project_id=1), Mermaid 내보내기:
+- spec 러너로 자동화 실행:
+```
+python tests/spec_runner.py
+```
+
+- 개별 CLI 수동 실행도 가능:
 ```
 python -m visualize.cli graph --project-id 1 \
   --kinds use_table,include,extends,implements \
   --export-mermaid ./outputs/graph.md \
   --export-json ./outputs/graph.json \
   --export-csv-dir ./outputs/graph_csv
-```
 
-- ERD (project_id=1):
-```
 python -m visualize.cli erd --project-id 1 \
   --export-mermaid ./outputs/erd.md
 ```

@@ -1,0 +1,6 @@
+name: JSP/MyBatis parser reads JSP sample
+kind: jsp_mybatis_parser
+input: tests/samples/jsp/sample.jsp
+expected:
+  sql_min: 0
+

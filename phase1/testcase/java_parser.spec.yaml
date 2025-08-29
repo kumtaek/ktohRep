@@ -1,0 +1,7 @@
+name: Java Parser parses ValidSimple
+kind: java_parser
+input: tests/samples/java/ValidSimple.java
+expected:
+  classes_min: 1
+  methods_min: 1
+

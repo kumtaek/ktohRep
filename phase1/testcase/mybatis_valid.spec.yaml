@@ -1,0 +1,6 @@
+name: MyBatis valid XML yields at least one SQL unit
+kind: jsp_mybatis_parser
+input: tests/samples/xml/mybatis_valid.xml
+expected:
+  sql_min: 1
+

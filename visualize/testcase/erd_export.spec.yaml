@@ -1,0 +1,10 @@
+name: Visualize CLI exports ERD markdown
+kind: visualize_cli
+params:
+  command: erd
+  project-id: 1
+  export-mermaid: ./out/erd.md
+expected:
+  files_exist:
+    - out/erd.md
+

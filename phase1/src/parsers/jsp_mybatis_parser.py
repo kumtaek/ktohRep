@@ -20,10 +20,306 @@ from pathlib import Path
 import json
 import sqlparse
 from lxml import etree
+import ast
+
+# Tree-sitter support for JSP/XML
+try:
+    import tree_sitter
+    from tree_sitter import Language, Parser
+    try:
+        import tree_sitter_java  # For JSP scriptlets
+        import tree_sitter_xml   # For XML content
+        TREE_SITTER_AVAILABLE = True
+    except ImportError:
+        TREE_SITTER_AVAILABLE = False
+except ImportError:
+    TREE_SITTER_AVAILABLE = False
 
 from ..models.database import File, SqlUnit, Edge, Join, RequiredFilter
 from ..utils.confidence_calculator import ConfidenceCalculator
 from ..security.vulnerability_detector import SqlInjectionDetector, XssDetector
+
+
+class AdvancedSqlExtractor:
+    """
+    AST-based SQL extraction to replace problematic regex patterns
+    Addresses critical accuracy issue #11 from forensic analysis
+    """
+    
+    def __init__(self, config):
+        self.config = config
+        self.logger = config.get('logger')
+        
+        # Initialize Tree-sitter parsers if available
+        self.java_parser = None
+        self.xml_parser = None
+        
+        if TREE_SITTER_AVAILABLE:
+            try:
+                # Java parser for JSP scriptlets
+                java_lang = Language(tree_sitter_java.language(), "java")
+                self.java_parser = Parser()
+                self.java_parser.set_language(java_lang)
+                
+                # XML parser for MyBatis XML
+                xml_lang = Language(tree_sitter_xml.language(), "xml")
+                self.xml_parser = Parser()
+                self.xml_parser.set_language(xml_lang)
+            except Exception as e:
+                if self.logger:
+                    self.logger.warning(f"Tree-sitter initialization failed: {e}")
+                    
+    def extract_sql_from_jsp(self, content: str) -> List[Dict[str, Any]]:
+        """
+        Extract SQL statements from JSP using AST-based approach
+        
+        Returns:
+            List of extracted SQL information dictionaries
+        """
+        sql_extracts = []
+        
+        # Extract from JSP scriptlets using AST
+        scriptlet_sqls = self._extract_from_scriptlets(content)
+        sql_extracts.extend(scriptlet_sqls)
+        
+        # Extract from JSP expressions and declarations
+        expression_sqls = self._extract_from_jsp_expressions(content)
+        sql_extracts.extend(expression_sqls)
+        
+        # Extract from JSTL and EL expressions
+        jstl_sqls = self._extract_from_jstl_tags(content)
+        sql_extracts.extend(jstl_sqls)
+        
+        return sql_extracts
+    
+    def _extract_from_scriptlets(self, content: str) -> List[Dict[str, Any]]:
+        """
+        Extract SQL from JSP scriptlets (<%...%>) using Java AST
+        """
+        sql_extracts = []
+        
+        # Find all scriptlets
+        scriptlet_pattern = re.compile(r'<%([^@!].*?)%>', re.DOTALL)
+        scriptlets = scriptlet_pattern.finditer(content)
+        
+        for match in scriptlets:
+            scriptlet_code = match.group(1).strip()
+            start_pos = match.start()
+            start_line = content[:start_pos].count('\n') + 1
+            
+            # Use Tree-sitter Java parser if available
+            if self.java_parser:
+                java_sqls = self._parse_java_code_for_sql(scriptlet_code, start_line)
+                sql_extracts.extend(java_sqls)
+            else:
+                # Fallback to improved regex-based extraction
+                fallback_sqls = self._extract_sql_fallback(scriptlet_code, start_line)
+                sql_extracts.extend(fallback_sqls)
+                
+        return sql_extracts
+    
+    def _parse_java_code_for_sql(self, java_code: str, base_line: int) -> List[Dict[str, Any]]:
+        """
+        Parse Java code using Tree-sitter to find SQL patterns
+        """
+        sql_extracts = []
+        
+        try:
+            # Wrap code in a minimal class structure for parsing
+            wrapped_code = f"class Temp {{\n{java_code}\n}}"
+            tree = self.java_parser.parse(bytes(wrapped_code, 'utf8'))
+            
+            # Find string literals that look like SQL
+            string_literals = self._find_nodes_by_type(tree.root_node, 'string_literal')
+            for literal_node in string_literals:
+                literal_text = self._get_node_text(literal_node, wrapped_code.split('\n'))
+                
+                if self._is_sql_statement(literal_text):
+                    sql_extracts.append({
+                        'sql_content': literal_text,
+                        'line_number': base_line + literal_node.start_point[0] - 1,  # Adjust for wrapper
+                        'confidence': 0.9,
+                        'extraction_method': 'tree_sitter_java'
+                    })
+                    
+            # Find method invocations that might build SQL dynamically
+            method_calls = self._find_nodes_by_type(tree.root_node, 'method_invocation')
+            for call_node in method_calls:
+                sql_from_method = self._analyze_method_for_sql(call_node, wrapped_code.split('\n'), base_line)
+                sql_extracts.extend(sql_from_method)
+                
+        except Exception as e:
+            if self.logger:
+                self.logger.debug(f"Tree-sitter Java parsing failed: {e}")
+                
+        return sql_extracts
+    
+    def _extract_from_jsp_expressions(self, content: str) -> List[Dict[str, Any]]:
+        """
+        Extract SQL from JSP expressions (<%=...%>) and declarations (<%!...%>)
+        """
+        sql_extracts = []
+        
+        # JSP expressions
+        expr_pattern = re.compile(r'<%=([^%]+)%>', re.DOTALL)
+        expressions = expr_pattern.finditer(content)
+        
+        for match in expressions:
+            expr_code = match.group(1).strip()
+            start_line = content[:match.start()].count('\n') + 1
+            
+            if self._contains_sql_keywords(expr_code):
+                sql_extracts.append({
+                    'sql_content': expr_code,
+                    'line_number': start_line,
+                    'confidence': 0.7,
+                    'extraction_method': 'jsp_expression'
+                })
+                
+        # JSP declarations
+        decl_pattern = re.compile(r'<%!([^%]+)%>', re.DOTALL)
+        declarations = decl_pattern.finditer(content)
+        
+        for match in declarations:
+            decl_code = match.group(1).strip()
+            start_line = content[:match.start()].count('\n') + 1
+            
+            # Look for method declarations that return SQL
+            if self._is_sql_method_declaration(decl_code):
+                sql_extracts.append({
+                    'sql_content': decl_code,
+                    'line_number': start_line,
+                    'confidence': 0.8,
+                    'extraction_method': 'jsp_declaration'
+                })
+                
+        return sql_extracts
+    
+    def _extract_from_jstl_tags(self, content: str) -> List[Dict[str, Any]]:
+        """
+        Extract SQL from JSTL SQL tags and EL expressions
+        """
+        sql_extracts = []
+        
+        # JSTL SQL query tags
+        sql_tag_pattern = re.compile(
+            r'<sql:query[^>]*>([^<]*)</sql:query>|<sql:update[^>]*>([^<]*)</sql:update>',
+            re.DOTALL | re.IGNORECASE
+        )
+        
+        for match in sql_tag_pattern.finditer(content):
+            sql_content = match.group(1) or match.group(2)
+            if sql_content:
+                start_line = content[:match.start()].count('\n') + 1
+                sql_extracts.append({
+                    'sql_content': sql_content.strip(),
+                    'line_number': start_line,
+                    'confidence': 0.95,
+                    'extraction_method': 'jstl_sql_tag'
+                })
+                
+        return sql_extracts
+    
+    def _find_nodes_by_type(self, node, node_type: str):
+        """Recursively find nodes of a specific type"""
+        results = []
+        
+        if node.type == node_type:
+            results.append(node)
+            
+        for child in node.children:
+            results.extend(self._find_nodes_by_type(child, node_type))
+            
+        return results
+    
+    def _get_node_text(self, node, lines: List[str]) -> str:
+        """Extract text from Tree-sitter node"""
+        try:
+            start_row, start_col = node.start_point
+            end_row, end_col = node.end_point
+            
+            if start_row == end_row:
+                return lines[start_row][start_col:end_col]
+            else:
+                text_parts = []
+                text_parts.append(lines[start_row][start_col:])
+                for i in range(start_row + 1, end_row):
+                    text_parts.append(lines[i])
+                text_parts.append(lines[end_row][:end_col])
+                return ''.join(text_parts)
+        except (IndexError, TypeError):
+            return ''
+    
+    def _is_sql_statement(self, text: str) -> bool:
+        """Check if text contains SQL statement"""
+        sql_keywords = ['select', 'insert', 'update', 'delete', 'create', 'drop', 'alter']
+        text_lower = text.lower().strip().strip('"\'')
+        
+        for keyword in sql_keywords:
+            if text_lower.startswith(keyword + ' '):
+                return True
+        return False
+    
+    def _contains_sql_keywords(self, text: str) -> bool:
+        """Check if text contains SQL keywords"""
+        sql_keywords = ['select', 'insert', 'update', 'delete', 'from', 'where', 'join']
+        text_lower = text.lower()
+        
+        return any(keyword in text_lower for keyword in sql_keywords)
+    
+    def _is_sql_method_declaration(self, decl_code: str) -> bool:
+        """Check if declaration contains SQL-related methods"""
+        sql_indicators = ['sql', 'query', 'statement', 'preparedstatement']
+        decl_lower = decl_code.lower()
+        
+        return any(indicator in decl_lower for indicator in sql_indicators)
+    
+    def _analyze_method_for_sql(self, call_node, lines: List[str], base_line: int) -> List[Dict[str, Any]]:
+        """Analyze method invocations for SQL building patterns"""
+        sql_extracts = []
+        
+        # Look for StringBuilder.append, String concatenation patterns
+        method_text = self._get_node_text(call_node, lines)
+        
+        if ('append(' in method_text.lower() and 
+            self._contains_sql_keywords(method_text)):
+            
+            sql_extracts.append({
+                'sql_content': method_text,
+                'line_number': base_line + call_node.start_point[0] - 1,
+                'confidence': 0.7,
+                'extraction_method': 'dynamic_sql_building'
+            })
+            
+        return sql_extracts
+    
+    def _extract_sql_fallback(self, code: str, base_line: int) -> List[Dict[str, Any]]:
+        """Fallback regex-based extraction with improved patterns"""
+        sql_extracts = []
+        
+        # Improved patterns that capture more SQL variations
+        improved_patterns = [
+            # String variable assignments
+            re.compile(r'String\s+\w*[Ss]ql\w*\s*=\s*["\']([^"\';]*(?:select|insert|update|delete)[^"\';]*)["\']', re.IGNORECASE),
+            # StringBuilder patterns
+            re.compile(r'StringBuilder\s*\([^)]*\)\s*\.append\s*\(\s*["\']([^"\';]*(?:select|insert|update|delete)[^"\';]*)["\']', re.IGNORECASE),
+            # Direct SQL in method calls
+            re.compile(r'(?:execute|query|update)\s*\(\s*["\']([^"\';]*(?:select|insert|update|delete)[^"\';]*)["\']', re.IGNORECASE)
+        ]
+        
+        for pattern in improved_patterns:
+            matches = pattern.finditer(code)
+            for match in matches:
+                sql_content = match.group(1)
+                if sql_content.strip():
+                    sql_extracts.append({
+                        'sql_content': sql_content,
+                        'line_number': base_line + code[:match.start()].count('\n'),
+                        'confidence': 0.6,
+                        'extraction_method': 'improved_regex_fallback'
+                    })
+        
+        return sql_extracts
 
 
 class JspDependencyTracker:
@@ -188,6 +484,9 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         
         # MyBatis 동적 태그 패턴 - v5.2: bind 태그 추가
         self.dynamic_tags = ['if', 'choose', 'when', 'otherwise', 'foreach', 'where', 'set', 'trim', 'bind']
+        
+        # AST-based SQL extraction - replaces problematic regex patterns  
+        self.advanced_sql_extractor = AdvancedSqlExtractor(config)
         
         # JSP 스크립틀릿 SQL 패턴 개선
         self.jsp_sql_patterns = [

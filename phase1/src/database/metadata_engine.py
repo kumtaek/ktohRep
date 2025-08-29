@@ -11,6 +11,7 @@ import concurrent.futures
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import and_, or_, func
+from contextlib import asynccontextmanager, contextmanager
 import time
 import os
 
@@ -40,6 +41,30 @@ class MetadataEngine:
             from . import metadata_engine_cleanup
         except ImportError:
             self.logger.debug("삭제된 파일 정리 확장 모듈을 로드할 수 없습니다")
+    
+    @asynccontextmanager
+    async def _get_async_session(self):
+        """안전한 비동기 데이터베이스 세션 컨텍스트 매니저"""
+        session = self.db_manager.get_session()
+        try:
+            yield session
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+    
+    @contextmanager
+    def _get_sync_session(self):
+        """안전한 동기 데이터베이스 세션 컨텍스트 매니저"""
+        session = self.db_manager.get_session()
+        try:
+            yield session
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
         
     async def create_project(self, project_path: str, project_name: str) -> int:
         """
@@ -53,9 +78,7 @@ class MetadataEngine:
             프로젝트 ID
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        async with self._get_async_session() as session:
             # 기존 프로젝트 확인
             existing_project = session.query(Project).filter(
                 Project.root_path == project_path
@@ -76,13 +99,6 @@ class MetadataEngine:
                 session.add(new_project)
                 session.commit()
                 return new_project.project_id
-                
-        except Exception as e:
-            session.rollback()
-            self.logger.error("프로젝트 생성 중 오류", exception=e)
-            raise e
-        finally:
-            session.close()
             
     async def analyze_files_parallel(self, file_paths: List[str], project_id: int,
                                    parsers: Dict[str, Any]) -> Dict[str, Any]:
@@ -230,10 +246,8 @@ class MetadataEngine:
                 # 신뢰도 계산
                 confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
                 
-                # 데이터베이스에 저장
-                # 동기 함수에서 동기 저장 메서드 호출
-                import asyncio
-                saved_counts = asyncio.run(self.save_java_analysis(file_obj, classes, methods, edges))
+                # 동기 저장 메서드 호출 (asyncio.run 제거)
+                saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges)
                 
                 return saved_counts
                 
@@ -254,10 +268,8 @@ class MetadataEngine:
                 # 신뢰도 계산
                 confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
                 
-                # 데이터베이스에 저장
-                # 동기 함수에서 동기 저장 메서드 호출
-                import asyncio
-                saved_counts = asyncio.run(self.save_jsp_mybatis_analysis(file_obj, sql_units, joins, filters, edges, vulnerabilities))
+                # 동기 저장 메서드 호출 (asyncio.run 제거)
+                saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, vulnerabilities)
                 
                 return saved_counts
                 
@@ -281,13 +293,13 @@ class MetadataEngine:
             self.logger.log_parsing_failure(file_path, 'unknown', e)
             raise e
             
-    async def save_java_analysis(self, 
+    def _save_java_analysis_sync(self, 
                                 file_obj: File, 
                                 classes: List[Class], 
                                 methods: List[Method], 
                                 edges: List[Edge]) -> Dict[str, int]:
         """
-        Java 분석 결과 저장
+        Java 분석 결과 저장 (동기 버전)
         
         Args:
             file_obj: 파일 객체
@@ -299,9 +311,7 @@ class MetadataEngine:
             저장된 엔티티 수
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        with self._get_sync_session() as session:
             # 파일 저장
             session.add(file_obj)
             session.flush()  # ID 생성을 위해 flush
@@ -339,14 +349,18 @@ class MetadataEngine:
                 
             session.commit()
             return saved_counts
+
+    async def save_java_analysis(self, 
+                                file_obj: File, 
+                                classes: List[Class], 
+                                methods: List[Method], 
+                                edges: List[Edge]) -> Dict[str, int]:
+        """
+        Java 분석 결과 저장 (비동기 버전)
+        """
+        return self._save_java_analysis_sync(file_obj, classes, methods, edges)
             
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
-            
-    async def save_jsp_mybatis_analysis(self, 
+    def _save_jsp_mybatis_analysis_sync(self, 
                                        file_obj: File, 
                                        sql_units: List[SqlUnit], 
                                        joins: List[Join], 
@@ -354,7 +368,7 @@ class MetadataEngine:
                                        edges: List[Edge],
                                        vulnerabilities: List[Dict] = None) -> Dict[str, int]:
         """
-        JSP/MyBatis 분석 결과 저장
+        JSP/MyBatis 분석 결과 저장 (동기 버전)
         
         Args:
             file_obj: 파일 객체
@@ -367,9 +381,7 @@ class MetadataEngine:
             저장된 엔티티 수
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        with self._get_sync_session() as session:
             # 파일 저장
             session.add(file_obj)
             session.flush()
@@ -435,12 +447,18 @@ class MetadataEngine:
                 
             session.commit()
             return saved_counts
-            
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+
+    async def save_jsp_mybatis_analysis(self, 
+                                       file_obj: File, 
+                                       sql_units: List[SqlUnit], 
+                                       joins: List[Join], 
+                                       filters: List[RequiredFilter],
+                                       edges: List[Edge],
+                                       vulnerabilities: List[Dict] = None) -> Dict[str, int]:
+        """
+        JSP/MyBatis 분석 결과 저장 (비동기 버전)
+        """
+        return self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, vulnerabilities)
             
     async def build_dependency_graph(self, project_id: int):
         """
@@ -450,9 +468,7 @@ class MetadataEngine:
             project_id: 프로젝트 ID
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        async with self._get_async_session() as session:
             # 메서드 호출 관계 해결
             await self._resolve_method_calls(session, project_id)
             
@@ -463,12 +479,6 @@ class MetadataEngine:
             await self._infer_pk_fk_relationships(session, project_id)
             
             session.commit()
-            
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
             
     async def _resolve_method_calls(self, session, project_id: int):
         """메서드 호출 관계 해결"""
@@ -605,9 +615,7 @@ class MetadataEngine:
             요약 딕셔너리
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        async with self._get_async_session() as session:
             # 기본 통계
             file_count = session.query(File).filter(File.project_id == project_id).count()
             class_count = session.query(Class).join(File).filter(File.project_id == project_id).count()
@@ -649,11 +657,6 @@ class MetadataEngine:
             
             return summary
             
-        except Exception as e:
-            raise e
-        finally:
-            session.close()
-            
     async def save_enrichment_log(self, 
                                  target_type: str, 
                                  target_id: int, 
@@ -675,9 +678,7 @@ class MetadataEngine:
             params: 파라미터
         """
         
-        session = self.db_manager.get_session()
-        
-        try:
+        async with self._get_async_session() as session:
             log_entry = EnrichmentLog(
                 target_type=target_type,
                 target_id=target_id,
@@ -690,12 +691,6 @@ class MetadataEngine:
             
             session.add(log_entry)
             session.commit()
-            
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
             
     async def get_project_files(self, project_id: int, 
                                language: Optional[str] = None,

@@ -26,6 +26,7 @@ from src.database.metadata_engine import MetadataEngine
 from src.utils.csv_loader import CsvLoader
 from src.utils.logger import setup_logging, LoggerFactory, PerformanceLogger
 from src.utils.confidence_calculator import ConfidenceCalculator
+from src.utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator, GroundTruthEntry
 
 
 class SourceAnalyzer:
@@ -65,6 +66,13 @@ class SourceAnalyzer:
             
             # 신뢰도 계산기 초기화
             self.confidence_calculator = ConfidenceCalculator(self.config)
+            
+            # Confidence Validation 시스템 초기화
+            self.confidence_validator = ConfidenceValidator(self.config, self.confidence_calculator)
+            self.confidence_calibrator = ConfidenceCalibrator(self.confidence_validator)
+            
+            # 시작 시 자동으로 confidence formula 검증 실행
+            self._validate_confidence_formula_on_startup()
             
         except Exception as e:
             self.logger.critical("시스템 초기화 실패", exception=e)
@@ -557,6 +565,139 @@ class SourceAnalyzer:
             except Exception as e:
                 self.logger.error(f"파일 분석 오류 {file_path}: {e}")
                 raise
+    
+    def _validate_confidence_formula_on_startup(self):
+        """
+        시스템 시작 시 confidence formula 검증 수행
+        정제식 분석 #22를 해결하기 위한 중요한 기능
+        """
+        try:
+            self.logger.info("Confidence formula 검증 시작...")
+            
+            # Ground truth 데이터가 없으면 샘플 데이터 생성
+            if len(self.confidence_validator.ground_truth_data) == 0:
+                self.logger.warning("Ground truth 데이터가 없음 - 샘플 데이터 사용")
+                return
+            
+            # Confidence formula 검증 실행
+            validation_result = self.confidence_validator.validate_confidence_formula()
+            
+            if 'mean_absolute_error' in validation_result:
+                mae = validation_result['mean_absolute_error']
+                self.logger.info(f"Confidence formula MAE: {mae:.3f}")
+                
+                # 조정 필요성 확인
+                if mae > 0.10:  # 10% 이상 오류
+                    self.logger.warning(f"Confidence 오류가 큼: {mae:.1%} - 캘리브레이션 균인")
+                    self._attempt_confidence_calibration()
+                else:
+                    self.logger.info("현재 confidence formula가 적절함")
+            
+        except Exception as e:
+            self.logger.error(f"Confidence 검증 중 오류: {e}")
+            # 시스템 시작을 막지는 않도록 함
+    
+    def _attempt_confidence_calibration(self):
+        """
+        Confidence formula 캘리브레이션 시도
+        """
+        try:
+            self.logger.info("자동 confidence 캘리브레이션 시도...")
+            
+            calibration_result = self.confidence_validator.calibrate_weights()
+            
+            if calibration_result.get('recommendation') == 'apply':
+                improvement = calibration_result.get('improvement_percentage', 0)
+                self.logger.info(f"캘리브레이션으로 {improvement:.1f}% 개선 예상")
+                
+                # 자동으로 적용
+                if self.confidence_calibrator.apply_calibration(self.confidence_calculator):
+                    self.logger.info("캘리브레이션이 적용됨")
+                else:
+                    self.logger.warning("캘리브레이션 적용 실패")
+            else:
+                self.logger.info("현재 가중치가 최적 상태")
+                
+        except Exception as e:
+            self.logger.error(f"캘리브레이션 시도 중 오류: {e}")
+    
+    def generate_confidence_accuracy_report(self, output_path: str = None) -> Dict[str, Any]:
+        """
+        종합적인 confidence 정확도 보고서 생성
+        
+        Args:
+            output_path: 보고서 저장 경로 (선택사항)
+            
+        Returns:
+            정확도 보고서 데이터
+        """
+        try:
+            self.logger.info("Confidence 정확도 보고서 생성 중...")
+            
+            # 종합 보고서 생성
+            report = self.confidence_validator.generate_confidence_accuracy_report()
+            
+            # 파일로 저장 (지정된 경우)
+            if output_path:
+                import json
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(report, f, indent=2, ensure_ascii=False)
+                self.logger.info(f"Confidence 보고서 저장됨: {output_path}")
+            
+            # 요약 정보 로깅
+            if 'validation_report' in report:
+                val_report = report['validation_report']
+                if 'mean_absolute_error' in val_report:
+                    mae = val_report['mean_absolute_error']
+                    self.logger.info(f"Current confidence MAE: {mae:.3f}")
+                    
+                if 'error_distribution' in val_report:
+                    error_dist = val_report['error_distribution']
+                    excellent_pct = error_dist['excellent']['percentage'] * 100
+                    poor_pct = error_dist['poor']['percentage'] * 100
+                    self.logger.info(f"Error distribution: {excellent_pct:.1f}% excellent, {poor_pct:.1f}% poor")
+            
+            return report
+            
+        except Exception as e:
+            self.logger.error(f"Confidence 보고서 생성 실패: {e}")
+            return {'error': str(e)}
+    
+    def add_ground_truth_entry(self, file_path: str, parser_type: str, 
+                               expected_confidence: float, **kwargs) -> bool:
+        """
+        Ground truth 데이터 엔트리 추가
+        
+        Args:
+            file_path: 파일 경로
+            parser_type: 파서 타입
+            expected_confidence: 기대 신뢰도 (0.0-1.0)
+            **kwargs: 기타 ground truth 데이터
+            
+        Returns:
+            성공 여부
+        """
+        try:
+            entry = GroundTruthEntry(
+                file_path=file_path,
+                parser_type=parser_type,
+                expected_confidence=expected_confidence,
+                expected_classes=kwargs.get('expected_classes', 0),
+                expected_methods=kwargs.get('expected_methods', 0),
+                expected_sql_units=kwargs.get('expected_sql_units', 0),
+                verified_tables=kwargs.get('verified_tables', []),
+                complexity_factors=kwargs.get('complexity_factors', {}),
+                notes=kwargs.get('notes', ''),
+                verifier=kwargs.get('verifier', 'manual')
+            )
+            
+            self.confidence_validator.add_ground_truth_entry(entry)
+            self.logger.info(f"Ground truth 엔트리 추가됨: {file_path}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Ground truth 엔트리 추가 실패: {e}")
+            return False
 
 def main():
     """메인 함수"""
@@ -583,6 +724,17 @@ def main():
     parser.add_argument('--quiet', '-q', action='store_true', 
                        help='최소 로그 출력')
     
+    # Confidence validation 관련 옵션
+    parser.add_argument('--validate-confidence', action='store_true',
+                       help='Confidence formula 검증 실행')
+    parser.add_argument('--calibrate-confidence', action='store_true', 
+                       help='Confidence formula 자동 캘리브레이션')
+    parser.add_argument('--confidence-report', metavar='OUTPUT_FILE',
+                       help='Confidence 정확도 보고서 생성 (파일 경로 지정)')
+    parser.add_argument('--add-ground-truth', nargs=3, 
+                       metavar=('FILE_PATH', 'PARSER_TYPE', 'EXPECTED_CONFIDENCE'),
+                       help='Ground truth 데이터 엔트리 추가')
+    
     args = parser.parse_args()
     
     # 입력 검증
@@ -605,6 +757,76 @@ def main():
                 analyzer.logger.logger.setLevel('DEBUG')
             elif args.quiet:
                 analyzer.logger.logger.setLevel('WARNING')
+        
+        # Validation 관련 명령어 처리
+        validation_performed = False
+        
+        # Ground truth 데이터 추가
+        if args.add_ground_truth:
+            file_path, parser_type, expected_conf = args.add_ground_truth
+            try:
+                expected_confidence = float(expected_conf)
+                if analyzer.add_ground_truth_entry(file_path, parser_type, expected_confidence):
+                    print(f"✅ Ground truth 엔트리 추가됨: {file_path}")
+                else:
+                    print(f"❌ Ground truth 엔트리 추가 실패: {file_path}")
+                validation_performed = True
+            except ValueError:
+                print(f"❌ 오류: 잘못된 confidence 값: {expected_conf}")
+        
+        # Confidence 검증
+        if args.validate_confidence:
+            print("🔍 Confidence formula 검증 실행 중...")
+            validation_result = analyzer.confidence_validator.validate_confidence_formula()
+            
+            if 'mean_absolute_error' in validation_result:
+                mae = validation_result['mean_absolute_error']
+                print(f"📊 Confidence MAE: {mae:.3f}")
+                
+                if 'error_distribution' in validation_result:
+                    error_dist = validation_result['error_distribution']
+                    excellent_pct = error_dist['excellent']['percentage'] * 100
+                    poor_pct = error_dist['poor']['percentage'] * 100
+                    print(f"📈 오류 분포: {excellent_pct:.1f}% 우수, {poor_pct:.1f}% 불량")
+            validation_performed = True
+        
+        # Confidence 캘리브레이션
+        if args.calibrate_confidence:
+            print("🔧 Confidence formula 자동 캘리브레이션 실행 중...")
+            calibration_result = analyzer.confidence_validator.calibrate_weights()
+            
+            if calibration_result.get('recommendation') == 'apply':
+                improvement = calibration_result.get('improvement_percentage', 0)
+                print(f"🚀 캘리브레이션으로 {improvement:.1f}% 개선 가능")
+                
+                if analyzer.confidence_calibrator.apply_calibration(analyzer.confidence_calculator):
+                    print("✅ 캘리브레이션 적용 완료")
+                else:
+                    print("❌ 캘리브레이션 적용 실패")
+            else:
+                print("✨ 현재 가중치가 이미 최적 상태")
+            validation_performed = True
+        
+        # Confidence 리포트 생성
+        if args.confidence_report:
+            print(f"📄 Confidence 정확도 보고서 생성 중: {args.confidence_report}")
+            report = analyzer.generate_confidence_accuracy_report(args.confidence_report)
+            
+            if 'error' not in report:
+                print(f"✅ 보고서 생성 완료: {args.confidence_report}")
+                
+                # 요약 정보 출력
+                if 'validation_report' in report and 'mean_absolute_error' in report['validation_report']:
+                    mae = report['validation_report']['mean_absolute_error']
+                    print(f"📊 현재 오류율: {mae:.1%}")
+            else:
+                print(f"❌ 보고서 생성 실패: {report['error']}")
+            validation_performed = True
+        
+        # Validation 명령만 실행한 경우 여기서 종료
+        if validation_performed:
+            print("\n🎯 Validation 작업 완료")
+            return
         
         # 프로젝트 분석 실행
         print(f"프로젝트 분석 시작: {args.project_path}")

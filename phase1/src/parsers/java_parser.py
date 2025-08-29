@@ -17,11 +17,26 @@ except ImportError:
     # javalang이 설치되지 않은 환경을 위한 대체 처리
     javalang = None
 
+try:
+    import tree_sitter
+    from tree_sitter import Language, Parser
+    # tree_sitter_java 등이 설치되어야 함
+    try:
+        import tree_sitter_java
+        TREE_SITTER_AVAILABLE = True
+    except ImportError:
+        TREE_SITTER_AVAILABLE = False
+except ImportError:
+    tree_sitter = None
+    Language = None
+    Parser = None
+    TREE_SITTER_AVAILABLE = False
+
 from ..models.database import File, Class, Method, Edge
 from ..utils.confidence_calculator import ConfidenceCalculator
 
 class JavaParser:
-    """javalang 라이브러리를 사용한 Java 소스 파일 파서"""
+    """javalang 또는 Tree-sitter를 사용한 Java 소스 파일 파서"""
     
     def __init__(self, config: Dict[str, Any]):
         """
@@ -33,6 +48,17 @@ class JavaParser:
         self.config = config
         self.confidence_calc = ConfidenceCalculator(config)
         
+        # Tree-sitter 파서 초기화
+        self.tree_sitter_parser = None
+        if TREE_SITTER_AVAILABLE:
+            try:
+                self.java_language = Language(tree_sitter_java.language(), "java")
+                self.tree_sitter_parser = Parser()
+                self.tree_sitter_parser.set_language(self.java_language)
+            except Exception as e:
+                print(f"Tree-sitter 초기화 실패: {e}")
+                self.tree_sitter_parser = None
+        
     def can_parse(self, file_path: str) -> bool:
         """
         이 파서로 파일을 처리할 수 있는지 확인
@@ -43,7 +69,7 @@ class JavaParser:
         Returns:
             처리 가능 여부
         """
-        return file_path.endswith('.java') and javalang is not None
+        return file_path.endswith('.java') and (javalang is not None or self.tree_sitter_parser is not None)
         
     def parse_file(self, file_path: str, project_id: int) -> Tuple[File, List[Class], List[Method], List[Edge]]:
         """
@@ -87,26 +113,30 @@ class JavaParser:
             methods = []
             edges = []
             
-            # 클래스와 메서드 추출
-            for path, node in tree.filter(javalang.tree.ClassDeclaration):
-                class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
-                classes.append(class_obj)
-                methods.extend(class_methods)
-                edges.extend(class_edges)
-                
-            # 인터페이스 선언 추출
-            for path, node in tree.filter(javalang.tree.InterfaceDeclaration):
-                interface_obj, interface_methods, interface_edges = self._extract_interface(node, file_obj, path)
-                classes.append(interface_obj)
-                methods.extend(interface_methods)
-                edges.extend(interface_edges)
-                
-            # 열거형 선언 추출
-            for path, node in tree.filter(javalang.tree.EnumDeclaration):
-                enum_obj, enum_methods, enum_edges = self._extract_enum(node, file_obj, path)
-                classes.append(enum_obj)
-                methods.extend(enum_methods)
-                edges.extend(enum_edges)
+            # 파서에 따른 추출 방식 선택
+            if parser_used == 'javalang':
+                # Javalang를 사용한 추출
+                for path, node in tree.filter(javalang.tree.ClassDeclaration):
+                    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                    classes.append(class_obj)
+                    methods.extend(class_methods)
+                    edges.extend(class_edges)
+                    
+                for path, node in tree.filter(javalang.tree.InterfaceDeclaration):
+                    interface_obj, interface_methods, interface_edges = self._extract_interface(node, file_obj, path)
+                    classes.append(interface_obj)
+                    methods.extend(interface_methods)
+                    edges.extend(interface_edges)
+                    
+                for path, node in tree.filter(javalang.tree.EnumDeclaration):
+                    enum_obj, enum_methods, enum_edges = self._extract_enum(node, file_obj, path)
+                    classes.append(enum_obj)
+                    methods.extend(enum_methods)
+                    edges.extend(enum_edges)
+                    
+            elif parser_used == 'tree_sitter':
+                # Tree-sitter를 사용한 추출
+                classes, methods, edges = self._extract_with_tree_sitter(tree, file_obj, content)
                 
             return file_obj, classes, methods, edges
             
@@ -527,3 +557,250 @@ class JavaParser:
                     invocations.extend(self._find_method_invocations(attr_value))
                     
         return invocations
+    
+    def _parse_with_tree_sitter(self, content: str):
+        """
+        Tree-sitter를 사용한 Java 코드 파싱
+        
+        Args:
+            content: Java 소스 코드
+            
+        Returns:
+            Tree-sitter AST
+        """
+        try:
+            tree = self.tree_sitter_parser.parse(bytes(content, 'utf8'))
+            return tree
+        except Exception as e:
+            print(f"Tree-sitter 파싱 오류: {e}")
+            return None
+            
+    def _extract_with_tree_sitter(self, tree, file_obj: File, content: str) -> Tuple[List[Class], List[Method], List[Edge]]:
+        """
+        Tree-sitter AST에서 클래스, 메서드, 엣지 정보 추출
+        
+        Args:
+            tree: Tree-sitter AST
+            file_obj: 파일 객체
+            content: 원본 소스 코드
+            
+        Returns:
+            (Classes, Methods, Edges) 튜플
+        """
+        classes = []
+        methods = []
+        edges = []
+        
+        if not tree or not tree.root_node:
+            return classes, methods, edges
+            
+        # 코드를 라인별로 분할
+        lines = content.split('\n')
+        
+        # 클래스 선언 찾기
+        class_nodes = self._find_nodes_by_type(tree.root_node, 'class_declaration')
+        for class_node in class_nodes:
+            class_obj, class_methods, class_edges = self._extract_class_from_tree_sitter(
+                class_node, file_obj, lines
+            )
+            if class_obj:
+                classes.append(class_obj)
+                methods.extend(class_methods)
+                edges.extend(class_edges)
+        
+        # 인터페이스 선언 찾기
+        interface_nodes = self._find_nodes_by_type(tree.root_node, 'interface_declaration')
+        for interface_node in interface_nodes:
+            interface_obj, interface_methods, interface_edges = self._extract_interface_from_tree_sitter(
+                interface_node, file_obj, lines
+            )
+            if interface_obj:
+                classes.append(interface_obj)
+                methods.extend(interface_methods)
+                edges.extend(interface_edges)
+                
+        # 열거형 선언 찾기
+        enum_nodes = self._find_nodes_by_type(tree.root_node, 'enum_declaration')
+        for enum_node in enum_nodes:
+            enum_obj, enum_methods, enum_edges = self._extract_enum_from_tree_sitter(
+                enum_node, file_obj, lines
+            )
+            if enum_obj:
+                classes.append(enum_obj)
+                methods.extend(enum_methods)
+                edges.extend(enum_edges)
+                
+        return classes, methods, edges
+        
+    def _find_nodes_by_type(self, node, node_type: str):
+        """
+        주어진 타입의 노드들을 찾음
+        
+        Args:
+            node: 검색할 루트 노드
+            node_type: 찾을 노드 타입
+            
+        Returns:
+            해당 타입의 노드 리스트
+        """
+        results = []
+        
+        if node.type == node_type:
+            results.append(node)
+            
+        for child in node.children:
+            results.extend(self._find_nodes_by_type(child, node_type))
+            
+        return results
+    
+    def _extract_class_from_tree_sitter(self, class_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 클래스 정보 추출
+        """
+        try:
+            # 클래스 이름 추출
+            name_node = None
+            for child in class_node.children:
+                if child.type == 'identifier':
+                    name_node = child
+                    break
+                    
+            if not name_node:
+                return None, [], []
+                
+            class_name = self._get_node_text(name_node, lines)
+            
+            # 위치 정보
+            start_line = class_node.start_point[0] + 1  # 0-based to 1-based
+            end_line = class_node.end_point[0] + 1
+            
+            # 클래스 객체 생성
+            class_obj = Class(
+                file_id=None,
+                fqn=class_name,  # 더 정교하게 배포 정보를 추얤야 함
+                name=class_name,
+                start_line=start_line,
+                end_line=end_line,
+                modifiers=json.dumps([]),  # Tree-sitter에서 modifier 추출 어려움
+                annotations=json.dumps([])
+            )
+            
+            methods = []
+            edges = []
+            
+            # 메서드 추출
+            method_nodes = self._find_nodes_by_type(class_node, 'method_declaration')
+            for method_node in method_nodes:
+                method_obj, method_edges = self._extract_method_from_tree_sitter(
+                    method_node, class_obj, lines
+                )
+                if method_obj:
+                    methods.append(method_obj)
+                    edges.extend(method_edges)
+                    
+            # 생성자 추출
+            constructor_nodes = self._find_nodes_by_type(class_node, 'constructor_declaration')
+            for constructor_node in constructor_nodes:
+                constructor_obj, constructor_edges = self._extract_constructor_from_tree_sitter(
+                    constructor_node, class_obj, lines
+                )
+                if constructor_obj:
+                    methods.append(constructor_obj)
+                    edges.extend(constructor_edges)
+            
+            return class_obj, methods, edges
+            
+        except Exception as e:
+            print(f"Tree-sitter 클래스 추출 오류: {e}")
+            return None, [], []
+            
+    def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 인터페이스 정보 추출
+        """
+        # 인터페이스도 클래스와 비슷한 방식으로 처리
+        return self._extract_class_from_tree_sitter(interface_node, file_obj, lines)
+        
+    def _extract_enum_from_tree_sitter(self, enum_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 열거형 정보 추출
+        """
+        # 열거형도 클래스와 비슷한 방식으로 처리
+        return self._extract_class_from_tree_sitter(enum_node, file_obj, lines)
+        
+    def _extract_method_from_tree_sitter(self, method_node, class_obj: Class, lines: List[str]) -> Tuple[Optional[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 메서드 정보 추출
+        """
+        try:
+            # 메서드 이름 추출
+            name_node = None
+            for child in method_node.children:
+                if child.type == 'identifier':
+                    name_node = child
+                    break
+                    
+            if not name_node:
+                return None, []
+                
+            method_name = self._get_node_text(name_node, lines)
+            
+            # 위치 정보
+            start_line = method_node.start_point[0] + 1
+            end_line = method_node.end_point[0] + 1
+            
+            # 메서드 객체 생성
+            method_obj = Method(
+                class_id=None,  # 나중에 설정
+                name=method_name,
+                signature=method_name,  # 더 정교하게 시그니처 추출 필요
+                start_line=start_line,
+                end_line=end_line,
+                return_type='unknown',  # Tree-sitter에서 반환 타입 추출 어려움
+                parameters='',
+                modifiers=json.dumps([])
+            )
+            
+            edges = []
+            # 메서드 호출 관계 추출도 가능하지만 복잡하므로 생략
+            
+            return method_obj, edges
+            
+        except Exception as e:
+            print(f"Tree-sitter 메서드 추출 오류: {e}")
+            return None, []
+            
+    def _extract_constructor_from_tree_sitter(self, constructor_node, class_obj: Class, lines: List[str]) -> Tuple[Optional[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 생성자 정보 추출
+        """
+        # 생성자도 메서드와 비슷한 방식으로 처리
+        return self._extract_method_from_tree_sitter(constructor_node, class_obj, lines)
+        
+    def _get_node_text(self, node, lines: List[str]) -> str:
+        """
+        Tree-sitter 노드의 텍스트 추출
+        
+        Args:
+            node: Tree-sitter 노드
+            lines: 소스 코드 라인 리스트
+            
+        Returns:
+            노드의 텍스트
+        """
+        try:
+            start_row, start_col = node.start_point
+            end_row, end_col = node.end_point
+            
+            if start_row == end_row:
+                return lines[start_row][start_col:end_col]
+            else:
+                # 여러 라인에 걸쳐있는 경우
+                text_parts = []
+                text_parts.append(lines[start_row][start_col:])
+                for i in range(start_row + 1, end_row):
+                    text_parts.append(lines[i])
+                text_parts.append(lines[end_row][:end_col])
+                return ''.join(text_parts)
+        except (IndexError, TypeError):
+            return 'unknown'

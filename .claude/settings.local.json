@@ -32,7 +32,9 @@
       "Bash(del improved_main.py)",
       "Bash(del:*)",
       "Bash(move visualizecli.py visualizecli_old.py)",
-      "Bash(move visualizecli_fixed.py visualizecli.py)"
+      "Bash(move visualizecli_fixed.py visualizecli.py)",
+      "Bash(pip install:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

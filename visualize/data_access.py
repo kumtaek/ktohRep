@@ -10,7 +10,7 @@ project_root = current_dir.parent
 phase1_path = project_root / "phase1" / "src"
 sys.path.insert(0, str(phase1_path))
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk
+from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix
 from sqlalchemy import and_, or_, func
 import yaml
 
@@ -199,6 +199,48 @@ class VizDB:
         try:
             return session.query(SqlUnit).join(File).\
                 filter(File.project_id == project_id).all()
+        finally:
+            session.close()
+
+    def fetch_vulnerabilities(self, project_id: int) -> List[VulnerabilityFix]:
+        """Fetch vulnerability fixes related to a project by resolving target relations.
+
+        Joins per target_type to ensure entries belong to the given project:
+        - file -> File.project_id
+        - class -> Class -> File.project_id
+        - method -> Method -> Class -> File.project_id
+        - sql_unit -> SqlUnit -> File.project_id
+        """
+        session = self.session()
+        try:
+            results: List[VulnerabilityFix] = []
+
+            # file targets
+            q_file = session.query(VulnerabilityFix).join(
+                File, (VulnerabilityFix.target_type == 'file') & (VulnerabilityFix.target_id == File.file_id)
+            ).filter(File.project_id == project_id)
+            results.extend(q_file.all())
+
+            # class targets
+            q_class = session.query(VulnerabilityFix).join(
+                Class, (VulnerabilityFix.target_type == 'class') & (VulnerabilityFix.target_id == Class.class_id)
+            ).join(File, Class.file_id == File.file_id).filter(File.project_id == project_id)
+            results.extend(q_class.all())
+
+            # method targets
+            q_method = session.query(VulnerabilityFix).join(
+                Method, (VulnerabilityFix.target_type == 'method') & (VulnerabilityFix.target_id == Method.method_id)
+            ).join(Class, Method.class_id == Class.class_id).join(File, Class.file_id == File.file_id).\
+                filter(File.project_id == project_id)
+            results.extend(q_method.all())
+
+            # sql_unit targets
+            q_sql = session.query(VulnerabilityFix).join(
+                SqlUnit, (VulnerabilityFix.target_type == 'sql_unit') & (VulnerabilityFix.target_id == SqlUnit.sql_id)
+            ).join(File, SqlUnit.file_id == File.file_id).filter(File.project_id == project_id)
+            results.extend(q_sql.all())
+
+            return results
         finally:
             session.close()
 

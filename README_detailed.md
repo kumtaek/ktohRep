@@ -87,11 +87,11 @@ Source Analyzer는 외부 데이터베이스의 스키마 정보를 분석 과�
 *   **시퀀스 다이어그램 (`sequence`)**: `edges` 테이블의 호출 관계 데이터를 활용하여 특정 시작 메서드 또는 파일로부터의 호출 흐름을 시퀀스 다이어그램으로 추적하여 시각화합니다. 복잡한 비즈니스 로직의 실행 경로를 이해하는 데 유용합니다.
 *   **클래스 다이어그램 (`class`)**: Python 소스 코드의 클래스 구조, 멤버(속성, 메서드), 상속 관계를 시각화합니다. `visualize/builders/class_diagram.py`에서 `ast.NodeVisitor`를 상속받은 `ClassAnalyzer`를 통해 Python AST를 분석하여 정보를 추출하며, 클래스 계층 구조를 명확하게 보여줍니다.
 
-### 6.1. 시각화 CLI (`visualize/cli.py`)
-`visualize/cli.py` 스크립트를 통해 다양한 다이어그램을 생성할 수 있습니다.
+### 6.1. 시각화 CLI (`python -m visualize.cli` 권장)
+`python -m visualize.cli`(권장) 또는 `visualize_cli.py`를 통해 다양한 다이어그램을 생성할 수 있습니다.
 
 ```bash
-python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [옵션]
+python -m visualize.cli [명령] --project-id [ID] --out [출력_HTML_경로] [옵션]
 ```
 
 **지원 명령 및 주요 옵션 상세:**
@@ -104,10 +104,10 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
     *   **예시**:
         ```bash
         # 프로젝트 ID 1번의 모든 호출 및 테이블 사용 관계를 포함하는 의존성 그래프 생성
-        python visualize/cli.py graph --project-id 1 --out output/full_dependency_graph.html --kinds "call,use_table"
+        python -m visualize.cli graph --project-id 1 --out output/full_dependency_graph.html --kinds "call,use_table"
 
         # 'UserService.java' 파일을 중심으로 1단계 깊이의 의존성 그래프 생성
-        python visualize/cli.py graph --project-id 1 --out output/user_service_deps.html --focus "UserService.java" --depth 1
+        python -m visualize.cli graph --project-id 1 --out output/user_service_deps.html --focus "UserService.java" --depth 1
         ```
 
 *   **`erd`**: **ERD (Entity-Relationship Diagram) 생성**
@@ -118,13 +118,13 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
     *   **예시**:
         ```bash
         # 프로젝트 ID 1번의 전체 ERD 생성
-        python visualize/cli.py erd --project-id 1 --out output/full_erd.html
+        python -m visualize.cli erd --project-id 1 --out output/full_erd.html
 
         # 'USERS', 'PRODUCTS' 테이블만 포함하는 ERD 생성
-        python visualize/cli.py erd --project-id 1 --out output/user_product_erd.html --tables "USERS,PRODUCTS"
+        python -m visualize.cli erd --project-id 1 --out output/user_product_erd.html --tables "USERS,PRODUCTS"
 
         # 'com.example.OrderMapper:selectOrderList' SQL 구문에서 참조하는 테이블과 필터를 강조한 ERD 생성
-        python visualize/cli.py erd --project-id 1 --out output/order_sql_erd.html --from-sql "com.example.OrderMapper:selectOrderList"
+        python -m visualize.cli erd --project-id 1 --out output/order_sql_erd.html --from-sql "com.example.OrderMapper:selectOrderList"
         ```
 
 *   **`component`**: **컴포넌트 다이어그램 생성**
@@ -132,7 +132,7 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
     *   **예시**:
         ```bash
         # 프로젝트 ID 1번의 컴포넌트 다이어그램 생성
-        python visualize/cli.py component --project-id 1 --out output/component_diagram.html
+        python -m visualize.cli component --project-id 1 --out output/component_diagram.html
         ```
 
 *   **`sequence`**: **시퀀스 다이어그램 생성**
@@ -143,10 +143,10 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
     *   **예시**:
         ```bash
         # 'UserService.java' 파일 내의 'createUser' 메서드로부터 시퀀스 다이어그램 생성
-        python visualize/cli.py sequence --project-id 1 --out output/create_user_sequence.html --start-file "UserService.java" --start-method "createUser"
+        python -m visualize.cli sequence --project-id 1 --out output/create_user_sequence.html --start-file "UserService.java" --start-method "createUser"
 
         # 시작 파일/메서드 미지정 시, JSP -> SQL -> Table의 기본 흐름 시퀀스 생성
-        python visualize/cli.py sequence --project-id 1 --out output/default_jsp_sql_sequence.html
+        python -m visualize.cli sequence --project-id 1 --out output/default_jsp_sql_sequence.html
         ```
 
 *   **`class`**: **클래스 다이어그램 생성 (Python 코드 전용)**
@@ -157,10 +157,10 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
     *   **예시**:
         ```bash
         # 프로젝트 ID 1번의 'main.py' 및 'utils' 모듈에 대한 클래스 다이어그램 생성
-        python visualize/cli.py class --project-id 1 --out output/python_class_diagram.html --modules "main.py,utils"
+        python -m visualize.cli class --project-id 1 --out output/python_class_diagram.html --modules "main.py,utils"
 
         # 모든 private 멤버를 포함하여 클래스 다이어그램 생성
-        python visualize/cli.py class --project-id 1 --out output/python_class_diagram_private.html --modules "my_module.py" --include-private
+        python -m visualize.cli class --project-id 1 --out output/python_class_diagram_private.html --modules "my_module.py" --include-private
         ```
 
 **공통 옵션:**
@@ -173,6 +173,16 @@ python visualize/cli.py [명령] --project-id [ID] --out [출력_HTML_경로] [�
 *   `--export-mermaid [경로]`: 생성된 다이어그램을 Mermaid Markdown (`.md`) 또는 순수 Mermaid (`.mmd`) 형식으로 지정된 파일 경로에 내보냅니다.
     *   `--mermaid-label-max [길이]` (기본값: `20`): Mermaid 다이어그램에서 노드 라벨의 최대 길이를 제한합니다.
     *   `--mermaid-erd-max-cols [수]` (기본값: `10`): Mermaid ERD에서 각 테이블에 표시할 최대 컬럼 수를 제한합니다.
+*   `--keep-edge-kinds [종류목록]` (기본값: `include,call,use_table`): 신뢰도 임계 미만이라도 반드시 유지할 엣지 종류.
+
+> 주의: `PROJECT/` 폴더는 개발 소스가 아니라 테스트용 샘플 소스입니다. 실제 대상 소스 경로로 분석을 수행하세요.
+
+### 6.3. DB 스키마 CSV 형식 (통합)
+- `ALL_TABLES.csv`: OWNER, TABLE_NAME, COMMENTS (테이블 코멘트 통합)
+- `ALL_TAB_COLUMNS.csv`: OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, NULLABLE, COLUMN_COMMENTS (컬럼 코멘트 통합)
+- `PK_INFO.csv`: OWNER, TABLE_NAME, COLUMN_NAME, POSITION
+
+별도의 `ALL_TAB_COMMENTS.csv`, `ALL_COL_COMMENTS.csv`는 필요 없습니다.
 *   `-v`, `--verbose`, `-vv`: 로그 출력 상세도를 높입니다.
 *   `-q`, `--quiet`: 로그 출력을 최소화합니다.
 *   `--log-file [경로]`: 로그를 지정된 파일에 기록합니다.
@@ -204,4 +214,3 @@ Source Analyzer는 지속적으로 발전할 예정이며, 다음 단계에서�
     *   `Tree-sitter`를 도입하여 Python, JavaScript, TypeScript, C#, Go 등 더 많은 프로그래밍 언어에 대한 파싱을 지원하고, 언어별 특성을 고려한 메타데이터 추출을 강화합니다.
 *   **고급 취약점 분석**:
     *   `security` 모듈을 강화하여 OWASP Top 10과 같은 일반적인 웹 취약점 패턴(예: SQL Injection, XSS, Broken Access Control)을 소스 코드에서 더욱 정밀하게 탐지하고, 상세한 보고서와 함께 수정 가이드를 제공합니다.
-

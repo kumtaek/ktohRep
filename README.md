@@ -11,21 +11,22 @@ pip install -r requirements.txt
 
 ### 2) 시각화 생성 예시
 ```bash
-# 의존성 그래프 (HTML)
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+# 권장 실행 형식 (모듈 실행)
+python -m visualize.cli graph --project-id 1 --out visualize/output/graph.html \
   --kinds use_table,include --min-confidence 0.5 --max-nodes 1000
 
-# ERD (HTML) + Mermaid 문서(.md)
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+python -m visualize.cli erd --project-id 1 --out visualize/output/erd.html \
   --export-mermaid visualize/output/erd.md
 
-# 클래스 다이어그램 (신규 v1.3)
-python visualize_cli.py class --project-id 1 --out visualize/output/class.html \
+python -m visualize.cli class --project-id 1 --out visualize/output/class.html \
   --modules "database,models" --export-mermaid visualize/output/class.md
 
 # Mermaid 코드(.mmd)만 출력
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+python -m visualize.cli graph --project-id 1 --out visualize/output/graph.html \
   --kinds use_table,include --export-mermaid visualize/output/graph.mmd
+
+# wrapper 스크립트도 동일 동작 (선택)
+python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html
 ```
 
 ### 3) 지원되는 시각화 유형 (5종)
@@ -41,7 +42,15 @@ python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
 - `--export-strategy` full|balanced|minimal 프리셋(기본 balanced)
 - `--class-methods-max` 클래스 다이어그램 메서드 최대 수(기본 10)
 - `--class-attrs-max` 클래스 다이어그램 속성 최대 수(기본 10)
-- `--keep-edge-kinds` 보존할 엣지 종류(기본 includes,call,use_table)
+- `--keep-edge-kinds` 보존할 엣지 종류(기본 include,call,use_table)
+
+### 5) 데이터 흐름 시각화 오버레이 (v1.5)
+- 그룹 색상: JSP/Controller/Service/Mapper/DB 그룹별 클래스 자동 적용
+- Hotspot(배경색): LOC/복잡도 근사(bin: low/med/high/crit)
+- 취약점(테두리): 최대 심각도 표시(low/medium/high/critical)
+- 미해결 호출: 점선 화살표(`-.->`)로 표기
+
+참고: Mermaid 렌더 안정성을 위해 복잡 라벨은 `"..."`와 `<br/>` 사용을 권장합니다.
 
 ---
 
@@ -178,11 +187,9 @@ python main.py /path/to/your/project --project-name "MyProject"
 PROJECT/
 └── your-project/
     └── DB_SCHEMA/
-        ├── ALL_TABLES.csv
-        ├── ALL_TAB_COLUMNS.csv
-        ├── ALL_TAB_COMMENTS.csv
-        ├── ALL_COL_COMMENTS.csv
-        └── PK_INFO.csv
+        ├── ALL_TABLES.csv         # OWNER,TABLE_NAME,COMMENTS (테이블 코멘트 포함)
+        ├── ALL_TAB_COLUMNS.csv    # OWNER,TABLE_NAME,COLUMN_NAME,DATA_TYPE,NULLABLE,COLUMN_COMMENTS
+        └── PK_INFO.csv            # OWNER,TABLE_NAME,COLUMN_NAME,POSITION
 ```
 
 ## 시각화 사용법
@@ -193,46 +200,48 @@ PROJECT/
 
 ```bash
 # 의존성 그래프
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+python -m visualize.cli graph --project-id 1 --out visualize/output/graph.html \
   --kinds use_table,include --min-confidence 0.5 --max-nodes 1000 \
   --export-mermaid visualize/output/graph.md
 
 # ERD (전체 또는 특정 SQL 기준)
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+python -m visualize.cli erd --project-id 1 --out visualize/output/erd.html \
   --export-mermaid visualize/output/erd.md
 
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd_from_sql.html \
+python -m visualize.cli erd --project-id 1 --out visualize/output/erd_from_sql.html \
   --from-sql MapperNamespace:selectUser
 
 # 컴포넌트 다이어그램
-python visualize_cli.py component --project-id 1 --out visualize/output/components.html \
+python -m visualize.cli component --project-id 1 --out visualize/output/components.html \
   --export-mermaid visualize/output/components.md
 
 # 시퀀스(호출 추적) 다이어그램
-python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
+python -m visualize.cli sequence --project-id 1 --out visualize/output/sequence.html \
   --start-file UserService.java --depth 3 \
   --export-mermaid visualize/output/sequence.md
 
 # 클래스 다이어그램 (v1.3 신규)
-python visualize_cli.py class --project-id 1 --out visualize/output/class.html \
+python -m visualize.cli class --project-id 1 --out visualize/output/class.html \
   --modules "database,models" --include-private --max-methods 15 \
   --export-mermaid visualize/output/class.md
 ```
+
+> 주의: `PROJECT/` 폴더는 개발 소스가 아니라 테스트용 샘플 소스입니다. 실제 대상 소스 경로로 분석을 수행하세요.
 
 ### 2) 클래스 다이어그램 상세 옵션 (v1.3)
 
 ```bash
 # 전체 프로젝트 Python 파일 분석
-python visualize_cli.py class --project-id 1 --out class.html
+python -m visualize.cli class --project-id 1 --out class.html
 
 # 특정 모듈만 포함
-python visualize_cli.py class --project-id 1 --modules "src.models,src.database" --out class.html
+python -m visualize.cli class --project-id 1 --modules "src.models,src.database" --out class.html
 
 # Private 멤버 포함하여 상세 분석
-python visualize_cli.py class --project-id 1 --include-private --max-methods 20 --out class.html
+python -m visualize.cli class --project-id 1 --include-private --max-methods 20 --out class.html
 
 # Mermaid 코드만 출력
-python visualize_cli.py class --project-id 1 --export-mermaid class.mmd --out /dev/null
+python -m visualize.cli class --project-id 1 --export-mermaid class.mmd --out /dev/null
 ```
 
 **클래스 다이어그램 특징**:
@@ -251,10 +260,10 @@ python visualize_cli.py class --project-id 1 --export-mermaid class.mmd --out /d
 
 ```bash
 # 완전한 Markdown 문서
-python visualize_cli.py erd --project-id 1 --out erd.html --export-mermaid erd.md
+python -m visualize.cli erd --project-id 1 --out erd.html --export-mermaid erd.md
 
 # Mermaid 코드만 (GitHub/GitLab 등에서 직접 렌더링 가능)
-python visualize_cli.py class --project-id 1 --out class.html --export-mermaid class.mmd
+python -m visualize.cli class --project-id 1 --out class.html --export-mermaid class.mmd
 ```
 
 ### 4) CI/CD 자동화 예시
@@ -278,9 +287,9 @@ jobs:
       run: python main.py . --project-name "MyApp"
     - name: Generate visualizations
       run: |
-        python visualize_cli.py erd --project-id 1 --out docs/erd.html --export-mermaid docs/erd.md
-        python visualize_cli.py class --project-id 1 --out docs/class.html --export-mermaid docs/class.md
-        python visualize_cli.py graph --project-id 1 --out docs/deps.html --export-mermaid docs/deps.md
+        python -m visualize.cli erd --project-id 1 --out docs/erd.html --export-mermaid docs/erd.md
+        python -m visualize.cli class --project-id 1 --out docs/class.html --export-mermaid docs/class.md
+        python -m visualize.cli graph --project-id 1 --out docs/deps.html --export-mermaid docs/deps.md
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
@@ -416,21 +425,21 @@ v1.3에서 해결되었습니다. 만약 여전히 문제가 발생하면:
 ```bash
 # Windows
 chcp 65001
-python visualize_cli.py --help
+python -m visualize.cli --help
 
 # Linux/Mac
 export LANG=ko_KR.UTF-8
-python visualize_cli.py --help
+python -m visualize.cli --help
 ```
 
 ### 메모리 부족
 대용량 프로젝트의 경우:
 ```bash
 # 노드 수 제한
-python visualize_cli.py graph --project-id 1 --max-nodes 500 --out graph.html
+python -m visualize.cli graph --project-id 1 --max-nodes 500 --out graph.html
 
 # 신뢰도 임계값 상향 조정
-python visualize_cli.py erd --project-id 1 --min-confidence 0.8 --out erd.html
+python -m visualize.cli erd --project-id 1 --min-confidence 0.8 --out erd.html
 ```
 
 ### Python 파일 분석 제한
@@ -442,6 +451,11 @@ python visualize_cli.py erd --project-id 1 --min-confidence 0.8 --out erd.html
 ## 라이선스
 
 이 프로젝트는 테스트 및 분석을 위한 도구입니다.
+
+---
+
+## 테스트 케이스
+- 샘플 소스 및 DB 스키마 기반 엔드투엔드 검증 절차는 `testcase.md`를 참고하세요.
 
 ---
 

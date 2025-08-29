@@ -161,7 +161,7 @@ def main():
         sp.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
         sp.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
         sp.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
-        sp.add_argument('--keep-edge-kinds', default='includes,call,use_table', help='Edge kinds to keep')
+        sp.add_argument('--keep-edge-kinds', default='include,call,use_table', help='Edge kinds to keep')
         # Logging options
         sp.add_argument('-v', '--verbose', action='count', default=0, 
                        help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
@@ -264,10 +264,12 @@ def main():
 
         if args.export_mermaid:
             logger.info(f"Mermaid/Markdown 내보내기: {args.export_mermaid}")
-            keep_edge_kinds = tuple(args.keep_edge_kinds.split(',')) if hasattr(args, 'keep_edge_kinds') else ("includes","call","use_table")
+            keep_edge_kinds = tuple(args.keep_edge_kinds.split(',')) if hasattr(args, 'keep_edge_kinds') else ("include","call","use_table")
+            # Include builder filters for documentation context
+            meta_filters = (data.get('metadata') or {}).get('filters') if isinstance(data, dict) else None
             export_mermaid(
-                data, args.export_mermaid, diagram_type, logger, 
-                {'project_id': args.project_id}, 
+                data, args.export_mermaid, diagram_type, logger,
+                {'project_id': args.project_id, 'filters': meta_filters}, 
                 label_max=getattr(args, 'mermaid_label_max', 20), 
                 erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10),
                 class_methods_max=getattr(args, 'class_methods_max', 10),

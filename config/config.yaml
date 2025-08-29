@@ -99,10 +99,8 @@ db_schema:
   required_files:
     - "ALL_TABLES.csv"
     - "ALL_TAB_COLUMNS.csv" 
-    - "ALL_TAB_COMMENTS.csv"
-    - "ALL_COL_COMMENTS.csv"
     - "PK_INFO.csv"
-  path_template: "./PROJECTS/{project_name}/DB_SCHEMA/"
+  path_template: "./PROJECT/{project_name}/DB_SCHEMA/"
 
 # Logging
 logging:

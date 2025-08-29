@@ -16,7 +16,7 @@ class MermaidExporter:
 
     def __init__(self, label_max: int = 20, erd_cols_max: int = 10,
                  class_methods_max: int = 10, class_attrs_max: int = 10,
-                 min_confidence: float = 0.0, keep_edge_kinds: tuple = ("includes","call","use_table")):
+                 min_confidence: float = 0.0, keep_edge_kinds: tuple = ("include","call","use_table")):
         self.max_label_length = label_max
         self.erd_cols_max = erd_cols_max
         self.class_methods_max = class_methods_max
@@ -221,6 +221,15 @@ class MermaidExporter:
                 desc = edge_descriptions.get(edge_type, edge_type.replace('_', ' ').title())
                 legend.append(f"- {edge_type}: {desc}")
 
+            # Styling overlay legend
+            legend.extend([
+                "",
+                "### 스타일 레이어",
+                "- Hotspot(채움): low/med/high/crit",
+                "- 취약점(테두리): low/medium/high/critical",
+                "- 그룹 색상: JSP/Controller/Service/Mapper/DB"
+            ])
+
         return legend
 
     def _sanitize_id(self, original_id: str) -> str:
@@ -329,10 +338,29 @@ class MermaidExporter:
 
         for node in data.get('nodes', []):
             node_id = self._sanitize_id(node['id'])
-            label = self._sanitize_label(node.get('label', ''))
+            # Base label (sanitized & possibly truncated)
+            base_label = self._sanitize_label(node.get('label', ''))
+            # Optional metrics line (no truncation): (LOC=.., Cx=..)
+            meta = node.get('meta', {}) or {}
+            metrics = []
+            if meta.get('loc') is not None:
+                try:
+                    metrics.append(f"LOC={int(meta.get('loc'))}")
+                except Exception:
+                    pass
+            if meta.get('complexity_est') is not None:
+                try:
+                    metrics.append(f"Cx={int(meta.get('complexity_est'))}")
+                except Exception:
+                    pass
+            if metrics:
+                label = f"{base_label}<br/>(" + ", ".join(metrics) + ")"
+            else:
+                label = base_label
             node_type = node.get('type', 'unknown')
             if node_type == 'table':
-                shape = f"{node_id}[({label})]"
+                # Double-circle style for DB tables as per docs
+                shape = f"{node_id}(( {label} ))"
             elif node_type == 'method':
                 shape = f"{node_id}[{label}]"
             elif node_type == 'component':
@@ -348,23 +376,50 @@ class MermaidExporter:
             dst_id = self._sanitize_id(edge['target'])
             edge_kind = edge.get('kind', 'unknown')
             if 'unresolved' in edge_kind:
-                lines.append(f"  {src_id} -. {edge_kind} .-> {dst_id}")
+                # Grey dashed unresolved edge (compact label)
+                lines.append(f"  {src_id} -.-> {dst_id}")
             else:
                 lines.append(f"  {src_id} -->|{edge_kind}| {dst_id}")
 
+        # Styling blocks: Groups, Hotspots, Vulnerabilities
         lines.extend([
             "",
-            "  %% Styling",
-            "  classDef table fill:#fff3e0,stroke:#ff9800",
-            "  classDef method fill:#e3f2fd,stroke:#2196f3",
-            "  classDef component fill:#f3e5f5,stroke:#9c27b0"
+            "  %% Group Styling (per docs)",
+            "  classDef JSP fill:#ffebee,stroke:#d32f2f",
+            "  classDef Controller fill:#e3f2fd,stroke:#1976d2",
+            "  classDef Service fill:#e8f5e8,stroke:#388e3c",
+            "  classDef Mapper fill:#f3e5f5,stroke:#7b1fa2",
+            "  classDef DB fill:#fff9c4,stroke:#f9a825",
+            "",
+            "  %% Hotspot styling",
+            "  classDef hotspot_low fill:#e8f5e9,stroke:#43a047",
+            "  classDef hotspot_med fill:#fffde7,stroke:#f9a825",
+            "  classDef hotspot_high fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px",
+            "  classDef hotspot_crit fill:#ffebee,stroke:#e53935,stroke-width:3px",
+            "",
+            "  %% Vulnerability styling",
+            "  classDef vuln_low stroke:#8bc34a,stroke-width:2px,stroke-dasharray:2 2",
+            "  classDef vuln_medium stroke:#fbc02d,stroke-width:2px",
+            "  classDef vuln_high stroke:#fb8c00,stroke-width:3px",
+            "  classDef vuln_critical stroke:#e53935,stroke-width:4px",
         ])
 
         for node in data.get('nodes', []):
             node_id = self._sanitize_id(node['id'])
-            node_type = node.get('type', 'unknown')
-            if node_type in ['table', 'method', 'component']:
-                lines.append(f"  class {node_id} {node_type}")
+            # Apply group class from node['group'] if available
+            group = node.get('group')
+            if group:
+                # Group names like JSP/Controller/Service/Mapper/DB
+                lines.append(f"  class {node_id} {group}")
+            # Apply Hotspot classes
+            meta = node.get('meta', {}) or {}
+            hotspot = meta.get('hotspot_bin')
+            if hotspot:
+                lines.append(f"  class {node_id} hotspot_{hotspot}")
+            # Apply Vulnerability class by max severity
+            sev = (meta.get('vuln_max_severity') or '').lower()
+            if sev and sev != 'none':
+                lines.append(f"  class {node_id} vuln_{sev}")
 
         return "\n".join(lines)
 

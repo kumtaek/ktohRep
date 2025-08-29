@@ -28,8 +28,6 @@ class CsvLoader:
         self.csv_handlers = {
             'ALL_TABLES.csv': self._load_tables,
             'ALL_TAB_COLUMNS.csv': self._load_columns,
-            'ALL_TAB_COMMENTS.csv': self._load_table_comments,
-            'ALL_COL_COMMENTS.csv': self._load_column_comments,
             'PK_INFO.csv': self._load_pk_info,
             'ALL_VIEWS.csv': self._load_views
         }
@@ -93,20 +91,30 @@ class CsvLoader:
             loaded_count = 0
             
             for row in rows:
-                # 필드명은 Oracle ALL_TABLES 뷰 구조에 따라 조정
-                table = DbTable(
-                    owner=row.get('OWNER', '').strip(),
-                    table_name=row.get('TABLE_NAME', '').strip(),
-                    status=row.get('STATUS', 'VALID').strip()
-                )
-                
-                # 중복 확인
+                owner = row.get('OWNER', '').strip()
+                table_name = row.get('TABLE_NAME', '').strip()
+                comments = (row.get('COMMENTS') or '').strip()
+                status = (row.get('STATUS') or 'VALID').strip()
+
+                # 기존 레코드 확인
                 existing = session.query(DbTable).filter(
-                    DbTable.owner == table.owner,
-                    DbTable.table_name == table.table_name
+                    DbTable.owner == owner,
+                    DbTable.table_name == table_name
                 ).first()
-                
-                if not existing:
+
+                if existing:
+                    # 코멘트/상태 업데이트(있을 때만)
+                    if comments:
+                        existing.table_comment = comments
+                    if status:
+                        existing.status = status
+                else:
+                    table = DbTable(
+                        owner=owner,
+                        table_name=table_name,
+                        status=status,
+                        table_comment=comments
+                    )
                     session.add(table)
                     loaded_count += 1
                     
@@ -139,6 +147,7 @@ class CsvLoader:
                 owner = row.get('OWNER', '').strip()
                 table_name = row.get('TABLE_NAME', '').strip()
                 column_name = row.get('COLUMN_NAME', '').strip()
+                col_comments = (row.get('COLUMN_COMMENTS') or '').strip()
                 
                 # 테이블 ID 찾기
                 table_key = (owner, table_name)
@@ -150,7 +159,8 @@ class CsvLoader:
                     table_id=table_map[table_key],
                     column_name=column_name,
                     data_type=row.get('DATA_TYPE', '').strip(),
-                    nullable=row.get('NULLABLE', 'Y').strip()
+                    nullable=row.get('NULLABLE', 'Y').strip(),
+                    column_comment=col_comments
                 )
                 
                 # 중복 확인
@@ -298,7 +308,8 @@ class CsvLoader:
                 owner = row.get('OWNER', '').strip()
                 table_name = row.get('TABLE_NAME', '').strip()
                 column_name = row.get('COLUMN_NAME', '').strip()
-                pk_position = int(row.get('POSITION', '1'))
+                # Allow legacy header 'PK_POS' too
+                pk_position = int((row.get('POSITION') or row.get('PK_POS') or '1'))
                 
                 table_key = (owner, table_name)
                 if table_key not in table_map:
@@ -382,10 +393,8 @@ class CsvLoader:
         
         # 예상 컬럼 구조 정의
         expected_columns = {
-            'ALL_TABLES.csv': ['OWNER', 'TABLE_NAME', 'STATUS'],
-            'ALL_TAB_COLUMNS.csv': ['OWNER', 'TABLE_NAME', 'COLUMN_NAME', 'DATA_TYPE', 'NULLABLE'],
-            'ALL_TAB_COMMENTS.csv': ['OWNER', 'TABLE_NAME', 'COMMENTS'],
-            'ALL_COL_COMMENTS.csv': ['OWNER', 'TABLE_NAME', 'COLUMN_NAME', 'COMMENTS'],
+            'ALL_TABLES.csv': ['OWNER', 'TABLE_NAME', 'COMMENTS'],
+            'ALL_TAB_COLUMNS.csv': ['OWNER', 'TABLE_NAME', 'COLUMN_NAME', 'DATA_TYPE', 'NULLABLE', 'COLUMN_COMMENTS'],
             'PK_INFO.csv': ['OWNER', 'TABLE_NAME', 'COLUMN_NAME', 'POSITION'],
             'ALL_VIEWS.csv': ['OWNER', 'VIEW_NAME', 'TEXT']
         }

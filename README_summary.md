@@ -47,7 +47,7 @@ python phase1/src/main.py PROJECT/sampleSrc --incremental
 
 ## 3. 시각화
 
-`visualize/cli.py` 스크립트를 통해 분석된 메타데이터를 다양한 다이어그램으로 시각화할 수 있습니다. 생성된 다이어그램은 HTML 웹 페이지 또는 Mermaid Markdown 형식으로 내보낼 수 있습니다.
+`python -m visualize.cli`(권장) 또는 `visualize_cli.py`를 통해 분석된 메타데이터를 다양한 다이어그램으로 시각화할 수 있습니다. 생성된 다이어그램은 HTML 웹 페이지 또는 Mermaid Markdown 형식으로 내보낼 수 있습니다.
 
 ### 지원 다이어그램
 *   **의존성 그래프**: 파일, 클래스, 메서드 간의 호출 및 사용 관계.
@@ -59,8 +59,12 @@ python phase1/src/main.py PROJECT/sampleSrc --incremental
 **예시:**
 ```bash
 # 프로젝트 ID 1번의 의존성 그래프를 'output/dependency_graph.html'로 저장
-python visualize/cli.py graph --project-id 1 --out output/dependency_graph.html
+python -m visualize.cli graph --project-id 1 --out output/dependency_graph.html
 
 # 프로젝트 ID 1번의 ERD를 Mermaid Markdown으로 내보내기
-python visualize/cli.py erd --project-id 1 --out output/erd.html --export-mermaid output/erd.md
+python -m visualize.cli erd --project-id 1 --out output/erd.html --export-mermaid output/erd.md
 ```
+
+추가: 데이터 흐름 시각화에 Hotspot(배경색)과 취약점(테두리) 오버레이가 적용됩니다. 기본 보존 엣지: `include,call,use_table`.
+
+> 주의: `PROJECT/` 폴더는 개발 소스가 아니라 테스트용 샘플 소스입니다.

@@ -4,7 +4,7 @@ from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph, guess_group, filter_nodes_by_focus, limit_nodes
 
 
-def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: float, 
+def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: float,
                                focus: str = None, depth: int = 2, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build dependency graph JSON for visualization"""
     print(f"의존성 그래프 생성: 프로젝트 {project_id}")
@@ -69,8 +69,81 @@ def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: flo
     if len(nodes_list) > max_nodes:
         nodes_list, json_edges = limit_nodes(nodes_list, json_edges, max_nodes)
         print(f"  노드 제한 적용 후: 노드 {len(nodes_list)}개, 엣지 {len(json_edges)}개")
-    
-    return create_graph(nodes_list, json_edges)
+
+    # --- Meta enrichment: Hotspot bins & Vulnerability overlay ---
+    # Complexity estimate: out-degree (call edges) as simple proxy
+    out_degree: Dict[str, int] = {}
+    for e in json_edges:
+        if e.get('kind') == 'call':
+            out_degree[e['source']] = out_degree.get(e['source'], 0) + 1
+
+    def _bin_hotspot(loc: int | None, cx: int | None) -> str:
+        # LOC-based bins; promote if complexity high
+        loc_val = int(loc) if isinstance(loc, (int, float)) else 0
+        cx_val = int(cx) if isinstance(cx, (int, float)) else 0
+        if loc_val <= 100:
+            base = 'low'
+        elif loc_val <= 300:
+            base = 'med'
+        elif loc_val <= 800:
+            base = 'high'
+        else:
+            base = 'crit'
+        if cx_val >= 20 and base in ('low', 'med'):
+            return 'high'
+        return base
+
+    # Fetch vulnerabilities and map by node id string
+    try:
+        vulns = db.fetch_vulnerabilities(project_id)
+    except Exception as _:
+        vulns = []
+    by_target: Dict[str, list] = {}
+    for v in vulns or []:
+        key = f"{getattr(v, 'target_type', None)}:{getattr(v, 'target_id', None)}"
+        by_target.setdefault(key, []).append(v)
+
+    # Apply meta to nodes
+    for n in nodes_list:
+        nid = n['id']
+        details = n.get('meta') or {}
+        loc = details.get('loc') or details.get('lines_of_code')
+        cx = details.get('complexity_est')
+        # If no complexity, derive from out-degree of call edges
+        if cx is None:
+            cx = out_degree.get(nid, 0)
+        # Store meta
+        if n.get('meta') is None:
+            n['meta'] = {}
+        n['meta']['loc'] = int(loc) if isinstance(loc, (int, float)) else (loc or 0)
+        n['meta']['complexity_est'] = int(cx) if isinstance(cx, (int, float)) else 0
+        n['meta']['hotspot_bin'] = _bin_hotspot(n['meta']['loc'], n['meta']['complexity_est'])
+
+        # Vulnerabilities
+        vlist = by_target.get(nid, [])
+        if vlist:
+            counts: Dict[str, int] = {}
+            for v in vlist:
+                sev = (getattr(v, 'severity', '') or 'none').lower()
+                counts[sev] = counts.get(sev, 0) + 1
+            # Determine max severity by order
+            order = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1, 'none': 0}
+            max_sev = max(counts, key=lambda s: order.get(s, 0)) if counts else 'none'
+            n['meta']['vuln_counts'] = counts
+            n['meta']['vuln_max_severity'] = max_sev
+
+    graph = create_graph(nodes_list, json_edges)
+    # Attach filter metadata for documentation/export context
+    graph.setdefault('metadata', {})
+    graph['metadata']['filters'] = {
+        'kinds': ','.join(kinds) if kinds else '',
+        'min_confidence': min_conf,
+        'focus': focus or '',
+        'depth': depth,
+        'max_nodes': max_nodes,
+    }
+
+    return graph
 
 
 def _get_node_label(node_type: str, details: Dict[str, Any] = None) -> str:

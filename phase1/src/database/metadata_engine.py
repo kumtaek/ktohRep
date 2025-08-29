@@ -24,6 +24,7 @@ from models.database import (
 from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
 from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
 from llm.assist import LlmAssist
+from llm.enricher import generate_text
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -664,7 +665,7 @@ class MetadataEngine:
             
     async def _resolve_method_calls(self, session, project_id: int):
         """메서드 호출 관계 해결"""
-        from ..models.database import EdgeHint, Method, Class, File
+        from models.database import EdgeHint, Method, Class, File
         import json as _json
         # 미해결된 메서드 호출 엣지들 조회
         unresolved_calls = session.query(Edge).filter(
@@ -928,6 +929,158 @@ class MetadataEngine:
         finally:
             session.close()
             
+    # ---- LLM-driven enrichment tasks ----
+    def llm_enrich_table_and_column_comments(self, *, max_tables: int = 50, max_columns: int = 100, lang: str = 'ko') -> Dict[str, int]:
+        updated = {"tables": 0, "columns": 0}
+        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
+        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
+        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
+        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        with self._get_sync_session() as session:
+            q_tables = session.query(DbTable).limit(max_tables * 5).all()
+            picked = []
+            for t in q_tables:
+                tc = (t.table_comment or '').strip()
+                if not tc or len(tc) < 4 or tc.lower() in ('tbd', 'todo', 'unknown'):
+                    picked.append(t)
+                if len(picked) >= max_tables:
+                    break
+            for t in picked:
+                cols = [c.column_name for c in getattr(t, 'columns', [])]
+                system = f"너는 데이터베이스 테이블 설명 작성기이다. 한국어({lang})로 간결하고 정확히 한두 문장으로 설명하라."
+                user = (
+                    f"테이블명: {t.owner + '.' if t.owner else ''}{t.table_name}\n"
+                    f"컬럼들: {', '.join(cols[:30])}"
+                )
+                try:
+                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
+                except Exception as e:
+                    self.logger.debug(f"LLM table comment skipped: {t.table_name}: {e}")
+                    continue
+                t.table_comment = text
+                updated["tables"] += 1
+            q_cols = session.query(DbColumn).limit(max_columns * 5).all()
+            pickedc = []
+            for c in q_cols:
+                cc = (c.column_comment or '').strip()
+                if not cc or len(cc) < 3 or cc.lower() in ('tbd', 'todo', 'unknown'):
+                    pickedc.append(c)
+                if len(pickedc) >= max_columns:
+                    break
+            for c in pickedc:
+                table = session.query(DbTable).filter(DbTable.table_id == c.table_id).first()
+                tname = f"{getattr(table, 'owner', '') + '.' if getattr(table, 'owner', None) else ''}{getattr(table, 'table_name', '')}"
+                system = f"너는 데이터베이스 컬럼 설명 작성기이다. 한국어({lang})로 한 문장으로 설명하라."
+                user = f"테이블: {tname}\n컬럼: {c.column_name}\n데이터타입: {c.data_type or ''}\nNULL 허용: {c.nullable or ''}"
+                try:
+                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
+                except Exception as e:
+                    self.logger.debug(f"LLM column comment skipped: {tname}.{c.column_name}: {e}")
+                    continue
+                c.column_comment = text
+                updated["columns"] += 1
+            session.commit()
+        return updated
+
+    def llm_summarize_sql_units(self, *, max_items: int = 50, lang: str = 'ko') -> int:
+        created = 0
+        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
+        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
+        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
+        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        with self._get_sync_session() as session:
+            existing_map = {(s.target_type, s.target_id) for s in session.query(Summary).filter(Summary.summary_type == 'logic').all()}
+            units = session.query(SqlUnit).limit(max_items * 3).all()
+            for u in units:
+                key = ('sql_unit', u.sql_id)
+                if key in existing_map:
+                    continue
+                joins = session.query(Join).filter(Join.sql_id == u.sql_id).all()
+                filters = session.query(RequiredFilter).filter(RequiredFilter.sql_id == u.sql_id).all()
+                system = f"너는 SQL 분석 보조 AI다. 한국어({lang})로 한두 문장 요약을 작성하라."
+                jtxt = "; ".join([f"{j.l_table}.{j.l_col} {j.op} {j.r_table}.{j.r_col}" for j in joins if j.l_table and j.r_table])
+                ftxt = "; ".join([f"{f.table_name}.{f.column_name} {f.op} {f.value_repr}" for f in filters if f.column_name])
+                user = f"SQL 종류: {u.stmt_kind}\n조인: {jtxt or '없음'}\n필터: {ftxt or '없음'}\n"
+                try:
+                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
+                except Exception as e:
+                    self.logger.debug(f"LLM sql summary skipped: {u.sql_id}: {e}")
+                    continue
+                sm = Summary(target_type='sql_unit', target_id=u.sql_id, summary_type='logic', lang=lang, content=text, confidence=0.7)
+                session.add(sm)
+                created += 1
+            session.commit()
+        return created
+
+    def llm_summarize_methods(self, *, max_items: int = 50, lang: str = 'ko') -> int:
+        created = 0
+        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
+        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
+        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
+        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        with self._get_sync_session() as session:
+            existing_map = {(s.target_type, s.target_id) for s in session.query(Summary).filter(Summary.summary_type == 'logic').all()}
+            methods = session.query(Method).limit(max_items * 3).all()
+            for m in methods:
+                key = ('method', m.method_id)
+                if key in existing_map:
+                    continue
+                cl = session.query(Class).filter(Class.class_id == m.class_id).first()
+                system = f"너는 코드 요약 보조 AI다. 한국어({lang})로 한두 문장으로 메소드 역할을 추정 요약하라."
+                user = f"클래스: {getattr(cl, 'fqn', '')}\n메소드: {m.name}\n시그니처: {m.signature or ''}"
+                try:
+                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
+                except Exception as e:
+                    self.logger.debug(f"LLM method summary skipped: {m.method_id}: {e}")
+                    continue
+                sm = Summary(target_type='method', target_id=m.method_id, summary_type='logic', lang=lang, content=text, confidence=0.6)
+                session.add(sm)
+                created += 1
+            session.commit()
+        return created
+
+    def llm_summarize_jsp_files(self, *, max_items: int = 50, lang: str = 'ko') -> int:
+        """JSP 파일 내용을 샘플링하여 파일 단위 요약을 생성한다."""
+        created = 0
+        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
+        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
+        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
+        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        file_max_lines = int(self.config.get('llm_assist', {}).get('file_max_lines', 1200)) if isinstance(self.config, dict) else 1200
+        with self._get_sync_session() as session:
+            existing_map = {(s.target_type, s.target_id) for s in session.query(Summary).filter(Summary.summary_type == 'logic').all()}
+            files = session.query(File).filter(File.path.like('%.jsp')).limit(max_items * 5).all()
+            for f in files:
+                key = ('file', f.file_id)
+                if key in existing_map:
+                    continue
+                # read snippet
+                try:
+                    text = open(f.path, 'r', encoding='utf-8', errors='ignore').read()
+                except Exception:
+                    text = ''
+                lines = text.splitlines()
+                if len(lines) > file_max_lines:
+                    head = lines[: file_max_lines // 2]
+                    tail = lines[-file_max_lines // 2 :]
+                    snippet = "\n".join(head + ["\n<%-- ...snip... --%>\n"] + tail)
+                else:
+                    snippet = text
+                system = f"너는 JSP 화면/서버 코드 요약 보조 AI다. 한국어({lang})로 이 파일의 역할을 한두 문장으로 요약하라."
+                user = f"<JSP>\n{snippet}\n</JSP>"
+                try:
+                    summary = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
+                except Exception as e:
+                    self.logger.debug(f"LLM jsp summary skipped: {f.path}: {e}")
+                    continue
+                sm = Summary(target_type='file', target_id=f.file_id, summary_type='logic', lang=lang, content=summary, confidence=0.6)
+                session.add(sm)
+                created += 1
+                if created >= max_items:
+                    break
+            session.commit()
+        return created
+
     async def check_file_changes(self, project_id: int) -> List[Tuple[str, str]]:
         """
         파일 변경 사항 확인 (증분 분석용)

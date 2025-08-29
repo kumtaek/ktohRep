@@ -1,0 +1,5 @@
+name: LLM Assist (dry run) on JSP file
+kind: engine_llm_assist
+input: tests/samples/jsp/sample.jsp
+expected:
+  enrichment_logs_min: 1

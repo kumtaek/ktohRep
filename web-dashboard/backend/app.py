@@ -31,8 +31,10 @@ def load_config():
     return yaml.safe_load(expanded)
 
 def setup_logging(config):
-    log_level = config.get('logging', {}).get('level', 'INFO').upper()
-    log_file = config.get('logging', {}).get('file', './logs/app.log')
+    # Prefer server-level overrides, fallback to root logging section
+    server_cfg = config.get('server', {}) if isinstance(config, dict) else {}
+    log_level = (server_cfg.get('log_level') or config.get('logging', {}).get('level', 'INFO')).upper()
+    log_file = server_cfg.get('log_file') or config.get('logging', {}).get('file', './logs/app.log')
     
     # Ensure log directory exists
     log_dir = os.path.dirname(log_file)
@@ -53,9 +55,50 @@ def setup_logging(config):
 config = load_config()
 setup_logging(config)
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# App + static config
+server_cfg = config.get('server', {}) if isinstance(config, dict) else {}
+static_cfg = server_cfg.get('static', {}) if isinstance(server_cfg, dict) else {}
+if static_cfg.get('enabled', False):
+    # Resolve default folder relative to repo root
+    repo_root = Path(__file__).resolve().parents[2]
+    default_folder = repo_root / 'web-dashboard' / 'frontend' / 'dist'
+    folder = Path(static_cfg.get('folder') or default_folder).resolve()
+    url_path = static_cfg.get('url_path', '/static')
+    app = Flask(__name__, static_folder=str(folder), static_url_path=url_path)
+else:
+    app = Flask(__name__)
+
+# CORS from config
+cors_cfg = server_cfg.get('cors', {}) if isinstance(server_cfg, dict) else {}
+if cors_cfg.get('enabled', True):
+    origins = cors_cfg.get('allow_origins', ['*'])
+    methods = cors_cfg.get('allow_methods', ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+    headers = cors_cfg.get('allow_headers', ['*'])
+    credentials = bool(cors_cfg.get('credentials', False))
+    expose_headers = cors_cfg.get('expose_headers', [])
+    try:
+        CORS(
+            app,
+            resources={r"/*": {"origins": origins}},
+            methods=methods,
+            allow_headers=headers,
+            supports_credentials=credentials,
+            expose_headers=expose_headers,
+        )
+    except Exception:
+        CORS(app)
 app.logger.setLevel(logging.DEBUG) # Set app logger to DEBUG
+
+# API prefix helper
+API_PREFIX = server_cfg.get('api_prefix', '/api')
+def API(path: str) -> str:
+    base = API_PREFIX or ''
+    if not base.startswith('/'):
+        base = '/' + base
+    base = base.rstrip('/')
+    if not path.startswith('/'):
+        path = '/' + path
+    return f"{base}{path}" if base else path
 
 # Initialize MetadataEngine
 db_path = config['database']['sqlite']['path']
@@ -66,11 +109,11 @@ metadata_engine = MetadataEngine(config, db_manager) # Pass config and db_manage
 def hello_world():
     return jsonify(message="Hello from SourceAnalyzer Backend!")
 
-@app.route('/api/health')
+@app.route(API('/health'))
 def health():
     return jsonify(status="healthy", timestamp=datetime.now().isoformat())
 
-@app.route('/api/metadata', methods=['GET'])
+@app.route(API('/metadata'), methods=['GET'])
 def get_metadata():
     try:
         metadata = metadata_engine.get_all_metadata()
@@ -79,7 +122,7 @@ def get_metadata():
         app.logger.error(f"Error fetching metadata: {e}")
         return jsonify(error=str(e)), 500
 
-@app.route('/api/metadata/<int:file_id>', methods=['GET'])
+@app.route(API('/metadata/<int:file_id>'), methods=['GET'])
 def get_metadata_by_file_id(file_id):
     try:
         metadata = metadata_engine.get_metadata_by_file_id(file_id)
@@ -90,7 +133,7 @@ def get_metadata_by_file_id(file_id):
         app.logger.error(f"Error fetching metadata for file_id {file_id}: {e}")
         return jsonify(error=str(e)), 500
 
-@app.route('/api/metadata/path', methods=['GET'])
+@app.route(API('/metadata/path'), methods=['GET'])
 def get_metadata_by_path():
     file_path = request.args.get('path')
     if not file_path:
@@ -104,7 +147,7 @@ def get_metadata_by_path():
         app.logger.error(f"Error fetching metadata for path {file_path}: {e}")
         return jsonify(error=str(e)), 500
 
-@app.route('/api/scan', methods=['POST'])
+@app.route(API('/scan'), methods=['POST'])
 def scan_project():
     data = request.get_json()
     project_path = data.get('project_path')
@@ -128,7 +171,7 @@ def scan_project():
         app.logger.error(f"Error during project scan for {project_path}: {e}")
         return jsonify(error=str(e)), 500
 
-@app.route('/api/docs/<category>/<doc_id>', methods=['GET'])
+@app.route(API('/docs/<category>/<doc_id>'), methods=['GET'])
 def get_documentation(category, doc_id):
     """Serve offline docs as pretty HTML by default.
 
@@ -189,11 +232,11 @@ def get_documentation(category, doc_id):
     app.logger.warning(f"Documentation not found for {category}/{doc_id}")
     return jsonify(message="Documentation not found"), 404
 
-@app.route('/api/docs/owasp/<code>')
+@app.route(API('/docs/owasp/<code>'))
 def get_owasp_doc(code):
     return get_documentation('owasp', code)
 
-@app.route('/api/docs/cwe/<code>')
+@app.route(API('/docs/cwe/<code>'))
 def get_cwe_doc(code):
     # normalize code like 89 -> CWE-89
     c = code.upper()

@@ -114,6 +114,24 @@ logging:
 server:
   host: "127.0.0.1"
   port: 8000
+  debug: true
+  api_prefix: "/api"
+  # Backend CORS settings
+  cors:
+    enabled: true
+    allow_origins: ["*"]
+    allow_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers: ["*"]
+    credentials: false
+    expose_headers: []
+  # Backend logging overrides (fallbacks to top-level logging if omitted)
+  log_file: "./logs/backend.log"
+  log_level: "DEBUG"
+  # Static file serving
+  static:
+    enabled: false
+    folder: "./web-dashboard/frontend/dist"
+    url_path: "/static"
 
 # LLM Assist (Phase1) — Optional overrides for providers
 llm_assist:
@@ -130,6 +148,22 @@ llm_assist:
   log_prompt: false
   dry_run: false
   fallback_to_ollama: true
+  enrich:
+    table_comments:
+      enabled: true
+      max_tables: 25
+    column_comments:
+      enabled: true
+      max_columns: 50
+    sql_summary:
+      enabled: true
+      max_items: 30
+    method_summary:
+      enabled: true
+      max_items: 30
+    jsp_summary:
+      enabled: true
+      max_items: 30
   # Provider details (override env when set)
   vllm_base_url: ${VLLM_ENDPOINT}
   vllm_api_key: ${VLLM_API_KEY}

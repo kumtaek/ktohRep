@@ -28,8 +28,14 @@ import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-PHASE1_SRC = REPO_ROOT / 'phase1' / 'src'
-sys.path.insert(0, str(PHASE1_SRC))
+# Ensure 'src' package is importable by adding its parent ('phase1') to sys.path
+PHASE1_ROOT = REPO_ROOT / 'phase1'
+if str(PHASE1_ROOT) not in sys.path:
+    sys.path.insert(0, str(PHASE1_ROOT))
+# Also add 'phase1/src' so modules importing 'models' directly resolve
+PHASE1_SRC_DIR = PHASE1_ROOT / 'src'
+if str(PHASE1_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(PHASE1_SRC_DIR))
 
 
 def run_java_parser(spec):
@@ -179,6 +185,60 @@ def run_engine_llm_assist(spec):
     return True
 
 DISPATCH['engine_llm_assist'] = run_engine_llm_assist
+
+
+def run_engine_augment_unit(spec):
+    """Unit-style test: call engine augmentation methods with sample JSON."""
+    from src.models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter
+    from src.database.metadata_engine import MetadataEngine
+    import tempfile, time
+    db_path = os.path.join(tempfile.gettempdir(), f"sa_spec_aug_{int(time.time())}.db")
+    cfg = {'database': {'type': 'sqlite', 'sqlite': {'path': db_path, 'wal_mode': False}}}
+    db = DatabaseManager(cfg)
+    db.initialize()
+    engine = MetadataEngine(cfg, db)
+    # Create a file row to attach artifacts
+    session = db.get_session()
+    try:
+        with session.begin():
+            f = File(project_id=1, path='tests/samples/java/ValidSimple.java', language='java')
+            session.add(f)
+            session.flush()
+            file_id = f.file_id
+    finally:
+        session.close()
+    target = (spec.get('params') or {}).get('target', 'java')
+    if target == 'java':
+        data = {"classes": [{"name": "Sample", "methods": [{"name": "run", "signature": "run()"}]}]}
+        added = engine._augment_java_from_json(file_id=file_id, data=data)
+        # Query back
+        session = db.get_session()
+        try:
+            clz = session.query(Class).filter(Class.file_id == file_id).count()
+            mtd = session.query(Method).join(Class).filter(Class.file_id == file_id).count()
+        finally:
+            session.close()
+        exp = spec.get('expected', {})
+        assert clz >= exp.get('classes_min', 1), f"classes {clz} < {exp.get('classes_min', 1)}"
+        assert mtd >= exp.get('methods_min', 1), f"methods {mtd} < {exp.get('methods_min', 1)}"
+    else:
+        # SQL augment
+        data = {"sql_units": [{"stmt_kind": "select", "tables": ["DUAL"], "joins": [], "filters": []}]}
+        added = engine._augment_sql_from_json(file_id=file_id, file_path='tests/samples/xml/mybatis_valid.xml', data=data)
+        session = db.get_session()
+        try:
+            su = session.query(SqlUnit).filter(SqlUnit.file_id == file_id).count()
+            jn = session.query(Join).join(SqlUnit).filter(SqlUnit.file_id == file_id).count()
+            flt = session.query(RequiredFilter).join(SqlUnit).filter(SqlUnit.file_id == file_id).count()
+        finally:
+            session.close()
+        exp = spec.get('expected', {})
+        assert su >= exp.get('sql_units_min', 1), f"sql_units {su} < {exp.get('sql_units_min', 1)}"
+        assert jn >= exp.get('joins_min', 0), f"joins {jn} < {exp.get('joins_min', 0)}"
+        assert flt >= exp.get('filters_min', 0), f"filters {flt} < {exp.get('filters_min', 0)}"
+    return True
+
+DISPATCH['engine_augment_unit'] = run_engine_augment_unit
 
 
 def load_specs():

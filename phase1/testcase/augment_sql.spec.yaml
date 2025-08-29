@@ -1,0 +1,8 @@
+name: Augment SQL from JSON inserts minimal artifacts
+kind: engine_augment_unit
+params:
+  target: sql
+expected:
+  sql_units_min: 1
+  joins_min: 0
+  filters_min: 0

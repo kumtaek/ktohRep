@@ -164,6 +164,12 @@ llm_assist:
     jsp_summary:
       enabled: true
       max_items: 30
+    join_infer:
+      enabled: true
+      max_items: 50
+    edge_hint:
+      enabled: true
+      max_items: 50
   # Provider details (override env when set)
   vllm_base_url: ${VLLM_ENDPOINT}
   vllm_api_key: ${VLLM_API_KEY}

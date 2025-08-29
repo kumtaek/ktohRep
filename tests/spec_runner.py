@@ -241,6 +241,96 @@ def run_engine_augment_unit(spec):
 DISPATCH['engine_augment_unit'] = run_engine_augment_unit
 
 
+def run_engine_llm_db_enrich(spec):
+    """Create minimal schema rows and run LLM enrichment (dry-run)."""
+    from src.models.database import DatabaseManager, DbTable, DbColumn, Join, SqlUnit
+    from src.database.metadata_engine import MetadataEngine
+    import tempfile, time
+    db_path = os.path.join(tempfile.gettempdir(), f"sa_spec_enrich_{int(time.time())}.db")
+    cfg = {
+        'database': {'type': 'sqlite', 'sqlite': {'path': db_path, 'wal_mode': False}},
+        'llm_assist': {'enabled': True, 'dry_run': True, 'provider': 'ollama'}
+    }
+    db = DatabaseManager(cfg)
+    db.initialize()
+    engine = MetadataEngine(cfg, db)
+    # Seed a table/column without comments and a simple join
+    session = db.get_session()
+    try:
+        with session.begin():
+            t1 = DbTable(owner='SAMPLE', table_name='USERS', status='VALID', table_comment=None)
+            session.add(t1)
+            session.flush()
+            c1 = DbColumn(table_id=t1.table_id, column_name='ID', data_type='NUMBER', nullable='N', column_comment=None)
+            session.add(c1)
+            t2 = DbTable(owner='SAMPLE', table_name='ORDERS', status='VALID', table_comment=None)
+            session.add(t2)
+            session.flush()
+            c2 = DbColumn(table_id=t2.table_id, column_name='USER_ID', data_type='NUMBER', nullable='N', column_comment=None)
+            session.add(c2)
+            su = SqlUnit(file_id=0, origin='mybatis', stmt_kind='select', normalized_fingerprint='test')
+            session.add(su)
+            session.flush()
+            j = Join(sql_id=su.sql_id, l_table='USERS', l_col='ID', op='=', r_table='ORDERS', r_col='USER_ID', inferred_pkfk=0)
+            session.add(j)
+    finally:
+        session.close()
+    # Enrich comments
+    _ = engine.llm_enrich_table_and_column_comments(max_tables=2, max_columns=2)
+    # Infer join keys (dry-run heuristic)
+    _ = engine.llm_infer_join_keys(max_items=1)
+    # Assert
+    session = db.get_session()
+    try:
+        t1c = session.query(DbTable).filter(DbTable.table_name == 'USERS').first()
+        t2c = session.query(DbTable).filter(DbTable.table_name == 'ORDERS').first()
+        assert t1c and (t1c.table_comment or '').strip(), 'table comment not enriched'
+        assert t2c and (t2c.table_comment or '').strip(), 'table comment not enriched'
+        join = session.query(Join).first()
+        assert join and join.inferred_pkfk == 1, 'join not inferred as pkfk'
+    finally:
+        session.close()
+    return True
+
+DISPATCH['engine_llm_db_enrich'] = run_engine_llm_db_enrich
+
+
+def run_engine_llm_jsp_summary(spec):
+    """Create File row for JSP and run JSP summary (dry-run)."""
+    from src.models.database import DatabaseManager, File, Summary
+    from src.database.metadata_engine import MetadataEngine
+    import tempfile, time
+    db_path = os.path.join(tempfile.gettempdir(), f"sa_spec_jsp_{int(time.time())}.db")
+    cfg = {
+        'database': {'type': 'sqlite', 'sqlite': {'path': db_path, 'wal_mode': False}},
+        'llm_assist': {'enabled': True, 'dry_run': True, 'provider': 'ollama', 'file_max_lines': 200}
+    }
+    db = DatabaseManager(cfg)
+    db.initialize()
+    engine = MetadataEngine(cfg, db)
+    # Seed a JSP file record
+    jsp_path = str((REPO_ROOT / 'tests' / 'samples' / 'jsp' / 'sample.jsp').resolve())
+    session = db.get_session()
+    try:
+        with session.begin():
+            f = File(project_id=1, path=jsp_path, language='jsp')
+            session.add(f)
+            session.flush()
+            file_id = f.file_id
+    finally:
+        session.close()
+    created = engine.llm_summarize_jsp_files(max_items=1)
+    session = db.get_session()
+    try:
+        s = session.query(Summary).filter(Summary.target_type == 'file', Summary.target_id == file_id).first()
+        assert s and (s.content or '').strip(), 'jsp summary not created'
+    finally:
+        session.close()
+    return True
+
+DISPATCH['engine_llm_jsp_summary'] = run_engine_llm_jsp_summary
+
+
 def load_specs():
     patterns = [
         REPO_ROOT / 'phase1' / 'testcase' / '**' / '*.spec.yaml',

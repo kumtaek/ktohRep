@@ -1,0 +1,12 @@
+{
+  "classes": [
+    {
+      "name": "Sample",
+      "methods": [
+        {
+          "name": "run"
+        }
+      ]
+    }
+  ]
+}

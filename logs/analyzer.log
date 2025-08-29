@@ -3987,3 +3987,6 @@ Traceback (most recent call last):
   File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
     raise JavaSyntaxError(description, at)
 javalang.parser.JavaSyntaxError
+2025-08-30 01:49:03,248 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 01:52:05,599 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 01:57:18,543 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567

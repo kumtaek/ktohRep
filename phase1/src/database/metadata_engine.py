@@ -23,7 +23,8 @@ from models.database import (
 )
 from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
 from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
-from llm.assist import LlmAssist
+from src.llm.assist import LlmAssist
+from src.llm.enricher import generate_text
 from llm.enricher import generate_text
 
 class MetadataEngine:
@@ -1000,7 +1001,18 @@ class MetadataEngine:
                 system = f"너는 SQL 분석 보조 AI다. 한국어({lang})로 한두 문장 요약을 작성하라."
                 jtxt = "; ".join([f"{j.l_table}.{j.l_col} {j.op} {j.r_table}.{j.r_col}" for j in joins if j.l_table and j.r_table])
                 ftxt = "; ".join([f"{f.table_name}.{f.column_name} {f.op} {f.value_repr}" for f in filters if f.column_name])
-                user = f"SQL 종류: {u.stmt_kind}\n조인: {jtxt or '없음'}\n필터: {ftxt or '없음'}\n"
+                # Try to include raw snippet when possible
+                snippet = ''
+                try:
+                    if getattr(u, 'start_line', None) and getattr(u, 'end_line', None) and getattr(u, 'file', None):
+                        path = u.file.path
+                        lines = open(path, 'r', encoding='utf-8', errors='ignore').read().splitlines()
+                        s = max(0, (u.start_line or 1) - 1)
+                        e = min(len(lines), (u.end_line or s + 1))
+                        snippet = "\n".join(lines[s:e])
+                except Exception:
+                    snippet = ''
+                user = f"SQL 종류: {u.stmt_kind}\n조인: {jtxt or '없음'}\n필터: {ftxt or '없음'}\n{('원문:\n'+snippet) if snippet else ''}"
                 try:
                     text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
                 except Exception as e:
@@ -1078,6 +1090,125 @@ class MetadataEngine:
                 created += 1
                 if created >= max_items:
                     break
+            session.commit()
+        return created
+
+    def llm_infer_join_keys(self, *, max_items: int = 50) -> int:
+        """조인 키 추론(LLM/휴리스틱)으로 Join.inferred_pkfk/ confidence 보강."""
+        updated = 0
+        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
+        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
+        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
+        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        default_owner = self.config.get('database', {}).get('default_schema') if isinstance(self.config, dict) else None
+
+        def _coerce_json(text: str):
+            import json as _json
+            try:
+                return _json.loads(text)
+            except Exception:
+                try:
+                    s = text.find('{'); e = text.rfind('}')
+                    if s != -1 and e != -1 and e > s:
+                        return _json.loads(text[s:e+1])
+                except Exception:
+                    return {}
+            return {}
+
+        with self._get_sync_session() as session:
+            joins = session.query(Join).filter(Join.inferred_pkfk == 0).limit(max_items * 3).all()
+            for j in joins:
+                if not (j.l_table and j.l_col and j.r_table and j.r_col):
+                    continue
+                ltab = j.l_table.upper(); rtab = j.r_table.upper()
+                # Load table meta
+                def _find_table(name: str):
+                    q = session.query(DbTable).filter(DbTable.table_name == name)
+                    return (q.filter(DbTable.owner == default_owner.upper()).first() if default_owner else q.first())
+                lt = _find_table(ltab); rt = _find_table(rtab)
+                lcols = [c.column_name for c in getattr(lt, 'columns', [])] if lt else []
+                rcols = [c.column_name for c in getattr(rt, 'columns', [])] if rt else []
+                lpk = [p.column_name for p in getattr(lt, 'pk_columns', [])] if lt else []
+                rpk = [p.column_name for p in getattr(rt, 'pk_columns', [])] if rt else []
+
+                if dry_run:
+                    # Heuristic suitable for CI
+                    l_name = (j.l_col or '').lower(); r_name = (j.r_col or '').lower()
+                    likely = (l_name == 'id') or (r_name == 'id') or l_name.endswith('_id') or r_name.endswith('_id')
+                    if likely:
+                        j.inferred_pkfk = 1
+                        j.confidence = min(1.0, (j.confidence or 0.6) + 0.2)
+                        updated += 1
+                    if updated >= max_items:
+                        break
+                    continue
+
+                # LLM prompt
+                system = (
+                    "너는 데이터베이스 조인 분석기다. 주어진 두 테이블과 조인 조건을 보고 PK-FK 방향을 판단하고, "
+                    "엄격한 JSON만 출력하라. 설명/문장은 금지."
+                )
+                user = (
+                    f"LEFT: {ltab} (pk={lpk}) cols={lcols}\n"
+                    f"RIGHT: {rtab} (pk={rpk}) cols={rcols}\n"
+                    f"JOIN: {j.l_table}.{j.l_col} {j.op or '='} {j.r_table}.{j.r_col}\n"
+                    "스키마: {\n  \"pk_table\": str, \"pk_column\": str, \n  \"fk_table\": str, \"fk_column\": str, \n  \"confidence\": 0.0..1.0\n}"
+                )
+                try:
+                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens)
+                    data = _coerce_json(text if isinstance(text, str) else str(text))
+                    pk_table = (data.get('pk_table') or '').upper()
+                    pk_column = (data.get('pk_column') or '').upper()
+                    fk_table = (data.get('fk_table') or '').upper()
+                    fk_column = (data.get('fk_column') or '').upper()
+                    conf = float(data.get('confidence', 0.6))
+                    # Sanity check alignment with join
+                    sides_ok = {
+                        (j.l_table.upper(), j.l_col.upper(), j.r_table.upper(), j.r_col.upper()),
+                        (j.r_table.upper(), j.r_col.upper(), j.l_table.upper(), j.l_col.upper()),
+                    }
+                    if (pk_table, pk_column, fk_table, fk_column) in sides_ok or (fk_table, fk_column, pk_table, pk_column) in sides_ok:
+                        j.inferred_pkfk = 1
+                        j.confidence = max(j.confidence or 0.6, min(1.0, conf))
+                        updated += 1
+                except Exception as e:
+                    self.logger.debug(f"LLM join infer skipped: {j.l_table}.{j.l_col} ~ {j.r_table}.{j.r_col}: {e}")
+                if updated >= max_items:
+                    break
+            session.commit()
+        return updated
+
+    def llm_suggest_edge_hints_for_unresolved_calls(self, *, max_items: int = 50) -> int:
+        """해소되지 않은 메소드 호출 Edge에 대해 LLM/휴리스틱 힌트(EdgeHint) 생성."""
+        created = 0
+        with self._get_sync_session() as session:
+            unresolved = session.query(Edge).filter(and_(Edge.edge_kind == 'call', Edge.dst_id.is_(None))).limit(max_items * 3).all()
+            for e in unresolved:
+                if created >= max_items:
+                    break
+                # Extract called name from meta if present
+                called_name = None
+                try:
+                    if getattr(e, 'meta', None):
+                        import json as _json
+                        md = _json.loads(e.meta)
+                        called_name = md.get('called_name')
+                except Exception:
+                    called_name = None
+                if not called_name:
+                    continue
+                from models.database import EdgeHint
+                hint = {"called_name": called_name}
+                row = EdgeHint(
+                    project_id=1,  # unknown here; left as 1 for hint bucket
+                    src_type=e.src_type,
+                    src_id=e.src_id or 0,
+                    hint_type='method_call',
+                    hint=json.dumps(hint, ensure_ascii=False),
+                    confidence=0.4,
+                )
+                session.add(row)
+                created += 1
             session.commit()
         return created
 

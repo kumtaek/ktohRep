@@ -7,8 +7,8 @@ from typing import Any, Dict, Optional, Tuple
 
 from .client import get_client
 from . import prompt_templates as T
-from ..utils.confidence_calculator import ConfidenceCalculator
-from ..models.database import EnrichmentLog
+from src.utils.confidence_calculator import ConfidenceCalculator
+from src.models.database import EnrichmentLog
 
 
 @dataclass

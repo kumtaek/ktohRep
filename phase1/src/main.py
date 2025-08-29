@@ -82,7 +82,9 @@ class SourceAnalyzer:
         """설정 파일 로드 (개선된 예외 처리)"""
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
+                raw = f.read()
+            # 환경변수 치환 지원 (${VAR})
+            config = yaml.safe_load(os.path.expandvars(raw))
                 
             # 기본값 설정
             self._set_default_config(config)

@@ -2723,3 +2723,22 @@ Traceback (most recent call last):
   File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
     raise JavaSyntaxError(description, at)
 javalang.parser.JavaSyntaxError
+2025-08-29 14:58:18,130 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError

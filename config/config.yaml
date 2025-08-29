@@ -51,7 +51,8 @@ llm:
   enabled: true
   base_model: "qwen2.5-7b"
   fallback_model: "qwen2.5-32b"
-  vllm_endpoint: "http://localhost:8000"
+  # 환경변수로 주입 권장: set VLLM_ENDPOINT=http://<HOST>:<PORT>
+  vllm_endpoint: "${VLLM_ENDPOINT}"
   temperature: 0.0
   max_tokens: 2048
   

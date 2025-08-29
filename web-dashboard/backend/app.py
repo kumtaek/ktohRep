@@ -33,10 +33,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware (configurable via env for closed networks)
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "").strip()
+if allowed_origins_env:
+    allowed_origins = [o.strip() for o in allowed_origins_env.split(',') if o.strip()]
+else:
+    allowed_origins = []  # default minimal exposure
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React dev servers
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -129,10 +135,13 @@ async def startup_event():
         repo_root = Path(__file__).parent.parent.parent
         project_dir = repo_root / "PROJECT"
         dbschema_dir = repo_root / "DB_SCHEMA"
+        docs_dir = repo_root / "doc"
         if project_dir.exists():
             app.mount("/project", StaticFiles(directory=str(project_dir)), name="project")
         if dbschema_dir.exists():
             app.mount("/dbschema", StaticFiles(directory=str(dbschema_dir)), name="dbschema")
+        if docs_dir.exists():
+            app.mount("/docs", StaticFiles(directory=str(docs_dir)), name="docs")
 
         print("✅ Source Analyzer Dashboard API initialized successfully")
         
@@ -478,6 +487,49 @@ async def open_owasp_doc(code: str):
     url = owasp_map.get(code_u, 'https://owasp.org/www-project-top-ten/')
     return RedirectResponse(url=url)
 
+@app.get("/api/docs/owasp/{code}", tags=["Docs"])
+async def get_owasp_doc_local(code: str):
+    """OWASP 문서를 로컬에서 제공 (doc/owasp). 부재 시 외부로 안내."""
+    code_u = code.upper()
+    repo_root = Path(__file__).parent.parent.parent
+    owasp_md = repo_root / 'doc' / 'owasp' / f"{code_u}.md"
+    if owasp_md.exists():
+        return FileResponse(str(owasp_md))
+    # fallback: redirect to OWASP site
+    owasp_map = {
+        'A01': 'https://owasp.org/Top10/A01_2021-Broken_Access_Control/',
+        'A02': 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/',
+        'A03': 'https://owasp.org/Top10/A03_2021-Injection/',
+        'A04': 'https://owasp.org/Top10/A04_2021-Insecure_Design/',
+        'A05': 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/',
+        'A06': 'https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/',
+        'A07': 'https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/',
+        'A08': 'https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/',
+        'A09': 'https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/',
+        'A10': 'https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/'
+    }
+    url = owasp_map.get(code_u, 'https://owasp.org/www-project-top-ten/')
+    return RedirectResponse(url=url)
+
+@app.get("/api/docs/cwe/{code}", tags=["Docs"])
+async def get_cwe_doc_local(code: str):
+    """CWE 문서를 로컬에서 제공 (doc/cwe). 부재 시 외부로 안내."""
+    code_u = code.upper()
+    repo_root = Path(__file__).parent.parent.parent
+    if not code_u.startswith('CWE-'):
+        code_u = f"CWE-{code_u}"
+    cwe_md = repo_root / 'doc' / 'cwe' / f"{code_u}.md"
+    if cwe_md.exists():
+        return FileResponse(str(cwe_md))
+    try:
+        cwe_num = code_u.split('-')[1]
+    except Exception:
+        cwe_num = code_u
+    return RedirectResponse(url=f"https://cwe.mitre.org/data/definitions/{cwe_num}.html")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    reload = os.getenv("RELOAD", "false").lower() in {"1","true","yes"}
+    uvicorn.run(app, host=host, port=port, reload=reload)

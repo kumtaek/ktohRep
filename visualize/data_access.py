@@ -28,7 +28,10 @@ class VizDB:
         """Load configuration from YAML file"""
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f)
+                raw = f.read()
+            # Allow environment variable substitution like ${VAR}
+            expanded = os.path.expandvars(raw)
+            return yaml.safe_load(expanded)
         except Exception as e:
             print(f"경고: 설정 파일을 불러올 수 없습니다: {config_path} ({e})")
             # Return default SQLite config

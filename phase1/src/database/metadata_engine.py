@@ -319,34 +319,47 @@ class MetadataEngine:
             
             saved_counts = {'files': 1, 'classes': 0, 'methods': 0, 'edges': 0}
             
-            # 클래스 저장
+            # 클래스 저장 및 FQN 매핑
+            fqn_to_class_id = {}
             for class_obj in classes:
                 class_obj.file_id = file_obj.file_id
                 session.add(class_obj)
                 session.flush()
+                try:
+                    if class_obj.fqn:
+                        fqn_to_class_id[class_obj.fqn] = class_obj.class_id
+                except Exception:
+                    pass
                 
                 # 해당 클래스의 메서드들 저장
-                class_methods = [m for m in methods if m.class_id is None]  # 임시로 None인 것들
-                for method_obj in class_methods[:len(class_methods)//len(classes) if classes else 0]:
+                class_methods = [m for m in methods if getattr(m, 'owner_fqn', None) == class_obj.fqn]
+                for method_obj in class_methods:
                     method_obj.class_id = class_obj.class_id
                     session.add(method_obj)
+                    session.flush()
+                    # 메서드 기원 엣지의 src_id 채우기(호출관계 저장용)
+                    for e in [e for e in edges if e.src_type == 'method' and e.src_id is None]:
+                        e.src_id = method_obj.method_id
                     
                 saved_counts['classes'] += 1
                 
             saved_counts['methods'] = len(methods)
             
-            # 의존성 엣지 저장 (유효한 엣지만)
+            # 의존성 엣지 저장: call 엣지는 dst 미해결 상태도 저장
             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
-            valid_edges = [edge for edge in edges 
-                          if edge.src_id is not None and edge.dst_id is not None 
-                          and edge.src_id != 0 and edge.dst_id != 0
-                          and edge.confidence >= confidence_threshold]
-            
-            self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
-            
-            for edge in valid_edges:
-                session.add(edge)
-                saved_counts['edges'] += 1
+            count_edges = 0
+            for edge in edges:
+                if edge.edge_kind == 'call':
+                    session.add(edge)
+                    count_edges += 1
+                else:
+                    if (edge.src_id is not None and edge.dst_id is not None 
+                        and edge.src_id != 0 and edge.dst_id != 0
+                        and edge.confidence >= confidence_threshold):
+                        session.add(edge)
+                        count_edges += 1
+            saved_counts['edges'] += count_edges
+            self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 저장 엣지: {count_edges}")
                 
             session.commit()
             return saved_counts
@@ -483,7 +496,8 @@ class MetadataEngine:
             
     async def _resolve_method_calls(self, session, project_id: int):
         """메서드 호출 관계 해결"""
-        
+        from ..models.database import EdgeHint, Method, Class, File
+        import json as _json
         # 미해결된 메서드 호출 엣지들 조회
         unresolved_calls = session.query(Edge).filter(
             and_(
@@ -501,7 +515,29 @@ class MetadataEngine:
                 
                 if src_method:
                     # 같은 프로젝트 내에서 호출 대상 메서드 찾기
-                    called_method_name = getattr(edge, 'metadata', {}).get('called_method_name', '')
+                    called_method_name = ''
+                    # 1) Edge.metadata(JSON) 우선 사용
+                    try:
+                        if getattr(edge, 'meta', None):
+                            md = _json.loads(edge.meta)
+                            called_method_name = md.get('called_name', '')
+                    except Exception:
+                        called_method_name = ''
+                    # 2) EdgeHint 보조 사용
+                    if not called_method_name:
+                        hint_row = session.query(EdgeHint).filter(
+                            and_(
+                                EdgeHint.project_id == project_id,
+                                EdgeHint.src_type == 'method',
+                                EdgeHint.src_id == src_method.method_id,
+                                EdgeHint.hint_type == 'method_call'
+                            )
+                        ).order_by(EdgeHint.created_at.desc()).first()
+                        if hint_row:
+                            try:
+                                called_method_name = _json.loads(hint_row.hint).get('called_name', '')
+                            except Exception:
+                                called_method_name = ''
                     
                     if called_method_name:
                         # 1) 동일 클래스 내 메서드 우선 검색

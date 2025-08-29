@@ -70,6 +70,8 @@ class Method(Base):
     start_line = Column(Integer)
     end_line = Column(Integer)
     annotations = Column(Text)  # JSON array of annotations
+    parameters = Column(Text)   # JSON or string-joined parameter list
+    modifiers = Column(Text)    # JSON array of modifiers
     
     # Relationships
     class_ = relationship("Class", back_populates="methods")
@@ -146,6 +148,13 @@ class Edge(Base):
     dst_id = Column(Integer, nullable=True)  # Allow NULL for unresolved edges
     edge_kind = Column(String(50), nullable=False)  # call, use_table, use_column, etc.
     confidence = Column(Float, default=1.0)
+    meta = Column(Text)  # JSON metadata for hints (e.g., called_name)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Recommended indexes for performance
+Index('ix_edges_src', Edge.src_type, Edge.src_id)
+Index('ix_edges_dst', Edge.dst_type, Edge.dst_id)
+Index('ix_edges_kind', Edge.edge_kind)
 
 class Join(Base):
     __tablename__ = 'joins'
@@ -228,6 +237,15 @@ class Embedding(Base):
     
     # Relationships
     chunk = relationship("Chunk", back_populates="embedding")
+
+# (Optional) Java import declarations to assist resolution
+class JavaImport(Base):
+    __tablename__ = 'java_imports'
+    
+    import_id = Column(Integer, primary_key=True)
+    file_id = Column(Integer, ForeignKey('files.file_id'), nullable=False)
+    class_fqn = Column(Text)  # imported FQN
+    static = Column(Integer, default=0)
 
 class EdgeHint(Base):
     """Edge hints for resolving relationships during build phase"""

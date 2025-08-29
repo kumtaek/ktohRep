@@ -47,6 +47,12 @@ class JavaParser:
         """
         self.config = config
         self.confidence_calc = ConfidenceCalculator(config)
+        # logger
+        try:
+            from ..utils.logger import LoggerFactory
+            self.logger = LoggerFactory.get_parser_logger("java")
+        except Exception:
+            self.logger = None
         
         # Tree-sitter 파서 초기화
         self.tree_sitter_parser = None
@@ -56,7 +62,10 @@ class JavaParser:
                 self.tree_sitter_parser = Parser()
                 self.tree_sitter_parser.set_language(self.java_language)
             except Exception as e:
-                print(f"Tree-sitter 초기화 실패: {e}")
+                if self.logger:
+                    self.logger.warning(f"Tree-sitter 초기화 실패: {e}")
+                else:
+                    print(f"Tree-sitter 초기화 실패: {e}")
                 self.tree_sitter_parser = None
         
     def can_parse(self, file_path: str) -> bool:
@@ -119,7 +128,10 @@ class JavaParser:
             parser_used = _select_parser()
             if parser_used == 'none':
                 # 로깅 후 빈 결과 반환
-                print('No available Java parser (javalang/tree-sitter)')
+                if self.logger:
+                    self.logger.warning('No available Java parser (javalang/tree-sitter)')
+                else:
+                    print('No available Java parser (javalang/tree-sitter)')
                 return file_obj, [], [], []
 
             # Java AST 파싱
@@ -132,7 +144,10 @@ class JavaParser:
                     tree = None
             except Exception as e:
                 # 파싱 실패 시 낮은 신뢰도로 파일 생성
-                print(f"파일 파싱 실패 {file_path}: {e}")
+                if self.logger:
+                    self.logger.error(f"파일 파싱 실패: {file_path}", exception=e)
+                else:
+                    print(f"파일 파싱 실패 {file_path}: {e}")
                 return file_obj, [], [], []
                 
             classes = []
@@ -167,7 +182,10 @@ class JavaParser:
             return file_obj, classes, methods, edges
             
         except Exception as e:
-            print(f"Error parsing file {file_path}: {e}")
+            if self.logger:
+                self.logger.error(f"Java 파싱 중 오류: {file_path}", exception=e)
+            else:
+                print(f"Error parsing file {file_path}: {e}")
             return file_obj, [], [], []
             
     def _extract_class(self, node: javalang.tree.ClassDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
@@ -372,13 +390,18 @@ class JavaParser:
             end_line=end_line,
             annotations=json.dumps(annotations)
         )
+        # 저장 단계 매핑용 임시 속성
+        try:
+            setattr(method_obj, 'owner_fqn', class_obj.fqn)
+        except Exception:
+            pass
         
         edges = []
         
         # 메서드 본문에서 호출 관계 추출
         if node.body:
             method_calls = self._extract_method_calls(node.body)
-            for call in method_calls:
+            for called_name in method_calls:
                 call_edge = Edge(
                     src_type='method',
                     src_id=None,  # Will be set after method is saved
@@ -387,6 +410,11 @@ class JavaParser:
                     edge_kind='call',
                     confidence=0.8  # 메서드 호출은 대체로 명확함
                 )
+                # 메타데이터(JSON) 또는 보조 힌트로 저장
+                try:
+                    setattr(call_edge, 'meta', json.dumps({ 'called_name': called_name }))
+                except Exception:
+                    setattr(call_edge, 'called_method_name', called_name)
                 edges.append(call_edge)
                 
         return method_obj, edges
@@ -423,6 +451,11 @@ class JavaParser:
             end_line=end_line,
             annotations=json.dumps(annotations)
         )
+        # 저장 단계 매핑용 임시 속성
+        try:
+            setattr(constructor_obj, 'owner_fqn', class_obj.fqn)
+        except Exception:
+            pass
         
         edges = []
         
@@ -598,7 +631,10 @@ class JavaParser:
             tree = self.tree_sitter_parser.parse(bytes(content, 'utf8'))
             return tree
         except Exception as e:
-            print(f"Tree-sitter 파싱 오류: {e}")
+            if self.logger:
+                self.logger.error("Tree-sitter 파싱 오류", exception=e)
+            else:
+                print(f"Tree-sitter 파싱 오류: {e}")
             return None
             
     def _extract_with_tree_sitter(self, tree, file_obj: File, content: str) -> Tuple[List[Class], List[Method], List[Edge]]:
@@ -622,12 +658,20 @@ class JavaParser:
             
         # 코드를 라인별로 분할
         lines = content.split('\n')
-        
+
+        # 패키지명 추출
+        pkg_nodes = self._find_nodes_by_type(tree.root_node, 'package_declaration')
+        package_name = None
+        if pkg_nodes:
+            ids = self._find_nodes_by_type(pkg_nodes[0], 'scoped_identifier') or self._find_nodes_by_type(pkg_nodes[0], 'identifier')
+            if ids:
+                package_name = self._get_node_text(ids[0], lines)
+
         # 클래스 선언 찾기
         class_nodes = self._find_nodes_by_type(tree.root_node, 'class_declaration')
         for class_node in class_nodes:
             class_obj, class_methods, class_edges = self._extract_class_from_tree_sitter(
-                class_node, file_obj, lines
+                class_node, file_obj, lines, package_name
             )
             if class_obj:
                 classes.append(class_obj)
@@ -679,7 +723,7 @@ class JavaParser:
             
         return results
     
-    def _extract_class_from_tree_sitter(self, class_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+    def _extract_class_from_tree_sitter(self, class_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
         """
         Tree-sitter 노드에서 클래스 정보 추출
         """
@@ -703,12 +747,12 @@ class JavaParser:
             # 클래스 객체 생성
             class_obj = Class(
                 file_id=None,
-                fqn=class_name,  # 더 정교하게 배포 정보를 추얤야 함
+                fqn=f"{package_name}.{class_name}" if package_name else class_name,
                 name=class_name,
                 start_line=start_line,
                 end_line=end_line,
-                modifiers=json.dumps([]),  # Tree-sitter에서 modifier 추출 어려움
-                annotations=json.dumps([])
+                modifiers=json.dumps(self._extract_modifiers(class_node, lines)),
+                annotations=json.dumps(self._extract_annotations_ts(class_node, lines))
             )
             
             methods = []
@@ -737,7 +781,10 @@ class JavaParser:
             return class_obj, methods, edges
             
         except Exception as e:
-            print(f"Tree-sitter 클래스 추출 오류: {e}")
+            if self.logger:
+                self.logger.error("Tree-sitter 클래스 추출 오류", exception=e)
+            else:
+                print(f"Tree-sitter 클래스 추출 오류: {e}")
             return None, [], []
             
     def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
@@ -775,17 +822,33 @@ class JavaParser:
             start_line = method_node.start_point[0] + 1
             end_line = method_node.end_point[0] + 1
             
+            # 반환 타입 및 파라미터 시그니처 추출
+            ret_nodes = [c for c in method_node.children if c.type == 'type']
+            return_type = self._get_node_text(ret_nodes[0], lines) if ret_nodes else 'void'
+            params = []
+            for plist in [c for c in method_node.children if c.type == 'formal_parameters']:
+                for p in self._find_nodes_by_type(plist, 'formal_parameter'):
+                    tnode = self._find_nodes_by_type(p, 'type')
+                    pname = self._find_nodes_by_type(p, 'identifier')
+                    if tnode and pname:
+                        params.append(f"{self._get_node_text(tnode[0], lines)} {self._get_node_text(pname[0], lines)}")
+            signature = f"{method_name}({', '.join(params)})"
+
             # 메서드 객체 생성
             method_obj = Method(
                 class_id=None,  # 나중에 설정
                 name=method_name,
-                signature=method_name,  # 더 정교하게 시그니처 추출 필요
+                signature=signature,
                 start_line=start_line,
                 end_line=end_line,
-                return_type='unknown',  # Tree-sitter에서 반환 타입 추출 어려움
+                return_type=return_type,
                 parameters='',
                 modifiers=json.dumps([])
             )
+            try:
+                setattr(method_obj, 'owner_fqn', class_obj.fqn)
+            except Exception:
+                pass
             
             edges = []
             # 메서드 호출 관계 추출도 가능하지만 복잡하므로 생략
@@ -793,8 +856,32 @@ class JavaParser:
             return method_obj, edges
             
         except Exception as e:
-            print(f"Tree-sitter 메서드 추출 오류: {e}")
+            if self.logger:
+                self.logger.error("Tree-sitter 메서드 추출 오류", exception=e)
+            else:
+                print(f"Tree-sitter 메서드 추출 오류: {e}")
             return None, []
+
+    def _extract_modifiers(self, node, lines: List[str]) -> List[str]:
+        mods: List[str] = []
+        # Tree-sitter 자바 grammar에 맞춰 modifiers 노드 탐색
+        for child in getattr(node, 'children', []):
+            if child.type == 'modifiers':
+                for m in getattr(child, 'children', []):
+                    try:
+                        mods.append(self._get_node_text(m, lines))
+                    except Exception:
+                        continue
+        return mods
+
+    def _extract_annotations_ts(self, node, lines: List[str]) -> List[str]:
+        anns: List[str] = []
+        for a in self._find_nodes_by_type(node, 'annotation'):
+            try:
+                anns.append(self._get_node_text(a, lines))
+            except Exception:
+                continue
+        return anns
             
     def _extract_constructor_from_tree_sitter(self, constructor_node, class_obj: Class, lines: List[str]) -> Tuple[Optional[Method], List[Edge]]:
         """

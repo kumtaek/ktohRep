@@ -214,3 +214,39 @@ Source Analyzer는 지속적으로 발전할 예정이며, 다음 단계에서�
     *   `Tree-sitter`를 도입하여 Python, JavaScript, TypeScript, C#, Go 등 더 많은 프로그래밍 언어에 대한 파싱을 지원하고, 언어별 특성을 고려한 메타데이터 추출을 강화합니다.
 *   **고급 취약점 분석**:
     *   `security` 모듈을 강화하여 OWASP Top 10과 같은 일반적인 웹 취약점 패턴(예: SQL Injection, XSS, Broken Access Control)을 소스 코드에서 더욱 정밀하게 탐지하고, 상세한 보고서와 함께 수정 가이드를 제공합니다.
+
+## 8. 웹 대시보드: Export / 원본 열기 / 재분석 (Phase1 트리거)
+
+- 백엔드 기동: `cd web-dashboard/backend && uvicorn app:app --reload`
+- 프론트엔드 기동: `cd web-dashboard/frontend && npm install && npm run dev`
+
+### 8.1 Export (CSV/TXT)
+- `/api/export/classes.csv?project_id=1`
+- `/api/export/methods.csv?project_id=1`
+- `/api/export/sql.csv?project_id=1`
+- `/api/export/edges.csv`
+
+### 8.2 원본 파일 열기
+- 다운로드: `/api/file/download?path=/project/<상대경로>` 또는 절대경로
+- 정적 마운트: 서버 초기화 시 `PROJECT/`, `DB_SCHEMA/` 폴더가 존재하면 `/project`, `/dbschema`로 서비스됨
+
+### 8.3 OWASP / CWE 문서 열기
+- `/api/open/owasp/A03`
+- `/api/open/owasp/CWE-89`
+
+### 8.4 Phase1 재분석 트리거(변경 동기화)
+- API:
+```json
+{
+  "project_path": "PROJECT/sampleSrc",
+  "project_name": "샘플",
+  "incremental": true,
+  "include_ext": ".java,.jsp,.xml",
+  "include_dirs": "src/main/java,src/main/webapp"
+}
+```
+- CLI:
+```bash
+python phase1/src/main.py PROJECT/sampleSrc --project-name 샘플 \
+  --include-ext .java,.jsp,.xml --include-dirs src/main/java,src/main/webapp
+```

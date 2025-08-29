@@ -719,6 +719,8 @@ def main():
     parser.add_argument('--project-name', help='프로젝트 이름 (기본값: 폴더명)')
     parser.add_argument('--incremental', action='store_true', 
                        help='증분 분석 모드 (변경된 파일만 분석)')
+    parser.add_argument('--include-ext', help='포함할 파일 확장자 목록(콤마 구분). 예: .java,.jsp,.xml')
+    parser.add_argument('--include-dirs', help='포함할 하위 디렉토리 목록(콤마 구분). 예: src/main/java,src/main/webapp')
     parser.add_argument('--verbose', '-v', action='store_true', 
                        help='상세 로그 출력')
     parser.add_argument('--quiet', '-q', action='store_true', 
@@ -830,6 +832,21 @@ def main():
         
         # 프로젝트 분석 실행
         print(f"프로젝트 분석 시작: {args.project_path}")
+        # 런타임 파일 패턴 오버라이드 적용
+        if args.include_ext or args.include_dirs:
+            fps = analyzer.config.setdefault('file_patterns', {})
+            include: List[str] = []
+            if args.include_ext:
+                for ext in [x.strip() for x in args.include_ext.split(',') if x.strip()]:
+                    if not ext.startswith('.'):
+                        ext = '.' + ext
+                    include.append(f"**/*{ext}")
+            if args.include_dirs:
+                for d in [x.strip() for x in args.include_dirs.split(',') if x.strip()]:
+                    include.extend([f"{d}/**/*.java", f"{d}/**/*.jsp", f"{d}/**/*.xml"])
+            if include:
+                fps['include'] = include
+
         result = asyncio.run(analyzer.analyze_project(
             args.project_path, 
             args.project_name,

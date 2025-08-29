@@ -593,6 +593,14 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
+        # logger 주입 또는 기본 로거
+        self.logger = config.get('logger') if isinstance(config, dict) else None
+        if not self.logger:
+            try:
+                from ..utils.logger import LoggerFactory
+                self.logger = LoggerFactory.get_parser_logger("jsp_mybatis")
+            except Exception:
+                self.logger = None
         self.confidence_calc = ConfidenceCalculator(config)
         self.sql_injection_detector = SqlInjectionDetector()
         self.xss_detector = XssDetector()
@@ -689,7 +697,10 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             return file_obj, sql_units, joins, filters, edges, vulnerabilities
                 
         except Exception as e:
-            print(f"파일 파싱 오류 {file_path}: {e}")
+            if self.logger:
+                self.logger.error(f"파일 파싱 오류: {file_path}", exception=e)
+            else:
+                print(f"파일 파싱 오류 {file_path}: {e}")
             return file_obj, [], [], [], [], []
             
     def _parse_jsp(self, content: str, file_obj: File) -> Tuple[File, List[SqlUnit], List[Join], List[RequiredFilter], List[Edge]]:
@@ -852,7 +863,10 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             edges.extend(include_edges)
             
         except Exception as e:
-            print(f"XML 파싱 오류: {e}")
+            if self.logger:
+                self.logger.error("XML 파싱 오류", exception=e)
+            else:
+                print(f"XML 파싱 오류: {e}")
             
         return file_obj, sql_units, joins, filters, edges
     
@@ -913,7 +927,10 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 filters.extend(self._extract_filters_from_statement(statement, sql_unit))
                 
         except Exception as e:
-            print(f"고급 SQL 패턴 추출 오류: {e}")
+            if self.logger:
+                self.logger.debug(f"고급 SQL 패턴 추출 오류: {e}")
+            else:
+                print(f"고급 SQL 패턴 추출 오류: {e}")
             # 실패시 기본 정규식 방법으로 폴백
             return self._extract_sql_patterns_regex(sql_content, sql_unit)
             
@@ -935,6 +952,17 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                         joins.append(join_info)
         
         find_joins(statement.tokens)
+        # 토큰 기반으로 찾지 못한 경우 문자열 기반 폴백으로 ON 절에서 조건 추출
+        if not joins:
+            try:
+                stmt_text = str(statement)
+                for m in re.finditer(r"\bON\b\s+([^\n]+)", stmt_text, re.IGNORECASE):
+                    cond_text = m.group(1)
+                    j = self._parse_join_condition(cond_text)
+                    if j:
+                        joins.append(j)
+            except Exception:
+                pass
         return joins
     
     def _extract_filters_from_statement(self, statement, sql_unit) -> List[RequiredFilter]:
@@ -966,7 +994,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             confidence += 0.1
         
         # 정적 문자열이면 신뢰도 향상
-        if sql_content.count('"') >= 2 or sql_content.count("'"') >= 2:
+        if sql_content.count('"') >= 2 or sql_content.count("'") >= 2:
             confidence += 0.1
         
         return min(1.0, max(0.1, confidence))
@@ -1127,7 +1155,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         # v5.2: bind 변수 처리
         normalized = re.sub(r'\$\{[^}]*\bparam\w*\b[^}]*\}', '${BIND_PARAM}', normalized)
         
-        normalized = re.sub(r'\'[^\\]*\'',''VALUE''', normalized)  # SQL 문자열 리터럴 '원본값' -> 'VALUE'
+        # SQL 문자열 리터럴 '원본값' -> 'VALUE'
+        normalized = re.sub(r"'[^\\]*'", "'VALUE'", normalized)
         normalized = re.sub(r'\b\d+\b', 'NUMBER', normalized)  # 숫자 리터럴 123 -> NUMBER
         
         # v5.2: UNRESOLVED INCLUDE 표시 정규화
@@ -1197,19 +1226,72 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                         filters.append(filter_obj)
         
         except Exception as e:
-            print(f"정규식 기반 SQL 패턴 추출 오류: {e}")
+            if self.logger:
+                self.logger.debug(f"정규식 기반 SQL 패턴 추출 오류: {e}")
+            else:
+                print(f"정규식 기반 SQL 패턴 추출 오류: {e}")
         
         return joins, filters
     
     def _parse_join_condition(self, tokens) -> Optional[Join]:
-        """JOIN 조건 파싱 (간단 구현)"""
-        # 실제 구현은 더 복잡해야 함
-        return None
+        """JOIN 조건 파싱 (정규식 기반 1차 고도화)"""
+        try:
+            text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
+            text = re.sub(r"\s+", " ", text)
+            m = re.search(r"([\w\.]+)\s*\.\s*(\w+)\s*(=|!=|>=|<=|<>|<|>)\s*([\w\.]+)\s*\.\s*(\w+)", text, re.I)
+            if not m:
+                return None
+            l_table_raw, l_col, op, r_table_raw, r_col = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
+            j = Join(
+                sql_id=None,
+                l_table=self._normalize_table_name(l_table_raw),
+                l_col=l_col,
+                op=op,
+                r_table=self._normalize_table_name(r_table_raw),
+                r_col=r_col,
+                confidence=0.8
+            )
+            return j
+        except Exception as e:
+            if self.logger:
+                self.logger.debug(f"JOIN 파싱 실패: {e}")
+            return None
     
     def _parse_where_conditions(self, tokens) -> List[RequiredFilter]:
-        """WHERE 조건 파싱 (간단 구현)"""
-        # 실제 구현은 더 복잡해야 함
-        return []
+        """WHERE 조건 파싱 (정규식 기반 1차 고도화)"""
+        results: List[RequiredFilter] = []
+        try:
+            text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
+            # 조건 분할(단순 AND 분해)
+            parts = re.split(r"\bAND\b", text, flags=re.I)
+            for p in parts:
+                p = p.strip()
+                if not p:
+                    continue
+                # table.col op value
+                m = re.search(r"([\w\.]+)\s*\.\s*(\w+)\s*(=|!=|>=|<=|<>|<|>|LIKE)\s*(.+)$", p, re.I)
+                if not m:
+                    continue
+                t_raw, col, op, rhs = m.group(1), m.group(2), m.group(3).upper(), m.group(4).strip()
+                # 값 표현 정규화(:param, #{}, ${}, 'N', 숫자 등)
+                rhs = re.sub(r":\w+", ":PARAM", rhs)
+                rhs = re.sub(r"#\{[^}]+\}", "#{PARAM}", rhs)
+                rhs = re.sub(r"\$\{[^}]+\}", "${PARAM}", rhs)
+                # 리터럴 따옴표 제거(보수적으로)
+                rhs = rhs.strip().strip("'\"")
+                results.append(RequiredFilter(
+                    sql_id=None,
+                    table_name=self._normalize_table_name(t_raw),
+                    column_name=col,
+                    op=op,
+                    value_repr=rhs,
+                    always_applied=0,
+                    confidence=0.7
+                ))
+        except Exception as e:
+            if self.logger:
+                self.logger.debug(f"WHERE 파싱 실패: {e}")
+        return results
         
     def _normalize_table_name(self, table_name: str) -> str:
         """v5.2: 테이블명 정규화 - 스키마 정보 처리"""

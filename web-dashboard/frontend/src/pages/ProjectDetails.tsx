@@ -172,6 +172,50 @@ export default function ProjectDetails() {
           </div>
         </div>
       </div>
+
+      {/* 내보내기 & 파일/문서 열기 유틸리티 */}
+      <div className="bg-white p-6 shadow rounded-lg">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">내보내기 / 파일 열기</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <div className="text-sm font-semibold mb-2">CSV 내보내기</div>
+            <div className="flex flex-col space-y-2 text-sm">
+              <a className="text-blue-600 hover:underline" href={`/api/export/classes.csv?project_id=${projectId}`}>클래스 CSV</a>
+              <a className="text-blue-600 hover:underline" href={`/api/export/methods.csv?project_id=${projectId}`}>메서드 CSV</a>
+              <a className="text-blue-600 hover:underline" href={`/api/export/sql.csv?project_id=${projectId}`}>SQL CSV</a>
+              <a className="text-blue-600 hover:underline" href={`/api/export/edges.csv?project_id=${projectId}`}>엣지 CSV</a>
+            </div>
+          </div>
+          <div>
+            <div className="text-sm font-semibold mb-2">원본 파일 열기</div>
+            <OpenFileWidget />
+          </div>
+          <div>
+            <div className="text-sm font-semibold mb-2">OWASP / CWE 문서 열기</div>
+            <OpenDocWidget />
+          </div>
+        </div>
+      </div>
     </div>
+  )
+}
+
+function OpenFileWidget() {
+  const [path, setPath] = React.useState('')
+  return (
+    <form className="flex space-x-2" onSubmit={(e)=>{ e.preventDefault(); if(path) window.location.href = `/api/file/download?path=${encodeURIComponent(path)}` }}>
+      <input className="border rounded px-2 py-1 w-full" placeholder="예: /project/sampleSrc/src/... 또는 절대경로" value={path} onChange={e=>setPath(e.target.value)} />
+      <button className="bg-blue-600 text-white px-3 py-1 rounded" type="submit">열기</button>
+    </form>
+  )
+}
+
+function OpenDocWidget() {
+  const [code, setCode] = React.useState('A03')
+  return (
+    <form className="flex space-x-2" onSubmit={(e)=>{ e.preventDefault(); if(code) window.open(`/api/open/owasp/${encodeURIComponent(code)}`, '_blank') }}>
+      <input className="border rounded px-2 py-1 w-full" placeholder="예: A03 또는 CWE-89" value={code} onChange={e=>setCode(e.target.value)} />
+      <button className="bg-green-600 text-white px-3 py-1 rounded" type="submit">문서</button>
+    </form>
   )
 }

@@ -190,3 +190,79 @@ v1.4 구현을 통해 Source Analyzer의 핵심 정확도 및 안정성 이슈�
 4. **일관성 확보**: 문서와 구현 간 불일치 해결
 
 모든 변경사항은 기존 워크플로우와 완전 호환되며, 추가 설정 없이도 개선된 기능을 활용할 수 있습니다.
+
+---
+
+## 추가 구현 (요청사항 4건 + 제안 반영)
+
+본 버전에서는 아래 4건과 제가 제안했던 항목 중 웹·CLI 연계가 즉시 가능한 부분을 구현했습니다.
+
+### 1) 시각화 Export (텍스트/CSV)
+- 시각화 CLI는 기존에 `--export-json`, `--export-csv-dir`을 지원합니다(노드/엣지 기준). 예시는 README.md 참고.
+- 웹 백엔드 Export 엔드포인트 추가(프로젝트 ID 필터 지원):
+  - `/api/export/classes.csv?project_id=1`
+  - `/api/export/methods.csv?project_id=1`
+  - `/api/export/sql.csv?project_id=1`
+  - `/api/export/edges.csv`
+  - `.txt` 확장자로 요청 시 탭 구분 텍스트로 응답
+
+### 2) 시각화 화면에서 클릭 시 원본/문서 열기
+- 웹 백엔드: 정적 마운트 및 파일 다운로드/문서 리다이렉트 추가
+  - `/project`, `/dbschema` 정적 제공(폴더 존재 시)
+  - `/api/file/download?path=...` 원본 파일 다운로드
+  - `/api/open/owasp/{code}` → OWASP/CWE 문서 리다이렉트(A03, CWE-89 등)
+- 프론트엔드(ProjectDetails):
+  - “내보내기/파일 열기” 섹션 추가(Export 링크, 파일 경로 입력 후 열기, OWASP 코드 입력 후 문서 열기)
+  - 추후 그래프/ERD 캔버스의 노드 클릭과 연계하여 파일/문서 열기로 연결하는 작업은 다음 릴리스에서 연동 예정
+
+### 3) 원본 변경 시 Phase1 재실행/동기화 및 필터 실행
+- CLI: `--include-ext`, `--include-dirs` 옵션 추가 → 특정 확장자/하위 폴더만 대상으로 Phase1 실행 가능
+  - 예) `--include-ext .java,.jsp,.xml --include-dirs src/main/java,src/main/webapp`
+- 웹 백엔드: `POST /api/analysis/start`에서 `include_ext`, `include_dirs`를 받아 런타임 파일 패턴 오버라이드 후 분석 실행
+
+### 4) README*.md 현행화 및 오프라인 설치
+- README.md: 오프라인 설치(에어갭) 가이드 유지·정비, 시각화 Export 예시 보강
+- README_detailed.md: 웹 대시보드 Export/원본 열기/재분석 섹션 신설
+
+### 근거/제약
+- UI 전면 연동(그래프 클릭→파일/문서 열기)은 템플릿(JS)과 WebSocket 이벤트 연결이 추가로 필요하여, 본 커밋에서는 “유틸 섹션”으로 먼저 기능 경로를 마련했습니다(백엔드 완비). 다음 버전에서 그래프/ERD 템플릿의 노드 클릭 핸들러에 `/api/file/download` 및 `/api/open/owasp`를 직접 매핑 예정입니다.
+
+### 테스트 현황
+- `tests/run_tests.py`로 파서/엔진 기본 동작 검증(한글 로그/주석).
+- 수동 검증: 백엔드 기동 후 Export/파일 열기/문서 리다이렉트 동작 확인.
+
+---
+
+## 단축 가이드
+
+```bash
+# 백엔드 기동
+cd web-dashboard/backend
+uvicorn app:app --reload
+
+# 프론트엔드 기동
+cd ../frontend
+npm install && npm run dev
+
+# Export 예시
+curl -OJ "http://localhost:8000/api/export/classes.csv?project_id=1"
+curl -OJ "http://localhost:8000/api/export/sql.csv?project_id=1"
+
+# 파일 열기/다운로드 예시
+curl -OJ "http://localhost:8000/api/file/download?path=/project/sampleSrc/src/.../UserMapper.java"
+
+# OWASP 문서
+start http://localhost:8000/api/open/owasp/A03
+start http://localhost:8000/api/open/owasp/CWE-89
+
+# Phase1 재분석(필터)
+curl -X POST http://localhost:8000/api/analysis/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_path": "PROJECT/sampleSrc",
+    "project_name": "샘플",
+    "incremental": true,
+    "include_ext": ".java,.jsp,.xml",
+    "include_dirs": "src/main/java,src/main/webapp"
+  }'
+```

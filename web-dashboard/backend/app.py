@@ -3,9 +3,10 @@ Source Analyzer Web Dashboard - Backend API
 FastAPI-based REST API with WebSocket support for real-time updates
 """
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, StreamingResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import json
@@ -95,6 +96,8 @@ class AnalysisRequest(BaseModel):
     project_path: str
     project_name: str
     incremental: bool = False
+    include_ext: Optional[str] = None  # 예: ".java,.jsp,.xml"
+    include_dirs: Optional[str] = None # 예: "src/main/java,src/main/webapp"
 
 # Startup and shutdown events
 @app.on_event("startup")
@@ -122,6 +125,15 @@ async def startup_event():
         app_state.confidence_calculator = ConfidenceCalculator(app_state.config)
         app_state.confidence_validator = ConfidenceValidator(app_state.config, app_state.confidence_calculator)
         
+        # 정적 파일 마운트(원본 파일 미들웨어)
+        repo_root = Path(__file__).parent.parent.parent
+        project_dir = repo_root / "PROJECT"
+        dbschema_dir = repo_root / "DB_SCHEMA"
+        if project_dir.exists():
+            app.mount("/project", StaticFiles(directory=str(project_dir)), name="project")
+        if dbschema_dir.exists():
+            app.mount("/dbschema", StaticFiles(directory=str(dbschema_dir)), name="dbschema")
+
         print("✅ Source Analyzer Dashboard API initialized successfully")
         
     except Exception as e:
@@ -318,9 +330,34 @@ async def add_ground_truth_entry(entry: GroundTruthEntryModel):
 async def start_analysis(request: AnalysisRequest):
     """Start a new project analysis"""
     try:
-        # This would integrate with the existing SourceAnalyzer
-        # For now, return a placeholder response
-        
+        # SourceAnalyzer와 통합 실행
+        from main import SourceAnalyzer
+
+        # 구성 갱신: 파일 패턴 오버라이드(확장자/디렉토리 필터)
+        cfg = app_state.config or {}
+        file_patterns = cfg.setdefault('file_patterns', {})
+        include = []
+        if request.include_ext:
+            for ext in [x.strip() for x in request.include_ext.split(',') if x.strip()]:
+                if not ext.startswith('.'):
+                    ext = '.' + ext
+                include.append(f"**/*{ext}")
+        if request.include_dirs:
+            for d in [x.strip() for x in request.include_dirs.split(',') if x.strip()]:
+                # 일반적으로 하위에서 표준 확장자 포함
+                include.extend([f"{d}/**/*.java", f"{d}/**/*.jsp", f"{d}/**/*.xml"])
+        if include:
+            file_patterns['include'] = include
+
+        analyzer = SourceAnalyzer(str(Path(__file__).parent.parent.parent / 'config' / 'config.yaml'))
+
+        # 비동기 분석 실행
+        result = await analyzer.analyze_project(
+            request.project_path,
+            request.project_name,
+            request.incremental
+        )
+
         # Broadcast analysis start
         await manager.broadcast(json.dumps({
             "type": "analysis_started",
@@ -330,12 +367,7 @@ async def start_analysis(request: AnalysisRequest):
                 "timestamp": datetime.now().isoformat()
             }
         }))
-        
-        return {
-            "message": "Analysis started",
-            "project_path": request.project_path,
-            "project_name": request.project_name
-        }
+        return {"message": "Analysis completed", "summary": result.get('summary', {}), "files_analyzed": result.get('files_analyzed', 0)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -351,6 +383,100 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(f"Echo: {data}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+# -------------------------------
+# Export & File Open Endpoints
+# -------------------------------
+
+def _db_session():
+    if not app_state.db_manager:
+        raise HTTPException(status_code=500, detail="DB 미초기화")
+    return app_state.db_manager.get_session()
+
+@app.get("/api/export/{kind}.{fmt}", tags=["Export"])
+async def export_data(kind: str, fmt: str, project_id: Optional[int] = Query(None)):
+    """DB 기반 내보내기: classes/methods/sql/edges → csv/txt"""
+    kind = kind.lower()
+    fmt = fmt.lower()
+    if kind not in {"classes","methods","sql","edges"}:
+        raise HTTPException(status_code=400, detail="지원되지 않는 kind")
+    if fmt not in {"csv","txt"}:
+        raise HTTPException(status_code=400, detail="지원되지 않는 형식")
+
+    from models.database import Class, Method, SqlUnit, Edge, File as SAFile
+    import csv
+    import io
+    session = _db_session()
+    try:
+        if kind == 'classes':
+            q = session.query(Class, SAFile).join(SAFile, Class.file_id == SAFile.file_id)
+            if project_id:
+                q = q.filter(SAFile.project_id == project_id)
+            rows = [(c.class_id, c.fqn, c.name, c.start_line, c.end_line, f.path) for c,f in q.all()]
+            headers = ["class_id","fqn","name","start","end","file_path"]
+        elif kind == 'methods':
+            q = session.query(Method, Class, SAFile).join(Class, Method.class_id==Class.class_id).join(SAFile, Class.file_id==SAFile.file_id)
+            if project_id:
+                q = q.filter(SAFile.project_id == project_id)
+            rows = [(m.method_id, m.name, m.signature, m.return_type, m.start_line, m.end_line, c.fqn, f.path) for m,c,f in q.all()]
+            headers = ["method_id","name","signature","return_type","start","end","class_fqn","file_path"]
+        elif kind == 'sql':
+            q = session.query(SqlUnit, SAFile).join(SAFile, SqlUnit.file_id==SAFile.file_id)
+            if project_id:
+                q = q.filter(SAFile.project_id == project_id)
+            rows = [(s.sql_id, s.origin, s.mapper_ns, s.stmt_id, s.stmt_kind, s.start_line, s.end_line, f.path) for s,f in q.all()]
+            headers = ["sql_id","origin","namespace","stmt_id","stmt_kind","start","end","file_path"]
+        else:
+            q = session.query(Edge)
+            rows = [(e.edge_id, e.src_type, e.src_id, e.dst_type, e.dst_id, e.edge_kind, e.confidence) for e in q.all()]
+            headers = ["edge_id","src_type","src_id","dst_type","dst_id","edge_kind","confidence"]
+
+        if fmt == 'csv':
+            buf = io.StringIO()
+            w = csv.writer(buf)
+            w.writerow(headers)
+            for r in rows:
+                w.writerow(list(r))
+            buf.seek(0)
+            return StreamingResponse(buf, media_type='text/csv', headers={'Content-Disposition': f'attachment; filename="{kind}.csv"'})
+        else:
+            content = '\n'.join(['\t'.join(map(lambda x: '' if x is None else str(x), r)) for r in rows])
+            return StreamingResponse(io.StringIO(content), media_type='text/plain')
+    finally:
+        session.close()
+
+@app.get("/api/file/download", tags=["Files"])
+async def download_file(path: str = Query(..., description="절대경로 또는 /project,/dbschema 하위 상대경로")):
+    """원본 파일 다운로드(보안상 PROJECT/DB_SCHEMA 하위 또는 DB의 파일경로만 권장)"""
+    p = Path(path)
+    if not p.is_absolute():
+        # /project 또는 /dbschema 경로로부터 상대경로일 경우 서버 로컬 경로로 맵핑
+        repo_root = Path(__file__).parent.parent.parent
+        if path.startswith('/project/'):
+            p = (repo_root / 'PROJECT' / Path(path).relative_to('/project')).resolve()
+        elif path.startswith('/dbschema/'):
+            p = (repo_root / 'DB_SCHEMA' / Path(path).relative_to('/dbschema')).resolve()
+        else:
+            # 기타 상대경로는 프로젝트 루트 기준 해석
+            p = (repo_root / path).resolve()
+    
+    if not p.exists() or not p.is_file():
+        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다")
+    return FileResponse(str(p))
+
+@app.get("/api/open/owasp/{code}", tags=["Docs"])
+async def open_owasp_doc(code: str):
+    """OWASP/ CWE 문서로 리다이렉트"""
+    code_u = code.upper()
+    owasp_map = {
+        'A01': 'https://owasp.org/Top10/A01_2021-Broken_Access_Control/',
+        'A02': 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/',
+        'A03': 'https://owasp.org/Top10/A03_2021-Injection/',
+    }
+    if code_u.startswith('CWE-'):
+        return RedirectResponse(url=f"https://cwe.mitre.org/data/definitions/{code_u.split('-')[1]}.html")
+    url = owasp_map.get(code_u, 'https://owasp.org/www-project-top-ten/')
+    return RedirectResponse(url=url)
 
 if __name__ == "__main__":
     import uvicorn

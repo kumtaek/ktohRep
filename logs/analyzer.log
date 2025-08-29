@@ -2647,3 +2647,79 @@ sqlalchemy.exc.IntegrityError: (raised as a result of Query-invoked autoflush; c
 2025-08-27 23:37:00,865 - engine.metadata - WARNING - [logger.py:73] - 테이블을 찾을 수 없음: T_ORDER
 2025-08-27 23:37:00,883 - main - INFO - [logger.py:69] - 프로젝트 분석 완료: sample-app (0.25초)
 2025-08-27 23:37:00,884 - main - INFO - [logger.py:69] - 성능: 프로젝트 'sample-app' 전체 분석 | 0.25초
+2025-08-29 14:36:57,552 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError
+2025-08-29 14:37:21,073 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError
+2025-08-29 14:38:22,076 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError
+2025-08-29 14:38:51,251 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError

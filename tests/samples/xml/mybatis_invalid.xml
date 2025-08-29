@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 의도적 오류: mapper 태그 닫힘 누락, 엘리먼트 불일치 등 -->
+<mapper namespace="com.example.Broken">
+  <select id="broken" resultType="map">
+    SELECT * FROM users WHERE status = 'A'
+  <!-- 닫는 태그 누락 -->

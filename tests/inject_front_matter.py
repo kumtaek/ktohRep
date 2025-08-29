@@ -185,8 +185,67 @@ def main():
     if be.exists():
         inject_backend(be)
         print(f"Updated: {be}")
+    # phase1: inject based on filenames in headings (java/xml/jsp)
+    p1 = REPO / 'phase1' / 'testcase' / 'testcases.md'
+    if p1.exists():
+        text = p1.read_text(encoding='utf-8', errors='ignore')
+        lines = text.splitlines()
+        out = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            out.append(line)
+            if line.strip().startswith('### '):
+                # skip if FM already exists
+                if has_front_matter(lines, i):
+                    i += 1
+                    continue
+                # extract filename in heading
+                m = re.search(r"`([^`]+)`", line)
+                target = m.group(1) if m else ''
+                ext = target.lower().rsplit('.', 1)[-1] if '.' in target else ''
+                # gather section for explicit PROJECT path
+                j = i + 1
+                buf = []
+                while j < len(lines) and not lines[j].strip().startswith('### '):
+                    buf.append(lines[j])
+                    j += 1
+                sec = '\n'.join(buf)
+                path_match = re.search(r"`(PROJECT/[^`]+)`", sec)
+                input_path = path_match.group(1) if path_match else None
+                kind = None
+                expected = []
+                if ext == 'java':
+                    kind = 'java_parser'
+                    if not input_path:
+                        input_path = f"PROJECT/IntegratedSource/src/main/java/{target}"
+                    expected = ["  classes_min: 1", "  methods_min: 1"]
+                elif ext == 'xml':
+                    kind = 'jsp_mybatis_parser'
+                    if not input_path:
+                        input_path = f"PROJECT/IntegratedSource/src/main/resources/{target}"
+                    expected = ["  sql_min: 1"]
+                elif ext == 'jsp':
+                    kind = 'jsp_mybatis_parser'
+                    if not input_path:
+                        input_path = f"PROJECT/IntegratedSource/src/main/webapp/{target}"
+                    expected = ["  sql_min: 0"]
+                if kind and input_path:
+                    out.append('')
+                    out.append('---')
+                    out.append(f"name: {line.strip()[4:].strip()}")
+                    out.append(f"kind: {kind}")
+                    out.append(f"input: {input_path}")
+                    out.append("skip_if_missing_input: true")
+                    if expected:
+                        out.append('expected:')
+                        out.extend(expected)
+                    out.append('---')
+                    i = j - 1
+            i += 1
+        p1.write_text('\n'.join(out) + '\n', encoding='utf-8')
+        print(f"Updated: {p1}")
 
 
 if __name__ == '__main__':
     main()
-

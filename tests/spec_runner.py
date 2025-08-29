@@ -37,7 +37,11 @@ def run_java_parser(spec):
     from src.models.database import File
     cfg = {'database': {'type': 'sqlite', 'sqlite': {'path': ':memory:'}}}
     parser = JavaParser(cfg)
-    sample = str((REPO_ROOT / spec['input']).resolve())
+    sample_path = REPO_ROOT / spec['input']
+    if spec.get('skip_if_missing_input') and not sample_path.exists():
+        print(f"[SKIP] java_parser: missing input {sample_path}")
+        return True
+    sample = str(sample_path.resolve())
     f, classes, methods, edges = parser.parse_file(sample, project_id=1)
     exp = spec.get('expected', {})
     assert isinstance(f, File)
@@ -52,7 +56,11 @@ def run_jsp_mybatis_parser(spec):
     from src.parsers.jsp_mybatis_parser import JspMybatisParser
     cfg = {'database': {'type': 'sqlite', 'sqlite': {'path': ':memory:'}}}
     parser = JspMybatisParser(cfg)
-    sample = str((REPO_ROOT / spec['input']).resolve())
+    sample_path = REPO_ROOT / spec['input']
+    if spec.get('skip_if_missing_input') and not sample_path.exists():
+        print(f"[SKIP] jsp_mybatis_parser: missing input {sample_path}")
+        return True
+    sample = str(sample_path.resolve())
     f, sqls, joins, filters, edges, vulns = parser.parse_file(sample, project_id=1)
     exp = spec.get('expected', {})
     if 'sql_min' in exp:
@@ -71,7 +79,11 @@ def run_engine_save(spec):
     db.initialize()
     engine = MetadataEngine(cfg, db)
     parser = JavaParser(cfg)
-    sample = str((REPO_ROOT / spec['input']).resolve())
+    sample_path = REPO_ROOT / spec['input']
+    if spec.get('skip_if_missing_input') and not sample_path.exists():
+        print(f"[SKIP] engine_save: missing input {sample_path}")
+        return True
+    sample = str(sample_path.resolve())
     f, classes, methods, edges = parser.parse_file(sample, project_id=1)
     saved = engine._save_java_analysis_sync(f, classes, methods, edges)
     exp = spec.get('expected', {})
@@ -130,6 +142,45 @@ DISPATCH = {
 }
 
 
+def run_engine_llm_assist(spec):
+    from src.models.database import DatabaseManager, EnrichmentLog
+    from src.database.metadata_engine import MetadataEngine
+    from src.parsers.java_parser import JavaParser
+    import tempfile, time
+    db_path = os.path.join(tempfile.gettempdir(), f"sa_spec_llm_{int(time.time())}.db")
+    cfg = {
+        'database': {'type': 'sqlite', 'sqlite': {'path': db_path, 'wal_mode': False}},
+        'llm_assist': {
+            'enabled': True,
+            'dry_run': True,
+            'low_conf_threshold': 1.0,
+            'provider': 'ollama',
+        },
+    }
+    db = DatabaseManager(cfg)
+    db.initialize()
+    engine = MetadataEngine(cfg, db)
+    parsers = {'java': JavaParser(cfg)}
+    sample_path = REPO_ROOT / spec['input']
+    if spec.get('skip_if_missing_input') and not sample_path.exists():
+        print(f"[SKIP] engine_llm_assist: missing input {sample_path}")
+        return True
+    sample = str(sample_path.resolve())
+    saved = engine._analyze_single_file_sync(sample, project_id=1, parsers=parsers)
+    # Verify enrichment log was created
+    session = db.get_session()
+    try:
+        count = session.query(EnrichmentLog).count()
+    finally:
+        session.close()
+    exp = spec.get('expected', {})
+    min_logs = exp.get('enrichment_logs_min', 1)
+    assert count >= min_logs, f"enrichment logs {count} < {min_logs}"
+    return True
+
+DISPATCH['engine_llm_assist'] = run_engine_llm_assist
+
+
 def load_specs():
     patterns = [
         REPO_ROOT / 'phase1' / 'testcase' / '**' / '*.spec.yaml',
@@ -141,6 +192,37 @@ def load_specs():
     for pat in patterns:
         files.extend(glob.glob(str(pat), recursive=True))
     return [Path(f) for f in sorted(files)]
+
+
+def parse_front_matters_from_md(md_path: Path):
+    """Parse YAML front matter blocks delimited by --- in a markdown file.
+    Returns a list of spec dicts with at least 'kind' and action fields.
+    """
+    try:
+        text = md_path.read_text(encoding='utf-8', errors='ignore')
+    except Exception:
+        return []
+    lines = text.splitlines()
+    specs = []
+    i = 0
+    while i < len(lines):
+        if lines[i].strip() == '---':
+            j = i + 1
+            block = []
+            while j < len(lines) and lines[j].strip() != '---':
+                block.append(lines[j])
+                j += 1
+            if j < len(lines) and lines[j].strip() == '---':
+                yaml_text = '\n'.join(block)
+                try:
+                    data = yaml.safe_load(yaml_text)
+                    if isinstance(data, dict) and 'kind' in data:
+                        specs.append(data)
+                except Exception:
+                    pass
+                i = j  # skip to end marker
+        i += 1
+    return specs
 
 
 def run_spec_file(path: Path):
@@ -158,16 +240,39 @@ def run_spec_file(path: Path):
 
 def main():
     specs = load_specs()
-    if not specs:
-        print("No spec files found.")
+    # also parse markdown front matter from docs
+    md_docs = [
+        REPO_ROOT / 'visualize' / 'testcase' / 'visualization_testcases.md',
+        REPO_ROOT / 'web-dashboard' / 'backend' / 'testcase' / 'backend_testcases.md',
+        REPO_ROOT / 'phase1' / 'testcase' / 'testcases.md',
+    ]
+    md_specs = []
+    for md in md_docs:
+        if md.exists():
+            md_specs.extend(parse_front_matters_from_md(md))
+    if not specs and not md_specs:
+        print("No spec files or markdown front matter specs found.")
         sys.exit(0)
     failed = 0
+    # run file-based specs
     for p in specs:
         try:
             run_spec_file(p)
         except Exception as e:
             failed += 1
             print(f"[FAIL] {p}: {e}")
+    # run md-based specs
+    for s in md_specs:
+        try:
+            print(f"[RUN] {s.get('name','(md spec)')} ({s.get('kind')}) :: [markdown]")
+            kind = s.get('kind')
+            if kind not in DISPATCH:
+                raise ValueError(f"Unknown kind: {kind}")
+            DISPATCH[kind](s)
+            print(f"[OK ] {s.get('name','(md spec)')}")
+        except Exception as e:
+            failed += 1
+            print(f"[FAIL] [markdown spec]: {e}")
     if failed:
         print(f"\nResult: FAIL ({failed} failed)")
         sys.exit(1)

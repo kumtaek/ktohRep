@@ -3,533 +3,309 @@ Source Analyzer Web Dashboard - Backend API
 FastAPI-based REST API with WebSocket support for real-time updates
 """
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse, RedirectResponse, JSONResponse
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-import json
-import asyncio
-import sqlite3
-import os
 import sys
+import os
+import yaml
+import logging
 from datetime import datetime
 from pathlib import Path
 
-# Add phase1/src to path to import existing modules
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "phase1" / "src"))
+# Add phase1/src to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'phase1', 'src')))
 
+from flask import Flask, jsonify, request, Response
+try:
+    import markdown as _md
+except Exception:
+    _md = None
+from flask_cors import CORS
 from database.metadata_engine import MetadataEngine
 from models.database import DatabaseManager
-from utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator, GroundTruthEntry
-from utils.confidence_calculator import ConfidenceCalculator
-import yaml
 
-# FastAPI app initialization
-app = FastAPI(
-    title="Source Analyzer Dashboard API",
-    description="REST API for Source Analyzer Web Dashboard",
-    version="1.0.0"
-)
+def load_config():
+    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'config.yaml'))
+    with open(config_path, 'r', encoding='utf-8') as f:
+        raw = f.read()
+    # Expand ${VAR} placeholders from environment for convenience
+    expanded = os.path.expandvars(raw)
+    return yaml.safe_load(expanded)
 
-# CORS middleware (configurable via env for closed networks)
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "").strip()
-if allowed_origins_env:
-    allowed_origins = [o.strip() for o in allowed_origins_env.split(',') if o.strip()]
-else:
-    allowed_origins = []  # default minimal exposure
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Global state
-class AppState:
-    def __init__(self):
-        self.config = None
-        self.db_manager = None
-        self.confidence_validator = None
-        self.confidence_calculator = None
-        self.active_connections: List[WebSocket] = []
-        self.current_analysis = None
-
-app_state = AppState()
-
-# Pydantic models
-class ProjectInfo(BaseModel):
-    project_id: int
-    name: str
-    root_path: str
-    created_at: str
-    updated_at: str
-
-class AnalysisResult(BaseModel):
-    project_id: int
-    total_files: int
-    success_count: int
-    error_count: int
-    java_files: int
-    jsp_files: int
-    xml_files: int
-    total_classes: int
-    total_methods: int
-    total_sql_units: int
-
-class ConfidenceReport(BaseModel):
-    mean_absolute_error: float
-    median_absolute_error: float
-    error_distribution: Dict[str, Dict[str, Any]]
-    total_validations: int
-
-class GroundTruthEntryModel(BaseModel):
-    file_path: str
-    parser_type: str
-    expected_confidence: float
-    expected_classes: int = 0
-    expected_methods: int = 0
-    expected_sql_units: int = 0
-    verified_tables: List[str] = []
-    complexity_factors: Dict[str, Any] = {}
-    notes: str = ""
-    verifier: str = "web_user"
-
-class AnalysisRequest(BaseModel):
-    project_path: str
-    project_name: str
-    incremental: bool = False
-    include_ext: Optional[str] = None  # 예: ".java,.jsp,.xml"
-    include_dirs: Optional[str] = None # 예: "src/main/java,src/main/webapp"
-
-# Startup and shutdown events
-@app.on_event("startup")
-async def startup_event():
-    """Initialize system components"""
-    try:
-        # Load configuration
-        config_path = Path(__file__).parent.parent.parent / "config" / "config.yaml"
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                app_state.config = yaml.safe_load(f)
-        else:
-            # Default configuration
-            app_state.config = {
-                'database': {'path': 'source_analyzer.db'},
-                'confidence': {'weights': {'ast': 0.4, 'static': 0.3, 'db_match': 0.2, 'heuristic': 0.1}},
-                'validation': {'ground_truth_path': 'ground_truth_data.json'}
-            }
-        
-        # Initialize database manager
-        app_state.db_manager = DatabaseManager(app_state.config)
-        app_state.db_manager.initialize()
-        
-        # Initialize confidence system
-        app_state.confidence_calculator = ConfidenceCalculator(app_state.config)
-        app_state.confidence_validator = ConfidenceValidator(app_state.config, app_state.confidence_calculator)
-        
-        # 정적 파일 마운트(원본 파일 미들웨어)
-        repo_root = Path(__file__).parent.parent.parent
-        project_dir = repo_root / "PROJECT"
-        dbschema_dir = repo_root / "DB_SCHEMA"
-        docs_dir = repo_root / "doc"
-        if project_dir.exists():
-            app.mount("/project", StaticFiles(directory=str(project_dir)), name="project")
-        if dbschema_dir.exists():
-            app.mount("/dbschema", StaticFiles(directory=str(dbschema_dir)), name="dbschema")
-        if docs_dir.exists():
-            app.mount("/docs", StaticFiles(directory=str(docs_dir)), name="docs")
-
-        print("✅ Source Analyzer Dashboard API initialized successfully")
-        
-    except Exception as e:
-        print(f"❌ Failed to initialize API: {e}")
-        raise
-
-# WebSocket connection manager
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            try:
-                await connection.send_text(message)
-            except:
-                # Remove dead connections
-                self.active_connections.remove(connection)
-
-manager = ConnectionManager()
-
-# API Routes
-@app.get("/", tags=["Health"])
-async def root():
-    return {"message": "Source Analyzer Dashboard API", "status": "running"}
-
-@app.get("/api/health", tags=["Health"])
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "database_connected": app_state.db_manager is not None
-    }
-
-@app.get("/api/projects", response_model=List[ProjectInfo], tags=["Projects"])
-async def get_projects():
-    """Get all projects"""
-    try:
-        session = app_state.db_manager.get_session()
-        try:
-            from models.database import Project
-            projects = session.query(Project).all()
-            return [
-                ProjectInfo(
-                    project_id=p.project_id,
-                    name=p.name,
-                    root_path=p.root_path,
-                    created_at=p.created_at.isoformat() if p.created_at else "",
-                    updated_at=p.updated_at.isoformat() if p.updated_at else ""
-                )
-                for p in projects
-            ]
-        finally:
-            session.close()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/projects/{project_id}/analysis", response_model=AnalysisResult, tags=["Analysis"])
-async def get_project_analysis(project_id: int):
-    """Get analysis results for a specific project"""
-    try:
-        session = app_state.db_manager.get_session()
-        try:
-            from models.database import File, Class, Method, SqlUnit
-            
-            # Count files by type
-            files = session.query(File).filter(File.project_id == project_id).all()
-            java_files = sum(1 for f in files if f.language == 'java')
-            jsp_files = sum(1 for f in files if f.language == 'jsp')  
-            xml_files = sum(1 for f in files if f.language == 'xml')
-            
-            # Count classes and methods
-            total_classes = session.query(Class).join(File).filter(File.project_id == project_id).count()
-            total_methods = session.query(Method).join(Class).join(File).filter(File.project_id == project_id).count()
-            total_sql_units = session.query(SqlUnit).join(File).filter(File.project_id == project_id).count()
-            
-            return AnalysisResult(
-                project_id=project_id,
-                total_files=len(files),
-                success_count=len(files),  # Simplified - assume all files processed successfully
-                error_count=0,
-                java_files=java_files,
-                jsp_files=jsp_files,
-                xml_files=xml_files,
-                total_classes=total_classes,
-                total_methods=total_methods,
-                total_sql_units=total_sql_units
-            )
-        finally:
-            session.close()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/confidence/report", response_model=ConfidenceReport, tags=["Confidence"])
-async def get_confidence_report():
-    """Get confidence validation report"""
-    try:
-        validation_result = app_state.confidence_validator.validate_confidence_formula()
-        
-        if 'error' in validation_result:
-            raise HTTPException(status_code=400, detail=validation_result['error'])
-        
-        return ConfidenceReport(
-            mean_absolute_error=validation_result.get('mean_absolute_error', 0.0),
-            median_absolute_error=validation_result.get('median_absolute_error', 0.0),
-            error_distribution=validation_result.get('error_distribution', {}),
-            total_validations=validation_result.get('total_validations', 0)
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/confidence/calibrate", tags=["Confidence"])
-async def calibrate_confidence():
-    """Calibrate confidence formula weights"""
-    try:
-        calibration_result = app_state.confidence_validator.calibrate_weights()
-        
-        if calibration_result.get('recommendation') == 'apply':
-            calibrator = ConfidenceCalibrator(app_state.confidence_validator)
-            if calibrator.apply_calibration(app_state.confidence_calculator):
-                # Broadcast update to connected clients
-                await manager.broadcast(json.dumps({
-                    "type": "confidence_calibrated",
-                    "data": calibration_result
-                }))
-                
-        return calibration_result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/ground-truth", tags=["Ground Truth"])
-async def get_ground_truth_entries():
-    """Get all ground truth entries"""
-    try:
-        entries = []
-        for entry in app_state.confidence_validator.ground_truth_data:
-            entries.append({
-                "file_path": entry.file_path,
-                "parser_type": entry.parser_type,
-                "expected_confidence": entry.expected_confidence,
-                "expected_classes": entry.expected_classes,
-                "expected_methods": entry.expected_methods,
-                "expected_sql_units": entry.expected_sql_units,
-                "verified_tables": entry.verified_tables,
-                "notes": entry.notes,
-                "verifier": entry.verifier,
-                "verification_date": entry.verification_date
-            })
-        return entries
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/ground-truth", tags=["Ground Truth"])
-async def add_ground_truth_entry(entry: GroundTruthEntryModel):
-    """Add a new ground truth entry"""
-    try:
-        gt_entry = GroundTruthEntry(
-            file_path=entry.file_path,
-            parser_type=entry.parser_type,
-            expected_confidence=entry.expected_confidence,
-            expected_classes=entry.expected_classes,
-            expected_methods=entry.expected_methods,
-            expected_sql_units=entry.expected_sql_units,
-            verified_tables=entry.verified_tables,
-            complexity_factors=entry.complexity_factors,
-            notes=entry.notes,
-            verifier=entry.verifier
-        )
-        
-        app_state.confidence_validator.add_ground_truth_entry(gt_entry)
-        
-        # Broadcast update to connected clients
-        await manager.broadcast(json.dumps({
-            "type": "ground_truth_added",
-            "data": {"file_path": entry.file_path, "expected_confidence": entry.expected_confidence}
-        }))
-        
-        return {"message": "Ground truth entry added successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/analysis/start", tags=["Analysis"])
-async def start_analysis(request: AnalysisRequest):
-    """Start a new project analysis"""
-    try:
-        # SourceAnalyzer와 통합 실행
-        from main import SourceAnalyzer
-
-        # 구성 갱신: 파일 패턴 오버라이드(확장자/디렉토리 필터)
-        cfg = app_state.config or {}
-        file_patterns = cfg.setdefault('file_patterns', {})
-        include = []
-        if request.include_ext:
-            for ext in [x.strip() for x in request.include_ext.split(',') if x.strip()]:
-                if not ext.startswith('.'):
-                    ext = '.' + ext
-                include.append(f"**/*{ext}")
-        if request.include_dirs:
-            for d in [x.strip() for x in request.include_dirs.split(',') if x.strip()]:
-                # 일반적으로 하위에서 표준 확장자 포함
-                include.extend([f"{d}/**/*.java", f"{d}/**/*.jsp", f"{d}/**/*.xml"])
-        if include:
-            file_patterns['include'] = include
-
-        analyzer = SourceAnalyzer(str(Path(__file__).parent.parent.parent / 'config' / 'config.yaml'))
-
-        # 비동기 분석 실행
-        result = await analyzer.analyze_project(
-            request.project_path,
-            request.project_name,
-            request.incremental
-        )
-
-        # Broadcast analysis start
-        await manager.broadcast(json.dumps({
-            "type": "analysis_started",
-            "data": {
-                "project_path": request.project_path,
-                "project_name": request.project_name,
-                "timestamp": datetime.now().isoformat()
-            }
-        }))
-        return {"message": "Analysis completed", "summary": result.get('summary', {}), "files_analyzed": result.get('files_analyzed', 0)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# WebSocket endpoint for real-time updates
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            # Keep connection alive and handle incoming messages
-            data = await websocket.receive_text()
-            # Echo back for now - can add more sophisticated handling
-            await websocket.send_text(f"Echo: {data}")
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-
-# -------------------------------
-# Export & File Open Endpoints
-# -------------------------------
-
-def _db_session():
-    if not app_state.db_manager:
-        raise HTTPException(status_code=500, detail="DB 미초기화")
-    return app_state.db_manager.get_session()
-
-@app.get("/api/export/{kind}.{fmt}", tags=["Export"])
-async def export_data(kind: str, fmt: str, project_id: Optional[int] = Query(None)):
-    """DB 기반 내보내기: classes/methods/sql/edges → csv/txt"""
-    kind = kind.lower()
-    fmt = fmt.lower()
-    if kind not in {"classes","methods","sql","edges"}:
-        raise HTTPException(status_code=400, detail="지원되지 않는 kind")
-    if fmt not in {"csv","txt"}:
-        raise HTTPException(status_code=400, detail="지원되지 않는 형식")
-
-    from models.database import Class, Method, SqlUnit, Edge, File as SAFile
-    import csv
-    import io
-    session = _db_session()
-    try:
-        if kind == 'classes':
-            q = session.query(Class, SAFile).join(SAFile, Class.file_id == SAFile.file_id)
-            if project_id:
-                q = q.filter(SAFile.project_id == project_id)
-            rows = [(c.class_id, c.fqn, c.name, c.start_line, c.end_line, f.path) for c,f in q.all()]
-            headers = ["class_id","fqn","name","start","end","file_path"]
-        elif kind == 'methods':
-            q = session.query(Method, Class, SAFile).join(Class, Method.class_id==Class.class_id).join(SAFile, Class.file_id==SAFile.file_id)
-            if project_id:
-                q = q.filter(SAFile.project_id == project_id)
-            rows = [(m.method_id, m.name, m.signature, m.return_type, m.start_line, m.end_line, c.fqn, f.path) for m,c,f in q.all()]
-            headers = ["method_id","name","signature","return_type","start","end","class_fqn","file_path"]
-        elif kind == 'sql':
-            q = session.query(SqlUnit, SAFile).join(SAFile, SqlUnit.file_id==SAFile.file_id)
-            if project_id:
-                q = q.filter(SAFile.project_id == project_id)
-            rows = [(s.sql_id, s.origin, s.mapper_ns, s.stmt_id, s.stmt_kind, s.start_line, s.end_line, f.path) for s,f in q.all()]
-            headers = ["sql_id","origin","namespace","stmt_id","stmt_kind","start","end","file_path"]
-        else:
-            q = session.query(Edge)
-            rows = [(e.edge_id, e.src_type, e.src_id, e.dst_type, e.dst_id, e.edge_kind, e.confidence) for e in q.all()]
-            headers = ["edge_id","src_type","src_id","dst_type","dst_id","edge_kind","confidence"]
-
-        if fmt == 'csv':
-            buf = io.StringIO()
-            w = csv.writer(buf)
-            w.writerow(headers)
-            for r in rows:
-                w.writerow(list(r))
-            buf.seek(0)
-            return StreamingResponse(buf, media_type='text/csv', headers={'Content-Disposition': f'attachment; filename="{kind}.csv"'})
-        else:
-            content = '\n'.join(['\t'.join(map(lambda x: '' if x is None else str(x), r)) for r in rows])
-            return StreamingResponse(io.StringIO(content), media_type='text/plain')
-    finally:
-        session.close()
-
-@app.get("/api/file/download", tags=["Files"])
-async def download_file(path: str = Query(..., description="절대경로 또는 /project,/dbschema 하위 상대경로")):
-    """원본 파일 다운로드(보안상 PROJECT/DB_SCHEMA 하위 또는 DB의 파일경로만 권장)"""
-    p = Path(path)
-    if not p.is_absolute():
-        # /project 또는 /dbschema 경로로부터 상대경로일 경우 서버 로컬 경로로 맵핑
-        repo_root = Path(__file__).parent.parent.parent
-        if path.startswith('/project/'):
-            p = (repo_root / 'PROJECT' / Path(path).relative_to('/project')).resolve()
-        elif path.startswith('/dbschema/'):
-            p = (repo_root / 'DB_SCHEMA' / Path(path).relative_to('/dbschema')).resolve()
-        else:
-            # 기타 상대경로는 프로젝트 루트 기준 해석
-            p = (repo_root / path).resolve()
+def setup_logging(config):
+    log_level = config.get('logging', {}).get('level', 'INFO').upper()
+    log_file = config.get('logging', {}).get('file', './logs/app.log')
     
-    if not p.exists() or not p.is_file():
-        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다")
-    return FileResponse(str(p))
+    # Ensure log directory exists
+    log_dir = os.path.dirname(log_file)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
-@app.get("/api/open/owasp/{code}", tags=["Docs"])
-async def open_owasp_doc(code: str):
-    """OWASP/ CWE 문서로 리다이렉트"""
-    code_u = code.upper()
-    owasp_map = {
-        'A01': 'https://owasp.org/Top10/A01_2021-Broken_Access_Control/',
-        'A02': 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/',
-        'A03': 'https://owasp.org/Top10/A03_2021-Injection/',
-    }
-    if code_u.startswith('CWE-'):
-        return RedirectResponse(url=f"https://cwe.mitre.org/data/definitions/{code_u.split('-')[1]}.html")
-    url = owasp_map.get(code_u, 'https://owasp.org/www-project-top-ten/')
-    return RedirectResponse(url=url)
+    logging.basicConfig(
+        level=getattr(logging, log_level),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler()
+        ]
+    )
+    #logging.getLogger('werkzeug').setLevel(logging.WARNING) # Suppress Flask access logs
+    #logging.getLogger('werkzeug2').setLevel(logging.DEBUG) # Suppress Flask access logs
 
-@app.get("/api/docs/owasp/{code}", tags=["Docs"])
-async def get_owasp_doc_local(code: str):
-    """OWASP 문서를 로컬에서 제공 (doc/owasp). 부재 시 외부로 안내."""
-    code_u = code.upper()
-    repo_root = Path(__file__).parent.parent.parent
-    owasp_md = repo_root / 'doc' / 'owasp' / f"{code_u}.md"
-    if owasp_md.exists():
-        return FileResponse(str(owasp_md))
-    # fallback: redirect to OWASP site
-    owasp_map = {
-        'A01': 'https://owasp.org/Top10/A01_2021-Broken_Access_Control/',
-        'A02': 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/',
-        'A03': 'https://owasp.org/Top10/A03_2021-Injection/',
-        'A04': 'https://owasp.org/Top10/A04_2021-Insecure_Design/',
-        'A05': 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/',
-        'A06': 'https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/',
-        'A07': 'https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/',
-        'A08': 'https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/',
-        'A09': 'https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/',
-        'A10': 'https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/'
-    }
-    url = owasp_map.get(code_u, 'https://owasp.org/www-project-top-ten/')
-    return RedirectResponse(url=url)
+config = load_config()
+setup_logging(config)
 
-@app.get("/api/docs/cwe/{code}", tags=["Docs"])
-async def get_cwe_doc_local(code: str):
-    """CWE 문서를 로컬에서 제공 (doc/cwe). 부재 시 외부로 안내."""
-    code_u = code.upper()
-    repo_root = Path(__file__).parent.parent.parent
-    if not code_u.startswith('CWE-'):
-        code_u = f"CWE-{code_u}"
-    cwe_md = repo_root / 'doc' / 'cwe' / f"{code_u}.md"
-    if cwe_md.exists():
-        return FileResponse(str(cwe_md))
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+app.logger.setLevel(logging.DEBUG) # Set app logger to DEBUG
+
+# Initialize MetadataEngine
+db_path = config['database']['sqlite']['path']
+db_manager = DatabaseManager(db_path) # Instantiate DatabaseManager
+metadata_engine = MetadataEngine(config, db_manager) # Pass config and db_manager
+
+@app.route('/')
+def hello_world():
+    return jsonify(message="Hello from SourceAnalyzer Backend!")
+
+@app.route('/api/health')
+def health():
+    return jsonify(status="healthy", timestamp=datetime.now().isoformat())
+
+@app.route('/api/metadata', methods=['GET'])
+def get_metadata():
     try:
-        cwe_num = code_u.split('-')[1]
-    except Exception:
-        cwe_num = code_u
-    return RedirectResponse(url=f"https://cwe.mitre.org/data/definitions/{cwe_num}.html")
+        metadata = metadata_engine.get_all_metadata()
+        return jsonify(metadata)
+    except Exception as e:
+        app.logger.error(f"Error fetching metadata: {e}")
+        return jsonify(error=str(e)), 500
 
-if __name__ == "__main__":
-    import uvicorn
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
-    reload = os.getenv("RELOAD", "false").lower() in {"1","true","yes"}
-    uvicorn.run(app, host=host, port=port, reload=reload)
+@app.route('/api/metadata/<int:file_id>', methods=['GET'])
+def get_metadata_by_file_id(file_id):
+    try:
+        metadata = metadata_engine.get_metadata_by_file_id(file_id)
+        if metadata:
+            return jsonify(metadata)
+        return jsonify(message="Metadata not found"), 404
+    except Exception as e:
+        app.logger.error(f"Error fetching metadata for file_id {file_id}: {e}")
+        return jsonify(error=str(e)), 500
+
+@app.route('/api/metadata/path', methods=['GET'])
+def get_metadata_by_path():
+    file_path = request.args.get('path')
+    if not file_path:
+        return jsonify(error="File path parameter is required"), 400
+    try:
+        metadata = metadata_engine.get_metadata_by_file_path(file_path)
+        if metadata:
+            return jsonify(metadata)
+        return jsonify(message="Metadata not found"), 404
+    except Exception as e:
+        app.logger.error(f"Error fetching metadata for path {file_path}: {e}")
+        return jsonify(error=str(e)), 500
+
+@app.route('/api/scan', methods=['POST'])
+def scan_project():
+    data = request.get_json()
+    project_path = data.get('project_path')
+    if not project_path:
+        return jsonify(error="Project path is required"), 400
+
+    try:
+        # This is a placeholder for the actual scanning logic
+        # In a real scenario, you would trigger your scanner here
+        # and return its status or results.
+        app.logger.info(f"Scanning project: {project_path}")
+        # Simulate a scan operation
+        scan_result = {
+            "status": "completed",
+            "timestamp": datetime.now().isoformat(),
+            "scanned_path": project_path,
+            "findings": [] # Placeholder for actual findings
+        }
+        return jsonify(scan_result)
+    except Exception as e:
+        app.logger.error(f"Error during project scan for {project_path}: {e}")
+        return jsonify(error=str(e)), 500
+
+@app.route('/api/docs/<category>/<doc_id>', methods=['GET'])
+def get_documentation(category, doc_id):
+    """Serve offline docs as pretty HTML by default.
+
+    Priority:
+      1) repo_root/docs/<category>/<CODE>.md (render to HTML)
+      2) repo_root/doc/<category>/<CODE>.md (render to HTML)
+      3) repo_root/docs/<category>/<CODE>.html (return as-is)
+
+    Query params:
+      - raw=1  -> return raw markdown (text/markdown) if md exists
+      - format=md -> same as raw=1
+    """
+    repo_root = Path(__file__).parent.parent.parent
+    cat = str(category).lower()
+    code = str(doc_id).upper()
+
+    # Prefer Markdown in ./docs
+    md_path = repo_root / 'docs' / cat / f'{code}.md'
+    if md_path.exists():
+        app.logger.info(f"Serving markdown doc: {md_path}")
+        try:
+            content = md_path.read_text(encoding='utf-8')
+            want_raw = request.args.get('raw') == '1' or request.args.get('format') == 'md'
+            if want_raw:
+                return Response(content, mimetype='text/markdown; charset=utf-8')
+            html = _render_markdown_html_pretty(content, title=f"{code}")
+            return Response(html, mimetype='text/html; charset=utf-8')
+        except Exception as e:
+            app.logger.error(f"Error reading markdown {md_path}: {e}")
+            return jsonify(error=str(e)), 500
+
+    # Next: Markdown in ./doc (legacy location)
+    md_path2 = repo_root / 'doc' / cat / f'{code}.md'
+    if md_path2.exists():
+        app.logger.info(f"Serving markdown doc: {md_path2}")
+        try:
+            content = md_path2.read_text(encoding='utf-8')
+            want_raw = request.args.get('raw') == '1' or request.args.get('format') == 'md'
+            if want_raw:
+                return Response(content, mimetype='text/markdown; charset=utf-8')
+            html = _render_markdown_html_pretty(content, title=f"{code}")
+            return Response(html, mimetype='text/html; charset=utf-8')
+        except Exception as e:
+            app.logger.error(f"Error reading markdown {md_path2}: {e}")
+            return jsonify(error=str(e)), 500
+
+    # Finally: legacy ./docs HTML if present
+    html_path = repo_root / 'docs' / cat / f'{code}.html'
+    if html_path.exists():
+        app.logger.info(f"Serving html doc: {html_path}")
+        try:
+            content = html_path.read_text(encoding='utf-8')
+            return Response(content, mimetype='text/html; charset=utf-8')
+        except Exception as e:
+            app.logger.error(f"Error reading html {html_path}: {e}")
+            return jsonify(error=str(e)), 500
+
+    app.logger.warning(f"Documentation not found for {category}/{doc_id}")
+    return jsonify(message="Documentation not found"), 404
+
+@app.route('/api/docs/owasp/<code>')
+def get_owasp_doc(code):
+    return get_documentation('owasp', code)
+
+@app.route('/api/docs/cwe/<code>')
+def get_cwe_doc(code):
+    # normalize code like 89 -> CWE-89
+    c = code.upper()
+    if not c.startswith('CWE-'):
+        c = f'CWE-{c}'
+    return get_documentation('cwe', c)
+
+
+def _render_markdown_html_pretty(md_text: str, title: str = "Document") -> str:
+    """Render markdown to standalone HTML with highlighting and nice styles."""
+    pygments_css = ''
+    if _md is None:
+        safe = (md_text or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        body = f"<pre>{safe}</pre>"
+    else:
+        try:
+            from pygments.formatters import HtmlFormatter  # type: ignore
+            formatter = HtmlFormatter(style='friendly')
+            pygments_css = formatter.get_style_defs('.codehilite')
+        except Exception:
+            pygments_css = ''
+        try:
+            md = _md.Markdown(
+                extensions=['fenced_code', 'tables', 'toc', 'sane_lists', 'attr_list', 'codehilite'],
+                extension_configs={
+                    'toc': {'permalink': True},
+                    'codehilite': {'guess_lang': False, 'pygments_style': 'friendly', 'noclasses': False}
+                }
+            )
+            body = md.convert(md_text or '')
+        except Exception:
+            safe = (md_text or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            body = f"<pre>{safe}</pre>"
+            pygments_css = ''
+    base_css = f"""
+    :root {{ color-scheme: light; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Noto Sans KR', 'Helvetica Neue', Arial, 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; margin: 0; background: #fff; color: #24292e; }}
+    .page {{ max-width: 980px; margin: 0 auto; padding: 24px 16px 40px; }}
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 {{ border-bottom: 1px solid #eaecef; padding-bottom: .3rem; }}
+    .markdown-body a {{ color: #0969da; text-decoration: none; }}
+    .markdown-body a:hover {{ text-decoration: underline; }}
+    .markdown-body pre, .markdown-body code {{ background: #f6f8fa; }}
+    .markdown-body pre {{ padding: .8rem; overflow: auto; border-radius: 6px; }}
+    .markdown-body table {{ border-collapse: collapse; display: block; overflow: auto; }}
+    .markdown-body table, .markdown-body th, .markdown-body td {{ border: 1px solid #d0d7de; }}
+    .markdown-body th, .markdown-body td {{ padding: .4rem .6rem; }}
+    .toc {{ font-size: .9rem; background: #fafbfc; border: 1px solid #d0d7de; border-radius: 6px; padding: .6rem .8rem; }}
+    .header {{ position: sticky; top: 0; z-index: 10; background: #ffffffcc; backdrop-filter: blur(6px); border-bottom: 1px solid #eaecef; }}
+    .header .inner {{ max-width: 980px; margin: 0 auto; padding: 10px 16px; font-weight: 600; }}
+    {pygments_css}
+    """
+    html = f"""
+    <!DOCTYPE html>
+    <html lang=\"ko\">
+    <head>
+      <meta charset=\"UTF-8\" />
+      <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+      <title>{title}</title>
+      <style>{base_css}</style>
+    </head>
+    <body>
+      <div class=\"header\"><div class=\"inner\">{title}</div></div>
+      <main class=\"page\">
+        <article class=\"markdown-body\">{body}</article>
+      </main>
+    </body>
+    </html>
+    """
+    return html
+def _render_markdown_html(md_text: str, title: str = "Document") -> str:
+    """Render markdown to standalone HTML. Falls back to pre tag if markdown lib missing."""
+    if _md is None:
+        safe = (md_text or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        body = f"<pre>{safe}</pre>"
+    else:
+        extensions = ['fenced_code', 'tables', 'toc']
+        try:
+            body = _md.markdown(md_text, extensions=extensions)
+        except Exception:
+            safe = (md_text or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            body = f"<pre>{safe}</pre>"
+    css = """
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Noto Sans KR', 'Helvetica Neue', Arial, 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; margin: 2rem auto; max-width: 980px; padding: 0 1rem; line-height: 1.6; }
+    pre, code { background: #f6f8fa; }
+    pre { padding: 0.8rem; overflow: auto; }
+    h1, h2, h3 { border-bottom: 1px solid #eaecef; padding-bottom: .3rem; }
+    table { border-collapse: collapse; }
+    table, th, td { border: 1px solid #dfe2e5; }
+    th, td { padding: .4rem .6rem; }
+    .container { margin: 0 auto; }
+    """
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>{title}</title>
+      <style>{css}</style>
+    </head>
+    <body>
+      <div class="container">
+      {body}
+      </div>
+    </body>
+    </html>
+    """
+    return html
+
+if __name__ == '__main__':
+    server_cfg = config.get('server', {}) if isinstance(config, dict) else {}
+    host = server_cfg.get('host', '127.0.0.1')
+    port = int(server_cfg.get('port', 8000))
+    debug = bool(server_cfg.get('debug', True))
+    app.run(debug=debug, host=host, port=port)

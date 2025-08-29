@@ -131,6 +131,36 @@ class SourceAnalyzer:
             'heuristic': 0.1
         })
         
+        # LLM 보강 기본 설정 (llm 또는 llm_assist 섹션과 호환)
+        if 'llm_assist' not in config:
+            config['llm_assist'] = {}
+        llm_cfg = config['llm_assist']
+        # llm 섹션이 있을 경우 일부 값을 기본치로 전파
+        legacy_llm = config.get('llm', {})
+        if isinstance(legacy_llm, dict):
+            # vLLM endpoint -> base_url
+            llm_cfg.setdefault('vllm_base_url', legacy_llm.get('vllm_endpoint'))
+            # base_model -> vllm_model 기본
+            llm_cfg.setdefault('vllm_model', legacy_llm.get('base_model'))
+            # temperature/max_tokens 전파
+            if 'temperature' in legacy_llm:
+                llm_cfg.setdefault('temperature', legacy_llm.get('temperature'))
+            if 'max_tokens' in legacy_llm:
+                llm_cfg.setdefault('max_tokens', legacy_llm.get('max_tokens'))
+        llm_cfg.setdefault('enabled', True)
+        llm_cfg.setdefault('provider', 'auto')  # auto|ollama|vllm
+        llm_cfg.setdefault('low_conf_threshold', 0.6)
+        llm_cfg.setdefault('max_calls_per_run', 50)
+        llm_cfg.setdefault('file_max_lines', 1200)
+        llm_cfg.setdefault('temperature', 0.0)
+        llm_cfg.setdefault('max_tokens', 512)
+        llm_cfg.setdefault('strict_json', True)
+        llm_cfg.setdefault('cache', True)
+        llm_cfg.setdefault('cache_dir', './out/llm_cache')
+        llm_cfg.setdefault('log_prompt', False)
+        llm_cfg.setdefault('dry_run', False)
+        llm_cfg.setdefault('fallback_to_ollama', True)
+        
     def _initialize_parsers(self) -> Dict[str, Any]:
         """파서들 초기화 (개선된 예외 처리)"""
         parsers = {}

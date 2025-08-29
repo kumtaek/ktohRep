@@ -62,6 +62,74 @@ Source Analyzer는 폐쇄망 환경에서 운영될 수 있도록 설계되었�
 5.  **(선택) 웹 대시보드 프런트엔드 배포**:
     *   사전 빌드된 프런트엔드 정적 파일(`dist` 폴더)을 오프라인 웹 서버(예: Nginx, Apache)에 배포하거나, 백엔드 서버에서 정적 파일을 서빙하도록 설정합니다.
 
+---
+
+## 오프라인 환경에서 프런트엔드 의존성 설치
+
+프런트엔드 개발 환경에서 인터넷 연결이 불가능한 경우, 다음 단계를 따라 의존성을 설치할 수 있습니다.
+
+1.  **온라인 환경에서 의존성 번들 생성:**
+    *   인터넷에 연결된 개발 환경에서 `web-dashboard/frontend` 디렉토리로 이동합니다.
+    *   `npm install`을 실행하여 모든 의존성을 설치하고 `package-lock.json` 파일을 생성합니다.
+    *   `npm pack` 또는 `npm-bundle`과 같은 도구를 사용하여 프로젝트의 모든 의존성을 하나의 아카이브 파일로 묶습니다. (예: `npm-bundle` 사용 시 `npm bundle`)
+
+2.  **오프라인 환경으로 번들 전송:**
+    *   생성된 의존성 번들 파일 (예: `project-name-1.0.0.tgz` 또는 `bundle.tar.gz`)을 오프라인 개발 환경의 `web-dashboard/frontend` 디렉토리로 전송합니다.
+
+3.  **오프라인 환경에서 의존성 설치:**
+    *   오프라인 개발 환경에서 `web-dashboard/frontend` 디렉토리로 이동합니다.
+    *   전송된 번들 파일을 사용하여 의존성을 설치합니다. (예: `npm install ./project-name-1.0.0.tgz` 또는 `npm unbundle` 후 `npm install`)
+
+**참고:** `react-markdown`과 같이 새로운 패키지를 추가하는 경우, 해당 패키지는 온라인 환경에서 먼저 `npm install react-markdown`을 실행하여 캐시에 저장하거나, 패키지 파일을 직접 다운로드하여 로컬에 준비해두는 과정이 필요합니다. `npm install` 명령은 인터넷 연결이 필요합니다.
+
+---
+
+## 🚀 빠른 시작 예시
+
+Source Analyzer는 폐쇄망 환경에서 운영될 수 있도록 설계되었습니다. 다음 절차에 따라 온라인 환경에서 필요한 의존성을 준비한 후, 오프라인 환경에서 설치를 진행할 수 있습니다.
+
+### 1. 사전 준비 (온라인 환경)
+
+1.  **Python 3.10+ 설치**:
+    *   공식 Python 웹사이트에서 Python 3.10 이상 버전을 다운로드하여 설치합니다.
+    *   설치 시 "Add Python to PATH" 옵션을 선택하는 것이 좋습니다.
+2.  **가상 환경 생성 및 pip 업그레이드**:
+    ```bash
+    python -m venv .venv
+    .venv/Scripts/python -m pip install -U pip
+    ```
+3.  **의존성 휠(Wheel) 파일 생성**:
+    *   `requirements.txt`에 명시된 모든 패키지의 휠 파일을 다운로드하여 오프라인 저장소를 만듭니다.
+    ```bash
+    .venv/Scripts/pip wheel -r requirements.txt -w wheelhouse/
+    ```
+    *   **참고**: `web-dashboard`를 사용할 경우 `fastapi`와 `uvicorn`도 `requirements.txt`에 포함되어 있어야 합니다.
+4.  **(선택) 웹 대시보드 프런트엔드 준비**:
+    *   `web-dashboard/frontend` 디렉토리에서 `npm install` 및 `npm run build`를 실행하여 정적 파일을 미리 빌드합니다. 빌드된 `dist` 폴더를 오프라인 환경으로 가져갑니다.
+
+### 2. 오프라인 설치 (운영 환경)
+
+1.  **온라인에서 준비한 파일 전송**:
+    *   `SourceAnalyzer.git` 프로젝트 폴더 전체와 `wheelhouse/` 디렉토리 (및 선택적으로 `web-dashboard/frontend/dist` 폴더)를 오프라인 환경으로 전송합니다.
+2.  **가상 환경 생성 및 pip 업그레이드**:
+    *   온라인 환경과 동일하게 가상 환경을 생성하고 `pip`를 최신 버전으로 업그레이드합니다.
+    ```bash
+    python -m venv .venv
+    .venv/Scripts/python -m pip install -U pip
+    ```
+3.  **오프라인 의존성 설치**:
+    *   미리 생성한 `wheelhouse/` 디렉토리를 사용하여 의존성을 설치합니다.
+    ```bash
+    .venv/Scripts/pip install --no-index --find-links wheelhouse -r requirements.txt
+    ```
+4.  **(선택) 웹 대시보드 백엔드 실행**:
+    *   필요한 환경변수(예: `HOST`, `PORT`, `ALLOWED_ORIGINS`)를 설정한 후 백엔드 서버를 실행합니다.
+    ```bash
+    HOST=0.0.0.0 PORT=8000 ALLOWED_ORIGINS=http://127.0.0.1:3000 .venv/Scripts/python web-dashboard/backend/app.py
+    ```
+5.  **(선택) 웹 대시보드 프런트엔드 배포**:
+    *   사전 빌드된 프런트엔드 정적 파일(`dist` 폴더)을 오프라인 웹 서버(예: Nginx, Apache)에 배포하거나, 백엔드 서버에서 정적 파일을 서빙하도록 설정합니다.
+
 ## 🚀 빠른 시작 예시
 
 ### 1. 프로젝트 분석 실행

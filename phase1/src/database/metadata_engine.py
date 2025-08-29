@@ -14,14 +14,16 @@ from sqlalchemy import and_, or_, func
 from contextlib import asynccontextmanager, contextmanager
 import time
 import os
+import json
 
-from ..models.database import (
+from models.database import (
     DatabaseManager, Project, File, Class, Method, SqlUnit, 
     Join, RequiredFilter, Edge, Summary, EnrichmentLog,
     DbTable, DbColumn, DbPk, DbView, ParseResultModel, VulnerabilityFix
 )
-from ..utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
-from ..utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
+from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
+from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
+from llm.assist import LlmAssist
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -31,6 +33,7 @@ class MetadataEngine:
         self.db_manager = db_manager
         self.logger = LoggerFactory.get_engine_logger()
         self.confidence_calculator = ConfidenceCalculator(config)
+        self.llm_assist = LlmAssist(config, db_manager=self.db_manager, logger=self.logger, confidence_calculator=self.confidence_calculator)
         
         # 병렬 처리 설정
         self.max_workers = config.get('processing', {}).get('max_workers', 4)
@@ -246,10 +249,21 @@ class MetadataEngine:
                 
                 # 신뢰도 계산
                 confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
-                
+
                 # 동기 저장 메서드 호출 (asyncio.run 제거)
                 saved_counts = self._save_java_analysis_sync(file_obj, classes, methods, edges)
-                
+
+                # 보강 훅: 저장 후 File ID를 사용하여 EnrichmentLog 기록
+                try:
+                    if hasattr(file_obj, 'file_id') and file_obj.file_id and self.llm_assist.should_assist(confidence):
+                        _ret = self.llm_assist.assist_java(file_id=file_obj.file_id, file_path=file_path, original_confidence=confidence)
+                        if _ret and isinstance(_ret, dict) and _ret.get('json') and not self.llm_assist.cfg.dry_run:
+                            _added = self._augment_java_from_json(file_id=file_obj.file_id, data=_ret['json'])
+                            if isinstance(_added, dict):
+                                self.logger.info(f"LLM augment(java): +classes={_added.get('classes',0)}, +methods={_added.get('methods',0)}")
+                except Exception as _e:
+                    self.logger.debug(f"LLM assist(java) skipped: {_e}")
+
                 return saved_counts
                 
             elif (file_path.endswith('.jsp') or file_path.endswith('.xml')) and 'jsp_mybatis' in parsers:
@@ -268,10 +282,21 @@ class MetadataEngine:
                 
                 # 신뢰도 계산
                 confidence, factors = self.confidence_calculator.calculate_parsing_confidence(parse_result_data)
-                
+
                 # 동기 저장 메서드 호출 (asyncio.run 제거)
                 saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, vulnerabilities)
-                
+
+                # 보강 훅: 저장 후 File ID로 EnrichmentLog 기록
+                try:
+                    if hasattr(file_obj, 'file_id') and file_obj.file_id and self.llm_assist.should_assist(confidence):
+                        _ret = self.llm_assist.assist_jsp(file_id=file_obj.file_id, file_path=file_path, original_confidence=confidence)
+                        if _ret and isinstance(_ret, dict) and _ret.get('json') and not self.llm_assist.cfg.dry_run:
+                            _added = self._augment_sql_from_json(file_id=file_obj.file_id, file_path=file_path, data=_ret['json'])
+                            if isinstance(_added, dict):
+                                self.logger.info(f"LLM augment(jsp/xml): +sql_units={_added.get('sql_units',0)}, +joins={_added.get('joins',0)}, +filters={_added.get('filters',0)}")
+                except Exception as _e:
+                    self.logger.debug(f"LLM assist(jsp/xml) skipped: {_e}")
+
                 return saved_counts
                 
             return None
@@ -363,6 +388,149 @@ class MetadataEngine:
                 
             session.commit()
             return saved_counts
+
+    def _augment_java_from_json(self, file_id: int, data: Dict[str, Any]) -> Dict[str, int]:
+        added = {"classes": 0, "methods": 0}
+        if not isinstance(data, dict):
+            return added
+        classes = data.get("classes")
+        if not isinstance(classes, list):
+            return added
+        with self._get_sync_session() as session:
+            existing_classes = session.query(Class).filter(Class.file_id == file_id).all()
+            class_key_to_row = {}
+            for c in existing_classes:
+                key = (c.fqn or c.name or "").strip()
+                class_key_to_row[key] = c
+            for c in classes:
+                if not isinstance(c, dict):
+                    continue
+                name = (c.get("name") or "").strip()
+                fqn = (c.get("fqn") or "").strip() if c.get("fqn") else None
+                key = (fqn or name)
+                if not key:
+                    continue
+                row = class_key_to_row.get(key)
+                if row is None:
+                    row = Class(
+                        file_id=file_id,
+                        fqn=fqn or name,
+                        name=name or (fqn or "Unknown"),
+                        start_line=c.get("start_line"),
+                        end_line=c.get("end_line"),
+                        modifiers=json.dumps([]),
+                        annotations=json.dumps([]),
+                    )
+                    session.add(row)
+                    session.flush()
+                    class_key_to_row[key] = row
+                    added["classes"] += 1
+                methods = c.get("methods") or []
+                if not isinstance(methods, list):
+                    continue
+                existing_methods = session.query(Method).filter(Method.class_id == row.class_id).all()
+                method_keys = set((m.name or "", m.signature or m.name or "") for m in existing_methods)
+                for m in methods:
+                    if not isinstance(m, dict):
+                        continue
+                    mname = (m.get("name") or "").strip()
+                    if not mname:
+                        continue
+                    sig = (m.get("signature") or f"{mname}()")
+                    keym = (mname, sig)
+                    if keym in method_keys:
+                        continue
+                    mrow = Method(
+                        class_id=row.class_id,
+                        name=mname,
+                        signature=sig,
+                        return_type=m.get("return_type"),
+                        start_line=m.get("start_line"),
+                        end_line=m.get("end_line"),
+                        annotations=json.dumps([]),
+                    )
+                    session.add(mrow)
+                    method_keys.add(keym)
+                    added["methods"] += 1
+            session.commit()
+        return added
+
+    def _augment_sql_from_json(self, file_id: int, file_path: str, data: Dict[str, Any]) -> Dict[str, int]:
+        added = {"sql_units": 0, "joins": 0, "filters": 0}
+        if not isinstance(data, dict):
+            return added
+        units = data.get("sql_units")
+        if not isinstance(units, list):
+            return added
+        origin = 'jsp' if file_path.endswith('.jsp') else ('mybatis' if file_path.endswith('.xml') else 'unknown')
+        with self._get_sync_session() as session:
+            existing_units = session.query(SqlUnit).filter(SqlUnit.file_id == file_id).all()
+            existing_fp = set((u.normalized_fingerprint or "") for u in existing_units)
+            for u in units:
+                if not isinstance(u, dict):
+                    continue
+                stmt_kind = (u.get("stmt_kind") or "select").lower()
+                tables = u.get("tables") or []
+                joins = u.get("joins") or []
+                filters = u.get("filters") or []
+                fp_obj = {
+                    "k": stmt_kind,
+                    "t": sorted([str(t).upper() for t in tables if t]),
+                    "j": sorted([
+                        {"l": j.get("l_table"), "lc": j.get("l_col"), "o": j.get("op"), "r": j.get("r_table"), "rc": j.get("r_col")}
+                        for j in joins if isinstance(j, dict)
+                    ], key=lambda x: (str(x.get("l")), str(x.get("lc")), str(x.get("r")), str(x.get("rc"))))
+                }
+                try:
+                    fp = json.dumps(fp_obj, sort_keys=True)
+                except Exception:
+                    fp = stmt_kind
+                if fp in existing_fp:
+                    continue
+                su = SqlUnit(
+                    file_id=file_id,
+                    origin=origin,
+                    mapper_ns=None,
+                    stmt_id=None,
+                    start_line=None,
+                    end_line=None,
+                    stmt_kind=stmt_kind,
+                    normalized_fingerprint=fp,
+                )
+                session.add(su)
+                session.flush()
+                added["sql_units"] += 1
+                for j in joins:
+                    if not isinstance(j, dict):
+                        continue
+                    jr = Join(
+                        sql_id=su.sql_id,
+                        l_table=(j.get("l_table") or None),
+                        l_col=(j.get("l_col") or None),
+                        op=(j.get("op") or "="),
+                        r_table=(j.get("r_table") or None),
+                        r_col=(j.get("r_col") or None),
+                        inferred_pkfk=0,
+                        confidence=0.6,
+                    )
+                    session.add(jr)
+                    added["joins"] += 1
+                for f in filters:
+                    if not isinstance(f, dict):
+                        continue
+                    fr = RequiredFilter(
+                        sql_id=su.sql_id,
+                        table_name=(f.get("table_name") or None),
+                        column_name=(f.get("column_name") or None),
+                        op=(f.get("op") or "="),
+                        value_repr=(f.get("value_repr") or None),
+                        always_applied=1 if f.get("always_applied") else 0,
+                        confidence=0.6,
+                    )
+                    session.add(fr)
+                    added["filters"] += 1
+            session.commit()
+        return added
 
     async def save_java_analysis(self, 
                                 file_obj: File, 

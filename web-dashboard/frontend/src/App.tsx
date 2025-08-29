@@ -6,6 +6,7 @@ import ProjectDetails from './pages/ProjectDetails'
 import ConfidenceValidation from './pages/ConfidenceValidation'
 import GroundTruthManagement from './pages/GroundTruthManagement'
 import Settings from './pages/Settings'
+import OwaspA03Doc from './components/OwaspA03Doc' // 새로 추가
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/confidence" element={<ConfidenceValidation />} />
         <Route path="/ground-truth" element={<GroundTruthManagement />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/docs/owasp/a03" element={<OwaspA03Doc />} /> {/* 새로 추가 */}
       </Routes>
     </Layout>
   )

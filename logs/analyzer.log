@@ -2742,3 +2742,1248 @@ Traceback (most recent call last):
   File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
     raise JavaSyntaxError(description, at)
 javalang.parser.JavaSyntaxError
+2025-08-29 17:01:02,550 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-29 17:01:02,551 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:01:02,551 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-29 17:01:02,551 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:01:02,589 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-29 17:01:02,590 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-29 17:01:02,591 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-29 17:01:02,592 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-29 17:01:02,592 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-29 17:01:02,594 - confidence_validator - WARNING - [logger.py:80] - Ground truth file not found: ground_truth_data.json
+2025-08-29 17:01:02,595 - confidence_validator - INFO - [logger.py:76] - Saved 2 ground truth entries
+2025-08-29 17:01:02,596 - confidence_validator - INFO - [logger.py:76] - Created sample ground truth data
+2025-08-29 17:01:02,596 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-29 17:01:02,597 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-29 17:01:02,597 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-29 17:01:02,597 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-29 17:01:02,597 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-29 17:01:02,599 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sampleSrc (PROJECT/sampleSrc)
+2025-08-29 17:01:02,627 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-29 17:01:02,633 - main - ERROR - [logger.py:85] - CSV 로드 실패: ALL_TABLES.csv: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables 
+WHERE db_tables.owner = ? AND db_tables.table_name = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('PUBLIC', 'USER_ROLE', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: db_tables.table_comment
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 278, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 62, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 126, in _load_tables
+    raise e
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 103, in _load_tables
+    ).first()
+      ~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables 
+WHERE db_tables.owner = ? AND db_tables.table_name = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('PUBLIC', 'USER_ROLE', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,658 - main - ERROR - [logger.py:85] - CSV 로드 실패: ALL_TAB_COLUMNS.csv: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: db_tables.table_comment
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 278, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 62, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 181, in _load_columns
+    raise e
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 143, in _load_columns
+    tables = session.query(DbTable).all()
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,674 - main - ERROR - [logger.py:85] - CSV 로드 실패: PK_INFO.csv: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: db_tables.table_comment
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 278, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 62, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 339, in _load_pk_info
+    raise e
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 304, in _load_pk_info
+    tables = session.query(DbTable).all()
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: db_tables.table_comment
+[SQL: SELECT db_tables.table_id AS db_tables_table_id, db_tables.owner AS db_tables_owner, db_tables.table_name AS db_tables_table_name, db_tables.status AS db_tables_status, db_tables.table_comment AS db_tables_table_comment 
+FROM db_tables]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,682 - main - WARNING - [logger.py:80] - DB 스키마 파일이 로드되지 않았습니다.
+2025-08-29 17:01:02,688 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-29 17:01:02,700 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'executeStaticQuery', 'executeStaticQuery(String sql)', 'List', 12, 22, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,716 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'startProcess', 'startProcess()', 'void', 17, 27, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,731 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'getUsersByName_VULNERABLE', 'getUsersByName_VULNERABLE(String userName)', 'List', 21, 31, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,738 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\mapper\OrderMapper.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'selectOrderById', 'selectOrderById(String orderId)', 'Object', 12, 22, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,743 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\mapper\ProductMapper.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'selectAllProducts', 'selectAllProducts()', 'List', 11, 21, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,748 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\mapper\UserMapper.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'selectUserById', 'selectUserById(String userId)', 'Object', 11, 21, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,752 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\ListService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'list', 'list()', 'void', 4, 14, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,760 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\OrderService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'calculateOrderTotal', 'calculateOrderTotal(String orderId, BigDecimal discountRate)', 'BigDecimal', 23, 33, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,765 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\OverloadService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'find', 'find(int id)', 'String', 7, 17, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,772 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\ProductService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'getProductList', 'getProductList()', 'List', 14, 24, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,778 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\UserService.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'getUserById', 'getUserById(String userId)', 'Optional', 20, 30, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,782 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'list', 'list()', 'void', 7, 17, '[{"name": "Override", "element": null}]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,787 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\java\com\example\util\Texts.java: (sqlite3.OperationalError) table methods has no column named parameters
+[SQL: INSERT INTO methods (class_id, name, signature, return_type, start_line, end_line, annotations, parameters, modifiers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (41, 'isEmpty', 'isEmpty(String s)', 'boolean', 4, 14, '[]', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:02,957 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:02,970 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:02,984 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,006 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,046 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,066 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,110 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,124 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:01:03,125 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-29 17:01:03,127 - main - ERROR - [logger.py:85] - 프로젝트 분석 실패: sampleSrc: (sqlite3.OperationalError) no such column: edges.meta
+[SQL: SELECT edges.edge_id AS edges_edge_id, edges.src_type AS edges_src_type, edges.src_id AS edges_src_id, edges.dst_type AS edges_dst_type, edges.dst_id AS edges_dst_id, edges.edge_kind AS edges_edge_kind, edges.confidence AS edges_confidence, edges.meta AS edges_meta, edges.created_at AS edges_created_at 
+FROM edges 
+WHERE edges.edge_kind = ? AND edges.dst_id IS NULL]
+[parameters: ('call',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: edges.meta
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 209, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\phase1\src\database\metadata_engine.py", line 487, in build_dependency_graph
+    await self._resolve_method_calls(session, project_id)
+  File "E:\SourceAnalyzer.git\phase1\src\database\metadata_engine.py", line 507, in _resolve_method_calls
+    ).all()
+      ~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: edges.meta
+[SQL: SELECT edges.edge_id AS edges_edge_id, edges.src_type AS edges_src_type, edges.src_id AS edges_src_id, edges.dst_type AS edges_dst_type, edges.dst_id AS edges_dst_id, edges.edge_kind AS edges_edge_kind, edges.confidence AS edges_confidence, edges.meta AS edges_meta, edges.created_at AS edges_created_at 
+FROM edges 
+WHERE edges.edge_kind = ? AND edges.dst_id IS NULL]
+[parameters: ('call',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:01:03,135 - main - ERROR - [logger.py:85] - 성능 측정 중단: 프로젝트 'sampleSrc' 전체 분석 | 0.54초 후 오류 발생: (sqlite3.OperationalError) no such column: edges.meta
+[SQL: SELECT edges.edge_id AS edges_edge_id, edges.src_type AS edges_src_type, edges.src_id AS edges_src_id, edges.dst_type AS edges_dst_type, edges.dst_id AS edges_dst_id, edges.edge_kind AS edges_edge_kind, edges.confidence AS edges_confidence, edges.meta AS edges_meta, edges.created_at AS edges_created_at 
+FROM edges 
+WHERE edges.edge_kind = ? AND edges.dst_id IS NULL]
+[parameters: ('call',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: edges.meta
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 209, in analyze_project
+    await self.metadata_engine.build_dependency_graph(project_id)
+  File "E:\SourceAnalyzer.git\phase1\src\database\metadata_engine.py", line 487, in build_dependency_graph
+    await self._resolve_method_calls(session, project_id)
+  File "E:\SourceAnalyzer.git\phase1\src\database\metadata_engine.py", line 507, in _resolve_method_calls
+    ).all()
+      ~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\SourceAnalyzer.git\venvSrcAnalyzer\Lib\site-packages\sqlalchemy\engine\default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: edges.meta
+[SQL: SELECT edges.edge_id AS edges_edge_id, edges.src_type AS edges_src_type, edges.src_id AS edges_src_id, edges.dst_type AS edges_dst_type, edges.dst_id AS edges_dst_id, edges.edge_kind AS edges_edge_kind, edges.confidence AS edges_confidence, edges.meta AS edges_meta, edges.created_at AS edges_created_at 
+FROM edges 
+WHERE edges.edge_kind = ? AND edges.dst_id IS NULL]
+[parameters: ('call',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-29 17:06:12,121 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-29 17:06:12,121 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:06:12,121 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-29 17:06:12,121 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:06:12,289 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-29 17:06:12,289 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-29 17:06:12,290 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-29 17:06:12,291 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-29 17:06:12,291 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-29 17:06:12,293 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-29 17:06:12,293 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-29 17:06:12,293 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-29 17:06:12,293 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-29 17:06:12,293 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-29 17:06:12,294 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-29 17:06:12,295 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sampleSrc (PROJECT/sampleSrc)
+2025-08-29 17:06:12,322 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-29 17:06:12,338 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TABLES.csv (15건)
+2025-08-29 17:06:12,401 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (168건)
+2025-08-29 17:06:12,418 - main - ERROR - [logger.py:85] - CSV 로드 실패: PK_INFO.csv: (sqlite3.IntegrityError) UNIQUE constraint failed: db_pk.table_id, db_pk.column_name
+[SQL: INSERT INTO db_pk (table_id, column_name, pk_pos) VALUES (?, ?, ?)]
+[parameters: [(12, 'USER_ID', 1), (4, 'CUSTOMER_ID', 1), (7, 'ORDER_ID', 1), (8, 'ORDER_ITEM_ID', 1), (9, 'PRODUCT_ID', 1), (3, 'CATEGORY_ID', 1), (2, 'BRAND_ID', 1), (11, 'SUPPLIER_ID', 1)  ... displaying 10 of 21 total bound parameter sets ...  (8, 'ORDER_ITEM_ID', 1), (9, 'PRODUCT_ID', 1)]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1933, in _exec_single_context
+    self.dialect.do_executemany(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 942, in do_executemany
+    cursor.executemany(statement, parameters)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: db_pk.table_id, db_pk.column_name
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\main.py", line 278, in _load_db_schema
+    result = await self.csv_loader.load_csv(csv_path, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 62, in load_csv
+    result = await handler(rows, project_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 339, in _load_pk_info
+    raise e
+  File "E:\SourceAnalyzer.git\phase1\src\utils\csv_loader.py", line 334, in _load_pk_info
+    session.commit()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4353, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4488, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\session.py", line 4449, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\base.py", line 1933, in _exec_single_context
+    self.dialect.do_executemany(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor,
+        ^^^^^^^
+    ...<2 lines>...
+        context,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\default.py", line 942, in do_executemany
+    cursor.executemany(statement, parameters)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: db_pk.table_id, db_pk.column_name
+[SQL: INSERT INTO db_pk (table_id, column_name, pk_pos) VALUES (?, ?, ?)]
+[parameters: [(12, 'USER_ID', 1), (4, 'CUSTOMER_ID', 1), (7, 'ORDER_ID', 1), (8, 'ORDER_ITEM_ID', 1), (9, 'PRODUCT_ID', 1), (3, 'CATEGORY_ID', 1), (2, 'BRAND_ID', 1), (11, 'SUPPLIER_ID', 1)  ... displaying 10 of 21 total bound parameter sets ...  (8, 'ORDER_ITEM_ID', 1), (9, 'PRODUCT_ID', 1)]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-29 17:06:12,445 - main - INFO - [logger.py:76] - DB 스키마 로딩 완료: 2/3 파일
+2025-08-29 17:06:12,450 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-29 17:06:12,765 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,777 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,792 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,813 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,850 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,870 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,915 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,927 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:06:12,928 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-29 17:06:12,985 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 53개 처리
+2025-08-29 17:06:12,989 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-29 17:06:13,004 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc (0.71초)
+2025-08-29 17:06:13,005 - main - INFO - [logger.py:76] - 성능: 프로젝트 'sampleSrc' 전체 분석 | 0.71초
+2025-08-29 17:07:15,087 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-29 17:07:15,087 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:07:15,087 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-29 17:07:15,087 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:07:15,241 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-29 17:07:15,242 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-29 17:07:15,242 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-29 17:07:15,243 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-29 17:07:15,243 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-29 17:07:15,245 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-29 17:07:15,245 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-29 17:07:15,245 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-29 17:07:15,245 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-29 17:07:15,245 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-29 17:07:15,246 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-29 17:07:15,247 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sampleSrc (PROJECT/sampleSrc)
+2025-08-29 17:07:15,275 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-29 17:07:15,290 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TABLES.csv (15건)
+2025-08-29 17:07:15,352 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (168건)
+2025-08-29 17:07:15,366 - main - INFO - [logger.py:76] - CSV 로드 완료: PK_INFO.csv (16건)
+2025-08-29 17:07:15,366 - main - INFO - [logger.py:76] - DB 스키마 로딩 완료: 3/3 파일
+2025-08-29 17:07:15,371 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-29 17:07:15,677 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,689 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,704 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,727 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,766 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,784 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,828 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,841 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:07:15,841 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-29 17:07:15,896 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 53개 처리
+2025-08-29 17:07:15,900 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-29 17:07:15,914 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc (0.67초)
+2025-08-29 17:07:15,914 - main - INFO - [logger.py:76] - 성능: 프로젝트 'sampleSrc' 전체 분석 | 0.67초
+2025-08-29 17:13:13,609 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-29 17:13:13,610 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:13:13,610 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-29 17:13:13,610 - main - INFO - [logger.py:76] - ============================================================
+2025-08-29 17:13:13,627 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-29 17:13:13,628 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-29 17:13:13,630 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-29 17:13:13,633 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-29 17:13:13,633 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-29 17:13:13,636 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-29 17:13:13,636 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-29 17:13:13,637 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-29 17:13:13,637 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-29 17:13:13,637 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-29 17:13:13,637 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-29 17:13:13,639 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sampleSrc (PROJECT/sampleSrc)
+2025-08-29 17:13:13,667 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-29 17:13:13,679 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-29 17:13:13,735 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-29 17:13:13,747 - main - INFO - [logger.py:76] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-29 17:13:13,747 - main - INFO - [logger.py:76] - DB 스키마 로딩 완료: 3/3 파일
+2025-08-29 17:13:13,752 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-29 17:13:14,063 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,075 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,092 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,114 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,152 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,172 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,214 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,229 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-29 17:13:14,229 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-29 17:13:14,317 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 82개 처리
+2025-08-29 17:13:14,323 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-29 17:13:14,326 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-29 17:13:14,346 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc (0.71초)
+2025-08-29 17:13:14,346 - main - INFO - [logger.py:76] - 성능: 프로젝트 'sampleSrc' 전체 분석 | 0.71초
+2025-08-29 17:28:28,145 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:33:41,623 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:33:59,776 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:35:13,814 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:37:02,138 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:43:08,427 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:43:22,292 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:49:10,652 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:00,064 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:01,501 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:05,357 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:36,211 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:37,731 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:51:42,304 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:52:58,478 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:52:58,486 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 17:52:59,540 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:52:59,547 - werkzeug - INFO -  * Debugger PIN: 129-808-370
+2025-08-29 17:53:02,524 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 17:53:03,016 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 17:53:03,146 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:53:03,623 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:53:07,513 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:54:07,582 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:54:07,590 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 17:54:09,660 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:54:09,667 - werkzeug - INFO -  * Debugger PIN: 129-808-370
+2025-08-29 17:56:03,412 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 17:56:03,812 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 17:56:04,079 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:56:04,087 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 17:56:04,406 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:56:04,413 - werkzeug - INFO -  * Debugger PIN: 129-808-370
+2025-08-29 17:56:22,678 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-08-29 17:56:22,679 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 17:56:22,680 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 17:56:23,218 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:56:23,226 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 17:57:26,899 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.md
+2025-08-29 17:57:26,903 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 17:57:26] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 17:57:27,179 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 17:57:27] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-29 17:57:39,649 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 17:57:39] "[33mGET /api/docs/owas HTTP/1.1[0m" 404 -
+2025-08-29 17:59:56,586 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 17:59:56,660 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 17:59:57,176 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 17:59:57,184 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:00:02,273 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-29 18:00:02,273 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 18:00:02,275 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:00:02,788 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:00:02,797 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:00:08,123 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.md
+2025-08-29 18:00:08,125 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:00:08] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:00:08,238 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:00:08] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-29 18:00:16,053 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03..md
+2025-08-29 18:00:16,054 - app - WARNING - Documentation file not found: E:\SourceAnalyzer.git\docs\owasp\A03..md
+2025-08-29 18:00:16,056 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:00:16] "[33mGET /api/docs/owasp/A03. HTTP/1.1[0m" 404 -
+2025-08-29 18:04:34,374 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 18:04:34,456 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:04:34,987 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:04:34,996 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:18:25,782 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 18:18:25,855 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:18:26,406 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:18:26,413 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:22:44,488 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:22:44,490 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:22:44] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:22:52,425 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:22:52,426 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:22:52] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:33:10,789 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A01.html
+2025-08-29 18:33:10,790 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:33:10] "GET /api/docs/owasp/A01 HTTP/1.1" 200 -
+2025-08-29 18:33:11,040 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:33:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-29 18:33:43,422 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:33:43,423 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:33:43] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:41:23,706 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:41:23,707 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:41:23] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:41:23,965 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:41:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-29 18:46:29,461 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-29 18:46:29,462 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 18:46:29,466 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:46:30,013 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:46:30,023 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:46:34,912 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:46:34,913 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:46:34] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:46:36,100 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:46:36,101 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:46:36] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:46:38,260 - app - INFO - Attempting to access documentation at path: E:\SourceAnalyzer.git\docs\owasp\A02.html
+2025-08-29 18:46:38,261 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:46:38] "GET /api/docs/owasp/A02 HTTP/1.1" 200 -
+2025-08-29 18:58:01,275 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-29 18:58:01,276 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 18:58:01,277 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:58:01,802 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:58:01,810 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 18:58:17,962 - app - INFO - Serving html doc: E:\SourceAnalyzer.git\docs\owasp\A03.html
+2025-08-29 18:58:17,963 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 18:58:17] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-29 18:59:47,445 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 18:59:47,516 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 18:59:48,067 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 18:59:48,075 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 19:00:59,163 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-29 19:00:59,164 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 19:00:59,165 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 19:00:59,673 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 19:00:59,681 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 19:01:11,247 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 19:01:11] "[33mGET /docs/markdown_viewer.html?file=owasp/A03.md HTTP/1.1[0m" 404 -
+2025-08-29 19:06:57,705 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-29 19:06:57,807 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 19:06:58,339 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 19:06:58,347 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 19:09:25,436 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-29 19:09:25,437 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-29 19:09:25,438 - werkzeug - INFO -  * Restarting with stat
+2025-08-29 19:09:25,953 - werkzeug - WARNING -  * Debugger is active!
+2025-08-29 19:09:25,961 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-29 19:10:13,608 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 19:10:13] "GET /api/health HTTP/1.1" 200 -
+2025-08-29 19:11:18,744 - app - WARNING - Documentation not found for owasp/A03`
+2025-08-29 19:11:18,744 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 19:11:18] "[33mGET /api/docs/owasp/A03` HTTP/1.1[0m" 404 -
+2025-08-29 19:11:34,309 - app - INFO - Serving markdown doc: E:\SourceAnalyzer.git\docs\owasp\A03.md
+2025-08-29 19:11:34,310 - werkzeug - INFO - 127.0.0.1 - - [29/Aug/2025 19:11:34] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-30 00:11:32,941 - app - INFO - Serving markdown doc: E:\SourceAnalyzer.git\docs\owasp\A02.md
+2025-08-30 00:11:32,944 - werkzeug - INFO - 127.0.0.1 - - [30/Aug/2025 00:11:32] "GET /api/docs/owasp/A02 HTTP/1.1" 200 -
+2025-08-30 00:13:06,469 - werkzeug - INFO -  * Detected change in 'E:\\SourceAnalyzer.git\\web-dashboard\\backend\\app.py', reloading
+2025-08-30 00:13:06,554 - werkzeug - INFO -  * Restarting with stat
+2025-08-30 00:13:07,902 - werkzeug - WARNING -  * Debugger is active!
+2025-08-30 00:13:07,909 - werkzeug - INFO -  * Debugger PIN: 144-722-069
+2025-08-30 00:19:44,529 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-30 00:19:44,529 - main - INFO - [logger.py:76] - ============================================================
+2025-08-30 00:19:44,530 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-30 00:19:44,530 - main - INFO - [logger.py:76] - ============================================================
+2025-08-30 00:19:44,561 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-30 00:19:44,563 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-30 00:19:44,564 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-30 00:19:44,568 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-30 00:19:44,568 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-30 00:19:44,571 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-30 00:19:44,571 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-30 00:19:44,572 - confidence_calculator - DEBUG - [logger.py:72] - 신뢰도 계산: parsing#1486863125496298227 | 0.626 -> 0.596 | 요인: {'ast': 0.8400000000000001, 'static': 0.4, 'db_match': 0.5, 'heuristic': 0.7, 'complexity_penalty': -0.03}
+2025-08-30 00:19:44,572 - confidence_calculator - DEBUG - [logger.py:72] - 신뢰도 계산: parsing#-2403968207477051603 | 0.502 -> 0.162 | 요인: {'ast': 0.32999999999999996, 'static': 0.4, 'db_match': 1.0, 'heuristic': 0.5, 'complexity_penalty': -0.33999999999999997}
+2025-08-30 00:19:44,573 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-30 00:19:44,573 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-30 00:19:44,573 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-30 00:19:44,573 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-30 00:19:44,574 - main - DEBUG - [logger.py:72] - 성능 측정 시작: 프로젝트 'sampleSrc' 전체 분석
+2025-08-30 00:19:44,575 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sampleSrc (PROJECT/sampleSrc)
+2025-08-30 00:19:44,604 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-30 00:19:44,636 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-30 00:19:44,691 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-30 00:19:44,703 - main - INFO - [logger.py:76] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-30 00:19:44,703 - main - INFO - [logger.py:76] - DB 스키마 로딩 완료: 3/3 파일
+2025-08-30 00:19:44,703 - main - DEBUG - [logger.py:72] - 파일 수집 중: PROJECT/sampleSrc
+2025-08-30 00:19:44,703 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-08-30 00:19:44,704 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-08-30 00:19:44,709 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 22
+2025-08-30 00:19:44,710 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-30 00:19:44,710 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-08-30 00:19:44,728 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-08-30 00:19:44,772 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-08-30 00:19:44,792 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-08-30 00:19:44,802 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-08-30 00:19:44,810 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-08-30 00:19:44,820 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\ListService.java
+2025-08-30 00:19:44,830 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-08-30 00:19:44,843 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-08-30 00:19:44,853 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-08-30 00:19:44,865 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\UserService.java
+2025-08-30 00:19:44,877 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-08-30 00:19:44,886 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\util\Texts.java
+2025-08-30 00:19:44,897 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-08-30 00:19:44,912 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,913 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,918 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,919 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,927 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,929 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,931 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,932 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,933 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,934 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,935 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,936 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,942 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,945 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,952 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,953 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,961 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,962 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,971 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,971 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,982 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,983 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:44,995 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:44,996 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,005 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,006 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,017 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,018 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,030 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,031 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,041 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,042 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,054 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,055 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,067 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,067 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,080 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,081 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,083 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,083 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,098 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,099 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-08-30 00:19:45,104 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,104 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,106 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,106 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,107 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,107 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,110 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,111 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,118 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,122 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-08-30 00:19:45,127 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,128 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,129 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,129 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,132 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,132 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,133 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,133 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,140 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,141 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-08-30 00:19:45,144 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,147 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,148 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,149 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,149 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,150 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,151 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,151 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,159 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-08-30 00:19:45,163 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,164 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,165 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,166 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,167 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,167 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,169 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,169 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,175 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,178 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-08-30 00:19:45,205 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,206 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,211 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,211 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,212 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,213 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,217 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,217 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,223 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,225 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-08-30 00:19:45,235 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,236 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,251 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,251 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-08-30 00:19:45,278 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,279 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,295 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,295 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,296 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,297 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,302 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,302 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-08-30 00:19:45,311 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,311 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,314 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,315 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,316 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 00:19:45,316 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 00:19:45,320 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 00:19:45,321 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-30 00:19:45,433 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 111개 처리
+2025-08-30 00:19:45,438 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 00:19:45,441 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 00:19:45,443 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 00:19:45,464 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc (0.89초)
+2025-08-30 00:19:45,465 - main - INFO - [logger.py:76] - 성능: 프로젝트 'sampleSrc' 전체 분석 | 0.89초
+2025-08-30 00:22:39,866 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+2025-08-30 00:22:39,866 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-30 00:22:39,876 - werkzeug - INFO -  * Restarting with stat
+2025-08-30 00:22:40,393 - werkzeug - WARNING -  * Debugger is active!
+2025-08-30 00:22:40,401 - werkzeug - INFO -  * Debugger PIN: 129-808-370
+2025-08-30 00:22:44,862 - app - INFO - Serving markdown doc: E:\SourceAnalyzer.git\docs\owasp\A03.md
+2025-08-30 00:22:45,085 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-08-30 00:22:45,088 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-08-30 00:22:45,090 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-08-30 00:22:45,094 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.sane_lists.SaneListExtension".
+2025-08-30 00:22:45,095 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.attr_list.AttrListExtension".
+2025-08-30 00:22:45,097 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.codehilite.CodeHiliteExtension".
+2025-08-30 00:22:45,180 - werkzeug - INFO - 127.0.0.1 - - [30/Aug/2025 00:22:45] "GET /api/docs/owasp/A03 HTTP/1.1" 200 -
+2025-08-30 00:56:22,772 - parser.java - ERROR - [logger.py:85] - 파일 파싱 실패: E:\SourceAnalyzer.git\tests\samples\java\InvalidSyntax.java: 
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\src\parsers\java_parser.py", line 140, in parse_file
+    tree = javalang.parse.parse(content)
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parse.py", line 53, in parse
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 110, in parse
+    return self.parse_compilation_unit()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 289, in parse_compilation_unit
+    self.accept(';')
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 131, in accept
+    self.illegal("Expected '%s'" % (accept,))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kt_oh\AppData\Roaming\Python\Python313\site-packages\javalang\parser.py", line 119, in illegal
+    raise JavaSyntaxError(description, at)
+javalang.parser.JavaSyntaxError

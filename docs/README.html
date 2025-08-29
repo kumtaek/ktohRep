@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보안 문서 (오프라인)</title>
+    <!--
+    [개선 전/후 설명 - 초보자용]
+
+    **개선 전:**
+    이 파일은 원래 'README.md'라는 마크다운(.md) 형식의 문서였습니다.
+    마크다운 파일은 일반 텍스트 파일과 같아서 웹 브라우저에서 직접 열면
+    글자들이 서식 없이 그대로 표시되어 읽기 불편했습니다.
+    제목, 목록, 코드 블록 등이 모두 평범한 텍스트처럼 보였습니다.
+
+    **개선 후:**
+    이제 이 파일은 'README.html'이라는 웹 페이지 형식으로 변환되었습니다.
+    이 HTML 파일은 웹 브라우저가 내용을 예쁘게 보여줄 수 있도록 해줍니다.
+    특히, 'marked.js'라는 작은 JavaScript 프로그램을 인터넷(CDN)에서 가져와 사용합니다.
+    이 프로그램은 'README.md' 파일의 마크다운 문법(예: # 제목, ## 소제목, ``` 코드)을
+    웹 브라우저가 이해할 수 있는 HTML 태그(예: <h1>, <h2>, <pre><code>)로 자동으로 바꿔줍니다.
+
+    **핵심 변경 사항:**
+    1.  **HTML 구조 추가:** 웹 페이지의 기본 틀인 `<html>`, `<head>`, `<body>` 태그가 추가되었습니다.
+    2.  **마크다운 렌더링 라이브러리 포함:** `<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>` 코드를 넣어 'marked.js'를 사용합니다.
+    3.  **마크다운 내용 로드 및 변환:** JavaScript 코드가 'README.md' 파일의 내용을 읽어와 'marked.js'로 HTML 변환 후, 웹 페이지의 특정 영역(`id="content"`)에 표시합니다.
+    4.  **스타일 적용:** 기본적인 가독성을 위한 CSS 스타일이 추가되어 글꼴, 여백, 코드 블록 등이 보기 좋게 정돈됩니다.
+
+    이제 이 'README.html' 파일을 웹 브라우저로 열면, 'README.md'의 내용이 마치 블로그 글처럼 깔끔하게 서식이 적용되어 보일 것입니다.
+    -->
+    <meta http-equiv="refresh" content="0; url=markdown_viewer.html?file=README.md">
+</head>
+<body>
+    Redirecting to Markdown Viewer...
+</body>
+</html>

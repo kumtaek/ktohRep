@@ -105,7 +105,34 @@ db_schema:
 
 # Logging
 logging:
-  level: "INFO"
+  level: "DEBUG"
   file: "./logs/analyzer.log"
   max_size: "100MB"
   backup_count: 3
+
+# Web Server (Backend) Configuration
+server:
+  host: "127.0.0.1"
+  port: 8000
+
+# LLM Assist (Phase1) — Optional overrides for providers
+llm_assist:
+  enabled: true
+  provider: auto           # auto|ollama|vllm|openai
+  low_conf_threshold: 0.6
+  max_calls_per_run: 50
+  file_max_lines: 1200
+  temperature: 0.0
+  max_tokens: 512
+  strict_json: true
+  cache: true
+  cache_dir: ./out/llm_cache
+  log_prompt: false
+  dry_run: false
+  fallback_to_ollama: true
+  # Provider details (override env when set)
+  vllm_base_url: ${VLLM_ENDPOINT}
+  vllm_api_key: ${VLLM_API_KEY}
+  vllm_model: Qwen2.5
+  ollama_host: http://localhost:11434
+  ollama_model: gemma3:1b

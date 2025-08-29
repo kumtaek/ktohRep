@@ -89,7 +89,307 @@
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script>
-        const DATA = __DATA_PLACEHOLDER__;
+        const DATA = {
+  "nodes": [
+    {
+      "id": "table:SAMPLE.ORDERS",
+      "type": "table",
+      "label": "SAMPLE.ORDERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "ORDERS",
+        "status": "VALID",
+        "pk_columns": [
+          "ORDER_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.USERS",
+      "type": "table",
+      "label": "SAMPLE.USERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "USERS",
+        "status": "VALID",
+        "pk_columns": [
+          "USER_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    }
+  ],
+  "edges": [],
+  "metadata": {
+    "node_count": 2,
+    "edge_count": 0,
+    "node_types": [
+      "table"
+    ],
+    "edge_kinds": []
+  }
+};
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

@@ -1025,18 +1025,82 @@ class MetadataEngine:
         return created
 
     def llm_summarize_methods(self, *, max_items: int = 50, lang: str = 'ko') -> int:
+        """호출 중심성과 공개 메소드 보너스를 가중해 우선순위 높은 메소드부터 요약한다.
+        간단/전형적 메소드는 휴리스틱 요약으로 비용 없이 처리하여 커버리지 상승.
+        """
         created = 0
         provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
         dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
         temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
         max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
+        from collections import defaultdict
         with self._get_sync_session() as session:
             existing_map = {(s.target_type, s.target_id) for s in session.query(Summary).filter(Summary.summary_type == 'logic').all()}
-            methods = session.query(Method).limit(max_items * 3).all()
+            # Build simple centrality from call edges
+            in_deg = defaultdict(int); out_deg = defaultdict(int)
+            for (mid,) in session.query(Edge.dst_id).filter(Edge.edge_kind == 'call', Edge.dst_type == 'method').all():
+                if mid:
+                    in_deg[mid] += 1
+            for (mid,) in session.query(Edge.src_id).filter(Edge.edge_kind == 'call', Edge.src_type == 'method').all():
+                if mid:
+                    out_deg[mid] += 1
+            methods = session.query(Method).all()
+            scored = []
             for m in methods:
-                key = ('method', m.method_id)
-                if key in existing_map:
+                if ('method', m.method_id) in existing_map:
                     continue
+                score = in_deg.get(m.method_id, 0) * 2 + out_deg.get(m.method_id, 0)
+                mods = getattr(m, 'modifiers', '') or ''
+                if isinstance(mods, str) and 'public' in mods:
+                    score += 2
+                scored.append((score, m))
+            scored.sort(key=lambda x: x[0], reverse=True)
+
+            def _heuristic_method_summary(m: Method) -> Optional[str]:
+                name = (m.name or '').lower()
+                # Heuristic by name
+                if name.startswith('get') and not name.startswith('get$'):
+                    return '객체 속성 값을 반환하는 getter 메소드'
+                if name.startswith('set') and not name.startswith('set$'):
+                    return '객체 속성 값을 설정하는 setter 메소드'
+                if name.startswith('is'):
+                    return '불리언 상태를 반환하는 확인 메소드'
+                if name in ('tostring', '__str__'):
+                    return '객체 내용을 문자열로 변환하는 메소드'
+                if name in ('equals', '__eq__'):
+                    return '두 객체의 동등성을 비교하는 메소드'
+                if name in ('hashcode', '__hash__'):
+                    return '객체 해시코드를 계산하는 메소드'
+                # Optional: short body heuristic (if line info available)
+                try:
+                    if getattr(m, 'start_line', None) and getattr(m, 'end_line', None):
+                        # load file content via class -> file
+                        cl = session.query(Class).filter(Class.class_id == m.class_id).first()
+                        if cl:
+                            f = session.query(File).filter(File.file_id == cl.file_id).first()
+                            if f and f.path:
+                                lines = open(f.path, 'r', encoding='utf-8', errors='ignore').read().splitlines()
+                                s = max(0, (m.start_line or 1) - 1); e = min(len(lines), (m.end_line or s+1))
+                                snippet = '\n'.join(lines[s:e])
+                                # If very short and contains only return or single call
+                                if (e - s) <= 6:
+                                    if 'return' in snippet and snippet.count('return') == 1 and snippet.count('(') <= 2:
+                                        return '간단한 반환/위임 로직을 수행하는 메소드'
+                except Exception:
+                    pass
+                return None
+
+            for _, m in scored[: max_items * 4]:
+                if created >= max_items:
+                    break
+                # Heuristic first (free coverage)
+                h = _heuristic_method_summary(m)
+                if h:
+                    sm = Summary(target_type='method', target_id=m.method_id, summary_type='logic', lang=lang, content=h, confidence=0.55)
+                    session.add(sm)
+                    created += 1
+                    continue
+                # Otherwise LLM
                 cl = session.query(Class).filter(Class.class_id == m.class_id).first()
                 system = f"너는 코드 요약 보조 AI다. 한국어({lang})로 한두 문장으로 메소드 역할을 추정 요약하라."
                 user = f"클래스: {getattr(cl, 'fqn', '')}\n메소드: {m.name}\n시그니처: {m.signature or ''}"

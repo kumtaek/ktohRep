@@ -3990,3 +3990,6 @@ javalang.parser.JavaSyntaxError
 2025-08-30 01:49:03,248 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
 2025-08-30 01:52:05,599 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
 2025-08-30 01:57:18,543 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 02:00:49,528 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 02:02:04,878 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 02:07:25,235 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567

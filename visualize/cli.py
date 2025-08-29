@@ -151,7 +151,7 @@ def main():
 
     def add_common(sp):
         sp.add_argument('--project-id', type=int, required=True, help='프로젝트 ID')
-        sp.add_argument('--out', required=True, help='출력 HTML 경로')
+        sp.add_argument('--out', required=False, help='출력 HTML 경로 (미지정 시 HTML 생성 생략)')
         sp.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
         sp.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
         # Mermaid 옵션
@@ -278,14 +278,13 @@ def main():
                 keep_edge_kinds=keep_edge_kinds
             )
 
-        # Generate and save HTML
-        output_path = Path(args.out)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(html)
-            
-        logger.info(f"시각화 HTML 저장: {output_path.absolute()}")
+        # Generate and save HTML (optional)
+        if getattr(args, 'out', None):
+            output_path = Path(args.out)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            logger.info(f"시각화 HTML 저장: {output_path.absolute()}")
         
     except KeyboardInterrupt:
         print('사용자에 의해 중단됨', file=sys.stderr)

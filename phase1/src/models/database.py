@@ -8,7 +8,7 @@ from sqlalchemy import (
     DateTime, ForeignKey, Index, CLOB
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session, synonym
 from datetime import datetime
 import json
 from typing import Dict, List, Optional, Any
@@ -171,6 +171,12 @@ class Join(Base):
     
     # Relationships
     sql_unit = relationship("SqlUnit", back_populates="joins")
+
+    # SQLAlchemy synonyms for visualize layer compatibility
+    left_table = synonym('l_table')
+    left_column = synonym('l_col')
+    right_table = synonym('r_table')
+    right_column = synonym('r_col')
 
 class RequiredFilter(Base):
     __tablename__ = 'required_filters'

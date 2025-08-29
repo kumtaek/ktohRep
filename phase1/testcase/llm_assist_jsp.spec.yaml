@@ -3,3 +3,6 @@ kind: engine_llm_assist
 input: tests/samples/jsp/sample.jsp
 expected:
   enrichment_logs_min: 1
+name: Engine LLM JSP summary alias (dry-run)
+kind: engine_llm_jsp_summary
+expected: {}

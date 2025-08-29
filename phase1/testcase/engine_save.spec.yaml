@@ -3,4 +3,10 @@ kind: engine_save
 input: tests/samples/java/ValidSimple.java
 expected:
   files_min: 1
+name: Engine save for Java parsing results
+kind: engine_save
+input: PROJECT/sampleSrc/src/main/java/com/example/integrated/IntegratedService.java
+skip_if_missing_input: false
+expected:
+  files_min: 1
 

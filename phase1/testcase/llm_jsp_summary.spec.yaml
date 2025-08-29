@@ -1,3 +1,6 @@
 name: LLM JSP file summary (dry run)
 kind: engine_llm_jsp_summary
 expected: {}
+name: Engine LLM JSP summary (dry-run)
+kind: engine_llm_jsp_summary
+expected: {}

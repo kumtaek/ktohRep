@@ -3993,3 +3993,119 @@ javalang.parser.JavaSyntaxError
 2025-08-30 02:00:49,528 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
 2025-08-30 02:02:04,878 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
 2025-08-30 02:07:25,235 - engine.metadata - INFO - [logger.py:76] - LLM assist(java) applied: pre=0.696 -> post=0.567
+2025-08-30 02:49:13,353 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-30 02:49:13,353 - main - INFO - [logger.py:76] - ============================================================
+2025-08-30 02:49:13,354 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-30 02:49:13,354 - main - INFO - [logger.py:76] - ============================================================
+2025-08-30 02:49:13,367 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-30 02:49:13,368 - main - INFO - [logger.py:76] - Java 파서 초기화 완료
+2025-08-30 02:49:13,370 - main - INFO - [logger.py:76] - JSP/MyBatis 파서 초기화 완료
+2025-08-30 02:49:13,371 - main - INFO - [logger.py:76] - SQL 파서 초기화 완료
+2025-08-30 02:49:13,371 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-30 02:49:13,373 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-30 02:49:13,379 - main - INFO - [logger.py:76] - Confidence formula 검증 시작...
+2025-08-30 02:49:13,379 - confidence_calculator - DEBUG - [logger.py:72] - 신뢰도 계산: parsing#-2392285004559816624 | 0.626 -> 0.596 | 요인: {'ast': 0.8400000000000001, 'static': 0.4, 'db_match': 0.5, 'heuristic': 0.7, 'complexity_penalty': -0.03}
+2025-08-30 02:49:13,380 - confidence_calculator - DEBUG - [logger.py:72] - 신뢰도 계산: parsing#-1095627838771995016 | 0.502 -> 0.162 | 요인: {'ast': 0.32999999999999996, 'static': 0.4, 'db_match': 1.0, 'heuristic': 0.5, 'complexity_penalty': -0.33999999999999997}
+2025-08-30 02:49:13,381 - main - INFO - [logger.py:76] - Confidence formula MAE: 0.406
+2025-08-30 02:49:13,381 - main - WARNING - [logger.py:80] - Confidence 오류가 큼: 40.6% - 캘리브레이션 균인
+2025-08-30 02:49:13,381 - main - INFO - [logger.py:76] - 자동 confidence 캘리브레이션 시도...
+2025-08-30 02:49:13,381 - main - INFO - [logger.py:76] - 현재 가중치가 최적 상태
+2025-08-30 02:49:13,383 - main - DEBUG - [logger.py:72] - 성능 측정 시작: 프로젝트 'sample' 전체 분석
+2025-08-30 02:49:13,383 - main - INFO - [logger.py:76] - 프로젝트 등록 중: sample (PROJECT/sampleSrc)
+2025-08-30 02:49:13,423 - main - INFO - [logger.py:76] - DB 스키마 정보 로딩 중: PROJECT/sampleSrc\DB_SCHEMA
+2025-08-30 02:49:13,453 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TABLES.csv (0건)
+2025-08-30 02:49:13,509 - main - INFO - [logger.py:76] - CSV 로드 완료: ALL_TAB_COLUMNS.csv (0건)
+2025-08-30 02:49:13,520 - main - INFO - [logger.py:76] - CSV 로드 완료: PK_INFO.csv (0건)
+2025-08-30 02:49:13,520 - main - INFO - [logger.py:76] - DB 스키마 로딩 완료: 3/3 파일
+2025-08-30 02:49:13,520 - main - DEBUG - [logger.py:72] - 파일 수집 중: PROJECT/sampleSrc
+2025-08-30 02:49:13,521 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-08-30 02:49:13,521 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-08-30 02:49:13,526 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 22
+2025-08-30 02:49:13,527 - main - INFO - [logger.py:76] - 발견된 소스 파일: 22개
+2025-08-30 02:49:13,527 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-08-30 02:49:13,540 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-08-30 02:49:13,551 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-08-30 02:49:13,570 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-08-30 02:49:13,578 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-08-30 02:49:13,585 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-08-30 02:49:13,594 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\ListService.java
+2025-08-30 02:49:13,601 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-08-30 02:49:13,615 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-08-30 02:49:13,624 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-08-30 02:49:13,634 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\UserService.java
+2025-08-30 02:49:13,643 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-08-30 02:49:13,650 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\java\com\example\util\Texts.java
+2025-08-30 02:49:13,658 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-08-30 02:49:13,665 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,666 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,675 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-08-30 02:49:13,678 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,679 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,680 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,681 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,682 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,682 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,685 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,686 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,695 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\OrderMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,696 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-08-30 02:49:13,700 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,700 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,701 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,702 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,704 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,704 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,705 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,706 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,713 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\ProductMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,714 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-08-30 02:49:13,715 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,716 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,717 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,717 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,718 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,718 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,720 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,720 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,729 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-08-30 02:49:13,731 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,731 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,732 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,733 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,734 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,734 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,736 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,736 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,742 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\resources\mybatis\UserMapper.xml: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,744 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-08-30 02:49:13,749 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,749 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,754 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,754 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-08-30 02:49:13,761 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,762 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,775 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,776 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-08-30 02:49:13,798 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,799 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,816 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,817 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,818 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,819 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,825 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,825 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-08-30 02:49:13,831 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,832 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,835 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,838 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,839 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 고급 SQL 패턴 추출 오류: 'NoneType' object is not iterable
+2025-08-30 02:49:13,840 - parser.jsp_mybatis - DEBUG - [logger.py:72] - 정규식 기반 SQL 패턴 추출 오류: unbalanced parenthesis at position 34
+2025-08-30 02:49:13,844 - main - ERROR - [logger.py:87] - 파일 분석 오류 PROJECT/sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp: 'Vulnerability' object has no attribute 'get'
+2025-08-30 02:49:13,845 - main - INFO - [logger.py:76] - 의존성 그래프 구축 중
+2025-08-30 02:49:13,968 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 123개 처리
+2025-08-30 02:49:13,973 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 02:49:13,976 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 02:49:13,978 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 02:49:13,982 - engine.metadata - WARNING - [logger.py:80] - 테이블을 찾을 수 없음: public.u (스키마: SAMPLE)
+2025-08-30 02:49:14,010 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sample (0.63초)
+2025-08-30 02:49:14,011 - main - INFO - [logger.py:76] - 성능: 프로젝트 'sample' 전체 분석 | 0.63초

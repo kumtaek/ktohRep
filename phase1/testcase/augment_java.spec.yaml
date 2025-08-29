@@ -5,3 +5,10 @@ params:
 expected:
   classes_min: 1
   methods_min: 1
+name: Engine augment unit (Java)
+kind: engine_augment_unit
+params:
+  target: java
+expected:
+  classes_min: 1
+  methods_min: 1

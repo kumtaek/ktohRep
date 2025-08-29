@@ -3,4 +3,10 @@ kind: jsp_mybatis_parser
 input: tests/samples/xml/mybatis_valid.xml
 expected:
   sql_min: 1
+name: MyBatis XML parser on IntegratedMapper.xml
+kind: jsp_mybatis_parser
+input: PROJECT/sampleSrc/src/main/resources/mybatis/IntegratedMapper.xml
+skip_if_missing_input: false
+expected:
+  sql_min: 3
 

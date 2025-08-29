@@ -3,3 +3,9 @@ kind: engine_llm_assist
 input: tests/samples/java/ValidSimple.java
 expected:
   enrichment_logs_min: 1
+name: Engine LLM assist (dry-run) on Java file
+kind: engine_llm_assist
+input: PROJECT/sampleSrc/src/main/java/com/example/integrated/IntegratedService.java
+skip_if_missing_input: false
+expected:
+  enrichment_logs_min: 1

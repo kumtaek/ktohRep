@@ -1,3 +1,6 @@
 name: LLM DB enrich & join inference (dry run)
 kind: engine_llm_db_enrich
 expected: {}
+name: Engine LLM DB enrich (dry-run heuristics)
+kind: engine_llm_db_enrich
+expected: {}

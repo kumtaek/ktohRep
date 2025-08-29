@@ -3,4 +3,10 @@ kind: jsp_mybatis_parser
 input: tests/samples/jsp/sample.jsp
 expected:
   sql_min: 0
+name: JSP parser on IntegratedView.jsp
+kind: jsp_mybatis_parser
+input: PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/IntegratedView.jsp
+skip_if_missing_input: false
+expected:
+  sql_min: 1
 

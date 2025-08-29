@@ -4,4 +4,11 @@ input: tests/samples/java/ValidSimple.java
 expected:
   classes_min: 1
   methods_min: 1
+name: Java parser on IntegratedService
+kind: java_parser
+input: PROJECT/sampleSrc/src/main/java/com/example/integrated/IntegratedService.java
+skip_if_missing_input: false
+expected:
+  classes_min: 1
+  methods_min: 3
 

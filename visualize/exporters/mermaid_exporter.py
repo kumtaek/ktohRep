@@ -14,9 +14,15 @@ import re
 class MermaidExporter:
     """Mermaid 다이어그램/Markdown 내보내기 유틸리티"""
 
-    def __init__(self, label_max: int = 20, erd_cols_max: int = 10):
+    def __init__(self, label_max: int = 20, erd_cols_max: int = 10,
+                 class_methods_max: int = 10, class_attrs_max: int = 10,
+                 min_confidence: float = 0.0, keep_edge_kinds: tuple = ("includes","call","use_table")):
         self.max_label_length = label_max
         self.erd_cols_max = erd_cols_max
+        self.class_methods_max = class_methods_max
+        self.class_attrs_max = class_attrs_max
+        self.min_confidence = min_confidence
+        self.keep_edge_kinds = set(keep_edge_kinds)
         self.node_id_map: Dict[str, str] = {}
         self.id_counter = 1
 
@@ -34,8 +40,13 @@ class MermaidExporter:
         Returns:
             Markdown 문자열 전체(메타/범례/코드블록 포함)
         """
-        mermaid_content = self.export_mermaid(data, diagram_type)
-        return self._build_markdown_document(mermaid_content, diagram_type, title, data, metadata)
+        # Filter edges before creating mermaid content
+        kept_edges, dropped_edges = self._filter_edges(data.get('edges', []))
+        filtered_data = data.copy()
+        filtered_data['edges'] = kept_edges
+        
+        mermaid_content = self.export_mermaid(filtered_data, diagram_type)
+        return self._build_markdown_document(mermaid_content, diagram_type, title, filtered_data, metadata, dropped_edges)
 
     def export_mermaid(self, data: Dict[str, Any], diagram_type: str) -> str:
         """Mermaid 코드만 생성(.mmd 용)"""
@@ -52,7 +63,7 @@ class MermaidExporter:
 
     def _build_markdown_document(self, mermaid_content: str, diagram_type: str,
                                  title: str | None, data: Dict[str, Any],
-                                 metadata: Dict[str, Any] | None = None) -> str:
+                                 metadata: Dict[str, Any] | None = None, dropped_edges: list = None) -> str:
         """메타/범례를 포함한 Markdown 문서 구성"""
 
         # 기본 제목
@@ -135,6 +146,20 @@ class MermaidExporter:
                 "",
                 "</details>"
             ])
+
+        # Markdown 문서에 overflow/드롭 요약 추가
+        if dropped_edges:
+            md_lines.extend([
+                "",
+                "## 단순화로 제외된 항목",
+                f"- 제외 엣지: {len(dropped_edges)}",
+                "<details>",
+                "<summary>목록 보기</summary>",
+                "",
+            ])
+            for e in dropped_edges[:50]:
+                md_lines.append(f"- {e.get('source')} -[{e.get('kind','edge')}]-> {e.get('target')} (conf={e.get('confidence',1.0):.2f})")
+            md_lines.extend(["</details>", ""]) 
 
         md_lines.extend([
             "",
@@ -357,14 +382,14 @@ class MermaidExporter:
                 lines.append(f"  class {class_id} {{")
                 
                 # 속성 추가
-                attributes = meta.get('attributes', [])[:10]  # 최대 10개
+                attributes = meta.get('attributes', [])[: self.class_attrs_max]
                 for attr in attributes:
                     visibility = '-' if attr.get('is_private') else '+'
                     attr_type = '*' if attr.get('type') == 'class_variable' else ''
                     lines.append(f"    {visibility}{attr_type}{attr['name']}")
                 
                 # 메서드 추가  
-                methods = meta.get('methods', [])[:self.erd_cols_max]  # 메서드 수 제한 재활용
+                methods = [m for m in meta.get('methods', []) if not m.get('is_special')][: self.class_methods_max]
                 for method in methods:
                     if method.get('is_special'):
                         continue  # __init__ 등은 생략
@@ -396,6 +421,16 @@ class MermaidExporter:
                 lines.append(f"  {dst_id} <|-- {src_id}")
         
         return "\n".join(lines)
+
+    def _filter_edges(self, edges: list) -> tuple[list, list]:
+        """엣지 필터링 (공통 적용)"""
+        kept, dropped = [], []
+        for e in edges:
+            if (e.get('confidence', 1.0) >= self.min_confidence) or (e.get('kind') in self.keep_edge_kinds):
+                kept.append(e)
+            else:
+                dropped.append(e)
+        return kept, dropped
 
     def _find_node_by_id(self, data: Dict[str, Any], node_id: str) -> Optional[Dict[str, Any]]:
         """ID로 노드를 조회"""

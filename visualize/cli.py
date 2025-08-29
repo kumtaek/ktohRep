@@ -105,10 +105,19 @@ def export_csv(data: Dict[str, Any], csv_dir: str, logger: logging.Logger) -> No
 
 def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str, 
                   logger: logging.Logger, metadata: Dict[str, Any] = None,
-                  label_max: int = 20, erd_cols_max: int = 10) -> None:
+                  label_max: int = 20, erd_cols_max: int = 10, 
+                  class_methods_max: int = 10, class_attrs_max: int = 10,
+                  min_confidence: float = 0.0, keep_edge_kinds: tuple = ("includes","call","use_table")) -> None:
     """Mermaid/Markdown 내보내기 (확장자에 따라 .md 또는 .mmd)"""
     try:
-        exporter = MermaidExporter(label_max=label_max, erd_cols_max=erd_cols_max)
+        exporter = MermaidExporter(
+            label_max=label_max, 
+            erd_cols_max=erd_cols_max,
+            class_methods_max=class_methods_max,
+            class_attrs_max=class_attrs_max,
+            min_confidence=min_confidence,
+            keep_edge_kinds=keep_edge_kinds
+        )
         
         # Prepare metadata
         meta_info = metadata or {}
@@ -148,6 +157,11 @@ def main():
         # Mermaid 옵션
         sp.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
         sp.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
+        # Export strategy options
+        sp.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
+        sp.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
+        sp.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
+        sp.add_argument('--keep-edge-kinds', default='includes,call,use_table', help='Edge kinds to keep')
         # Logging options
         sp.add_argument('-v', '--verbose', action='count', default=0, 
                        help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
@@ -250,7 +264,17 @@ def main():
 
         if args.export_mermaid:
             logger.info(f"Mermaid/Markdown 내보내기: {args.export_mermaid}")
-            export_mermaid(data, args.export_mermaid, diagram_type, logger, {'project_id': args.project_id}, label_max=getattr(args, 'mermaid_label_max', 20), erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10))
+            keep_edge_kinds = tuple(args.keep_edge_kinds.split(',')) if hasattr(args, 'keep_edge_kinds') else ("includes","call","use_table")
+            export_mermaid(
+                data, args.export_mermaid, diagram_type, logger, 
+                {'project_id': args.project_id}, 
+                label_max=getattr(args, 'mermaid_label_max', 20), 
+                erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10),
+                class_methods_max=getattr(args, 'class_methods_max', 10),
+                class_attrs_max=getattr(args, 'class_attrs_max', 10),
+                min_confidence=args.min_confidence,
+                keep_edge_kinds=keep_edge_kinds
+            )
 
         # Generate and save HTML
         output_path = Path(args.out)

@@ -18,12 +18,16 @@ python phase1/src/main.py PROJECT/sampleSrc --project-name sample --config confi
 - `data/metadata.db` 생성
 - 콘솔/로그에 분석 요약 출력
 
-## 2. MyBatis 조인 추출 검증
+## 2. MyBatis 조인 추출 검증 (v1.4 확장)
 
 대상 파일: `PROJECT/sampleSrc/src/main/resources/mybatis/TestJoinMapper.xml`
 
 체크 포인트:
 - `sql_units`에 `selectUserOrders`, `selectUserOrdersWithInclude`, `selectCompositeJoin` 등록
+- **v1.4 신규**: 동적 SQL 처리 검증
+  - `selectDynamicChoose`: `<bind>`, `<choose>/<when>/<otherwise>` 처리
+  - `selectWithForeach`: `<foreach>` IN 표현으로 요약
+  - `selectWithNestedInclude`: 중첩된 `<include>`과 `<where>/<if>` 처리
 - `joins`에 다음 패턴 존재:
   - `SAMPLE.USERS.USER_ID = SAMPLE.ORDERS.USER_ID`
   - `SAMPLE.ORDER_ITEMS.ORDER_ID = SAMPLE.ORDERS.ORDER_ID`
@@ -86,8 +90,34 @@ select inferred_pkfk, count(*) from joins group by inferred_pkfk;
 - 파일: `logs/analyzer.log`
 - 실패/예외 로그가 없는지 확인
 
-## 7. 주의/한계
+## 7. v1.4 신규 기능 테스트
+
+### 7.1 동적 SQL 해석 테스트
+```bash
+# 동적 SQL이 포함된 매퍼에서 조건/분기 보존 확인
+python phase1/src/main.py PROJECT/sampleSrc --project-name sample --config config/config.yaml
+```
+
+검증 항목:
+- `<bind>` 변수가 정규화된 SQL에 적절히 치환
+- `<choose>/<when>` 분기가 대표 분기로 요약되고 주석 보존
+- `<foreach>` 블록이 `IN (:list[])` 형태로 요약
+
+### 7.2 Mermaid 내보내기 개선 테스트
+```bash
+# 다양한 export strategy 테스트
+python visualize_cli.py graph --project-id 1 --out test_full.html --export-strategy full
+python visualize_cli.py graph --project-id 1 --out test_balanced.html --export-strategy balanced --min-confidence 0.4
+python visualize_cli.py class --project-id 1 --out test_class.html --class-methods-max 5 --class-attrs-max 8
+```
+
+### 7.3 세션 관리 개선 검증
+- 병렬 분석 N회 반복 후 DB 연결/커서 수 정상 유지 확인
+- 예외 유발 테스트에서 리소스 누수 없음 확인
+
+## 8. 주의/한계
 
 - javalang 미설치 시 Java 파싱 스킵될 수 있음(requirements 설치 필요)
 - DB_SCHEMA CSV가 충분하지 않으면 PK 교차검증 결과가 달라질 수 있음
+- v1.4에서 추가된 DynamicSqlResolver는 lxml이 필요함
 

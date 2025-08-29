@@ -40,6 +40,123 @@ from ..utils.confidence_calculator import ConfidenceCalculator
 from ..security.vulnerability_detector import SqlInjectionDetector, XssDetector
 
 
+class DynamicSqlResolver:
+    """
+    MyBatis 동적 태그(include/bind/choose/foreach/if/trim/where/set) 해석기
+    - 조건 보존: optional 주석/메타로 표시
+    - 분기 요약: 대표 분기만 전개(max_branch)
+    - 안전 장치: include 순환 참조 방지, 캐시 사용
+    """
+    def __init__(self, namespace: str, max_branch: int = 3):
+        self.ns = namespace
+        self.max_branch = max_branch
+        self.visited_refids = set()
+        self.sql_fragment_cache: Dict[str, etree._Element] = {}
+        self.bind_vars: Dict[str, str] = {}
+
+    def prime_cache(self, root: etree._Element):
+        # <sql id="..."> 프래그먼트 캐시화
+        for frag in root.xpath('.//sql'):
+            frag_id = frag.get('id')
+            if frag_id:
+                self.sql_fragment_cache[frag_id] = frag
+
+    def resolve(self, element: etree._Element) -> str:
+        self._resolve_bind_vars(element)
+        self._inline_includes(element)
+        self._flatten_choose(element)
+        self._flatten_foreach(element)
+        self._unwrap_if_trim_where_set(element)
+        return self._collect_text(element)
+
+    def _inline_includes(self, element: etree._Element):
+        for inc in element.xpath('.//include'):
+            refid = inc.get('refid')
+            if not refid:
+                continue
+            if refid in self.visited_refids:
+                # 순환 보호: 주석으로 대체
+                inc.getparent().replace(inc, etree.Comment(f"circular-include:{refid}"))
+                continue
+            self.visited_refids.add(refid)
+            frag = self.sql_fragment_cache.get(refid)
+            if frag is not None:
+                # 복제하여 인라인
+                inc.getparent().replace(inc, etree.fromstring(etree.tostring(frag)))
+
+    def _resolve_bind_vars(self, element: etree._Element):
+        # <bind name="var" value="..."/>
+        for b in element.xpath('.//bind'):
+            name = b.get('name')
+            val = b.get('value')
+            if name and val:
+                self.bind_vars[name] = val
+            b.getparent().remove(b)
+
+        # 간단한 텍스트 대체 (고급 치환은 추후 확장)
+        text = etree.tostring(element, encoding='unicode')
+        for k, v in self.bind_vars.items():
+            text = text.replace(f"#{{{k}}}", v)
+        new_elem = etree.fromstring(text)
+        element.clear()
+        element.tag = new_elem.tag
+        element.attrib.update(new_elem.attrib)
+        for child in list(element):
+            element.remove(child)
+        for child in new_elem:
+            element.append(child)
+
+    def _flatten_choose(self, element: etree._Element):
+        for choose in element.xpath('.//choose'):
+            whens = choose.xpath('./when')[: self.max_branch]
+            otherwise = choose.xpath('./otherwise')
+            picked = whens or otherwise
+            if picked:
+                # 대표 분기만 전개, 조건은 주석으로 보존
+                chosen = picked[0]
+                comment = etree.Comment(f"choose: {chosen.get('test', 'otherwise')}")
+                choose.addprevious(comment)
+                choose.getparent().replace(choose, chosen)
+            else:
+                choose.getparent().remove(choose)
+
+    def _flatten_foreach(self, element: etree._Element):
+        # foreach 블록을 IN/OR 요약 표현으로 치환
+        for fe in element.xpath('.//foreach'):
+            item = fe.get('item', 'item')
+            col_hint = fe.get('collection', 'list')
+            placeholder = f":{col_hint}[]"
+            summarized = etree.Element('text')
+            summarized.text = f" IN ({placeholder}) "
+            fe.getparent().replace(fe, summarized)
+
+    def _unwrap_if_trim_where_set(self, element: etree._Element):
+        # 조건부/포장 태그는 내용만 남기고 optional 주석 추가
+        for tag in ['if', 'trim', 'where', 'set']:
+            for t in element.xpath(f'.//{tag}'):
+                test = t.get('test') if tag == 'if' else tag
+                t.addprevious(etree.Comment(f"optional:{test}"))
+                self._unwrap(t)
+
+    def _unwrap(self, node: etree._Element):
+        parent = node.getparent()
+        idx = parent.index(node)
+        for child in list(node):
+            parent.insert(idx, child)
+            idx += 1
+        parent.remove(node)
+
+    def _collect_text(self, elem: etree._Element) -> str:
+        def walk(e) -> List[str]:
+            parts = [e.text or '']
+            for c in e:
+                parts.extend(walk(c))
+                parts.append(c.tail or '')
+            return parts
+        text = ' '.join(walk(elem))
+        return ' '.join(text.split())  # 공백 정규화
+
+
 class AdvancedSqlExtractor:
     """
     AST-based SQL extraction to replace problematic regex patterns
@@ -488,6 +605,9 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         # AST-based SQL extraction - replaces problematic regex patterns  
         self.advanced_sql_extractor = AdvancedSqlExtractor(config)
         
+        # Dynamic SQL resolver for MyBatis
+        self.dynamic_sql_resolver = None
+        
         # JSP 스크립틀릿 SQL 패턴 개선
         self.jsp_sql_patterns = [
             re.compile(r'<%.*?(select|insert|update|delete).*?%>', re.IGNORECASE | re.DOTALL),
@@ -659,6 +779,10 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             # 네임스페이스 추출
             namespace = root.get('namespace', '')
             
+            # Dynamic SQL resolver 초기화
+            resolver = DynamicSqlResolver(namespace, max_branch=self.config.get('mybatis', {}).get('max_branch', 3))
+            resolver.prime_cache(root)
+            
             # v5.2: bind 변수 선행 추출
             self._extract_bind_variables(root, file_obj.path)
             
@@ -677,11 +801,9 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     start_line = element.sourceline if hasattr(element, 'sourceline') else 1
                     end_line = self._estimate_end_line(element, start_line)
                     
-                    # SQL 내용 추출
-                    sql_content = self._extract_sql_content_lxml(element)
-                    
-                    # v5.2: include 해결 후 SQL 내용 재구성
-                    resolved_sql_content = self._resolve_includes_in_sql(sql_content, namespace)
+                    # SQL 내용 추출 with dynamic resolution
+                    sql_content = resolver.resolve(element)
+                    normalized = self._normalize_sql(sql_content)
                     
                     # 동적 SQL 분석 개선
                     has_dynamic = self._has_dynamic_sql(element)
@@ -701,7 +823,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                             start_line=start_line,
                             end_line=end_line,
                             stmt_kind=stmt_type,
-                            normalized_fingerprint=self._create_sql_fingerprint(resolved_sql_content)
+                            normalized_fingerprint=self._create_sql_fingerprint(normalized)
                         )
                         
                         sql_units.append(sql_unit)
@@ -713,7 +835,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                             sql_joins, sql_filters = self._extract_sql_patterns_advanced(optimized_sql, sql_unit)
                         else:
                             # 정적 SQL 처리 - v5.2: include 해결된 SQL 사용
-                            sql_joins, sql_filters = self._extract_sql_patterns_advanced(resolved_sql_content, sql_unit)
+                            sql_joins, sql_filters = self._extract_sql_patterns_advanced(normalized, sql_unit)
                         
                         # v5.2: 의심스러운 결과에 대한 신뢰도 조정
                         if is_suspect:
@@ -1098,6 +1220,14 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             # 기본 스키마 추가
             return f"{self.default_schema}.{table_name}".lower()
             
+    def _normalize_sql(self, sql_content: str) -> str:
+        """SQL 정규화 처리"""
+        normalized = re.sub(r'\s+', ' ', sql_content.strip())
+        normalized = re.sub(r':\w+', ':PARAM', normalized)
+        normalized = re.sub(r'\$\{\w+\}', '${PARAM}', normalized)
+        normalized = re.sub(r'#\{\w+\}', '#{PARAM}', normalized)
+        return normalized
+
     def get_suspect_results_summary(self) -> Dict[str, Any]:
         """v5.2: 의심스러운 결과에 대한 요약 정보 반환"""
         return {

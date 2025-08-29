@@ -59,12 +59,13 @@ class MetadataEnhancementEngine:
         """Resolve method call hints into actual edges"""
         logger.info(f"Resolving method calls for project {project_id}")
         
-        hints = self.session.query(EdgeHint).filter(
-            and_(
-                EdgeHint.project_id == project_id,
-                EdgeHint.hint_type == 'method_call'
-            )
-        ).all()
+        with self.session.begin():
+            hints = self.session.query(EdgeHint).filter(
+                and_(
+                    EdgeHint.project_id == project_id,
+                    EdgeHint.hint_type == 'method_call'
+                )
+            ).all()
         
         resolved_count = 0
         edges_created = 0
@@ -247,12 +248,13 @@ class MetadataEnhancementEngine:
         """Resolve JSP include hints"""
         logger.info(f"Resolving JSP includes for project {project_id}")
         
-        hints = self.session.query(EdgeHint).filter(
-            and_(
-                EdgeHint.project_id == project_id,
-                EdgeHint.hint_type == 'jsp_include'
-            )
-        ).all()
+        with self.session.begin():
+            hints = self.session.query(EdgeHint).filter(
+                and_(
+                    EdgeHint.project_id == project_id,
+                    EdgeHint.hint_type == 'jsp_include'
+                )
+            ).all()
         
         resolved_count = 0
         edges_created = 0
@@ -303,12 +305,13 @@ class MetadataEnhancementEngine:
         """Resolve MyBatis include hints"""
         logger.info(f"Resolving MyBatis includes for project {project_id}")
         
-        hints = self.session.query(EdgeHint).filter(
-            and_(
-                EdgeHint.project_id == project_id,
-                EdgeHint.hint_type == 'mybatis_include'
-            )
-        ).all()
+        with self.session.begin():
+            hints = self.session.query(EdgeHint).filter(
+                and_(
+                    EdgeHint.project_id == project_id,
+                    EdgeHint.hint_type == 'mybatis_include'
+                )
+            ).all()
         
         resolved_count = 0
         edges_created = 0
@@ -364,8 +367,9 @@ class MetadataEnhancementEngine:
         """Enhance SQL joins with PK/FK validation and confidence adjustment"""
         logger.info(f"Enhancing SQL joins for project {project_id}")
         
-        joins = (
-            self.session.query(Join)
+        with self.session.begin():
+            joins = (
+                self.session.query(Join)
             .join(SqlUnit)
             .join(File)
             .filter(File.project_id == project_id)

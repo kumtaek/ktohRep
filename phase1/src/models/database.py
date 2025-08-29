@@ -8,7 +8,7 @@ from sqlalchemy import (
     DateTime, ForeignKey, Index, CLOB
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from datetime import datetime
 import json
 from typing import Dict, List, Optional, Any
@@ -363,8 +363,13 @@ class DatabaseManager:
         # Create all tables first
         Base.metadata.create_all(self.engine)
         
-        # Initialize Session after tables are created
-        self.Session = sessionmaker(bind=self.engine)
+        # Thread-local scoped session for better concurrency
+        self.Session = scoped_session(sessionmaker(
+            bind=self.engine,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        ))
         
     def get_session(self):
         """Get a new database session."""

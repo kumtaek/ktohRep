@@ -101,9 +101,35 @@ class JavaParser:
                 mtime=datetime.fromtimestamp(file_stat.st_mtime)
             )
             
+            # Parser configuration and selection
+            parser_cfg = (self.config.get('java', {}) or {}).get('parser_type', 'javalang').lower()
+            
+            def _select_parser() -> str:
+                if parser_cfg == 'tree-sitter' and self.tree_sitter_parser:
+                    return 'tree_sitter'
+                if parser_cfg == 'javalang' and javalang is not None:
+                    return 'javalang'
+                # 폴백: 사용 가능 항목 우선
+                if self.tree_sitter_parser:
+                    return 'tree_sitter'
+                if javalang is not None:
+                    return 'javalang'
+                return 'none'
+
+            parser_used = _select_parser()
+            if parser_used == 'none':
+                # 로깅 후 빈 결과 반환
+                print('No available Java parser (javalang/tree-sitter)')
+                return file_obj, [], [], []
+
             # Java AST 파싱
             try:
-                tree = javalang.parse.parse(content)
+                if parser_used == 'javalang':
+                    tree = javalang.parse.parse(content)
+                elif parser_used == 'tree_sitter':
+                    tree = self._parse_with_tree_sitter(content)
+                else:
+                    tree = None
             except Exception as e:
                 # 파싱 실패 시 낮은 신뢰도로 파일 생성
                 print(f"파일 파싱 실패 {file_path}: {e}")

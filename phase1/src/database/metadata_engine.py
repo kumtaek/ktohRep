@@ -59,10 +59,11 @@ class MetadataEngine:
         """안전한 동기 데이터베이스 세션 컨텍스트 매니저"""
         session = self.db_manager.get_session()
         try:
-            yield session
-        except Exception as e:
-            session.rollback()
-            raise e
+            with session.begin():
+                yield session
+        except Exception:
+            # session.begin() 컨텍스트가 자동 롤백
+            raise
         finally:
             session.close()
         

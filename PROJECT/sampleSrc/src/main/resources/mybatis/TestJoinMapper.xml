@@ -26,5 +26,48 @@
     JOIN PRODUCTS p ON oi.PRODUCT_ID = p.PRODUCT_ID
   </select>
 
+  <!-- Test dynamic SQL features for new DynamicSqlResolver -->
+  <select id="selectDynamicChoose" resultType="map">
+    <bind name="statusFilter" value="'ACTIVE'"/>
+    SELECT u.USER_ID, u.USER_NAME
+    FROM USERS u
+    <choose>
+      <when test="userType == 'ADMIN'">
+        WHERE u.USER_TYPE = 'ADMIN'
+      </when>
+      <when test="userType == 'CUSTOMER'">
+        WHERE u.USER_TYPE = 'CUSTOMER' AND u.STATUS = #{statusFilter}
+      </when>
+      <otherwise>
+        WHERE u.STATUS = 'ACTIVE'
+      </otherwise>
+    </choose>
+  </select>
+
+  <select id="selectWithForeach" resultType="map">
+    SELECT * FROM ORDERS o
+    WHERE o.ORDER_ID IN
+    <foreach item="id" collection="orderIds" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </select>
+
+  <select id="selectWithNestedInclude" resultType="map">
+    SELECT u.*, o.*
+    FROM USERS u
+    <if test="includeOrders != null">
+      LEFT JOIN ORDERS o ON u.USER_ID = o.USER_ID
+    </if>
+    <include refid="commonWhere"/>
+    <where>
+      <if test="status != null">
+        AND u.STATUS = #{status}
+      </if>
+      <if test="userType != null">
+        AND u.USER_TYPE = #{userType}
+      </if>
+    </where>
+  </select>
+
 </mapper>
 

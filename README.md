@@ -35,9 +35,28 @@ python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
 - **시퀀스 다이어그램**: 메서드 호출 흐름
 - **클래스 다이어그램**: Python 클래스 구조와 상속 관계 (v1.3 신규)
 
-### 4) Mermaid 내보내기 옵션
+### 4) Mermaid 내보내기 옵션 (v1.4 확장)
 - `--mermaid-label-max` 라벨 최대 길이(기본 20)
 - `--mermaid-erd-max-cols` ERD 컬럼 최대 표기 수(기본 10)
+- `--export-strategy` full|balanced|minimal 프리셋(기본 balanced)
+- `--class-methods-max` 클래스 다이어그램 메서드 최대 수(기본 10)
+- `--class-attrs-max` 클래스 다이어그램 속성 최대 수(기본 10)
+- `--keep-edge-kinds` 보존할 엣지 종류(기본 includes,call,use_table)
+
+---
+
+## 버전 히스토리
+
+### v1.4 (2025-08-29) - 동적 SQL 처리 및 시각화 개선
+- **JSP/MyBatis 동적 SQL 처리 개선**: lxml 기반 AST 처리로 조건/구조 정보 보존
+- **데이터베이스 세션 관리 개선**: scoped_session과 transaction boundary 명확화
+- **Mermaid 내보내기 단순화**: export strategy와 overflow 요약 기능 추가
+- **트랜잭션 경계 개선**: 단일 begin 경계로 원자성 보장
+- **설정 문서 정합성**: parser_type 실제 구현과 일치
+
+### v1.3 - 클래스 다이어그램 및 한글 인코딩 지원
+### v1.2 - Web Dashboard 및 시각화 확장
+### v1.1 - 초기 시각화 구현
 
 ---
 
@@ -139,9 +158,10 @@ database:
 parsers:
   java:
     enabled: true
-    parser_type: "javaparser"
+    parser_type: "javalang"   # 또는 "tree-sitter" (설치 필요)
   python:
-    enabled: true  # v1.3 신규
+    enabled: true
+    parser_type: "ast"
 ```
 
 ### 4. 프로젝트 분석 실행
@@ -334,11 +354,11 @@ python visualize_cli.py [COMMAND] [OPTIONS]
 parsers:
   java:
     enabled: true
-    parser_type: "javaparser"  # 또는 "tree-sitter"
+    parser_type: "javalang"   # 또는 "tree-sitter" (설치 필요)
     
   python:
     enabled: true
-    parser_type: "ast"  # Python AST 파서
+    parser_type: "ast"
     
   jsp:
     enabled: true

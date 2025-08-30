@@ -142,6 +142,7 @@ class Edge(Base):
     __tablename__ = 'edges'
     
     edge_id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey('projects.project_id'), nullable=False)  # Add project_id for filtering
     src_type = Column(String(50), nullable=False)  # method, class, sql_unit, etc.
     src_id = Column(Integer, nullable=False)
     dst_type = Column(String(50), nullable=False)
@@ -152,6 +153,7 @@ class Edge(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Recommended indexes for performance
+Index('ix_edges_project', Edge.project_id)
 Index('ix_edges_src', Edge.src_type, Edge.src_id)
 Index('ix_edges_dst', Edge.dst_type, Edge.dst_id)
 Index('ix_edges_kind', Edge.edge_kind)
@@ -265,6 +267,26 @@ class EdgeHint(Base):
     hint = Column(Text, nullable=False)             # JSON: { called_name, arg_count, target_path, namespace, line, ... }
     confidence = Column(Float, default=0.5)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Relatedness(Base):
+    """Stores relatedness scores between entities for visualization clustering"""
+    __tablename__ = 'relatedness'
+    
+    relatedness_id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey('projects.project_id'), nullable=False)
+    node1_type = Column(String(50), nullable=False)  # file, class, method, sql_unit, table
+    node1_id = Column(Integer, nullable=False)
+    node2_type = Column(String(50), nullable=False)
+    node2_id = Column(Integer, nullable=False)
+    score = Column(Float, nullable=False)  # 0.0 to 1.0
+    reason = Column(String(100), nullable=False)  # edge_fk, directory_proximity, naming_convention, etc.
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Ensure uniqueness per project and node pair
+    __table_args__ = (
+        Index('idx_relatedness_project_nodes', 'project_id', 'node1_type', 'node1_id', 'node2_type', 'node2_id', unique=True),
+        Index('idx_relatedness_score', 'score'),
+    )
 
 class VulnerabilityFix(Base):
     __tablename__ = 'vulnerability_fixes'

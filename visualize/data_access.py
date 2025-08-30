@@ -16,37 +16,11 @@ import yaml
 
 
 class VizDB:
-    def __init__(self, config_path: Optional[str] = None):
-        if config_path is None:
-            config_path = project_root / "config" / "config.yaml"
-        
-        self.config = self._load_config(config_path)
+    def __init__(self, config: Dict[str, Any], project_name: Optional[str] = None):
+        self.config = config
+        self.project_name = project_name
         self.dbm = DatabaseManager(self.config)
         self.dbm.initialize()
-
-    def _load_config(self, config_path: Path) -> Dict[str, Any]:
-        """Load configuration from YAML file"""
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                raw = f.read()
-            print(f"DEBUG_LOAD_CONFIG: Raw config content length: {len(raw)}")
-            # Allow environment variable substitution like ${VAR}
-            expanded = os.path.expandvars(raw)
-            print(f"DEBUG_LOAD_CONFIG: Expanded config content length: {len(expanded)}")
-            loaded_config = yaml.safe_load(expanded)
-            print(f"DEBUG_LOAD_CONFIG: Loaded config type: {type(loaded_config)}")
-            return loaded_config
-        except Exception as e:
-            print(f"경고: 설정 파일을 불러올 수 없습니다: {config_path} ({e})")
-            # Return default SQLite config
-            return {
-                'database': {
-                    'type': 'sqlite',
-                    'sqlite': {
-                        'path': str(project_root / "data" / "metadata.db")
-                    }
-                }
-            }
 
     def session(self):
         """Get database session"""

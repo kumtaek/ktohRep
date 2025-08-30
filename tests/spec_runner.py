@@ -4,8 +4,8 @@
 Spec-based test runner.
 
 Scans these locations for .spec.yaml files and executes them:
-- phase1/testcase/**/*.spec.yaml
-- visualize/testcase/**/*.spec.yaml
+- testcase/phase1/**/*.spec.yaml
+- testcase/visualize/**/*.spec.yaml
 - web-dashboard/backend/testcase/**/*.spec.yaml
 - tests/specs/*.yaml (optional)
 

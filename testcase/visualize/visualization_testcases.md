@@ -25,7 +25,7 @@ kind: visualize_cli
 params:
   command: erd
   project-id: 1
-  out: visualize/output/erd_all.html
+  out: output/visualize/erd_all.html
 expected:
   files_exist:
     - visualize\output\erd_all.html
@@ -40,7 +40,7 @@ params:
   project-id: 1
   owners: SAMPLE
   tables: USERS,ORDERS
-  out: visualize/output/erd_subset.html
+  out: output/visualize/erd_subset.html
 expected:
   files_exist:
     - visualize\output\erd_subset.html
@@ -53,7 +53,7 @@ kind: visualize_cli
 params:
   command: erd
   project-id: 1
-  out: visualize/output/erd_fk.html
+  out: output/visualize/erd_fk.html
 expected:
   files_exist:
     - visualize\output\erd_fk.html
@@ -67,7 +67,7 @@ params:
   command: erd
   project-id: 1
   from-sql: UserMapper:selectUser
-  out: visualize/output/erd_from_sql.html
+  out: output/visualize/erd_from_sql.html
 expected:
   files_exist:
     - visualize\output\erd_from_sql.html
@@ -81,7 +81,7 @@ params:
   command: graph
   project-id: 1
   kinds: use_table
-  out: visualize/output/graph_use_table.html
+  out: output/visualize/graph_use_table.html
 expected:
   files_exist:
     - visualize\output\graph_use_table.html
@@ -95,7 +95,7 @@ params:
   command: graph
   project-id: 1
   kinds: include
-  out: visualize/output/graph_include.html
+  out: output/visualize/graph_include.html
 expected:
   files_exist:
     - visualize\output\graph_include.html
@@ -110,7 +110,7 @@ params:
   project-id: 1
   kinds: use_table,include
   min-confidence: 0.9
-  out: visualize/output/graph_conf90.html
+  out: output/visualize/graph_conf90.html
 expected:
   files_exist:
     - visualize\output\graph_conf90.html
@@ -126,7 +126,7 @@ params:
   kinds: use_table
   focus: SAMPLE.USERS
   depth: 1
-  out: visualize/output/graph_focus_users.html
+  out: output/visualize/graph_focus_users.html
 expected:
   files_exist:
     - visualize\output\graph_focus_users.html
@@ -141,7 +141,7 @@ params:
   project-id: 1
   kinds: use_table,include
   max-nodes: 200
-  out: visualize/output/graph_cap200.html
+  out: output/visualize/graph_cap200.html
 expected:
   files_exist:
     - visualize\output\graph_cap200.html
@@ -154,7 +154,7 @@ kind: visualize_cli
 params:
   command: component
   project-id: 1
-  out: visualize/output/components.html
+  out: output/visualize/components.html
 expected:
   files_exist:
     - visualize\output\components.html
@@ -175,7 +175,7 @@ params:
   command: sequence
   project-id: 1
   start-file: PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/user/userList.jsp
-  out: visualize/output/seq_jsp.html
+  out: output/visualize/seq_jsp.html
 expected:
   files_exist:
     - visualize\output\seq_jsp.html
@@ -190,7 +190,7 @@ params:
   project-id: 1
   start-method: com.example.service.UserService.listUsers
   depth: 3
-  out: visualize/output/seq_java.html
+  out: output/visualize/seq_java.html
 expected:
   files_exist:
     - visualize\output\seq_java.html
@@ -285,6 +285,6 @@ expected:
 
 ## 11. 검증 레코딩 가이드
 
--   각 케이스 수행 후 `visualize/output/*.html` 스냅샷 보관
+-   각 케이스 수행 후 `output/visualize/*.html` 스냅샷 보관
 -   필요 시 브라우저 콘솔에 `DATA.nodes.length`, `DATA.edges.length`로 개수 확인
 -   DB 확인은 `sqlite3 data/metadata.db` 또는 DB 클라이언트 사용

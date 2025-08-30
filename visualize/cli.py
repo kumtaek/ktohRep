@@ -151,6 +151,7 @@ def main():
 
     def add_common(sp):
         sp.add_argument('--project-id', type=int, required=True, help='프로젝트 ID')
+        sp.add_argument('--project-name', help='프로젝트 이름 (DB 스키마 로드용)')
         sp.add_argument('--out', required=False, help='출력 HTML 경로 (미지정 시 HTML 생성 생략)')
         sp.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
         sp.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
@@ -209,7 +210,15 @@ def main():
     try:
         args = p.parse_args()
         logger = setup_logging(args)
-        
+
+        # Load config.yaml
+        config_path = Path(__file__).parent.parent.parent / "config" / "config.yaml"
+        config = {}
+        if config_path.exists():
+            with open(config_path, 'r', encoding='utf-8') as f:
+                raw = f.read()
+            config = yaml.safe_load(os.path.expandvars(raw)) or {}
+
         logger.info(f"시각화 생성 시작: {args.cmd}")
         logger.debug(f"인자: {vars(args)}")
         
@@ -218,20 +227,20 @@ def main():
         # Generate visualization data
         if args.cmd == 'graph':
             logger.info(f"의존성 그래프 생성: 프로젝트 {args.project_id}")
-            data = build_dependency_graph_json(args.project_id, kinds, args.min_confidence, 
+            data = build_dependency_graph_json(config, args.project_id, args.project_name, kinds, args.min_confidence, 
                                              args.focus, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
             diagram_type = 'graph'
             
         elif args.cmd == 'erd':
             logger.info(f"ERD 생성: 프로젝트 {args.project_id}")
-            data = build_erd_json(args.project_id, args.tables, args.owners, args.from_sql)
+            data = build_erd_json(config, args.project_id, args.project_name, args.tables, args.owners, args.from_sql)
             html = render_html('erd_view.html', data)
             diagram_type = 'erd'
             
         elif args.cmd == 'component':
             logger.info(f"컴포넌트 다이어그램 생성: 프로젝트 {args.project_id}")
-            data = build_component_graph_json(args.project_id, args.min_confidence, args.max_nodes)
+            data = build_component_graph_json(config, args.project_id, args.project_name, args.min_confidence, args.max_nodes)
             html = render_html('graph_view.html', data)
             diagram_type = 'component'
             
@@ -239,14 +248,14 @@ def main():
             logger.info(f"클래스 다이어그램 생성: 프로젝트 {args.project_id}")
             # Import the new class diagram builder
             from .builders.class_diagram import build_class_diagram_json
-            data = build_class_diagram_json(args.project_id, args.modules, 
+            data = build_class_diagram_json(config, args.project_id, args.project_name, args.modules, 
                                           args.include_private, args.max_methods, args.max_nodes)
             html = render_html('class_view.html', data)
             diagram_type = 'class'
             
         else:  # sequence
             logger.info(f"시퀀스 다이어그램 생성: 프로젝트 {args.project_id}")
-            data = build_sequence_graph_json(args.project_id, args.start_file, 
+            data = build_sequence_graph_json(config, args.project_id, args.project_name, args.start_file, 
                                            args.start_method, args.depth, args.max_nodes)
             html = render_html('graph_view.html', data)
             diagram_type = 'sequence'

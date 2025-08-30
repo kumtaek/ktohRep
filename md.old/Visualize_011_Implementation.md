@@ -135,7 +135,7 @@ Visualize_010_Implementation_plan.md에 명시된 5개 핵심 TODO 항목을 모
   - 중첩된 `<include>`과 `<where>/<if>` 테스트
 
 ### 테스트 케이스 업데이트
-- `phase1/testcase/testcase.md`에 v1.4 신규 기능 테스트 시나리오 추가
+- `testcase/phase1/testcase.md`에 v1.4 신규 기능 테스트 시나리오 추가
 - 동적 SQL 해석, Mermaid export strategy, 세션 관리 검증 항목 포함
 
 ---

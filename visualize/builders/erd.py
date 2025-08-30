@@ -81,11 +81,11 @@ def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str,
         return None
 
 
-def build_erd_json(project_id: int, tables: str = None, owners: str = None, 
+def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], tables: str = None, owners: str = None, 
                    from_sql: str = None) -> Dict[str, Any]:
     """Build ERD JSON for visualization"""
     
-    db = VizDB()
+    db = VizDB(config, project_name)
     
     # Get database schema information
     db_tables = db.fetch_tables()

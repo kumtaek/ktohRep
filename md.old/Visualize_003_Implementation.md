@@ -249,18 +249,18 @@ def _find_target_method(src_method, called_name, arg_count, project_id):
 
 ```bash
 # 의존성 그래프: use_table 관계만 포함, confidence 0.7 이상
-python visualize_cli.py graph --project-id 1 --out visualize/output/deps.html \
+python visualize_cli.py graph --project-id 1 --out output/visualize/deps.html \
     --kinds use_table --min-confidence 0.7 --max-nodes 1000
 
 # ERD: 특정 테이블들만 포함
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
+python visualize_cli.py erd --project-id 1 --out output/visualize/erd.html \
     --tables USER,ORDER,PAYMENT --owners SAMPLE
 
 # 컴포넌트 다이어그램: 전체 시스템 개요
-python visualize_cli.py component --project-id 1 --out visualize/output/components.html
+python visualize_cli.py component --project-id 1 --out output/visualize/components.html
 
 # 시퀀스: UserService에서 시작하는 호출 흐름
-python visualize_cli.py sequence --project-id 1 --out visualize/output/sequence.html \
+python visualize_cli.py sequence --project-id 1 --out output/visualize/sequence.html \
     --start-file UserService.java --depth 4
 ```
 

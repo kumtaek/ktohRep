@@ -37,26 +37,26 @@
 1) 의존성 그래프 HTML + Mermaid/Markdown 동시 출력 예시
 
 ```
-python visualize_cli.py graph --project-id 1 --out visualize/output/graph.html \
+python visualize_cli.py graph --project-id 1 --out output/visualize/graph.html \
   --kinds use_table,include --min-confidence 0.5 --max-nodes 1000 \
-  --export-mermaid visualize/output/graph.md
+  --export-mermaid output/visualize/graph.md
 ```
 
 2) Mermaid 코드(.mmd)만 출력 예시(ERD)
 
 ```
-python visualize_cli.py erd --project-id 1 --out visualize/output/erd.html \
-  --export-mermaid visualize/output/erd.mmd
+python visualize_cli.py erd --project-id 1 --out output/visualize/erd.html \
+  --export-mermaid output/visualize/erd.mmd
 ```
 
 3) 시퀀스/컴포넌트 다이어그램도 동일하게 동작
 
 ```
-python visualize_cli.py sequence --project-id 1 --out visualize/output/seq.html \
-  --depth 3 --export-mermaid visualize/output/sequence.md
+python visualize_cli.py sequence --project-id 1 --out output/visualize/seq.html \
+  --depth 3 --export-mermaid output/visualize/sequence.md
 
-python visualize_cli.py component --project-id 1 --out visualize/output/comp.html \
-  --export-mermaid visualize/output/component.mermaid
+python visualize_cli.py component --project-id 1 --out output/visualize/comp.html \
+  --export-mermaid output/visualize/component.mermaid
 ```
 
 ---

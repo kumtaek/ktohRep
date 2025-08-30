@@ -13,7 +13,7 @@
   - 기본 동작은 로컬 파일/DB 중심. 외부 호출은 문서 미존재 시 리다이렉트에 한정.
   - 로컬 문서/정적자원 제공으로 네트워크 단절 환경에서도 취약점 설명 조회 가능.
 - 테스트케이스 보완
-  - `visualize/testcase/README.md`: CLI 출력(HTML/JSON/CSV/MD) 점검 절차 추가.
+  - `testcase/visualize/README.md`: CLI 출력(HTML/JSON/CSV/MD) 점검 절차 추가.
   - `web-dashboard/backend/testcase/README.md`: API 점검 절차 및 환경 변수 사용법 추가.
 - 설정 로더 개선
   - `visualize/data_access.py`, `phase1/src/main.py`: YAML 로딩 시 환경변수 치환(`${VAR}`) 지원.
@@ -30,7 +30,7 @@
 - `phase1/src/main.py`
   - 설정 로드 시 환경 변수 치환 지원.
 - `doc/` 신규 추가(오프라인 문서).
-- `visualize/testcase/README.md`, `web-dashboard/backend/testcase/README.md` 신규 추가.
+- `testcase/visualize/README.md`, `web-dashboard/backend/testcase/README.md` 신규 추가.
 
 ## 사용 가이드
 - Backend 구동

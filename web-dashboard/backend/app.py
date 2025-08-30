@@ -184,8 +184,7 @@ def get_documentation(category, doc_id):
 
     Priority:
       1) repo_root/docs/<category>/<CODE>.md (render to HTML)
-      2) repo_root/doc/<category>/<CODE>.md (render to HTML)
-      3) repo_root/docs/<category>/<CODE>.html (return as-is)
+      2) repo_root/docs/<category>/<CODE>.html (return as-is)
 
     Query params:
       - raw=1  -> return raw markdown (text/markdown) if md exists
@@ -210,20 +209,6 @@ def get_documentation(category, doc_id):
             app.logger.error(f"Error reading markdown {md_path}: {e}")
             return jsonify(error=str(e)), 500
 
-    # Next: Markdown in ./doc (legacy location)
-    md_path2 = repo_root / 'doc' / cat / f'{code}.md'
-    if md_path2.exists():
-        app.logger.info(f"Serving markdown doc: {md_path2}")
-        try:
-            content = md_path2.read_text(encoding='utf-8')
-            want_raw = request.args.get('raw') == '1' or request.args.get('format') == 'md'
-            if want_raw:
-                return Response(content, mimetype='text/markdown; charset=utf-8')
-            html = _render_markdown_html_pretty(content, title=f"{code}")
-            return Response(html, mimetype='text/html; charset=utf-8')
-        except Exception as e:
-            app.logger.error(f"Error reading markdown {md_path2}: {e}")
-            return jsonify(error=str(e)), 500
 
     # Finally: legacy ./docs HTML if present
     html_path = repo_root / 'docs' / cat / f'{code}.html'

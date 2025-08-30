@@ -9,56 +9,13 @@ from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph
 
 
-def load_component_config() -> Dict[str, Any]:
-    """Load component classification configuration"""
-    config_path = Path(__file__).parent.parent / "config" / "visualization_config.yaml"
-    
-    # Default configuration (fallback)
-    default_config = {
-        'component_classification': {
-            'rules': {
-                'Controller': [r'.*\.controller\..*', r'.*Controller\.java$'],
-                'Service': [r'.*\.service\..*', r'.*Service\.java$'],
-                'Repository': [r'.*\.repository\..*', r'.*Repository\.java$'],
-                'Mapper': [r'.*Mapper\.xml$', r'.*\.mapper\..*'],
-                'JSP': [r'.*/WEB-INF/jsp/.*\.jsp$', r'.*\.jsp$'],
-                'Entity': [r'.*\.entity\..*', r'.*\.model\..*', r'.*\.domain\..*'],
-                'Util': [r'.*\.util\..*', r'.*Utils?\.java$'],
-                'Config': [r'.*\.config\..*', r'.*Config\.java$'],
-                'DB': [r'^TABLE:.*']
-            },
-            'default_component': 'Other',
-            'log_mismatches': True
-        }
-    }
-    
-    try:
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
-                return config
-        else:
-            print(f"Config file not found: {config_path}, using defaults")
-    except Exception as e:
-        print(f"Error loading config: {e}, using defaults")
-    
-    return default_config
-
-
-# Load configuration at module level
-CONFIG = load_component_config()
-COMPONENT_RULES = CONFIG['component_classification']['rules']
-DEFAULT_COMPONENT = CONFIG['component_classification'].get('default_component', 'Other')
-LOG_MISMATCHES = CONFIG['component_classification'].get('log_mismatches', True)
-
-
-def build_component_graph_json(project_id: int, min_conf: float, max_nodes: int = 2000) -> Dict[str, Any]:
+def build_component_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], min_conf: float, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build component diagram JSON for visualization"""
     print(f"Building component diagram for project {project_id}")
     print(f"  Min confidence: {min_conf}")
     print(f"  Max nodes: {max_nodes}")
     
-    db = VizDB()
+    db = VizDB(config, project_name)
     
     # Get all edges for the project
     edges = db.fetch_edges(project_id, None, min_conf)

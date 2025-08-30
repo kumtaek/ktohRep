@@ -4,7 +4,7 @@
 Inject YAML Front Matter under each test case heading in markdown files.
 
 Targets:
-- visualize/testcase/visualization_testcases.md
+- testcase/visualize/visualization_testcases.md
 - web-dashboard/backend/testcase/backend_testcases.md
 
 Heuristics:

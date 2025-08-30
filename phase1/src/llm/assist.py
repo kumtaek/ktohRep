@@ -22,7 +22,7 @@ class AssistConfig:
     max_tokens: int = 512
     strict_json: bool = True
     cache: bool = True
-    cache_dir: str = "./out/llm_cache"
+    cache_dir: str = "./output/llm_cache"
     log_prompt: bool = False
     dry_run: bool = False
     fallback_to_ollama: bool = True
@@ -51,7 +51,7 @@ class LlmAssist:
             max_tokens=llm_cfg.get("max_tokens", 512),
             strict_json=llm_cfg.get("strict_json", True),
             cache=llm_cfg.get("cache", True),
-            cache_dir=llm_cfg.get("cache_dir", "./out/llm_cache"),
+            cache_dir=llm_cfg.get("cache_dir", "./output/llm_cache"),
             log_prompt=llm_cfg.get("log_prompt", False),
             dry_run=llm_cfg.get("dry_run", False),
             fallback_to_ollama=llm_cfg.get("fallback_to_ollama", True),

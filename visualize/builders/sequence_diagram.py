@@ -5,7 +5,7 @@ from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph
 
 
-def build_sequence_graph_json(project_id: int, start_file: str = None, start_method: str = None, 
+def build_sequence_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], start_file: str = None, start_method: str = None, 
                              depth: int = 3, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build sequence diagram JSON for visualization"""
     print(f"Building sequence diagram for project {project_id}")
@@ -14,28 +14,28 @@ def build_sequence_graph_json(project_id: int, start_file: str = None, start_met
     print(f"  Max depth: {depth}")
     print(f"  Max nodes: {max_nodes}")
     
-    db = VizDB()
+    db = VizDB(config, project_name)
     
     # Get all edges for call tracing (including unresolved calls)
     edges = db.fetch_edges(project_id, ['call', 'call_unresolved', 'use_table', 'call_sql'], 0.0)
     
     # Find starting point
-    start_nodes = _find_start_nodes(db, project_id, start_file, start_method)
+    start_nodes = _find_start_nodes(config, db, project_id, start_file, start_method)
     if not start_nodes:
         print("  Warning: No start nodes found, using JSP->SQL->Table pattern")
-        return _build_jsp_sql_sequence(db, project_id, max_nodes)
+        return _build_jsp_sql_sequence(config, db, project_id, max_nodes)
     
     print(f"  Found {len(start_nodes)} start nodes")
     
     # Build call chain using BFS
-    sequence_nodes, sequence_edges = _trace_call_sequence(db, edges, start_nodes, depth, max_nodes)
+    sequence_nodes, sequence_edges = _trace_call_sequence(config, db, edges, start_nodes, depth, max_nodes)
     
     print(f"  Generated {len(sequence_nodes)} nodes, {len(sequence_edges)} edges in sequence")
     
     return create_graph(sequence_nodes, sequence_edges)
 
 
-def _find_start_nodes(db: VizDB, project_id: int, start_file: str = None, 
+def _find_start_nodes(config: Dict[str, Any], db: VizDB, project_id: int, start_file: str = None, 
                      start_method: str = None) -> List[Dict[str, Any]]:
     """Find starting nodes for sequence tracing"""
     start_nodes = []
@@ -81,7 +81,7 @@ def _find_start_nodes(db: VizDB, project_id: int, start_file: str = None,
     return start_nodes
 
 
-def _trace_call_sequence(db: VizDB, edges: List, start_nodes: List[Dict[str, Any]], 
+def _trace_call_sequence(config: Dict[str, Any], db: VizDB, edges: List, start_nodes: List[Dict[str, Any]], 
                         max_depth: int, max_nodes: int) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Trace call sequence using BFS"""
     
@@ -163,7 +163,7 @@ def _trace_call_sequence(db: VizDB, edges: List, start_nodes: List[Dict[str, Any
     return sequence_nodes, sequence_edges
 
 
-def _build_jsp_sql_sequence(db: VizDB, project_id: int, max_nodes: int) -> Dict[str, Any]:
+def _build_jsp_sql_sequence(config: Dict[str, Any], db: VizDB, project_id: int, max_nodes: int) -> Dict[str, Any]:
     """Build basic JSP->SQL->Table sequence when no specific start point is given"""
     print("  Building basic JSP->SQL->Table sequence")
     

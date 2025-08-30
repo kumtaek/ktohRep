@@ -4,7 +4,7 @@ from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph, guess_group, filter_nodes_by_focus, limit_nodes
 
 
-def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: float,
+def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], kinds: List[str], min_conf: float,
                                focus: str = None, depth: int = 2, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build dependency graph JSON for visualization"""
     print(f"의존성 그래프 생성: 프로젝트 {project_id}")
@@ -14,7 +14,7 @@ def build_dependency_graph_json(project_id: int, kinds: List[str], min_conf: flo
     print(f"  최대 깊이: {depth}")
     print(f"  최대 노드 수: {max_nodes}")
     
-    db = VizDB()
+    db = VizDB(config, project_name)
     
     # Fetch edges based on criteria
     edges = db.fetch_edges(project_id, kinds, min_conf)

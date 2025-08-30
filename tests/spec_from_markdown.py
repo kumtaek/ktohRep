@@ -22,39 +22,39 @@ MD_FILES = [
     REPO / 'phase1' / 'testcase' / 'phase1_testcases.md',
     REPO / 'visualize' / 'testcase' / 'visualization_testcases.md',
     REPO / 'web-dashboard' / 'backend' / 'testcase' / 'backend_testcases.md',
-    REPO / 'doc.md' / 'testcase.md',
+    REPO / 'docs' / 'testcase.md',
     REPO / 'phase2' / 'testcase' / 'phase2_testcases.md',
 ]
 
 
 RULES = [
     # Java parser
-    (re.compile(r'ValidSimple\.java', re.I), 'phase1/testcase/java_parser_from_md.spec.yaml', {
+    (re.compile(r'ValidSimple\.java', re.I), 'testcase/phase1/java_parser_from_md.spec.yaml', {
         'name': 'Java Parser (from md) ValidSimple',
         'kind': 'java_parser',
         'input': 'tests/samples/java/ValidSimple.java',
         'expected': {'classes_min': 1, 'methods_min': 1},
     }),
     # JSP sample
-    (re.compile(r'sample\.jsp', re.I), 'phase1/testcase/jsp_from_md.spec.yaml', {
+    (re.compile(r'sample\.jsp', re.I), 'testcase/phase1/jsp_from_md.spec.yaml', {
         'name': 'JSP/MyBatis Parser (from md) sample.jsp',
         'kind': 'jsp_mybatis_parser',
         'input': 'tests/samples/jsp/sample.jsp',
         'expected': {'sql_min': 0},
     }),
     # MyBatis valid
-    (re.compile(r'mybatis_valid\.xml', re.I), 'phase1/testcase/mybatis_from_md.spec.yaml', {
+    (re.compile(r'mybatis_valid\.xml', re.I), 'testcase/phase1/mybatis_from_md.spec.yaml', {
         'name': 'MyBatis Parser (from md) valid xml',
         'kind': 'jsp_mybatis_parser',
         'input': 'tests/samples/xml/mybatis_valid.xml',
         'expected': {'sql_min': 1},
     }),
     # Visualize exports
-    (re.compile(r'ERD|graph|의존|Mermaid', re.I), 'visualize/testcase/from_md_graph.spec.yaml', {
+    (re.compile(r'ERD|graph|의존|Mermaid', re.I), 'testcase/visualize/from_md_graph.spec.yaml', {
         'name': 'Visualize CLI (from md) graph export',
         'kind': 'visualize_cli',
-        'params': {'command': 'graph', 'project-id': 1, 'export-mermaid': './out/md_graph.md'},
-        'expected': {'files_exist': ['out/md_graph.md']},
+        'params': {'command': 'graph', 'project-id': 1, 'export-mermaid': './output/md_graph.md'},
+        'expected': {'files_exist': ['output/md_graph.md']},
     }),
 ]
 

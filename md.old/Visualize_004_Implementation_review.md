@@ -53,7 +53,7 @@
   - CDN → 로컬 에셋 로딩 옵션 추가. 네트워크 실패 시 경고/대체 처리.
 
 ## 검증 체크리스트 (제안)
-- 기능 회귀: `visualize/testcase/testcase.md`의 TC-ERD/GRAPH/COMP/SEQ 전부 재실행.
+- 기능 회귀: `testcase/visualize/testcase.md`의 TC-ERD/GRAPH/COMP/SEQ 전부 재실행.
 - DB 제약: `dst_id IS NULL` 엣지 삽입 시도 시 실패 재현 → 설계 재결정(위 개선안 적용).
 - 대규모 샘플: `--max-nodes` 200/1000/2000에서 레이아웃/상호작용 시간 측정.
 - 오프라인: 네트워크 차단 상태로 시각화 HTML 로드 확인.

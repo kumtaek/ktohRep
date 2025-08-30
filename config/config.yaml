@@ -2,6 +2,11 @@
 # 이 파일은 Source Analyzer의 모든 설정 및 동작 방식을 정의합니다.
 # 모든 설정은 이 파일을 통해 관리되며, 환경 변수 사용은 권장되지 않습니다.
 
+# 프로젝트 설정
+# 분석 대상 프로젝트의 기본 정보를 정의합니다.
+project:
+  default_project_name: "sampleSrc" # 기본 프로젝트 이름 (PROJECT 폴더 하위)
+
 # Phase 1: Metadata Generation Configuration
 
 # 데이터베이스 설정
@@ -154,7 +159,7 @@ llm_assist:
   max_tokens: 512           # LLM 응답의 최대 토큰 수
   strict_json: true         # LLM 응답이 엄격한 JSON 형식이어야 하는지 여부
   cache: true               # LLM 응답 캐싱 활성화 여부
-  cache_dir: ./out/llm_cache # LLM 캐시 디렉토리 경로
+  cache_dir: ./output/llm_cache # LLM 캐시 디렉토리 경로
   log_prompt: false         # LLM 프롬프트 로깅 활성화 여부
   dry_run: false            # 실제 LLM 호출 없이 드라이 런 모드 활성화 여부
   fallback_to_ollama: true  # vLLM 실패 시 Ollama로 대체할지 여부

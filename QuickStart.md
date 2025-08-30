@@ -26,7 +26,7 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 프로젝트의 전체 코드를 분석하고 사용 가능한 모든 시각화를 생성하려면 다음 명령어를 사용합니다:
 
 ```bash
-python phase1/src/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "visualize/output"
+python phase1/src/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "output/visualize"
 ```
 
 이 명령어는 다음을 수행합니다:
@@ -49,7 +49,7 @@ python phase1/src/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "v
 *   `--input-path <경로>`: 분석할 소스 코드 디렉토리를 지정합니다. **(필수)**
     *   예: `"C:/Users/YourProject/src"`
 *   `--output-dir <경로>`: 생성된 시각화 결과가 저장될 디렉토리를 지정합니다. **(중요)**
-    *   기본값: `visualize/output`
+    *   기본값: `output/visualize`
 *   `--config <경로>`: 사용자 정의 설정 파일을 지정합니다. **(고급)**
     *   기본값: `config/config.yaml`
 *   `--project-name <이름>`: 분석 결과를 저장할 프로젝트의 이름을 지정합니다. **(권장)**
@@ -66,7 +66,7 @@ python phase1/src/main.py --analyze-code --input-path "path/to/your/project" --p
 **b) 특정 입력 경로에 대해 ERD와 호출 그래프만 생성:**
 
 ```bash
-python phase1/src/main.py --generate-erd --generate-callgraph --input-path "path/to/your/project" --output-dir "visualize/output" --project-name "MyCustomProject"
+python phase1/src/main.py --generate-erd --generate-callgraph --input-path "path/to/your/project" --output-dir "output/visualize" --project-name "MyCustomProject"
 ```
 
 **c) 시퀀스 다이어그램을 생성하고 사용자 정의 출력 디렉토리에 저장:**

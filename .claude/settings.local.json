@@ -34,7 +34,12 @@
       "Bash(move visualizecli.py visualizecli_old.py)",
       "Bash(move visualizecli_fixed.py visualizecli.py)",
       "Bash(pip install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(cmd /c move:*)",
+      "Bash(cmd /c:*)"
     ],
     "deny": [],
     "ask": []

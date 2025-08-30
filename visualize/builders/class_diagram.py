@@ -12,7 +12,7 @@ import ast
 import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple
-from ..data_access import get_db_connection
+from ..data_access import VizDB
 
 logger = logging.getLogger(__name__)
 
@@ -157,21 +157,14 @@ def analyze_python_file(file_path: str) -> Dict[str, Any]:
         return {'file_path': file_path, 'classes': {}, 'imports': {}}
 
 
-def find_python_files(project_id: int, modules_filter: Optional[str] = None) -> List[str]:
+def find_python_files(config: Dict[str, Any], project_id: int, project_name: Optional[str] = None, modules_filter: Optional[str] = None) -> List[str]:
     """프로젝트에서 Python 파일들을 찾아 반환"""
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        db = VizDB(config, project_name)
+        session = db.session()
         
         # Get project source files
-        query = """
-        SELECT file_path FROM source_files 
-        WHERE project_id = ? AND file_path LIKE '%.py'
-        ORDER BY file_path
-        """
-        cursor.execute(query, (project_id,))
-        
-        files = [row[0] for row in cursor.fetchall()]
+        query = session.query(File.path).filter(File.project_id == project_id, File.path.like('%.py')).order_by(File.path)
         
         # Filter by modules if specified
         if modules_filter:
@@ -243,7 +236,9 @@ def build_relationships(file_analyses: List[Dict]) -> List[Dict]:
 
 
 def build_class_diagram_json(
+    config: Dict[str, Any],
     project_id: int, 
+    project_name: Optional[str] = None,
     modules_filter: Optional[str] = None,
     include_private: bool = False,
     max_methods: int = 10,
@@ -254,7 +249,7 @@ def build_class_diagram_json(
     logger.info(f"클래스 다이어그램 데이터 수집 시작: 프로젝트 {project_id}")
     
     # Python 파일 찾기
-    python_files = find_python_files(project_id, modules_filter)
+    python_files = find_python_files(config, project_id, project_name, modules_filter)
     logger.info(f"Python 파일 {len(python_files)}개 발견")
     
     if not python_files:

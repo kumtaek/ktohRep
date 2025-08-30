@@ -156,7 +156,7 @@ class SourceAnalyzer:
         llm_cfg.setdefault('max_tokens', 512)
         llm_cfg.setdefault('strict_json', True)
         llm_cfg.setdefault('cache', True)
-        llm_cfg.setdefault('cache_dir', './out/llm_cache')
+        llm_cfg.setdefault('cache_dir', './output/llm_cache')
         llm_cfg.setdefault('log_prompt', False)
         llm_cfg.setdefault('dry_run', False)
         llm_cfg.setdefault('fallback_to_ollama', True)
@@ -290,7 +290,10 @@ class SourceAnalyzer:
     async def _load_db_schema(self, project_root: str, project_name: str, project_id: int):
         """DB 스키마 정보 로드 (개선된 오류 처리)"""
         
-        db_schema_path = os.path.join(project_root, "DB_SCHEMA")
+        # config에서 path_template을 가져와 project_name으로 포맷팅
+        db_schema_template = self.config['db_schema']['path_template']
+        db_schema_path = db_schema_template.format(project_name=project_name)
+
         if not os.path.exists(db_schema_path):
             self.logger.warning(f"DB 스키마 경로가 없습니다: {db_schema_path}")
             return
@@ -745,10 +748,12 @@ def main():
         """
     )
     
-    parser.add_argument('project_path', help='분석할 프로젝트 경로')
+    parser.add_argument('--input-path', help='분석할 프로젝트 소스 경로 (기본값: ./PROJECT/sampleSrc/src)')
     parser.add_argument('--config', default='./config/config.yaml', 
                        help='설정 파일 경로 (기본값: ./config/config.yaml)')
-    parser.add_argument('--project-name', help='프로젝트 이름 (기본값: 폴더명)')
+    parser.add_argument('--project-name', help='프로젝트 이름 (기본값: input-path의 마지막 폴더명)')
+    parser.add_argument('--all', action='store_true',
+                       help='모든 분석 및 시각화 작업 실행 (Quick Start용)')
     parser.add_argument('--incremental', action='store_true', 
                        help='증분 분석 모드 (변경된 파일만 분석)')
     parser.add_argument('--include-ext', help='포함할 파일 확장자 목록(콤마 구분). 예: .java,.jsp,.xml')
@@ -771,9 +776,21 @@ def main():
     
     args = parser.parse_args()
     
+    # 입력 경로 및 프로젝트 이름 처리
+    if args.input_path:
+        project_root = args.input_path
+    else:
+        project_root = "./PROJECT/sampleSrc/src" # 기본값
+
+    if not args.project_name:
+        # input_path의 마지막 폴더명을 프로젝트 이름으로 사용
+        project_name = os.path.basename(os.path.abspath(project_root))
+    else:
+        project_name = args.project_name
+
     # 입력 검증
-    if not os.path.exists(args.project_path):
-        print(f"❌ 오류: 프로젝트 경로가 존재하지 않습니다: {args.project_path}")
+    if not os.path.exists(project_root):
+        print(f"❌ 오류: 프로젝트 경로가 존재하지 않습니다: {project_root}")
         sys.exit(1)
         
     if not os.path.exists(args.config):
@@ -880,8 +897,8 @@ def main():
                 fps['include'] = include
 
         result = asyncio.run(analyzer.analyze_project(
-            args.project_path, 
-            args.project_name,
+            project_root, 
+            project_name,
             args.incremental
         ))
         

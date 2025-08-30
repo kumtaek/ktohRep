@@ -4,7 +4,7 @@
 
 ---
 
-## 1. ?듯빀 ?섑뵆 ?뚯뒪 肄붾뱶 媛쒖슂 (From phase1/testcase/test_cases.md)
+## 1. ?듯빀 ?섑뵆 ?뚯뒪 肄붾뱶 媛쒖슂 (From testcase/phase1/test_cases.md)
 
 湲곗〈 `PROJECT` ?대뜑 ?섏쐞???щ윭 ?뚯뒪?몄??댁뒪 諛??섑뵆 ?뚯뒪?ㅼ쓣 `PROJECT/sampleSrc` ?대뜑濡??듯빀?섏??듬땲?? ???듯빀 ?뚯뒪???ㅼ뼇??Java, MyBatis XML, JSP ?⑦꽩???ы븿?섎ŉ, ?덈줈???뚯뒪???붽뎄?ы빆??諛섏쁺?⑸땲??
 
@@ -58,7 +58,7 @@ expected:
 
 ---
 
-## 2. ?듯빀 ?뚯뒪??耳?댁뒪 紐⑸줉 (From phase1/testcase/test_cases.md)
+## 2. ?듯빀 ?뚯뒪??耳?댁뒪 紐⑸줉 (From testcase/phase1/test_cases.md)
 
 ?꾨옒 ?뚯뒪??耳?댁뒪?ㅼ? `PROJECT/sampleSrc`???듯빀???섑뵆 ?뚯뒪 肄붾뱶瑜?湲곕컲?쇰줈, ?뚯뒪 遺꾩꽍湲곗쓽 ?ㅼ뼇??湲곕뒫??寃利앺븯湲??꾪빐 ?ㅺ퀎?섏뿀?듬땲?? 媛??뚯뒪??耳?댁뒪??`?뚯뒪?몄??댁뒪_?듯빀.md` ?뚯씪 ?댁뿉???대뼡 ?뚯뒪 ?뚯씪???대뼡 遺遺꾩씠 ?대떦?섎뒗吏 紐낇솗???뺣━?섏뼱 ?덉뒿?덈떎.
 
@@ -144,7 +144,7 @@ expected:
 
 ---
 
-## 3. DB ?ㅽ궎留??듯빀 (From phase1/testcase/test_cases.md)
+## 3. DB ?ㅽ궎留??듯빀 (From testcase/phase1/test_cases.md)
 
 湲곗〈 `DB_SCHEMA` ?대뜑 ?섏쐞???щ윭 `ALL_TABLES.csv`, `ALL_TAB_COLUMNS.csv`, `ALL_TAB_COMMENTS.csv`, `PK_INFO.csv` ?뚯씪?ㅼ쓣 `E:\SourceAnalyzer.git\DB_SCHEMA` 寃쎈줈濡??듯빀?섏??듬땲?? ???뚯씪?ㅼ? ?듯빀 ?섑뵆 ?뚯뒪?먯꽌 李몄“?섎뒗 紐⑤뱺 ?뚯씠釉?諛?而щ읆 ?뺣낫瑜??ы븿?⑸땲??
 
@@ -157,7 +157,7 @@ expected:
 
 ---
 
-## 4. ?ν썑 ?뚯뒪?????꾩????뺣━ (From phase1/testcase/test_cases.md)
+## 4. ?ν썑 ?뚯뒪?????꾩????뺣━ (From testcase/phase1/test_cases.md)
 
 *   **?뚯뒪-?뚯뒪?몄??댁뒪 留ㅽ븨**: 媛??듯빀 ?뚯뒪??耳?댁뒪(`TC_INTEGRATED_XXX`)??`PROJECT/sampleSrc` ?대뜑 ?댁쓽 ?뱀젙 ?뚯씪 諛?肄붾뱶 ?뱀뀡怨?吏곸젒?곸쑝濡??곌껐?⑸땲?? ?뚯뒪???섑뻾 ???대떦 ?뚯뒪 肄붾뱶瑜?李몄“?섏뿬 遺꾩꽍 寃곌낵???뺥솗?깆쓣 寃利앺븷 ???덉뒿?덈떎.
 *   **DB ?ㅽ궎留??쒖슜**: `IntegratedMapper.xml`???뺤쓽??SQL 荑쇰━?ㅼ? ?듯빀??`DB_SCHEMA` ?뚯씪?ㅼ쓣 李몄“?⑸땲?? 遺꾩꽍湲곌? SQL ???뚯씠釉?諛?而щ읆??DB ?ㅽ궎留덉? ?뺥솗??留ㅼ묶?섎뒗吏 ?뺤씤?섎뒗 ???쒖슜?⑸땲??
@@ -167,7 +167,7 @@ expected:
 
 ---
 
-## 5. Phase1 Analyzer Testcases (From phase1/testcase/testcase.md)
+## 5. Phase1 Analyzer Testcases (From testcase/phase1/testcase.md)
 
 蹂?臾몄꽌??phase1 遺꾩꽍 ?뚯씠?꾨씪???뚯꽌/硫뷀?DB ???洹몃옒??鍮뚮뱶)???섎룞 ?뚯뒪???쒕굹由ъ삤?낅땲?? PROJECT???섑뵆 ?뚯뒪??蹂??뚯뒪?몃? ?꾪빐 ?쇰? 異붽??섏뿀?듬땲??
 
@@ -288,7 +288,7 @@ python visualize_cli.py class --project-id 1 --out test_class.html --class-metho
 
 ---
 
-## 6. Source Analyzer Visualization Testcases (From visualize/testcase/testcase.md)
+## 6. Source Analyzer Visualization Testcases (From testcase/visualize/testcase.md)
 
 蹂?臾몄꽌??Visualize_Implementation_Plan_v001.md??援ы쁽 ?꾨즺 ??湲곕뒫 寃利앹쓣 ?꾪븳 ?뚯뒪???쒕굹由ъ삤?낅땲?? 媛쒕컻?먮뒗 .md ?ㅺ퀎瑜??숈??섍퀬 ?덉쑝硫? ?꾨옒 耳?댁뒪???ㅼ젣 ?ㅽ뻾 愿?먯뿉???묒꽦?섏뿀?듬땲??
 
@@ -309,60 +309,60 @@ python visualize_cli.py class --project-id 1 --out test_class.html --class-metho
 
 TC-ERD-01 湲곕낯 ERD ?앹꽦
 -   紐⑹쟻: ?꾩껜 ?뚯씠釉?湲곕컲 ERD ?앹꽦
--   紐낅졊: `python -m visualize erd --project-id 1 --out visualize/output/erd_all.html`
+-   紐낅졊: `python -m visualize erd --project-id 1 --out output/visualize/erd_all.html`
 -   湲곕?:
     -   HTML ?뚯씪 ?앹꽦, ?뚯씠釉??몃뱶 ?ㅼ닔 ?쒖떆
     -   ?몃뱶 ?쇰꺼: `OWNER.TABLE` ?뺤떇(?臾몄옄)
 
 TC-ERD-02 ?뚯쑀???뚯씠釉??꾪꽣
 -   紐⑹쟻: ?뱀젙 ?ㅻ꼫/?뚯씠釉붾쭔 ?쒗쁽
--   紐낅졊: `python -m visualize erd --project-id 1 --owners SAMPLE --tables USERS,ORDERS --out visualize/output/erd_subset.html`
+-   紐낅졊: `python -m visualize erd --project-id 1 --owners SAMPLE --tables USERS,ORDERS --out output/visualize/erd_subset.html`
 -   湲곕?: `SAMPLE.USERS`, `SAMPLE.ORDERS` ?몃뱶留?議댁옱, 湲고? ?몃뱶???놁쓬
 
 TC-ERD-03 FK 異붾줎 ?쒓컖??
 -   紐⑹쟻: 議곗씤 ?⑦꽩 湲곕컲 FK 異붾줎 ?ｌ? ?뺤씤
--   紐낅졊: `python -m visualize erd --project-id 1 --out visualize/output/erd_fk.html`
+-   紐낅졊: `python -m visualize erd --project-id 1 --out output/visualize/erd_fk.html`
 -   湲곕?:
     -   `fk_inferred` ?ｌ?媛 ?쒖떆?섍퀬, confidence>0.85???ｌ???吏꾪븳 ??援듦린
     -   ?숈씪 ?뚯씠釉??섏뼱??蹂듭닔 而щ읆 議곗씤(蹂듯빀???꾨낫) ??confidence媛 ?뚰룺 ?곹뼢
 
 TC-ERD-04 SQL 湲곕컲 遺遺?ERD
 -   紐⑹쟻: ?뱀젙 荑쇰━媛 李몄“?섎뒗 ?뚯씠釉붾쭔 遺遺?ERD ?앹꽦
--   紐낅졊 ?? `python -m visualize erd --project-id 1 --from-sql UserMapper:selectUser --out visualize/output/erd_from_sql.html`
+-   紐낅졊 ?? `python -m visualize erd --project-id 1 --from-sql UserMapper:selectUser --out output/visualize/erd_from_sql.html`
 -   湲곕?: ?대떦 SQL??李몄“?섎뒗 ?뚯씠釉붾쭔 ?몃뱶濡??쒖떆
 
 ### 6.2. ?섏〈??洹몃옒???쒕굹由ъ삤
 
 TC-GRAPH-01 ?뚯씠釉??ъ슜 洹몃옒??
 -   紐⑹쟻: SQL?뭈ABLE ?섏〈 ?뺤씤
--   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table --out visualize/output/graph_use_table.html`
+-   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table --out output/visualize/graph_use_table.html`
 -   湲곕?: `sql` ????몃뱶?먯꽌 `table` ?몃뱶濡??ν븯???ｌ? 議댁옱
 
 TC-GRAPH-02 include 洹몃옒??
 -   紐⑹쟻: JSP/JSP 諛?MyBatis include ?ｌ? ?쒖떆
--   紐낅졊: `python -m visualize graph --project-id 1 --kinds include --out visualize/output/graph_include.html`
+-   紐낅졊: `python -m visualize graph --project-id 1 --kinds include --out output/visualize/graph_include.html`
 -   湲곕?: ?뚯씪 媛?include ?ｌ? 議댁옱(酉곗뼱 ?대┃ ?????寃쎈줈 ?쒖떆)
 
 TC-GRAPH-03 confidence ?꾪꽣
 -   紐⑹쟻: `--min-confidence` ?곸슜 ?뺤씤
--   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table,include --min-confidence 0.9 --out visualize/output/graph_conf90.html`
+-   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table,include --min-confidence 0.9 --out output/visualize/graph_conf90.html`
 -   湲곕?: ??? ?좊ː?꾩쓽 ?ｌ????쒖쇅?섏뼱 洹몃옒?꾧? 媛꾧껐?댁쭚
 
 TC-GRAPH-04 ?ъ빱??源딆씠 ?쒗븳
 -   紐⑹쟻: ?뱀젙 ?몃뱶瑜?湲곗??쇰줈 BFS ?쒗븳 ?곸슜
--   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table --focus SAMPLE.USERS --depth 1 --out visualize/output/graph_focus_users.html`
+-   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table --focus SAMPLE.USERS --depth 1 --out output/visualize/graph_focus_users.html`
 -   湲곕?: `SAMPLE.USERS`? 1?④퀎 ?댁썐留??쒖떆
 
 TC-GRAPH-05 ?몃뱶 ?곹븳(max_nodes)
 -   紐⑹쟻: ?洹쒕え 洹몃옒???곹븳 ?곸슜 ?뺤씤
--   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table,include --max-nodes 200 --out visualize/output/graph_cap200.html`
+-   紐낅졊: `python -m visualize graph --project-id 1 --kinds use_table,include --max-nodes 200 --out output/visualize/graph_cap200.html`
 -   湲곕?: 200媛????몃뱶濡??섎┝(?대컮/寃쎄퀬 ?쒖떆)
 
 ### 6.3. 而댄룷?뚰듃 ?ㅼ씠?닿렇???쒕굹由ъ삤
 
 TC-COMP-01 湲곕낯 而댄룷?뚰듃 ?쒖떆
 -   紐⑹쟻: 洹쒖튃 湲곕컲 洹몃９???뺤씤
--   紐낅졊: `python -m visualize component --project-id 1 --out visualize/output/components.html`
+-   紐낅졊: `python -m visualize component --project-id 1 --out output/visualize/components.html`
 -   湲곕?:
     -   而⑦듃濡ㅻ윭/?쒕퉬???덊룷吏?좊━/留ㅽ띁/JSP/DB 洹몃９ ?몃뱶 ??援щ텇
     -   援먯감 而댄룷?뚰듃 ?ｌ?(吏묎퀎) ?쒖떆, ?댄똻??吏묎퀎 ???됯퇏 confidence
@@ -376,12 +376,12 @@ TC-COMP-02 洹쒖튃 ?쒕떇
 
 TC-SEQ-01 JSP 以묒떖 ?먮쫫
 -   紐⑹쟻: JSP?뭆QL?뭈ABLE ?먮쫫 ?쒖떆
--   紐낅졊: `python -m visualize sequence --project-id 1 --start-file PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/user/userList.jsp --out visualize/output/seq_jsp.html`
+-   紐낅졊: `python -m visualize sequence --project-id 1 --start-file PROJECT/sampleSrc/src/main/webapp/WEB-INF/jsp/user/userList.jsp --out output/visualize/seq_jsp.html`
 -   湲곕?: ?쒖옉 JSP?먯꽌 愿??SQL, 洹?SQL??李몄“?섎뒗 TABLE濡쒖쓽 ?먮쫫???덉씠?대줈 諛곗튂
 
 TC-SEQ-02 硫붿꽌???몄텧 諛섏쁺(蹂닿컯 ??
 -   紐⑹쟻: Java call ?댁냼 ??Controller?뭆ervice?뭃epository/Mapper ?먮쫫 ?ы븿
--   紐낅졊: `python -m visualize sequence --project-id 1 --start-method com.example.service.UserService.listUsers --depth 3 --out visualize/output/seq_java.html`
+-   紐낅졊: `python -m visualize sequence --project-id 1 --start-method com.example.service.UserService.listUsers --depth 3 --out output/visualize/seq_java.html`
 -   湲곕?: 硫붿꽌??媛?call 泥댁씤???쒓컙異??좎궗 怨꾩링?쇰줈 ?쒗쁽(誘명빐???몄텧? ??? confidence ?먮뒗 ?먯꽑 ?ㅽ???
 
 ### 6.5. 硫뷀? 蹂닿컯 湲곕뒫 ?쒕굹由ъ삤
@@ -476,9 +476,9 @@ TC-EX-02 ?섎せ??owners/tables ?몄옄
 
 ---
 
-## 7. 寃利??덉퐫??媛?대뱶 (From visualize/testcase/testcase.md)
+## 7. 寃利??덉퐫??媛?대뱶 (From testcase/visualize/testcase.md)
 
--   媛?耳?댁뒪 ?섑뻾 ??`visualize/output/*.html` ?ㅻ깄??蹂닿?
+-   媛?耳?댁뒪 ?섑뻾 ??`output/visualize/*.html` ?ㅻ깄??蹂닿?
 -   ?꾩슂 ??釉뚮씪?곗? 肄섏넄??`DATA.nodes.length`, `DATA.edges.length`濡?媛쒖닔 ?뺤씤
 -   DB ?뺤씤? `sqlite3 data/metadata.db` ?먮뒗 DB ?대씪?댁뼵???ъ슜
 

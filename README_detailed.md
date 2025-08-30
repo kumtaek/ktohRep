@@ -230,17 +230,134 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
 *   **프로젝트 분석**: `phase1/src/main.py`를 실행하여 소스 코드를 분석하고 메타데이터를 데이터베이스에 저장합니다.
     ```bash
     # 기본 분석
-    python phase1/src/main.py PROJECT/sampleSrc
+    python phase1/src/main.py --project-name sampleSrc
     # 프로젝트 이름 지정
-    python phase1/src/main.py PROJECT/sampleSrc --project-name "My Application"
+        # 프로젝트 이름 지정
+    python phase1/src/main.py --project-name sampleSrc
     # 증분 분석 (변경된 파일만)
-    python phase1/src/main.py PROJECT/sampleSrc --incremental
+    python phase1/src/main.py --project-name sampleSrc --incremental
     # 특정 확장자만 포함
-    python phase1/src/main.py PROJECT/sampleSrc --include-ext .java,.jsp
+    python phase1/src/main.py --project-name sampleSrc --include-ext .java,.jsp
     # 특정 디렉토리만 포함
-    python phase1/src/main.py PROJECT/sampleSrc --include-dirs src/main/java
+    ### 9.1. CLI (분석 및 시각화)
+
+*   **프로젝트 분석**: `phase1/src/main.py`를 실행하여 소스 코드를 분석하고 메타데이터를 데이터베이스에 저장합니다.
+    ```bash
+    # 기본 분석
+    python phase1/src/main.py --project-name sampleSrc
+    # 프로젝트 이름 지정
+    python phase1/src/main.py --project-name sampleSrc
+    # 증분 분석 (변경된 파일만)
+    python phase1/src/main.py --project-name sampleSrc --incremental
+    # 특정 확장자만 포함
+    python phase1/src/main.py --project-name sampleSrc --include-ext .java,.jsp
+    # 특정 디렉토리만 포함
+    python phase1/src/main.py --project-name sampleSrc --include-paths src/main/java
     # 상세 로그 출력
-    python phase1/src/main.py PROJECT/sampleSrc -v
+    python phase1/src/main.py --project-name sampleSrc -v
+    ```
+*   **시각화 생성**: `visualize/cli.py`를 실행하여 다양한 다이어그램을 생성하고 내보냅니다.
+    ```bash
+    # 의존성 그래프 (Mermaid Markdown)
+    python visualize/cli.py graph --project-name sampleSrc --export-mermaid ./out/dependency_graph.md
+    # ERD (HTML)
+    python visualize/cli.py erd --project-name sampleSrc --export-html ./out/erd.html
+    # 클래스 다이어그램 (JSON)
+    python visualize/cli.py class --project-name sampleSrc --modules com.example.MyClass --export-json ./out/my_class_diagram.json
+    # 시퀀스 다이어그램 (특정 파일/메서드 시작, 깊이 2)
+    python visualize/cli.py sequence --project-name sampleSrc --start-file src/main/java/com/example/Service.java --start-method processRequest --depth 2 --export-html ./out/sequence.html
+    ```
+
+### 9.2. 백엔드 (API)
+
+`web-dashboard/backend/app.py`를 실행하여 웹 대시보드 백엔드 API를 시작합니다.
+
+```bash
+python web-dashboard/backend/app.py
+```
+
+주요 API 엔드포인트:
+
+*   **헬스체크**: `GET /api/health`
+*   **데이터 내보내기**: `GET /api/export/classes.csv?project_id=1`, `GET /api/export/sql_units.json?project_id=1` 등
+*   **파일 다운로드**: `GET /api/file/download?path=/project/...`
+*   **오프라인 문서**: `GET /api/docs/owasp/A03`, `GET /api/docs/cwe/CWE-89`
+
+## 10) 명령줄 인자 상세 설명
+
+### 10.1) `phase1/main.py`
+
+`phase1/main.py`는 소스 코드 분석 및 메타데이터 생성 작업을 수행합니다.
+
+| 인자명 | 설명 |
+|---|---|
+| | 인자명 | 설명 |
+|---|---|
+| `--project-name` | 프로젝트 이름 (필수) - `./project/<프로젝트명>` 폴더 구조 사용 |
+| `--config` | 설정 파일 경로 (기본값: `./config/config.yaml`) |
+| `--source-path` | 분석할 소스 코드의 루트 경로 (지정하지 않으면 `./project/<프로젝트명>/src` 사용) |
+| `--all` | 모든 분석 및 시각화 작업 실행 (Quick Start용) |
+| `--incremental` | 증분 분석 모드 (변경된 파일만 분석) |
+| `--include-ext` | 포함할 파일 확장자 목록(콤마 구분). 예: `.java,.jsp,.xml` |
+| `--include-paths` | 포함할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/main/java,src/main/webapp/**/*.java` |
+| `--exclude-paths` | 제외할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/test,**/temp/**` |
+| `--verbose`, `-v` | 상세 로그 출력 |
+| `--quiet`, `-q` | 최소 로그 출력 |
+| `--validate-confidence` | Confidence formula 검증 실행 |
+| `--calibrate-confidence` | Confidence formula 자동 캘리브레이션 |
+| `--confidence-report` | Confidence 정확도 보고서 생성 (파일 경로 지정) |
+| `--add-ground-truth` | Ground truth 데이터 엔트리 추가 (FILE_PATH PARSER_TYPE EXPECTED_CONFIDENCE) |
+| `--export-md` | 메타데이터를 Markdown 파일로 내보내기 (지정하지 않으면 기본 경로 사용) | |
+| `--config` | 설정 파일 경로 (기본값: `./config/config.yaml`) |
+| `--all` | 모든 분석 및 시각화 작업 실행 (Quick Start용) |
+| `--incremental` | 증분 분석 모드 (변경된 파일만 분석) |
+| `--include-ext` | 포함할 파일 확장자 목록(콤마 구분). 예: `.java,.jsp,.xml` |
+| `--include-paths` | 포함할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/main/java,src/main/webapp/**/*.java` |
+| `--exclude-paths` | 제외할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/test,**/temp/**` |
+| `--verbose`, `-v` | 상세 로그 출력 |
+| `--quiet`, `-q` | 최소 로그 출력 |
+| `--validate-confidence` | Confidence formula 검증 실행 |
+| `--calibrate-confidence` | Confidence formula 자동 캘리브레이션 |
+| `--confidence-report` | Confidence 정확도 보고서 생성 (파일 경로 지정) |
+| `--add-ground-truth` | Ground truth 데이터 엔트리 추가 (FILE_PATH PARSER_TYPE EXPECTED_CONFIDENCE) |
+|
+| `--export-md` | 메타데이터를 Markdown 파일로 내보내기 (지정하지 않으면 기본 경로 사용) |
+
+### 10.2) `visualize/cli.py`
+
+`visualize/cli.py`는 분석된 메타데이터를 기반으로 다양한 다이어그램을 생성하고 내보내는 CLI 도구입니다.
+
+| 인자명 | 설명 |
+|---|---|
+| `--project-name` | 프로젝트 이름 (필수) |
+| `--export-html` | 출력 HTML 경로 (지정하지 않으면 기본 경로 사용) |
+| `--min-confidence` | 최소 신뢰도 임계값 (기본값: 0.5) |
+| `--max-nodes` | 최대 노드 수 (기본값: 2000) |
+| `--mermaid-label-max` | Mermaid 라벨 최대 길이 (기본값: 20) |
+| `--mermaid-erd-max-cols` | Mermaid ERD 컬럼 최대 표기 수 (기본값: 10) |
+| `--export-strategy` | 내보내기 전략 (full, balanced, minimal) |
+| `--class-methods-max` | 클래스 다이어그램 메서드 최대 표시 수 (기본값: 10) |
+| `--class-attrs-max` | 클래스 다이어그램 속성 최대 표시 수 (기본값: 10) |
+| `--keep-edge-kinds` | 유지할 엣지 종류 (콤마 구분). 예: `include,call,use_table` |
+| `--verbose`, `-v` | 상세 로그 출력 |
+| `--quiet`, `-q` | 최소 로그 출력 |
+| `--log-file` | 로그를 파일로 기록 |
+| `--export-json` | JSON으로 내보내기 (파일 경로) |
+| `--export-csv-dir` | CSV로 내보내기 (디렉토리 경로) |
+| `--export-mermaid` | Mermaid/Markdown으로 내보내기 (.md/.mmd 경로) |
+| `--kinds` (graph) | 포함할 엣지 종류 (콤마 구분). 예: `use_table,include,extends,implements` |
+| `--focus` (graph) | 시작 노드 (이름/경로/테이블) |
+| `--depth` (graph, sequence) | 중심 기준 최대 깊이 |
+| `--tables` (erd) | 포함할 테이블명 목록 (콤마 구분) |
+| `--owners` (erd) | 포함할 스키마/소유자 목록 (콤마 구분) |
+| `--from-sql` (erd) | 특정 SQL 기준 ERD (형식: `mapper_ns:stmt_id`) |
+| `--start-file` (sequence) | 시작 파일 경로 |
+| `--start-method` (sequence) | 시작 메서드 이름 |
+| `--modules` (class) | 포함할 모듈/파일 목록 (콤마 구분) |
+| `--include-private` (class) | private 멤버 포함 |
+| `--max-methods` (class) | 클래스당 최대 메서드 표시 수 |
+    # 상세 로그 출력
+    python phase1/src/main.py --project-name sampleSrc -v
     ```
 *   **시각화 생성**: `visualize/cli.py`를 실행하여 다양한 다이어그램을 생성하고 내보냅니다.
     ```bash

@@ -285,16 +285,16 @@ CREATE TABLE enrichment_logs (
 
 ```bash
 # 전체 분석 (코드 분석 + 시각화 생성)
-python phase1/main.py --input-path PROJECT/sampleSrc --all
+python phase1/main.py --project-name sampleSrc
 
 # 코드 분석만 실행
-python phase1/main.py --input-path PROJECT/sampleSrc --project-name MyProject
+python phase1/main.py --project-name sampleSrc
 
 # 증분 분석 (변경된 파일만)  
-python phase1/main.py --input-path PROJECT/sampleSrc --incremental
+python phase1/main.py --input-path PROJECT/sampleSrc --project-name sampleSrc --incremental
 
 # 메타데이터 MD 내보내기
-python phase1/main.py --input-path PROJECT/sampleSrc --export-md ./output/reports
+python phase1/main.py --project-name sampleSrc --export-md ./project/sampleSrc/output/reports
 ```
 
 ### 4.2. 시각화 생성

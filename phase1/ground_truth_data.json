@@ -1,0 +1,56 @@
+[
+  {
+    "file_path": "test/sample/SimpleClass.java",
+    "parser_type": "javalang",
+    "expected_confidence": 0.92,
+    "expected_classes": 1,
+    "expected_methods": 3,
+    "expected_sql_units": 0,
+    "verified_tables": [],
+    "complexity_factors": {
+      "ast_complete": true,
+      "total_patterns": 5,
+      "matched_patterns": [
+        "class",
+        "method",
+        "field"
+      ],
+      "dynamic_sql": false,
+      "reflection_usage": false,
+      "complex_expressions": 0,
+      "nested_conditions": 1
+    },
+    "notes": "Simple Java class with clear structure",
+    "verifier": "system_generated",
+    "verification_date": "2025-08-30T17:38:51.519391"
+  },
+  {
+    "file_path": "test/sample/ComplexSQL.jsp",
+    "parser_type": "jsp_mybatis",
+    "expected_confidence": 0.65,
+    "expected_classes": 0,
+    "expected_methods": 0,
+    "expected_sql_units": 3,
+    "verified_tables": [
+      "users",
+      "orders",
+      "products"
+    ],
+    "complexity_factors": {
+      "ast_complete": false,
+      "total_patterns": 8,
+      "matched_patterns": [
+        "select",
+        "join",
+        "where"
+      ],
+      "dynamic_sql": true,
+      "reflection_usage": false,
+      "complex_expressions": 2,
+      "nested_conditions": 3
+    },
+    "notes": "JSP with complex dynamic SQL",
+    "verifier": "system_generated",
+    "verification_date": "2025-08-30T17:38:51.519400"
+  }
+]

@@ -58,7 +58,7 @@ processing:
 # 기본 로깅 설정
 logging:
   level: "DEBUG"
-  file: "./logs/analyzer.log"
+  file: "../logs/analyzer.log"
 
 # 출력 설정
 # 분석 결과 및 메타데이터 출력 방식을 설정합니다.

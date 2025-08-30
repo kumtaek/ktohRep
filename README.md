@@ -4,6 +4,8 @@ Source Analyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시�
 
 ## 🚀 주요 기능
 
+**참고**: 모든 명령줄 인자에 대한 상세 설명은 `README_detailed.md`를 참조하십시오.
+
 *   **정적 코드 분석**: Java 클래스/메서드, JSP/MyBatis SQL 구문, 파일/모듈 간의 관계 및 의존성 추출.
 *   **다양한 시각화**:
     *   **의존성 그래프**: 파일, 클래스, SQL 단위 간의 호출 및 사용 관계.
@@ -12,6 +14,7 @@ Source Analyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시�
     *   **클래스 다이어그램**: Java 클래스의 구조, 상속, 구현 관계.
     *   **시퀀스 다이어그램**: 특정 메서드 호출 흐름 추적.
 *   **유연한 내보내기**: 생성된 시각화 데이터를 JSON, CSV, Markdown(Mermaid), HTML 형식으로 내보내어 다양한 문서화 및 공유 요구사항 충족.
+*   **메타데이터 보고서**: 분석된 메타데이터를 Markdown 형식의 요약 및 상세 보고서로 내보냅니다 (`--export-md` 옵션).
 *   **오프라인 보안 문서**: OWASP Top 10 및 CWE 취약점 설명을 내장하여 오프라인 환경에서도 보안 가이드 및 샘플 제공. 웹 대시보드를 통해 API로 접근 가능.
 *   **증분 분석**: 변경된 파일만 재분석하여 대규모 프로젝트의 분석 시간 단축.
 *   **신뢰도 기반 분석**: 추출된 메타데이터 및 관계에 대한 신뢰도 점수를 제공하여 분석 결과의 정확성 판단 지원.
@@ -278,14 +281,19 @@ ls -la output/llm_cache/
 ```bash
 # 프로젝트명을 지정하여 분석을 실행합니다.
 # 프로젝트 파일들은 ./project/<프로젝트명>/src/ 디렉토리에 위치해야 합니다.
+```bash
 # Windows
-run_analyzer.bat sampleSrc
+run_analyzer.bat --project-name sampleSrc
 
 # Linux/Mac
-./run_analyzer.sh sampleSrc
+./run_analyzer.sh --project-name sampleSrc
+```
 
 # --all 옵션으로 분석과 시각화를 한번에 실행
-run_analyzer.bat sampleSrc --all
+run_analyzer.bat --project-name sampleSrc --all
+
+# 메타데이터를 Markdown 보고서로 내보내기 (기본 경로 사용)
+run_analyzer.bat --project-name sampleSrc --export-md
 ```
 
 **디렉토리 구조**:

@@ -7,7 +7,7 @@ import os
 # Add phase1 to path
 current_dir = Path(__file__).parent
 project_root = current_dir.parent
-phase1_path = project_root / "phase1" / "src"
+phase1_path = project_root / "phase1"
 sys.path.insert(0, str(phase1_path))
 
 from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project

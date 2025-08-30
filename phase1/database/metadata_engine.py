@@ -614,14 +614,14 @@ class MetadataEngine:
                     vuln_fix = VulnerabilityFix(
                         target_type='file',
                         target_id=file_obj.file_id,
-                        vulnerability_type=vuln.get('type', 'UNKNOWN'),
-                        severity=vuln.get('severity', 'MEDIUM'),
-                        owasp_category=vuln.get('owasp_category', ''),
-                        cwe_id=vuln.get('cwe_id', ''),
-                        description=vuln.get('message', ''),
-                        original_code=vuln.get('pattern', ''),
-                        start_line=vuln.get('line_number', 0),
-                        confidence=vuln.get('confidence', 0.8)
+                        vulnerability_type=vuln.vuln_type.value if hasattr(vuln.vuln_type, 'value') else str(vuln.vuln_type),
+                        severity=vuln.severity.value if hasattr(vuln.severity, 'value') else str(vuln.severity),
+                        owasp_category=getattr(vuln, 'owasp_category', ''),
+                        cwe_id=getattr(vuln, 'cwe_id', ''),
+                        description=vuln.message,
+                        original_code=vuln.pattern,
+                        start_line=vuln.line_number,
+                        confidence=vuln.confidence
                     )
                     session.add(vuln_fix)
                     saved_counts['vulnerabilities'] += 1

@@ -1,5 +1,5 @@
 # visualize/builders/component_diagram.py
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import re
 import yaml
 import logging

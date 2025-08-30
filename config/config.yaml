@@ -10,17 +10,13 @@ project:
     base_dir: "./project/{project_name}"              # 프로젝트 기본 디렉토리
     source_dir: "./project/{project_name}/src"        # 소스 코드 디렉토리
     db_schema_dir: "./project/{project_name}/db_schema" # DB 스키마 CSV 디렉토리
-    data_dir: "./project/{project_name}/data"         # 데이터 저장 디렉토리
-    output_dir: "./project/{project_name}/output"     # 일반 출력 디렉토리
-    visualize_dir: "./project/{project_name}/output/visualize" # 시각화 출력 디렉토리
-    log_dir: "./project/{project_name}/logs"          # 로그 디렉토리
 
 # 데이터베이스 설정
 # Source Analyzer가 분석 결과를 저장하고 관리하는 데 사용하는 데이터베이스를 설정합니다.
 database:
   type: sqlite  # 사용하고자 하는 데이터베이스 유형 (sqlite, oracle)
   sqlite:
-    path: "./project/{project_name}/data/metadata.db"  # SQLite 데이터베이스 파일 경로 (프로젝트별)
+    path: "./phase1/data/metadata.db"  # SQLite 데이터베이스 파일 경로 (phase1 종속)
     wal_mode: true              # WAL(Write-Ahead Logging) 모드 사용 여부 (성능 향상)
   oracle:
     host: "localhost"           # Oracle 데이터베이스 호스트

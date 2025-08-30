@@ -39,7 +39,14 @@
       "Bash(mv:*)",
       "Bash(rm:*)",
       "Bash(cmd /c move:*)",
-      "Bash(cmd /c:*)"
+      "Bash(cmd /c:*)",
+      "Bash(where python)",
+      "Bash(run_analyzer.bat --project-name sampleSrc)",
+      "Bash(for:*)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

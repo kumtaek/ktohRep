@@ -14,6 +14,6 @@ REM Change to phase1 directory and run main.py
 cd /d "%~dp0phase1"
 python main.py %*
 
-pause
-
 exit /b %ERRORLEVEL%
+
+pause

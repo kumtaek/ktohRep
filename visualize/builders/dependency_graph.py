@@ -1,5 +1,5 @@
 # visualize/builders/dependency_graph.py
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph, guess_group, filter_nodes_by_focus, limit_nodes
 

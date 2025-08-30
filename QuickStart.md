@@ -21,6 +21,8 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 
 ## 💡 사용법
 
+**참고**: 모든 명령줄 인자에 대한 상세 설명은 `README_detailed.md`를 참조하십시오.
+
 ### 1. 전체 분석 및 시각화 (Full Analysis and Visualization)
 
 프로젝트의 전체 코드를 분석하고 사용 가능한 모든 시각화를 생성하려면 다음 명령어를 사용합니다:
@@ -72,6 +74,7 @@ run_analyzer.bat sampleSrc --all
 *   `--config <경로>`: 사용자 정의 설정 파일을 지정합니다. **(고급)**
     *   기본값: `config/config.yaml`
     *   프로젝트별 경로 템플릿을 통해 자동으로 경로가 설정됩니다.
+*   `--export-md`: 분석된 메타데이터를 Markdown 형식의 보고서로 내보냅니다. (지정하지 않으면 `./project/<프로젝트명>/output/reports`에 저장)
 
 #### 📝 예시:
 
@@ -79,7 +82,7 @@ run_analyzer.bat sampleSrc --all
 
 ```bash
 # Windows
-run_analyzer.bat MyAnalysis --analyze-code
+run_analyzer.bat --project-name sampleSrc --analyze-code
 
 # Linux/Mac  
 ./run_analyzer.sh MyAnalysis --analyze-code
@@ -91,7 +94,7 @@ run_analyzer.bat MyAnalysis --analyze-code
 
 ```bash
 # Windows
-run_analyzer.bat MyCustomProject --generate-erd --generate-callgraph
+run_analyzer.bat --project-name sampleSrc --generate-erd --generate-callgraph
 
 # Linux/Mac
 ./run_analyzer.sh MyCustomProject --generate-erd --generate-callgraph
@@ -103,13 +106,30 @@ run_analyzer.bat MyCustomProject --generate-erd --generate-callgraph
 
 ```bash
 # Windows
-run_analyzer.bat MySequenceProject --generate-sequencediagram
+run_analyzer.bat --project-name sampleSrc --generate-sequencediagram
 
 # Linux/Mac
 ./run_analyzer.sh MySequenceProject --generate-sequencediagram
 ```
 
 참고: 출력은 `./project/MySequenceProject/output/visualize/` 디렉토리에 저장됩니다.
+
+#### d) 메타데이터를 Markdown 보고서로 내보내기:
+
+```bash
+# Windows
+run_analyzer.bat --project-name sampleSrc --export-md
+
+# Linux/Mac
+./run_analyzer.sh --project-name sampleSrc --export-md
+
+# e) 특정 소스 경로를 지정하여 분석:
+# Windows
+run_analyzer.bat --project-name sampleSrc --source-path "C:\MyProject\SourceCode" --analyze-code
+
+# Linux/Mac
+./run_analyzer.sh --project-name sampleSrc --source-path "/home/user/myproject/source" --analyze-code
+```
 
 ### 3. `config.yaml`을 통한 고급 설정
 

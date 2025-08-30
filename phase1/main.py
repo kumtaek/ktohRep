@@ -9,6 +9,7 @@ import argparse
 import yaml
 import asyncio
 import hashlib
+import fnmatch
 from pathlib import Path
 from typing import Dict, Any, List
 import time
@@ -32,16 +33,17 @@ from utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator
 class SourceAnalyzer:
     """소스 분석기 메인 클래스"""
     
-    def __init__(self, config_path: str, project_name: str = None):
+    def __init__(self, global_config_path: str, phase_config_path: str, project_name: str = None):
         """
         소스 분석기 초기화
         
         Args:
-            config_path: 설정 파일 경로
+            global_config_path: 전역 설정 파일 경로
+            phase_config_path: Phase별 설정 파일 경로
             project_name: 프로젝트 이름
         """
         self.project_name = project_name
-        self.config = self._load_config(config_path)
+        self.config = self._load_merged_config(global_config_path, phase_config_path)
         
         # 로깅 시스템 초기화
         self.logger = setup_logging(self.config)
@@ -80,31 +82,53 @@ class SourceAnalyzer:
             self.logger.critical("시스템 초기화 실패", exception=e)
             raise
             
-    def _load_config(self, config_path: str) -> Dict[str, Any]:
-        """설정 파일 로드 (개선된 예외 처리)"""
+    def _load_merged_config(self, global_config_path: str, phase_config_path: str) -> Dict[str, Any]:
+        """전역 및 Phase별 설정 파일을 로드하고 병합 (Phase별 설정이 우선)"""
+        global_config = {}
+        phase_config = {}
+
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                raw = f.read()
-            # 환경변수 치환 지원 (${VAR})
-            config = yaml.safe_load(os.path.expandvars(raw))
+            # 전역 설정 로드
+            if os.path.exists(global_config_path):
+                with open(global_config_path, 'r', encoding='utf-8') as f:
+                    global_config = yaml.safe_load(os.path.expandvars(f.read())) or {}
+            else:
+                print(f"WARNING: 전역 설정 파일을 찾을 수 없습니다: {global_config_path}")
+
+            # Phase별 설정 로드
+            if os.path.exists(phase_config_path):
+                with open(phase_config_path, 'r', encoding='utf-8') as f:
+                    phase_config = yaml.safe_load(os.path.expandvars(f.read())) or {}
+            else:
+                print(f"WARNING: Phase별 설정 파일을 찾을 수 없습니다: {phase_config_path}")
+
+            # 설정 병합 (Phase별 설정이 전역 설정을 덮어씀)
+            # 깊은 병합을 위해 재귀 함수 사용
+            def deep_merge(base, overlay):
+                for key, value in overlay.items():
+                    if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+                        base[key] = deep_merge(base[key], value)
+                    else:
+                        base[key] = value
+                return base
             
+            config = deep_merge(global_config, phase_config)
+            # self.logger.debug(f"병합된 설정 (초기): {config}") # logger not ready yet
+
             # 프로젝트명 템플릿 치환
             if self.project_name:
                 config = self._substitute_project_name(config, self.project_name)
                 
-            # 기본값 설정
+            # 기본값 설정 (병합된 설정에 대해)
             self._set_default_config(config)
             
             return config
             
-        except FileNotFoundError:
-            print(f"오류: 설정 파일을 찾을 수 없습니다: {config_path}")
-            raise
         except yaml.YAMLError as e:
-            print(f"오류: 설정 파일 파싱 실패: {e}")
+            print(f"ERROR: 설정 파일 파싱 실패: {e}")
             raise
         except Exception as e:
-            print(f"오류: 설정 파일 로드 중 예상치 못한 오류: {e}")
+            print(f"ERROR: 설정 파일 로드 및 병합 중 예상치 못한 오류: {e}")
             raise
             
     def _set_default_config(self, config: Dict[str, Any]):
@@ -245,7 +269,7 @@ class SourceAnalyzer:
                 
                 if not source_files:
                     self.logger.warning("분석할 소스 파일이 없습니다.")
-                    return self._create_empty_result(project_id, project_name)
+                    return self._create_empty_result(project_id, project_name, project_root)
                 
                 # 4. 파일들 분석 (병렬 처리)
                 analysis_results = await self._analyze_files(source_files, project_id)
@@ -274,11 +298,12 @@ class SourceAnalyzer:
                 self.logger.error(f"프로젝트 분석 실패: {project_name}", exception=e)
                 raise
                 
-    def _create_empty_result(self, project_id: int, project_name: str) -> Dict[str, Any]:
+    def _create_empty_result(self, project_id: int, project_name: str, project_root: str = '') -> Dict[str, Any]:
         """빈 분석 결과 생성"""
         return {
             'project_id': project_id,
             'project_name': project_name,
+            'project_root': project_root,
             'analysis_time': 0,
             'files_analyzed': 0,
             'analysis_results': {
@@ -299,7 +324,7 @@ class SourceAnalyzer:
                     'joins': 0, 'filters': 0
                 },
                 'language_distribution': {},
-                'analysis_timestamp': datetime.utcnow().isoformat()
+                'analysis_timestamp': datetime.now().isoformat()
             }
         }
         
@@ -343,20 +368,24 @@ class SourceAnalyzer:
         
         try:
             for root, dirs, files in os.walk(project_root):
-                # 제외 패턴에 해당하는 디렉토리 건너뛰기
+                # Calculate relative path of current directory from project_root
+                current_dir_rel_path = os.path.relpath(root, project_root)
+                
+                # Filter out directories that match exclude patterns
                 dirs[:] = [d for d in dirs if not any(
-                    self._match_pattern(os.path.join(root, d), pattern) 
+                    fnmatch.fnmatch(os.path.join(current_dir_rel_path, d), pattern)
                     for pattern in exclude_patterns
                 )]
                 
                 for file in files:
-                    file_path = os.path.join(root, file)
+                    file_path_abs = os.path.join(root, file)
+                    file_path_rel_to_root = os.path.relpath(file_path_abs, project_root) # New relative path
                     
-                    # 포함 패턴 확인
-                    if any(self._match_pattern(file_path, pattern) for pattern in include_patterns):
-                        # 제외 패턴 확인
-                        if not any(self._match_pattern(file_path, pattern) for pattern in exclude_patterns):
-                            source_files.append(file_path)
+                    # Check include patterns
+                    if any(fnmatch.fnmatch(file_path_rel_to_root, pattern) for pattern in include_patterns):
+                        # Check exclude patterns
+                        if not any(fnmatch.fnmatch(file_path_rel_to_root, pattern) for pattern in exclude_patterns):
+                            source_files.append(file_path_abs) # Store absolute path
                             
         except Exception as e:
             self.logger.error(f"파일 수집 중 오류: {project_root}", exception=e)
@@ -462,18 +491,7 @@ class SourceAnalyzer:
             self.logger.error("삭제된 파일 처리 중 오류", exception=e)
             raise
         
-    def _match_pattern(self, file_path: str, pattern: str) -> bool:
-        """파일 패턴 매칭 (개선된 로직)"""
-        import fnmatch
-        
-        # 절대 경로와 상대 경로 모두 확인
-        abs_path = os.path.abspath(file_path)
-        rel_path = os.path.relpath(file_path)
-        basename = os.path.basename(file_path)
-        
-        return (fnmatch.fnmatch(abs_path, pattern) or 
-                fnmatch.fnmatch(rel_path, pattern) or 
-                fnmatch.fnmatch(basename, pattern))
+    
         
     async def _generate_analysis_summary(self, project_id: int, 
                                        analysis_results: Dict[str, Any]) -> Dict[str, Any]:
@@ -515,7 +533,7 @@ class SourceAnalyzer:
             return {
                 'error': str(e),
                 'basic_stats': {'files': 0, 'classes': 0, 'methods': 0, 'sql_units': 0},
-                'analysis_timestamp': datetime.utcnow().isoformat()
+                'analysis_timestamp': datetime.now().isoformat()
             }
             
     async def _analyze_files(self, source_files: List[str], project_id: int) -> Dict[str, Any]:
@@ -762,7 +780,8 @@ class SourceAnalyzer:
             
             # 데이터베이스에서 메타데이터 조회
             session = self.db_manager.get_session()
-            files = session.query(File).filter(File.project_name == project_name).all()
+            from models.database import Project
+            files = session.query(File).join(Project).filter(Project.name == project_name).all()
             
             if not files:
                 return {
@@ -782,7 +801,7 @@ class SourceAnalyzer:
             details_dir.mkdir(exist_ok=True)
             
             for file_obj in files:
-                detail_file = details_dir / f"{self._sanitize_filename(file_obj.relative_path)}.md"
+                detail_file = details_dir / f"{self._sanitize_filename(file_obj.path)}.md"
                 self._create_file_detail_report(detail_file, file_obj)
                 created_files.append(str(detail_file))
             
@@ -825,12 +844,13 @@ class SourceAnalyzer:
         confidence_count = 0
         
         for file_obj in files:
-            ext = Path(file_obj.relative_path).suffix
+            ext = Path(file_obj.path).suffix
             file_types[ext] += 1
             
-            if file_obj.confidence and file_obj.confidence > 0:
-                total_confidence += file_obj.confidence
-                confidence_count += 1
+            # Note: File model doesn't have confidence field, skip confidence calculation
+            # if file_obj.confidence and file_obj.confidence > 0:
+            #     total_confidence += file_obj.confidence
+            #     confidence_count += 1
         
         avg_confidence = total_confidence / confidence_count if confidence_count > 0 else 0
         
@@ -858,8 +878,8 @@ class SourceAnalyzer:
 """
         
         for file_obj in files:
-            confidence_str = f"{file_obj.confidence:.2%}" if file_obj.confidence else "N/A"
-            content += f"| {file_obj.relative_path} | {Path(file_obj.relative_path).suffix} | {confidence_str} | {file_obj.last_modified or 'N/A'} |\n"
+            confidence_str = "N/A"  # No confidence field in File model
+            content += f"| {file_obj.path} | {Path(file_obj.path).suffix} | {confidence_str} | {file_obj.mtime or 'N/A'} |\n"
         
         file_path.write_text(content, encoding='utf-8')
     
@@ -868,64 +888,39 @@ class SourceAnalyzer:
         content = f"""# 파일 분석 상세 보고서
 
 ## 파일 정보
-- **경로**: {file_obj.relative_path}
-- **파일 타입**: {Path(file_obj.relative_path).suffix}
-- **크기**: {file_obj.size} bytes
-- **최종 수정일**: {file_obj.last_modified or 'N/A'}
-- **해시**: {file_obj.file_hash}
+- **경로**: {file_obj.path}
+- **파일 타입**: {Path(file_obj.path).suffix}
+- **언어**: {file_obj.language or 'N/A'}
+- **라인수**: {file_obj.loc or 'N/A'}
+- **최종 수정일**: {file_obj.mtime or 'N/A'}
+- **해시**: {file_obj.hash or 'N/A'}
 
 ## 분석 결과
-- **신뢰도**: {f"{file_obj.confidence:.2%}" if file_obj.confidence else "N/A"}
-- **생성일시**: {file_obj.created_at}
-- **업데이트일시**: {file_obj.updated_at}
+- **신뢰도**: N/A (File model에 신뢰도 필드 없음)
+- **파일 ID**: {file_obj.file_id}
+- **프로젝트 ID**: {file_obj.project_id}
 
 ## 메타데이터
+메타데이터는 관련 클래스 및 메서드 정보를 참조하세요.
 """
-        
-        if hasattr(file_obj, 'metadata') and file_obj.metadata:
-            content += f"```json\n{file_obj.metadata}\n```\n"
-        else:
-            content += "메타데이터가 없습니다.\n"
         
         file_path.write_text(content, encoding='utf-8')
     
     def _create_confidence_report(self, file_path: Path, project_name: str, files: list):
         """신뢰도 분석 보고서 생성"""
-        confidence_files = [f for f in files if f.confidence and f.confidence > 0]
+        # Note: File model doesn't have confidence field, so skip confidence analysis
+        content = f"""# {project_name} 신뢰도 분석 보고서
+
+현재 데이터베이스 모델에서는 파일별 신뢰도 데이터를 저장하지 않습니다.
+신뢰도 분석은 실행 시점에서만 계산되며, 향후 버전에서 개선될 예정입니다.
+
+## 파일 목록
+| 파일 경로 | 언어 | 라인수 |
+|-----------|------|-------|
+"""
         
-        if not confidence_files:
-            content = f"""# {project_name} 신뢰도 분석 보고서
-
-신뢰도 데이터가 있는 파일이 없습니다.
-"""
-        else:
-            # 신뢰도 구간별 분류
-            high_conf = [f for f in confidence_files if f.confidence >= 0.8]
-            med_conf = [f for f in confidence_files if 0.6 <= f.confidence < 0.8]
-            low_conf = [f for f in confidence_files if f.confidence < 0.6]
-            
-            avg_conf = sum(f.confidence for f in confidence_files) / len(confidence_files)
-            
-            content = f"""# {project_name} 신뢰도 분석 보고서
-
-## 전체 통계
-- **신뢰도 데이터 파일**: {len(confidence_files)}개
-- **평균 신뢰도**: {avg_conf:.2%}
-
-## 신뢰도 구간별 분류
-- **높은 신뢰도 (80% 이상)**: {len(high_conf)}개
-- **중간 신뢰도 (60% 이상)**: {len(med_conf)}개  
-- **낮은 신뢰도 (60% 미만)**: {len(low_conf)}개
-
-## 낮은 신뢰도 파일 목록
-"""
-            
-            if low_conf:
-                content += "| 파일 경로 | 신뢰도 |\n|-----------|--------|\n"
-                for file_obj in sorted(low_conf, key=lambda x: x.confidence):
-                    content += f"| {file_obj.relative_path} | {file_obj.confidence:.2%} |\n"
-            else:
-                content += "낮은 신뢰도 파일이 없습니다.\n"
+        for file_obj in files:
+            content += f"| {file_obj.path} | {file_obj.language or 'N/A'} | {file_obj.loc or 'N/A'} |\n"
         
         file_path.write_text(content, encoding='utf-8')
 
@@ -937,71 +932,78 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 예시 사용법:
-  python main.py my-project
-  python main.py sample-app --all
-  python main.py my-project --config custom_config.yaml
+  python main.py --project-name my-project
+  python main.py --project-name sample-app --all
+  python main.py --project-name my-project --config custom_config.yaml
         """
     )
     
-    parser.add_argument('project_name', nargs='?', default='sampleSrc',
-                       help='프로젝트 이름 (필수) - ./project/<프로젝트명> 폴더 구조 사용')
-    parser.add_argument('--config', default='./config/config.yaml', 
-                       help='설정 파일 경로 (기본값: ./config/config.yaml)')
-    parser.add_argument('--all', action='store_true',
-                       help='모든 분석 및 시각화 작업 실행 (Quick Start용)')
-    parser.add_argument('--incremental', action='store_true', 
+    parser.add_argument('--config', default='../config/config.yaml', 
+                       help='전역 설정 파일 경로 (기본값: ../config/config.yaml)')
+    parser.add_argument('--phase-config', default='../config/phase1/config.yaml', 
+                       help='Phase별 설정 파일 경로 (기본값: ../config/phase1/config.yaml)')
+    parser.add_argument('--project-name', required=True,
+                       help='프로젝트 이름 (필수)')
+    parser.add_argument('--source-path', 
+                       help='소스 코드 경로 (기본값: ../project/{project-name}/src)')
+    parser.add_argument('--incremental', action='store_true',
                        help='증분 분석 모드 (변경된 파일만 분석)')
-    parser.add_argument('--include-ext', help='포함할 파일 확장자 목록(콤마 구분). 예: .java,.jsp,.xml')
-    parser.add_argument('--include-dirs', help='포함할 하위 디렉토리 목록(콤마 구분). 예: src/main/java,src/main/webapp')
-    parser.add_argument('--verbose', '-v', action='store_true', 
+    parser.add_argument('--all', action='store_true',
+                       help='분석 후 자동으로 시각화까지 수행')
+    parser.add_argument('--verbose', '-v', action='store_true',
                        help='상세 로그 출력')
-    parser.add_argument('--quiet', '-q', action='store_true', 
+    parser.add_argument('--quiet', '-q', action='store_true',
                        help='최소 로그 출력')
-    
-    # Confidence validation 관련 옵션
+    parser.add_argument('--include-ext',
+                       help='포함할 파일 확장자 (쉼표로 구분, 예: java,jsp,xml)')
+    parser.add_argument('--include-paths',
+                       help='포함할 경로 패턴 (쉼표로 구분)')
+    parser.add_argument('--exclude-paths',
+                       help='제외할 경로 패턴 (쉼표로 구분)')
+    parser.add_argument('--export-md', nargs='?', const=True,
+                       help='메타데이터를 Markdown으로 내보내기 (선택적으로 출력 디렉토리 지정)')
+    parser.add_argument('--add-ground-truth', nargs=3, metavar=('FILE_PATH', 'PARSER_TYPE', 'EXPECTED_CONF'),
+                       help='Ground truth 데이터 추가')
     parser.add_argument('--validate-confidence', action='store_true',
-                       help='Confidence formula 검증 실행')
-    parser.add_argument('--calibrate-confidence', action='store_true', 
+                       help='Confidence formula 검증 수행')
+    parser.add_argument('--calibrate-confidence', action='store_true',
                        help='Confidence formula 자동 캘리브레이션')
-    parser.add_argument('--confidence-report', metavar='OUTPUT_FILE',
-                       help='Confidence 정확도 보고서 생성 (파일 경로 지정)')
-    parser.add_argument('--add-ground-truth', nargs=3, 
-                       metavar=('FILE_PATH', 'PARSER_TYPE', 'EXPECTED_CONFIDENCE'),
-                       help='Ground truth 데이터 엔트리 추가')
-    parser.add_argument('--export-md', metavar='OUTPUT_DIR', 
-                       help='메타데이터를 Markdown 파일로 내보내기 (출력 디렉토리 지정)')
+    parser.add_argument('--confidence-report',
+                       help='Confidence 정확도 보고서 생성 (파일 경로)')
     
+    # Parse arguments
     args = parser.parse_args()
-    
-    # 프로젝트 이름 처리
     project_name = args.project_name
     
-    # 프로젝트 경로 자동 생성
-    project_base_dir = f"./project/{project_name}"
-    project_source_dir = f"./project/{project_name}/src"
+    # No need to check os.path.exists(args.config) here, as _load_merged_config handles it
+    
+    # 프로젝트 경로 자동 생성 (phase1에서 실행되므로 상위 디렉토리 참조)
+    project_base_dir = f"../project/{project_name}"
+    
+    # 소스 경로 결정 (source-path가 지정되면 해당 경로 사용)
+    if args.source_path:
+        project_source_dir = args.source_path
+    else:
+        project_source_dir = f"../project/{project_name}/src"
     
     # 프로젝트 디렉토리 생성 (없으면 생성)
     os.makedirs(project_base_dir, exist_ok=True)
     os.makedirs(project_source_dir, exist_ok=True)
-    os.makedirs(f"./project/{project_name}/data", exist_ok=True)
-    os.makedirs(f"./project/{project_name}/output", exist_ok=True)
-    os.makedirs(f"./project/{project_name}/output/visualize", exist_ok=True)
-    os.makedirs(f"./project/{project_name}/logs", exist_ok=True)
-    os.makedirs(f"./project/{project_name}/db_schema", exist_ok=True)
+    os.makedirs(f"../project/{project_name}/data", exist_ok=True)
+    os.makedirs(f"../project/{project_name}/output", exist_ok=True)
+    os.makedirs(f"../project/{project_name}/output/visualize", exist_ok=True)
+    os.makedirs(f"../project/{project_name}/logs", exist_ok=True)
+    os.makedirs(f"../project/{project_name}/db_schema", exist_ok=True)
     
     # 소스 디렉토리 존재 확인
     if not os.path.exists(project_source_dir) or not os.listdir(project_source_dir):
-        print(f"⚠️  경고: 소스 디렉토리가 비어있습니다: {project_source_dir}")
+        print(f"경고: 소스 디렉토리가 비어있습니다: {project_source_dir}")
         print(f"   분석할 소스 코드를 {project_source_dir}에 위치시키세요.")
-        
-    if not os.path.exists(args.config):
-        print(f"❌ 오류: 설정 파일이 존재하지 않습니다: {args.config}")
-        sys.exit(1)
-        
+    
     try:
-        # 설정 파일에 프로젝트 이름 대입
+        # 설정 파일 로드 및 병합
         print(f"소스 분석기 초기화 중... (프로젝트: {project_name})")
-        analyzer = SourceAnalyzer(args.config, project_name=project_name)
+        analyzer = SourceAnalyzer(args.config, args.phase_config, project_name=project_name)
         
         # 로그 레벨 조정 (로거가 없으면 기본 로깅 사용)
         if hasattr(analyzer.logger, 'logger'):
@@ -1019,83 +1021,93 @@ def main():
             try:
                 expected_confidence = float(expected_conf)
                 if analyzer.add_ground_truth_entry(file_path, parser_type, expected_confidence):
-                    print(f"✅ Ground truth 엔트리 추가됨: {file_path}")
+                    print(f"[OK] Ground truth 엔트리 추가됨: {file_path}")
                 else:
-                    print(f"❌ Ground truth 엔트리 추가 실패: {file_path}")
+                    print(f"[ERROR] Ground truth 엔트리 추가 실패: {file_path}")
                 validation_performed = True
             except ValueError:
-                print(f"❌ 오류: 잘못된 confidence 값: {expected_conf}")
+                print(f"[ERROR] 오류: 잘못된 confidence 값: {expected_conf}")
         
         # Confidence 검증
         if args.validate_confidence:
-            print("🔍 Confidence formula 검증 실행 중...")
+            print("[INFO] Confidence formula 검증 실행 중...")
             validation_result = analyzer.confidence_validator.validate_confidence_formula()
             
             if 'mean_absolute_error' in validation_result:
                 mae = validation_result['mean_absolute_error']
-                print(f"📊 Confidence MAE: {mae:.3f}")
+                print(f"[RESULT] Confidence MAE: {mae:.3f}")
                 
                 if 'error_distribution' in validation_result:
                     error_dist = validation_result['error_distribution']
                     excellent_pct = error_dist['excellent']['percentage'] * 100
                     poor_pct = error_dist['poor']['percentage'] * 100
-                    print(f"📈 오류 분포: {excellent_pct:.1f}% 우수, {poor_pct:.1f}% 불량")
+                    print(f"[RESULT] 오류 분포: {excellent_pct:.1f}% 우수, {poor_pct:.1f}% 불량")
             validation_performed = True
         
         # Confidence 캘리브레이션
         if args.calibrate_confidence:
-            print("🔧 Confidence formula 자동 캘리브레이션 실행 중...")
+            print("[INFO] Confidence formula 자동 캘리브레이션 실행 중...")
             calibration_result = analyzer.confidence_validator.calibrate_weights()
             
             if calibration_result.get('recommendation') == 'apply':
                 improvement = calibration_result.get('improvement_percentage', 0)
-                print(f"🚀 캘리브레이션으로 {improvement:.1f}% 개선 가능")
+                print(f"[INFO] 캘리브레이션으로 {improvement:.1f}% 개선 가능")
                 
                 if analyzer.confidence_calibrator.apply_calibration(analyzer.confidence_calculator):
-                    print("✅ 캘리브레이션 적용 완료")
+                    print("[OK] 캘리브레이션 적용 완료")
                 else:
-                    print("❌ 캘리브레이션 적용 실패")
+                    print("[ERROR] 캘리브레이션 적용 실패")
             else:
-                print("✨ 현재 가중치가 이미 최적 상태")
+                print("[INFO] 현재 가중치가 이미 최적 상태")
             validation_performed = True
         
         # Confidence 리포트 생성
         if args.confidence_report:
-            print(f"📄 Confidence 정확도 보고서 생성 중: {args.confidence_report}")
+            print(f"[INFO] Confidence 정확도 보고서 생성 중: {args.confidence_report}")
             report = analyzer.generate_confidence_accuracy_report(args.confidence_report)
             
             if 'error' not in report:
-                print(f"✅ 보고서 생성 완료: {args.confidence_report}")
+                print(f"[OK] 보고서 생성 완료: {args.confidence_report}")
                 
                 # 요약 정보 출력
                 if 'validation_report' in report and 'mean_absolute_error' in report['validation_report']:
                     mae = report['validation_report']['mean_absolute_error']
-                    print(f"📊 현재 오류율: {mae:.1%}")
+                    print(f"[RESULT] 현재 오류율: {mae:.1%}")
             else:
-                print(f"❌ 보고서 생성 실패: {report['error']}")
+                print(f"[ERROR] 보고서 생성 실패: {report['error']}")
             validation_performed = True
         
         # Validation 명령만 실행한 경우 여기서 종료
         if validation_performed:
-            print("\n🎯 Validation 작업 완료")
+            print("\n[DONE] Validation 작업 완료")
             return
         
         # 프로젝트 분석 실행
-        print(f"프로젝트 분석 시작: {args.project_path}")
+        print(f"프로젝트 분석 시작: {project_source_dir}")
         # 런타임 파일 패턴 오버라이드 적용
-        if args.include_ext or args.include_dirs:
+        if args.include_ext or args.include_paths or args.exclude_paths:
             fps = analyzer.config.setdefault('file_patterns', {})
-            include: List[str] = []
+            
+            # Include patterns
+            include_patterns: List[str] = []
             if args.include_ext:
                 for ext in [x.strip() for x in args.include_ext.split(',') if x.strip()]:
                     if not ext.startswith('.'):
                         ext = '.' + ext
-                    include.append(f"**/*{ext}")
-            if args.include_dirs:
-                for d in [x.strip() for x in args.include_dirs.split(',') if x.strip()]:
-                    include.extend([f"{d}/**/*.java", f"{d}/**/*.jsp", f"{d}/**/*.xml"])
-            if include:
-                fps['include'] = include
+                    include_patterns.append(f"**/*{ext}")
+            if args.include_paths:
+                for p in [x.strip() for x in args.include_paths.split(',') if x.strip()]:
+                    include_patterns.append(p) # Directly add path as pattern
+            if include_patterns:
+                fps['include'] = include_patterns
+
+            # Exclude patterns
+            exclude_patterns: List[str] = []
+            if args.exclude_paths:
+                for p in [x.strip() for x in args.exclude_paths.split(',') if x.strip()]:
+                    exclude_patterns.append(p) # Directly add path as pattern
+            if exclude_patterns:
+                fps['exclude'] = exclude_patterns
 
         result = asyncio.run(analyzer.analyze_project(
             project_source_dir, 
@@ -1108,10 +1120,10 @@ def main():
         
         # --all 플래그 처리: 시각화 자동 실행
         if args.all:
-            print(f"\n🎨 전체 시각화 실행 중...")
+            print(f"\n[INFO] 전체 시각화 실행 중...")
             try:
                 import subprocess
-                visualize_output_dir = f"./project/{project_name}/output/visualize"
+                visualize_output_dir = f"../project/{project_name}/output/visualize"
                 
                 # visualize/cli.py 실행
                 viz_cmd = [
@@ -1123,28 +1135,32 @@ def main():
                 
                 result = subprocess.run(viz_cmd, capture_output=True, text=True)
                 if result.returncode == 0:
-                    print(f"✅ 시각화 완료: {visualize_output_dir}")
+                    print(f"[OK] 시각화 완료: {visualize_output_dir}")
                 else:
-                    print(f"⚠️  시각화 중 경고 또는 오류 발생")
+                    print(f"[WARNING] 시각화 중 경고 또는 오류 발생")
                     if result.stderr:
                         print(f"   오류: {result.stderr.strip()}")
                         
             except Exception as e:
-                print(f"❌ 시각화 실행 중 오류: {e}")
+                print(f"[ERROR] 시각화 실행 중 오류: {e}")
         
         # 메타데이터 MD 내보내기 처리
-        if args.export_md:
-            print(f"\n📄 메타데이터를 Markdown으로 내보내는 중: {args.export_md}")
+        if args.export_md is not None: # Check if --export-md was provided at all
+            output_dir_for_md = args.export_md
+            if output_dir_for_md is True: # If --export-md was provided without a value
+                output_dir_for_md = f"../project/{project_name}/output/reports" # Default path
+            
+            print(f"\n[INFO] 메타데이터를 Markdown으로 내보내는 중: {output_dir_for_md}")
             try:
-                export_result = analyzer.export_metadata_to_md(args.export_md, project_name)
+                export_result = analyzer.export_metadata_to_md(output_dir_for_md, project_name)
                 if export_result.get('success'):
-                    print(f"✅ Markdown 내보내기 완료: {export_result['files_created']}개 파일 생성")
+                    print(f"[OK] Markdown 내보내기 완료: {export_result['files_created']}개 파일 생성")
                     for file_path in export_result.get('file_list', []):
                         print(f"   - {file_path}")
                 else:
-                    print(f"❌ Markdown 내보내기 실패: {export_result.get('error', 'Unknown error')}")
+                    print(f"[ERROR] Markdown 내보내기 실패: {export_result.get('error', 'Unknown error')}")
             except Exception as e:
-                print(f"❌ Markdown 내보내기 중 오류: {e}")
+                print(f"[ERROR] Markdown 내보내기 중 오류: {e}")
         
     except KeyboardInterrupt:
         print("\n사용자에 의해 중단되었습니다.")

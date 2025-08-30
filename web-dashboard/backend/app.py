@@ -10,13 +10,11 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-# Add phase1 and phase1/src to the Python path so both 'src' and top-level
-# subpackages (e.g., 'database') are importable.
+# Add phase1 to the Python path for importing phase1 modules
 from pathlib import Path as _Path
 _REPO_ROOT = _Path(__file__).resolve().parents[2]
 _PHASE1_ROOT = _REPO_ROOT / 'phase1'
-_PHASE1_SRC = _PHASE1_ROOT / 'src'
-for _p in (str(_PHASE1_ROOT), str(_PHASE1_SRC)):
+for _p in (str(_REPO_ROOT), str(_PHASE1_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 

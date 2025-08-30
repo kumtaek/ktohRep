@@ -1,0 +1,28 @@
+# Phase 2: Advanced Analysis Configuration
+# Phase2 전용 설정 파일: 고급 분석 및 추론 기능에 특화된 설정
+
+# 고급 분석 설정 (향후 구현 예정)
+advanced_analysis:
+  enabled: false            # 고급 분석 활성화 여부
+  dependency_analysis: true # 의존성 분석 활성화
+  pattern_detection: true   # 패턴 감지 활성화
+  security_analysis: false  # 보안 분석 활성화
+
+# 추론 엔진 설정 (향후 구현 예정)
+inference_engine:
+  enabled: false            # 추론 엔진 활성화 여부
+  rules_path: "./config/phase2/inference_rules.yaml"
+  confidence_threshold: 0.7 # 추론 결과 신뢰도 임계값
+
+# Phase2 전용 출력 설정
+output:
+  advanced_reports: true    # 고급 보고서 생성
+  inference_logs: true      # 추론 과정 로깅
+  pattern_summary: true     # 패턴 요약 생성
+
+# Phase2 전용 LLM 설정
+llm_inference:
+  enabled: false            # 추론용 LLM 활성화 여부
+  model: "gpt-4"           # 추론에 사용할 고급 모델
+  temperature: 0.1         # 추론 시 사용할 temperature
+  max_tokens: 4096         # 추론 응답 최대 토큰

@@ -26,7 +26,7 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 프로젝트의 전체 코드를 분석하고 사용 가능한 모든 시각화를 생성하려면 다음 명령어를 사용합니다:
 
 ```bash
-python phase1/src/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "output/visualize"
+python phase1/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "output/visualize"
 ```
 
 이 명령어는 다음을 수행합니다:
@@ -60,19 +60,19 @@ python phase1/src/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "o
 **a) 코드 분석만 수행:**
 
 ```bash
-python phase1/src/main.py --analyze-code --input-path "path/to/your/project" --project-name "MyAnalysis"
+python phase1/main.py --analyze-code --input-path "path/to/your/project" --project-name "MyAnalysis"
 ```
 
 **b) 특정 입력 경로에 대해 ERD와 호출 그래프만 생성:**
 
 ```bash
-python phase1/src/main.py --generate-erd --generate-callgraph --input-path "path/to/your/project" --output-dir "output/visualize" --project-name "MyCustomProject"
+python phase1/main.py --generate-erd --generate-callgraph --input-path "path/to/your/project" --output-dir "output/visualize" --project-name "MyCustomProject"
 ```
 
 **c) 시퀀스 다이어그램을 생성하고 사용자 정의 출력 디렉토리에 저장:**
 
 ```bash
-python phase1/src/main.py --generate-sequencediagram --input-path "path/to/your/project" --output-dir "my_custom_output" --project-name "MySequenceProject"
+python phase1/main.py --generate-sequencediagram --input-path "path/to/your/project" --output-dir "my_custom_output" --project-name "MySequenceProject"
 ```
 
 ### 3. `config.yaml`을 통한 고급 설정

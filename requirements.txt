@@ -7,23 +7,40 @@ javalang>=0.13.0
 requests>=2.31.0
 sqlparse>=0.4.4
 lxml>=4.9.0
+psutil>=5.9.0                # System resource monitoring
+
+# Web dashboard
+flask>=2.3.0                 # Web framework
+flask-cors>=4.0.0            # CORS support
+werkzeug>=2.3.0              # Flask dependency
+jinja2>=3.1.0                # Template engine
+markdown>=3.4.0              # Markdown rendering
+pygments>=2.16.0             # Code highlighting
+
+# HTTP and API clients
+httpx>=0.24.0                # Async HTTP client
+pydantic>=1.10.0             # Data validation
+
+# Data processing
+pandas>=1.5.0                # Data manipulation
+numpy>=1.24.0                # Numerical computing
 
 # Tests
 pytest>=7.0.0
 pytest-asyncio>=0.20.0
 
-# Web dashboard (optional but recommended)
-fastapi>=0.100.0
-uvicorn>=0.20.0
-markdown>=3.4.0
-pygments>=2.16.0
-
 # Optional (uncomment if needed)
+# FastAPI alternative (if preferred over Flask)
+# fastapi>=0.100.0
+# uvicorn>=0.20.0
+
+# Oracle and advanced features
 # cx_oracle>=8.3.0            # Oracle driver
 # jsqlparser>=0.1.0           # SQL parsing helper
 # tree_sitter>=0.20.0         # Multi-language parsing
 # antlr4-python3-runtime>=4.9.0
-# openai>=1.0.0               # LLM integration (older)
+
+# LLM integration
 openai>=1.35.0               # LLM integration (vLLM/OpenAI-compatible)
 # langchain>=0.1.0
 # faiss-cpu>=1.7.0

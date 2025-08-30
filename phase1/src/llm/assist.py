@@ -64,25 +64,10 @@ class LlmAssist:
         Path(self.cfg.cache_dir).mkdir(parents=True, exist_ok=True)
         self.calls_made = 0
         # 환경 변수 브리징: config 값이 존재하면 env로 주입하여 client가 참조할 수 있게 함
-        self._bridge_env_from_config()
+        self.calls_made = 0
 
     def should_assist(self, confidence: float) -> bool:
         return self.cfg.enabled and (confidence < self.cfg.low_conf_threshold) and (self.calls_made < self.cfg.max_calls_per_run)
-
-    def _bridge_env_from_config(self) -> None:
-        try:
-            if self.cfg.vllm_base_url:
-                os.environ['VLLM_BASE_URL'] = str(self.cfg.vllm_base_url)
-            if self.cfg.vllm_api_key:
-                os.environ['VLLM_API_KEY'] = str(self.cfg.vllm_api_key)
-            if self.cfg.vllm_model:
-                os.environ['VLLM_MODEL'] = str(self.cfg.vllm_model)
-            if self.cfg.ollama_host:
-                os.environ['OLLAMA_HOST'] = str(self.cfg.ollama_host)
-            if self.cfg.ollama_model:
-                os.environ['OLLAMA_MODEL'] = str(self.cfg.ollama_model)
-        except Exception:
-            pass
 
     def assist_java(self, file_id: int, file_path: str, original_confidence: float) -> Optional[Dict[str, Any]]:
         if not self.should_assist(original_confidence):
@@ -225,7 +210,7 @@ class LlmAssist:
             size_hint += min(1.0, len(parsed["sql_units"]) * 0.3)
         # Bound into [0,1]
         quality = max(0.0, min(1.0, 0.4 + size_hint * 0.3))
-        model_quality = float(os.getenv("LLM_MODEL_QUALITY", "0.6"))  # gemma3:1b ~0.6, qwen2.5 higher in prod
+        model_quality = self.cfg.model_quality
         return {
             "confidence": quality,
             "model_quality": model_quality,
@@ -241,7 +226,7 @@ class LlmAssist:
                     target_id=file_id,
                     pre_conf=pre,
                     post_conf=post,
-                    model=os.getenv("OLLAMA_MODEL") or os.getenv("VLLM_MODEL") or "unknown",
+                    model=self.cfg.ollama_model or self.cfg.vllm_model or "unknown",
                     prompt_id=prompt_id,
                     params=json.dumps(params, ensure_ascii=False),
                 )

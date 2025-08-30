@@ -16,11 +16,13 @@ Message = Dict[str, str]
 class OllamaClient:
     def __init__(
         self,
+        config: Dict[str, Any],
         base_url: Optional[str] = None,
         model: Optional[str] = None,
     ) -> None:
-        self.base_url = (base_url or os.getenv("OLLAMA_HOST", "http://localhost:11434")).rstrip("/")
-        self.model = model or os.getenv("OLLAMA_MODEL", "gemma3:1b")
+        self.config = config
+        self.base_url = base_url or self.config.get("ollama_host", "http://localhost:11434").rstrip("/")
+        self.model = model or self.config.get("ollama_model", "gemma3:1b")
 
     def chat(
         self,
@@ -84,6 +86,7 @@ class OllamaClient:
 class VLLMClient:
     def __init__(
         self,
+        config: Dict[str, Any],
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Optional[str] = None,
@@ -92,9 +95,10 @@ class VLLMClient:
             raise RuntimeError(
                 "openai package not available. Add `openai>=1.35.0` to requirements and install."
             )
-        self.base_url = base_url or os.getenv("VLLM_BASE_URL") or "http://localhost:8000/v1"
-        self.api_key = api_key or os.getenv("VLLM_API_KEY") or "EMPTY"
-        self.model = model or os.getenv("VLLM_MODEL") or "Qwen2.5"
+        self.config = config
+        self.base_url = base_url or self.config.get("vllm_base_url", "http://localhost:8000/v1")
+        self.api_key = api_key or self.config.get("vllm_api_key", "EMPTY")
+        self.model = model or self.config.get("vllm_model", "Qwen2.5")
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
 
     def chat(
@@ -136,18 +140,19 @@ class VLLMClient:
             return res.choices[0].message.content or ""
 
 
-def get_client(provider: Optional[str] = None):
-    provider = (provider or os.getenv("LLM_PROVIDER", "ollama")).strip().lower()
+def get_client(config: Dict[str, Any], provider: Optional[str] = None):
+    provider = (provider or config.get("provider", "ollama")).strip().lower()
     if provider in ("ollama", "local"):
-        return OllamaClient()
+        return OllamaClient(config)
     if provider in ("vllm", "openai"):
-        return VLLMClient()
+        return VLLMClient(config)
     # Default to Ollama
-    return OllamaClient()
+    return OllamaClient(config)
 
 
 def simple_chat(
     prompt: str,
+    config: Dict[str, Any],
     *,
     system: Optional[str] = None,
     provider: Optional[str] = None,
@@ -160,6 +165,6 @@ def simple_chat(
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    client = get_client(provider)
+    client = get_client(config, provider)
     return client.chat(messages, stream=stream, temperature=temperature, max_tokens=max_tokens)
 

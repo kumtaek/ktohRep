@@ -100,10 +100,7 @@ python visualize/cli.py --help
 웹 대시보드는 분석 결과를 웹 UI로 조회하고, 내장된 오프라인 문서를 API로 제공하는 기능을 합니다.
 
 *   **백엔드 실행**: `python web-dashboard/backend/app.py`
-*   **환경변수**: 웹 대시보드 백엔드 실행 시 다음 환경변수를 설정하여 서버 동작을 제어할 수 있습니다. **(중요)**
-    *   `HOST`: 서버가 바인딩될 IP 주소 (예: `0.0.0.0` for all interfaces).
-    *   `PORT`: 서버가 수신 대기할 포트 번호 (예: `8000`).
-    *   `ALLOWED_ORIGINS`: CORS(Cross-Origin Resource Sharing)를 허용할 프런트엔드 도메인 목록 (예: `http://127.0.0.1:3000`).
+*   **설정**: 웹 대시보드 백엔드 서버의 모든 설정(호스트, 포트, CORS 등)은 `config/config.yaml` 파일의 `server` 섹션에서 관리됩니다.
 *   **오프라인 문서 API**: `/api/docs/owasp/{code}`, `/api/docs/cwe/{code}` 엔드포인트를 통해 내장된 취약점 문서에 접근할 수 있습니다.
 
 ## 📚 다음 단계 및 추가 정보

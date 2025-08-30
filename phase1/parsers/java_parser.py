@@ -32,8 +32,8 @@ except ImportError:
     Parser = None
     TREE_SITTER_AVAILABLE = False
 
-from ..models.database import File, Class, Method, Edge
-from ..utils.confidence_calculator import ConfidenceCalculator
+from models.database import File, Class, Method, Edge
+from utils.confidence_calculator import ConfidenceCalculator
 
 class JavaParser:
     """javalang 또는 Tree-sitter를 사용한 Java 소스 파일 파서"""
@@ -49,7 +49,7 @@ class JavaParser:
         self.confidence_calc = ConfidenceCalculator(config)
         # logger
         try:
-            from ..utils.logger import LoggerFactory
+            from utils.logger import LoggerFactory
             self.logger = LoggerFactory.get_parser_logger("java")
         except Exception:
             self.logger = None

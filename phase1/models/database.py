@@ -369,7 +369,15 @@ class DatabaseManager:
 
         if db_config['type'] == 'sqlite':
             sqlite_config = db_config['sqlite']
-            db_url = f"sqlite:///{sqlite_config['path']}"
+            db_path = sqlite_config['path']
+            
+            # SQLite 파일을 저장할 디렉토리 생성
+            import os
+            db_dir = os.path.dirname(db_path)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+            
+            db_url = f"sqlite:///{db_path}"
             
             # Enable WAL mode for better concurrency
             if sqlite_config.get('wal_mode', False):

@@ -32,13 +32,15 @@ from utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator
 class SourceAnalyzer:
     """소스 분석기 메인 클래스"""
     
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, project_name: str = None):
         """
         소스 분석기 초기화
         
         Args:
             config_path: 설정 파일 경로
+            project_name: 프로젝트 이름
         """
+        self.project_name = project_name
         self.config = self._load_config(config_path)
         
         # 로깅 시스템 초기화
@@ -85,6 +87,10 @@ class SourceAnalyzer:
                 raw = f.read()
             # 환경변수 치환 지원 (${VAR})
             config = yaml.safe_load(os.path.expandvars(raw))
+            
+            # 프로젝트명 템플릿 치환
+            if self.project_name:
+                config = self._substitute_project_name(config, self.project_name)
                 
             # 기본값 설정
             self._set_default_config(config)
@@ -160,6 +166,16 @@ class SourceAnalyzer:
         llm_cfg.setdefault('log_prompt', False)
         llm_cfg.setdefault('dry_run', False)
         llm_cfg.setdefault('fallback_to_ollama', True)
+        
+    def _substitute_project_name(self, config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
+        """설정 파일의 프로젝트명 템플릿을 실제 프로젝트명으로 치환"""
+        import json
+        
+        # 설정을 JSON 문자열로 변환 후 프로젝트명 치환
+        config_str = json.dumps(config)
+        config_str = config_str.replace("{project_name}", project_name)
+        
+        return json.loads(config_str)
         
     def _initialize_parsers(self) -> Dict[str, Any]:
         """파서들 초기화 (개선된 예외 처리)"""
@@ -288,39 +304,30 @@ class SourceAnalyzer:
         }
         
     async def _load_db_schema(self, project_root: str, project_name: str, project_id: int):
-        """DB 스키마 정보 로드 (개선된 오류 처리)"""
+        """DB 스키마 정보 로드 (프로젝트별 자동 검색)"""
         
-        # config에서 path_template을 가져와 project_name으로 포맷팅
-        db_schema_template = self.config['db_schema']['path_template']
-        db_schema_path = db_schema_template.format(project_name=project_name)
-
-        if not os.path.exists(db_schema_path):
-            self.logger.warning(f"DB 스키마 경로가 없습니다: {db_schema_path}")
-            return
+        self.logger.info(f"DB 스키마 정보 로드 시작: 프로젝트 '{project_name}'")
+        
+        try:
+            # 새로운 프로젝트별 CSV 로더 사용
+            load_result = await self.csv_loader.load_project_db_schema(project_name, project_id)
             
-        self.logger.info(f"DB 스키마 정보 로딩 중: {db_schema_path}")
-        
-        required_files = self.config['db_schema']['required_files']
-        loaded_files = []
-        
-        for csv_file in required_files:
-            csv_path = os.path.join(db_schema_path, csv_file)
+            if load_result['errors']:
+                for error in load_result['errors']:
+                    self.logger.warning(error)
             
-            try:
-                if os.path.exists(csv_path):
-                    result = await self.csv_loader.load_csv(csv_path, project_id)
-                    loaded_files.append(csv_file)
-                    self.logger.info(f"CSV 로드 완료: {csv_file} ({result['records']}건)")
-                else:
-                    self.logger.warning(f"CSV 파일 없음: {csv_path}")
-                    
-            except Exception as e:
-                self.logger.error(f"CSV 로드 실패: {csv_file}", exception=e)
-                
-        if loaded_files:
-            self.logger.info(f"DB 스키마 로딩 완료: {len(loaded_files)}/{len(required_files)} 파일")
-        else:
-            self.logger.warning("DB 스키마 파일이 로드되지 않았습니다.")
+            if load_result['loaded_files']:
+                self.logger.info(f"DB 스키마 로드 완료: {len(load_result['loaded_files'])}개 파일, {load_result['total_records']}건 레코드")
+                for filename, file_result in load_result['loaded_files'].items():
+                    record_count = sum(file_result.values())
+                    self.logger.info(f"  - {filename}: {record_count}건")
+            else:
+                self.logger.info(f"DB 스키마 CSV 파일이 없습니다: {load_result['schema_dir']}")
+                self.logger.info("  필요시 다음 CSV 파일들을 해당 디렉토리에 업로드하세요:")
+                self.logger.info("  - ALL_TABLES.csv, ALL_TAB_COLUMNS.csv, PK_INFO.csv, ALL_VIEWS.csv")
+        
+        except Exception as e:
+            self.logger.error(f"DB 스키마 로드 중 예외 발생: {e}")
             
     def _collect_source_files(self, project_root: str) -> List[str]:
         """소스 파일들 수집 (개선된 필터링)"""
@@ -930,16 +937,16 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 예시 사용법:
-  python main.py PROJECT/sample-app
-  python main.py PROJECT/sample-app --project-name "샘플 앱"
-  python main.py PROJECT/sample-app --config custom_config.yaml
+  python main.py my-project
+  python main.py sample-app --all
+  python main.py my-project --config custom_config.yaml
         """
     )
     
-    parser.add_argument('--input-path', help='분석할 프로젝트 소스 경로 (기본값: ./PROJECT/sampleSrc/src)')
+    parser.add_argument('project_name', nargs='?', default='sampleSrc',
+                       help='프로젝트 이름 (필수) - ./project/<프로젝트명> 폴더 구조 사용')
     parser.add_argument('--config', default='./config/config.yaml', 
                        help='설정 파일 경로 (기본값: ./config/config.yaml)')
-    parser.add_argument('--project-name', help='프로젝트 이름 (기본값: input-path의 마지막 폴더명)')
     parser.add_argument('--all', action='store_true',
                        help='모든 분석 및 시각화 작업 실행 (Quick Start용)')
     parser.add_argument('--incremental', action='store_true', 
@@ -966,31 +973,35 @@ def main():
     
     args = parser.parse_args()
     
-    # 입력 경로 및 프로젝트 이름 처리
-    if args.input_path:
-        project_root = args.input_path
-    else:
-        project_root = "./PROJECT/sampleSrc/src" # 기본값
-
-    if not args.project_name:
-        # input_path의 마지막 폴더명을 프로젝트 이름으로 사용
-        project_name = os.path.basename(os.path.abspath(project_root))
-    else:
-        project_name = args.project_name
-
-    # 입력 검증
-    if not os.path.exists(project_root):
-        print(f"❌ 오류: 프로젝트 경로가 존재하지 않습니다: {project_root}")
-        sys.exit(1)
+    # 프로젝트 이름 처리
+    project_name = args.project_name
+    
+    # 프로젝트 경로 자동 생성
+    project_base_dir = f"./project/{project_name}"
+    project_source_dir = f"./project/{project_name}/src"
+    
+    # 프로젝트 디렉토리 생성 (없으면 생성)
+    os.makedirs(project_base_dir, exist_ok=True)
+    os.makedirs(project_source_dir, exist_ok=True)
+    os.makedirs(f"./project/{project_name}/data", exist_ok=True)
+    os.makedirs(f"./project/{project_name}/output", exist_ok=True)
+    os.makedirs(f"./project/{project_name}/output/visualize", exist_ok=True)
+    os.makedirs(f"./project/{project_name}/logs", exist_ok=True)
+    os.makedirs(f"./project/{project_name}/db_schema", exist_ok=True)
+    
+    # 소스 디렉토리 존재 확인
+    if not os.path.exists(project_source_dir) or not os.listdir(project_source_dir):
+        print(f"⚠️  경고: 소스 디렉토리가 비어있습니다: {project_source_dir}")
+        print(f"   분석할 소스 코드를 {project_source_dir}에 위치시키세요.")
         
     if not os.path.exists(args.config):
         print(f"❌ 오류: 설정 파일이 존재하지 않습니다: {args.config}")
         sys.exit(1)
         
     try:
-        # 소스 분석기 초기화
-        print("소스 분석기 초기화 중...")
-        analyzer = SourceAnalyzer(args.config)
+        # 설정 파일에 프로젝트 이름 대입
+        print(f"소스 분석기 초기화 중... (프로젝트: {project_name})")
+        analyzer = SourceAnalyzer(args.config, project_name=project_name)
         
         # 로그 레벨 조정 (로거가 없으면 기본 로깅 사용)
         if hasattr(analyzer.logger, 'logger'):
@@ -1087,13 +1098,39 @@ def main():
                 fps['include'] = include
 
         result = asyncio.run(analyzer.analyze_project(
-            project_root, 
+            project_source_dir, 
             project_name,
             args.incremental
         ))
         
         # 결과 출력
         print_analysis_results(result)
+        
+        # --all 플래그 처리: 시각화 자동 실행
+        if args.all:
+            print(f"\n🎨 전체 시각화 실행 중...")
+            try:
+                import subprocess
+                visualize_output_dir = f"./project/{project_name}/output/visualize"
+                
+                # visualize/cli.py 실행
+                viz_cmd = [
+                    'python', 'visualize/cli.py', 
+                    '--project-name', project_name,
+                    '--output-dir', visualize_output_dir,
+                    '--all'  # 모든 시각화 생성
+                ]
+                
+                result = subprocess.run(viz_cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    print(f"✅ 시각화 완료: {visualize_output_dir}")
+                else:
+                    print(f"⚠️  시각화 중 경고 또는 오류 발생")
+                    if result.stderr:
+                        print(f"   오류: {result.stderr.strip()}")
+                        
+            except Exception as e:
+                print(f"❌ 시각화 실행 중 오류: {e}")
         
         # 메타데이터 MD 내보내기 처리
         if args.export_md:

@@ -301,13 +301,13 @@ python phase1/main.py --input-path PROJECT/sampleSrc --export-md ./output/report
 
 ```bash
 # ERD 생성
-python visualize/cli.py erd --project-id 1 --output output/erd.html
+python visualize/cli.py erd --project-name sampleSrc --export-html erd.html
 
 # 의존성 그래프 생성
-python visualize/cli.py graph --project-id 1 --output output/graph.html
+python visualize/cli.py graph --project-name sampleSrc --export-html graph.html
 
 # 컴포넌트 다이어그램
-python visualize/cli.py component --project-id 1 --output output/component.html
+python visualize/cli.py component --project-name sampleSrc --export-html components.html
 ```
 
 ### 4.3. 웹 대시보드 실행

@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 import logging
 from datetime import datetime
 
-from ..models.database import DbTable, DbColumn, DbPk, DbView
+from models.database import DbTable, DbColumn, DbPk, DbView
 
 class CsvLoader:
     """CSV 파일을 로드하여 DB 스키마 정보를 저장하는 클래스"""
@@ -80,7 +80,7 @@ class CsvLoader:
             로드된 레코드 수 정보
         """
         
-        from ..models.database import DatabaseManager
+        from models.database import DatabaseManager
         
         # 임시로 세션 생성 (실제로는 의존성 주입 필요)
         db_manager = DatabaseManager(self.config)
@@ -130,7 +130,7 @@ class CsvLoader:
     async def _load_columns(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_TAB_COLUMNS.csv 로드"""
         
-        from ..models.database import DatabaseManager
+        from models.database import DatabaseManager
         
         db_manager = DatabaseManager(self.config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
@@ -185,8 +185,8 @@ class CsvLoader:
     async def _load_table_comments(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_TAB_COMMENTS.csv 로드"""
         
-        from ..models.database import DatabaseManager
-        from ..models.database import Summary
+        from models.database import DatabaseManager
+        from models.database import Summary
         
         db_manager = DatabaseManager(self.config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
@@ -236,8 +236,8 @@ class CsvLoader:
     async def _load_column_comments(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_COL_COMMENTS.csv 로드"""
         
-        from ..models.database import DatabaseManager
-        from ..models.database import Summary
+        from models.database import DatabaseManager
+        from models.database import Summary
         
         db_manager = DatabaseManager(self.config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
@@ -291,7 +291,7 @@ class CsvLoader:
     async def _load_pk_info(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """PK_INFO.csv 로드 (PK 컬럼 정보)"""
         
-        from ..models.database import DatabaseManager
+        from models.database import DatabaseManager
         
         db_manager = DatabaseManager(self.config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
@@ -343,7 +343,7 @@ class CsvLoader:
     async def _load_views(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_VIEWS.csv 로드"""
         
-        from ..models.database import DatabaseManager
+        from models.database import DatabaseManager
         
         db_manager = DatabaseManager(self.config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
@@ -428,3 +428,68 @@ class CsvLoader:
                 
         except Exception as e:
             return {'valid': False, 'reason': f'파일 읽기 오류: {e}'}
+    
+    async def load_project_db_schema(self, project_name: str, project_id: int) -> Dict[str, Any]:
+        """
+        프로젝트별 DB 스키마 CSV 파일 자동 검색 및 로드
+        
+        Args:
+            project_name: 프로젝트 이름
+            project_id: 프로젝트 ID
+            
+        Returns:
+            로드 결과 정보
+        """
+        import os
+        
+        # 프로젝트별 db_schema 디렉토리 경로
+        db_schema_dir = f"./project/{project_name}/db_schema"
+        
+        result = {
+            'loaded_files': {},
+            'errors': [],
+            'total_records': 0,
+            'schema_dir': db_schema_dir
+        }
+        
+        # db_schema 디렉토리가 존재하지 않으면 생성
+        if not os.path.exists(db_schema_dir):
+            os.makedirs(db_schema_dir, exist_ok=True)
+            self.logger.info(f"DB 스키마 디렉토리 생성: {db_schema_dir}")
+            result['errors'].append(f"DB 스키마 디렉토리가 비어있습니다: {db_schema_dir}")
+            return result
+        
+        # 지원되는 CSV 파일 목록
+        supported_files = list(self.csv_handlers.keys())
+        
+        # 디렉토리에서 CSV 파일 검색
+        found_files = []
+        for filename in os.listdir(db_schema_dir):
+            if filename.endswith('.csv') and filename in supported_files:
+                found_files.append(filename)
+        
+        if not found_files:
+            self.logger.warning(f"DB 스키마 CSV 파일을 찾을 수 없습니다: {db_schema_dir}")
+            result['errors'].append(f"지원되는 CSV 파일이 없습니다. 필요한 파일: {supported_files}")
+            return result
+        
+        # 찾은 CSV 파일들을 순서대로 로드
+        load_order = ['ALL_TABLES.csv', 'ALL_TAB_COLUMNS.csv', 'PK_INFO.csv', 'ALL_VIEWS.csv']
+        
+        for filename in load_order:
+            if filename in found_files:
+                csv_path = os.path.join(db_schema_dir, filename)
+                try:
+                    self.logger.info(f"DB 스키마 CSV 로드 중: {filename}")
+                    load_result = await self.load_csv(csv_path, project_id)
+                    
+                    result['loaded_files'][filename] = load_result
+                    result['total_records'] += sum(load_result.values())
+                    self.logger.info(f"DB 스키마 CSV 로드 완료: {filename} ({sum(load_result.values())} records)")
+                    
+                except Exception as e:
+                    error_msg = f"{filename} 로드 실패: {e}"
+                    self.logger.error(error_msg)
+                    result['errors'].append(error_msg)
+        
+        return result

@@ -259,7 +259,11 @@ llm_assist:
 cat logs/analyzer.log | grep "LLM assist"
 
 # 신뢰도 변화 확인 
-python phase1/main.py --confidence-report confidence_report.json
+# Windows
+run_analyzer.bat --confidence-report confidence_report.json
+
+# Linux/Mac
+./run_analyzer.sh --confidence-report confidence_report.json
 
 # 캐시 사용량 확인
 ls -la output/llm_cache/
@@ -272,23 +276,48 @@ ls -la output/llm_cache/
 ### 1. 프로젝트 분석 실행
 
 ```bash
-# 프로젝트 경로를 지정하여 분석을 실행합니다.
-# 예시: PROJECT/sampleSrc 디렉토리를 분석
-python phase1/src/main.py PROJECT/sampleSrc --project-name "MySampleProject"
+# 프로젝트명을 지정하여 분석을 실행합니다.
+# 프로젝트 파일들은 ./project/<프로젝트명>/src/ 디렉토리에 위치해야 합니다.
+# Windows
+run_analyzer.bat sampleSrc
+
+# Linux/Mac
+./run_analyzer.sh sampleSrc
+
+# --all 옵션으로 분석과 시각화를 한번에 실행
+run_analyzer.bat sampleSrc --all
+```
+
+**디렉토리 구조**:
+분석할 프로젝트는 다음과 같은 구조로 준비해야 합니다:
+```
+./project/
+├── sampleSrc/                    # 프로젝트명 디렉토리
+│   ├── src/                      # 소스 코드 (Java, JSP 파일들)
+│   ├── db_schema/                # DB 스키마 CSV 파일들 (선택사항)
+│   │   ├── ALL_TABLES.csv
+│   │   ├── ALL_TAB_COLUMNS.csv
+│   │   └── ALL_CONSTRAINTS.csv
+│   ├── data/                     # 메타데이터 저장소 (자동 생성)
+│   │   └── metadata.db
+│   └── output/                   # 분석 결과 (자동 생성)
+│       └── visualize/            # 시각화 파일들
 ```
 
 ### 2. 의존성 그래프 시각화 (Mermaid Markdown)
 
 ```bash
 # 프로젝트 ID 1번의 의존성 그래프를 Mermaid Markdown으로 내보냅니다.
-python visualize/cli.py graph --project-id 1 --export-mermaid ./out/dependency_graph.md
+# 출력 파일은 ./project/<프로젝트명>/output/visualize/ 디렉토리에 저장됩니다.
+python visualize/cli.py graph --project-name sampleSrc --export-mermaid dependency_graph.md
 ```
 
 ### 3. ERD 시각화 (Mermaid Markdown)
 
 ```bash
 # 프로젝트 ID 1번의 ERD를 Mermaid Markdown으로 내보냅니다.
-python visualize/cli.py erd --project-id 1 --export-mermaid ./out/erd.md
+# 출력 파일은 ./project/<프로젝트명>/output/visualize/ 디렉토리에 저장됩니다.
+python visualize/cli.py erd --project-name sampleSrc --export-mermaid erd.md
 ```
 
 ## 🌐 웹 대시보드 (선택 사항)

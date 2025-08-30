@@ -16,8 +16,8 @@ except ImportError:
     # 없다면 정규식 기반으로 폴백
     HAS_JSQLPARSER = False
 
-from ..models.database import SqlUnit, Join, RequiredFilter, Edge
-from ..utils.confidence_calculator import ConfidenceCalculator
+from models.database import SqlUnit, Join, RequiredFilter, Edge
+from utils.confidence_calculator import ConfidenceCalculator
 
 class SqlParser:
     """SQL 구문을 분석하는 파서"""

@@ -10,7 +10,7 @@ project_root = current_dir.parent
 phase1_path = project_root / "phase1" / "src"
 sys.path.insert(0, str(phase1_path))
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix
+from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project
 from sqlalchemy import and_, or_, func
 import yaml
 
@@ -25,6 +25,15 @@ class VizDB:
     def session(self):
         """Get database session"""
         return self.dbm.get_session()
+
+    def get_project_id_by_name(self, project_name: str) -> Optional[int]:
+        """Get project_id by project name"""
+        session = self.session()
+        try:
+            project = session.query(Project).filter(Project.name == project_name).first()
+            return project.project_id if project else None
+        finally:
+            session.close()
 
     def load_project_files(self, project_id: int) -> List[File]:
         """Load all files for a project"""

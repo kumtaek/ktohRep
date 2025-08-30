@@ -26,8 +26,9 @@ from pathlib import Path
 
 
 def _add_phase1_to_syspath():
-    repo_root = Path(__file__).resolve().parents[1]
-    phase1_root = repo_root / 'phase1'
+    # Since this script is now inside phase1/scripts,
+    # parents[1] points to the phase1 directory.
+    phase1_root = Path(__file__).resolve().parents[1]
     phase1_src = phase1_root / 'src'
     for p in (str(phase1_root), str(phase1_src)):
         if p not in sys.path:

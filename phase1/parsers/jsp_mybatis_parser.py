@@ -35,9 +35,9 @@ try:
 except ImportError:
     TREE_SITTER_AVAILABLE = False
 
-from ..models.database import File, SqlUnit, Edge, Join, RequiredFilter
-from ..utils.confidence_calculator import ConfidenceCalculator
-from ..security.vulnerability_detector import SqlInjectionDetector, XssDetector
+from models.database import File, SqlUnit, Edge, Join, RequiredFilter
+from utils.confidence_calculator import ConfidenceCalculator
+from security.vulnerability_detector import SqlInjectionDetector, XssDetector
 
 
 class DynamicSqlResolver:
@@ -599,7 +599,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         self.logger = config.get('logger') if isinstance(config, dict) else None
         if not self.logger:
             try:
-                from ..utils.logger import LoggerFactory
+                from utils.logger import LoggerFactory
                 self.logger = LoggerFactory.get_parser_logger("jsp_mybatis")
             except Exception:
                 self.logger = None

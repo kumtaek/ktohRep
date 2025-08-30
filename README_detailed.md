@@ -245,13 +245,13 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
 *   **시각화 생성**: `visualize/cli.py`를 실행하여 다양한 다이어그램을 생성하고 내보냅니다.
     ```bash
     # 의존성 그래프 (Mermaid Markdown)
-    python visualize/cli.py graph --project-id 1 --export-mermaid ./out/dependency_graph.md
+    python visualize/cli.py graph --project-name sampleSrc --export-mermaid ./out/dependency_graph.md
     # ERD (HTML)
-    python visualize/cli.py erd --project-id 1 --out ./out/erd.html
+    python visualize/cli.py erd --project-name sampleSrc --export-html ./out/erd.html
     # 클래스 다이어그램 (JSON)
-    python visualize/cli.py class --project-id 1 --modules com.example.MyClass --export-json ./out/my_class_diagram.json
+    python visualize/cli.py class --project-name sampleSrc --modules com.example.MyClass --export-json ./out/my_class_diagram.json
     # 시퀀스 다이어그램 (특정 파일/메서드 시작, 깊이 2)
-    python visualize/cli.py sequence --project-id 1 --start-file src/main/java/com/example/Service.java --start-method processRequest --depth 2 --out ./out/sequence.html
+    python visualize/cli.py sequence --project-name sampleSrc --start-file src/main/java/com/example/Service.java --start-method processRequest --depth 2 --export-html ./out/sequence.html
     ```
 
 ### 9.2. 백엔드 (API)

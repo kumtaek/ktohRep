@@ -26,13 +26,33 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 프로젝트의 전체 코드를 분석하고 사용 가능한 모든 시각화를 생성하려면 다음 명령어를 사용합니다:
 
 ```bash
-python phase1/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "output/visualize"
+# Windows
+run_analyzer.bat sampleSrc --all
+
+# Linux/Mac
+./run_analyzer.sh sampleSrc --all
+```
+
+**디렉토리 구조**:
+분석할 프로젝트는 다음과 같은 구조로 준비해야 합니다:
+```
+./project/
+├── sampleSrc/                    # 프로젝트명 디렉토리
+│   ├── src/                      # 소스 코드 (Java, JSP 파일들)
+│   ├── db_schema/                # DB 스키마 CSV 파일들 (선택사항)
+│   │   ├── ALL_TABLES.csv
+│   │   ├── ALL_TAB_COLUMNS.csv
+│   │   └── ALL_CONSTRAINTS.csv
+│   ├── data/                     # 메타데이터 저장소 (자동 생성)
+│   │   └── metadata.db
+│   └── output/                   # 분석 결과 (자동 생성)
+│       └── visualize/            # 시각화 파일들
 ```
 
 이 명령어는 다음을 수행합니다:
-*   지정된 `--input-path`에 있는 전체 코드베이스를 분석합니다.
+*   `./project/<프로젝트명>/src/` 디렉토리에 있는 전체 코드베이스를 분석합니다.
 *   지원되는 모든 다이어그램(의존성 그래프, ERD, 시퀀스 다이어그램 등)을 생성합니다.
-*   생성된 모든 시각화 결과는 `--output-dir`에 저장됩니다.
+*   생성된 모든 시각화 결과는 `./project/<프로젝트명>/output/visualize/`에 저장됩니다.
 
 ### 2. 부분 분석 및 시각화 (Partial Analysis and Visualization)
 
@@ -46,34 +66,50 @@ python phase1/main.py --all --input-path "PROJECT/sampleSrc" --output-dir "outpu
 *   `--generate-erd`: ERD(Entity-Relationship Diagram)를 생성합니다.
 *   `--generate-callgraph`: 호출 그래프(Call Graph)를 생성합니다.
 *   `--generate-sequencediagram`: 시퀀스 다이어그램(Sequence Diagram)을 생성합니다.
-*   `--input-path <경로>`: 분석할 소스 코드 디렉토리를 지정합니다. **(필수)**
-    *   예: `"C:/Users/YourProject/src"`
-*   `--output-dir <경로>`: 생성된 시각화 결과가 저장될 디렉토리를 지정합니다. **(중요)**
-    *   기본값: `output/visualize`
+*   `<project_name>`: 분석할 프로젝트의 이름을 지정합니다. **(필수)**
+    *   프로젝트 파일들은 `./project/<project_name>/src/` 디렉토리에 위치해야 합니다.
+    *   예: `sampleSrc` (분석할 소스는 `./project/sampleSrc/src/`에 위치)
 *   `--config <경로>`: 사용자 정의 설정 파일을 지정합니다. **(고급)**
     *   기본값: `config/config.yaml`
-*   `--project-name <이름>`: 분석 결과를 저장할 프로젝트의 이름을 지정합니다. **(권장)**
-    *   분석 결과 데이터베이스에 저장될 프로젝트 식별 이름입니다.
+    *   프로젝트별 경로 템플릿을 통해 자동으로 경로가 설정됩니다.
 
 #### 📝 예시:
 
 **a) 코드 분석만 수행:**
 
 ```bash
-python phase1/main.py --analyze-code --input-path "path/to/your/project" --project-name "MyAnalysis"
+# Windows
+run_analyzer.bat MyAnalysis --analyze-code
+
+# Linux/Mac  
+./run_analyzer.sh MyAnalysis --analyze-code
 ```
 
-**b) 특정 입력 경로에 대해 ERD와 호출 그래프만 생성:**
+참고: 소스 코드는 `./project/MyAnalysis/src/` 디렉토리에 위치해야 합니다.
+
+**b) 특정 프로젝트에 대해 ERD와 호출 그래프만 생성:**
 
 ```bash
-python phase1/main.py --generate-erd --generate-callgraph --input-path "path/to/your/project" --output-dir "output/visualize" --project-name "MyCustomProject"
+# Windows
+run_analyzer.bat MyCustomProject --generate-erd --generate-callgraph
+
+# Linux/Mac
+./run_analyzer.sh MyCustomProject --generate-erd --generate-callgraph
 ```
 
-**c) 시퀀스 다이어그램을 생성하고 사용자 정의 출력 디렉토리에 저장:**
+참고: 출력은 `./project/MyCustomProject/output/visualize/` 디렉토리에 저장됩니다.
+
+**c) 시퀀스 다이어그램만 생성:**
 
 ```bash
-python phase1/main.py --generate-sequencediagram --input-path "path/to/your/project" --output-dir "my_custom_output" --project-name "MySequenceProject"
+# Windows
+run_analyzer.bat MySequenceProject --generate-sequencediagram
+
+# Linux/Mac
+./run_analyzer.sh MySequenceProject --generate-sequencediagram
 ```
+
+참고: 출력은 `./project/MySequenceProject/output/visualize/` 디렉토리에 저장됩니다.
 
 ### 3. `config.yaml`을 통한 고급 설정
 
@@ -93,7 +129,16 @@ python phase1/main.py --generate-sequencediagram --input-path "path/to/your/proj
 python visualize/cli.py --help
 ```
 
-`visualize/cli.py --help` 명령어를 통해 사전 분석된 데이터를 기반으로 특정 시각화를 생성하는 자세한 옵션을 확인할 수 있습니다.
+**예시: 특정 프로젝트의 시각화 생성**
+```bash
+# 의존성 그래프를 Mermaid 형식으로 내보내기
+python visualize/cli.py graph --project-name sampleSrc --export-mermaid dependency_graph.md
+
+# ERD를 HTML과 Mermaid 형식으로 내보내기
+python visualize/cli.py erd --project-name sampleSrc --export-html erd.html --export-mermaid erd.md
+```
+
+참고: 출력 파일들은 `./project/<프로젝트명>/output/visualize/` 디렉토리에 저장됩니다.
 
 ## 🌐 웹 대시보드 (선택 사항)
 

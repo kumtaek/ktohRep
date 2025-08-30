@@ -381,15 +381,26 @@ class MermaidExporter:
             else:
                 lines.append(f"  {src_id} -->|{edge_kind}| {dst_id}")
 
-        # Styling blocks: Groups, Hotspots, Vulnerabilities
+        # Styling blocks: Dynamic Clusters, Hotspots, Vulnerabilities
+        lines.append("")
+        lines.append("  %% Dynamic Cluster Styling")
+        
+        # Get cluster definitions from metadata
+        clusters = (data.get('metadata', {}) or {}).get('clusters', {})
+        if clusters:
+            for cluster_id, style_def in clusters.items():
+                lines.append(f"  classDef {cluster_id} {style_def}")
+        else:
+            # Fallback to old hardcoded styles if dynamic clusters aren't present
+            lines.extend([
+                "  classDef JSP fill:#ffebee,stroke:#d32f2f",
+                "  classDef Controller fill:#e3f2fd,stroke:#1976d2",
+                "  classDef Service fill:#e8f5e8,stroke:#388e3c",
+                "  classDef Mapper fill:#f3e5f5,stroke:#7b1fa2",
+                "  classDef DB fill:#fff9c4,stroke:#f9a825",
+            ])
+
         lines.extend([
-            "",
-            "  %% Group Styling (per docs)",
-            "  classDef JSP fill:#ffebee,stroke:#d32f2f",
-            "  classDef Controller fill:#e3f2fd,stroke:#1976d2",
-            "  classDef Service fill:#e8f5e8,stroke:#388e3c",
-            "  classDef Mapper fill:#f3e5f5,stroke:#7b1fa2",
-            "  classDef DB fill:#fff9c4,stroke:#f9a825",
             "",
             "  %% Hotspot styling",
             "  classDef hotspot_low fill:#e8f5e9,stroke:#43a047",

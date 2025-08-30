@@ -1,7 +1,8 @@
 # visualize/builders/dependency_graph.py
 from typing import List, Dict, Any, Optional
 from ..data_access import VizDB
-from ..schema import create_node, create_edge, create_graph, guess_group, filter_nodes_by_focus, limit_nodes
+from ..schema import create_node, create_edge, create_graph, filter_nodes_by_focus, limit_nodes
+from ..clustering import AdvancedClusterer
 
 
 def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], kinds: List[str], min_conf: float,
@@ -33,32 +34,15 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
         src_details = db.get_node_details(edge.src_type, edge.src_id)
         dst_details = db.get_node_details(edge.dst_type, edge.dst_id) if edge.dst_id else None
         
-        # Add source node
-        if src_id not in nodes_dict:
-            src_label = _get_node_label(edge.src_type, src_details)
-            src_group = guess_group(edge.src_type, 
-                                  src_details.get('file') if src_details else None,
-                                  src_details.get('fqn') if src_details else None)
-            nodes_dict[src_id] = create_node(src_id, edge.src_type, src_label, src_group, src_details)
-        
-        # Add destination node
-        if dst_id not in nodes_dict:
-            if dst_details:
-                dst_label = _get_node_label(edge.dst_type, dst_details)
-                dst_group = guess_group(edge.dst_type,
-                                      dst_details.get('file') if dst_details else None,
-                                      dst_details.get('fqn') if dst_details else None)
-            else:
-                dst_label = f"Unknown {edge.edge_kind}"
-                dst_group = "Unknown"
-            nodes_dict[dst_id] = create_node(dst_id, edge.dst_type, dst_label, dst_group, dst_details)
-        
-        # Add edge
-        edge_id = f"edge:{edge.edge_id}" if hasattr(edge, 'edge_id') else f"edge:{len(json_edges)}"
-        json_edges.append(create_edge(edge_id, src_id, dst_id, edge.edge_kind, edge.confidence))
-    
-    nodes_list = list(nodes_dict.values())
+        nodes_list = list(nodes_dict.values())
     print(f"  노드 {len(nodes_list)}개 생성")
+
+    # Initialize the clusterer with all nodes and edges
+    clusterer = AdvancedClusterer(nodes_list, json_edges)
+
+    # Assign cluster IDs to all nodes
+    for node in nodes_list:
+        node['group'] = clusterer.get_cluster_id(node['id'])
     
     # Apply focus filtering if specified
     if focus:
@@ -133,7 +117,7 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
             n['meta']['vuln_max_severity'] = max_sev
 
     graph = create_graph(nodes_list, json_edges)
-    # Attach filter metadata for documentation/export context
+    # Attach filter metadata and cluster definitions for documentation/export context
     graph.setdefault('metadata', {})
     graph['metadata']['filters'] = {
         'kinds': ','.join(kinds) if kinds else '',
@@ -142,6 +126,7 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
         'depth': depth,
         'max_nodes': max_nodes,
     }
+    graph['metadata']['clusters'] = clusterer.get_all_cluster_defs()
 
     return graph
 

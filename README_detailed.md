@@ -80,7 +80,11 @@ E:\SourceAnalyzer.git\
 
 ## 3) 데이터 모델 (핵심 테이블) 
 
-분석된 메타데이터는 SQLite 데이터베이스(`data/metadata.db`)에 저장됩니다. 주요 엔티티는 다음과 같습니다.
+분석된 메타데이터는 다음 위치에 저장됩니다:
+- 글로벌 메타데이터: `./data/metadata.db` (phase1 시스템 데이터)
+- 프로젝트별 메타데이터: `./project/<프로젝트명>/data/metadata.db` (각 프로젝트 분석 결과)
+
+주요 엔티티는 다음과 같습니다.
 
 *   `projects`: 분석된 프로젝트의 기본 정보 (`project_id`, `name`, `root_path`, `created_at`, `updated_at`)
 *   `files`: 소스 파일 정보 (`file_id`, `project_id`, `path`, `language`, `hash`, `loc`, `mtime`)
@@ -398,7 +402,7 @@ python web-dashboard/backend/app.py
 *   **Python 인코딩/출력 깨짐**: 터미널에서 한글이 깨져 보일 경우 다음 명령을 실행합니다.
     *   Windows: `chcp 65001`
     *   Linux/macOS: `export LANG=ko_KR.UTF-8`
-*   **DB 파일 경로 권한 오류**: `data/metadata.db` 파일에 대한 쓰기 권한이 없거나, `config.yaml`에 지정된 SQLite 데이터베이스 경로가 올바르지 않을 수 있습니다. 권한을 확인하고 경로를 점검하세요.
+*   **DB 파일 경로 권한 오류**: SQLite 데이터베이스 파일(`./data/metadata.db` 또는 `./project/<프로젝트명>/data/metadata.db`)에 대한 쓰기 권한이 없거나, `config.yaml`에 지정된 경로가 올바르지 않을 수 있습니다. 권한을 확인하고 경로를 점검하세요.
 *   **성능/메모리 문제**: 대규모 프로젝트 분석 시 성능 저하 또는 메모리 부족이 발생할 수 있습니다.
     *   `config.yaml`의 `processing.max_workers` (병렬 처리 워커 수)를 조절하여 시스템 리소스에 맞게 최적화합니다.
     *   `file_patterns` 설정을 통해 분석 대상 파일의 범위를 좁히거나, `phase1/src/main.py`의 `--incremental` 옵션을 사용하여 증분 분석을 수행합니다.

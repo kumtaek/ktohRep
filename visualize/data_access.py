@@ -19,7 +19,17 @@ class VizDB:
     def __init__(self, config: Dict[str, Any], project_name: Optional[str] = None):
         self.config = config
         self.project_name = project_name
-        self.dbm = DatabaseManager(self.config)
+        
+        # 새로운 database config 구조에서 project database 사용
+        if 'project' in config.get('database', {}):
+            # 새로운 구조: database.project
+            project_db_config = config['database']['project'].copy()
+            db_config = {'database': project_db_config}
+        else:
+            # 기존 구조 호환성
+            db_config = config
+        
+        self.dbm = DatabaseManager(db_config)
         self.dbm.initialize()
 
     def session(self):

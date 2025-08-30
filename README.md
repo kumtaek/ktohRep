@@ -299,24 +299,31 @@ run_analyzer.bat --project-name sampleSrc --export-md
 **디렉토리 구조**:
 분석할 프로젝트는 다음과 같은 구조로 준비해야 합니다:
 ```
-./project/
-├── sampleSrc/                    # 프로젝트명 디렉토리
-│   ├── src/                      # 소스 코드 (Java, JSP 파일들)
-│   ├── db_schema/                # DB 스키마 CSV 파일들 (선택사항)
-│   │   ├── ALL_TABLES.csv
-│   │   ├── ALL_TAB_COLUMNS.csv
-│   │   └── ALL_CONSTRAINTS.csv
-│   ├── data/                     # 메타데이터 저장소 (자동 생성)
-│   │   └── metadata.db
-│   └── output/                   # 분석 결과 (자동 생성)
-│       └── visualize/            # 시각화 파일들
+./                                # 프로젝트 루트
+├── data/                        # 글로벌 메타데이터 (phase1 시스템 데이터)
+│   └── metadata.db             # 시스템 전체 메타데이터
+├── logs/                        # 글로벌 로그 (phase1 시스템 로그)
+│   └── analyzer.log            # 시스템 분석 로그
+├── project/                     # 프로젝트별 소스 및 데이터
+│   └── sampleSrc/              # 프로젝트명 디렉토리
+│       ├── src/                # 소스 코드 (Java, JSP 파일들)
+│       ├── data/               # 프로젝트별 분석 데이터
+│       │   └── metadata.db     # 프로젝트 분석 결과
+│       └── db_schema/          # DB 스키마 CSV 파일들 (선택사항)
+│           ├── ALL_TABLES.csv
+│           ├── ALL_TAB_COLUMNS.csv
+│           └── ALL_CONSTRAINTS.csv
+└── output/                      # 사용자 결과물 확인 위치
+    └── sampleSrc/              # 프로젝트별 출력
+        ├── visualize/          # 시각화 파일들
+        └── logs/               # 프로젝트 분석 로그
 ```
 
 ### 2. 의존성 그래프 시각화 (Mermaid Markdown)
 
 ```bash
 # 프로젝트 ID 1번의 의존성 그래프를 Mermaid Markdown으로 내보냅니다.
-# 출력 파일은 ./project/<프로젝트명>/output/visualize/ 디렉토리에 저장됩니다.
+# 출력 파일은 ./output/<프로젝트명>/visualize/ 디렉토리에 저장됩니다.
 python visualize/cli.py graph --project-name sampleSrc --export-mermaid dependency_graph.md
 ```
 
@@ -324,7 +331,7 @@ python visualize/cli.py graph --project-name sampleSrc --export-mermaid dependen
 
 ```bash
 # 프로젝트 ID 1번의 ERD를 Mermaid Markdown으로 내보냅니다.
-# 출력 파일은 ./project/<프로젝트명>/output/visualize/ 디렉토리에 저장됩니다.
+# 출력 파일은 ./output/<프로젝트명>/visualize/ 디렉토리에 저장됩니다.
 python visualize/cli.py erd --project-name sampleSrc --export-mermaid erd.md
 ```
 

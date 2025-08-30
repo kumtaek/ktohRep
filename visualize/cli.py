@@ -335,7 +335,7 @@ def main():
             meta_filters = (data.get('metadata') or {}).get('filters') if isinstance(data, dict) else None
             export_mermaid(
                 data, str(mermaid_path), diagram_type, logger,
-                {'project_id': args.project_id, 'filters': meta_filters}, 
+                {'project_id': project_id, 'filters': meta_filters}, 
                 label_max=getattr(args, 'mermaid_label_max', 20), 
                 erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10),
                 class_methods_max=getattr(args, 'class_methods_max', 10),

@@ -38,23 +38,30 @@ run_analyzer.bat sampleSrc --all
 **디렉토리 구조**:
 분석할 프로젝트는 다음과 같은 구조로 준비해야 합니다:
 ```
-./project/
-├── sampleSrc/                    # 프로젝트명 디렉토리
-│   ├── src/                      # 소스 코드 (Java, JSP 파일들)
-│   ├── db_schema/                # DB 스키마 CSV 파일들 (선택사항)
-│   │   ├── ALL_TABLES.csv
-│   │   ├── ALL_TAB_COLUMNS.csv
-│   │   └── ALL_CONSTRAINTS.csv
-│   ├── data/                     # 메타데이터 저장소 (자동 생성)
-│   │   └── metadata.db
-│   └── output/                   # 분석 결과 (자동 생성)
-│       └── visualize/            # 시각화 파일들
+./                                # 프로젝트 루트
+├── data/                        # 글로벌 메타데이터 (phase1 시스템 데이터)
+│   └── metadata.db             # 시스템 전체 메타데이터
+├── logs/                        # 글로벌 로그 (phase1 시스템 로그)
+│   └── analyzer.log            # 시스템 분석 로그
+├── project/                     # 프로젝트별 소스 및 데이터
+│   └── sampleSrc/              # 프로젝트명 디렉토리
+│       ├── src/                # 소스 코드 (Java, JSP 파일들)
+│       ├── data/               # 프로젝트별 분석 데이터
+│       │   └── metadata.db     # 프로젝트 분석 결과
+│       └── db_schema/          # DB 스키마 CSV 파일들 (선택사항)
+│           ├── ALL_TABLES.csv
+│           ├── ALL_TAB_COLUMNS.csv
+│           └── ALL_CONSTRAINTS.csv
+└── output/                      # 사용자 결과물 확인 위치
+    └── sampleSrc/              # 프로젝트별 출력
+        ├── visualize/          # 시각화 파일들
+        └── logs/               # 프로젝트 분석 로그
 ```
 
 이 명령어는 다음을 수행합니다:
 *   `./project/<프로젝트명>/src/` 디렉토리에 있는 전체 코드베이스를 분석합니다.
 *   지원되는 모든 다이어그램(의존성 그래프, ERD, 시퀀스 다이어그램 등)을 생성합니다.
-*   생성된 모든 시각화 결과는 `./project/<프로젝트명>/output/visualize/`에 저장됩니다.
+*   생성된 모든 시각화 결과는 `./output/<프로젝트명>/visualize/`에 저장됩니다.
 
 ### 2. 부분 분석 및 시각화 (Partial Analysis and Visualization)
 
@@ -74,7 +81,7 @@ run_analyzer.bat sampleSrc --all
 *   `--config <경로>`: 사용자 정의 설정 파일을 지정합니다. **(고급)**
     *   기본값: `config/config.yaml`
     *   프로젝트별 경로 템플릿을 통해 자동으로 경로가 설정됩니다.
-*   `--export-md`: 분석된 메타데이터를 Markdown 형식의 보고서로 내보냅니다. (지정하지 않으면 `./project/<프로젝트명>/output/reports`에 저장)
+*   `--export-md`: 분석된 메타데이터를 Markdown 형식의 보고서로 내보냅니다. (지정하지 않으면 `./output/<프로젝트명>/reports`에 저장)
 
 #### 📝 예시:
 
@@ -158,7 +165,7 @@ python visualize/cli.py graph --project-name sampleSrc --export-mermaid dependen
 python visualize/cli.py erd --project-name sampleSrc --export-html erd.html --export-mermaid erd.md
 ```
 
-참고: 출력 파일들은 `./project/<프로젝트명>/output/visualize/` 디렉토리에 저장됩니다.
+참고: 출력 파일들은 `./output/<프로젝트명>/visualize/` 디렉토리에 저장됩니다.
 
 ## 🌐 웹 대시보드 (선택 사항)
 

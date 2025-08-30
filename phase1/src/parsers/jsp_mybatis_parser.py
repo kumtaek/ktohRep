@@ -98,11 +98,13 @@ class DynamicSqlResolver:
         for k, v in self.bind_vars.items():
             text = text.replace(f"#{{{k}}}", v)
         new_elem = etree.fromstring(text)
+        # 기존 element를 보존하면서 내용만 교체하되, 텍스트 노드 유실 방지
         element.clear()
         element.tag = new_elem.tag
         element.attrib.update(new_elem.attrib)
-        for child in list(element):
-            element.remove(child)
+        # 루트 텍스트 복원 (기존 코드에서 누락되어 SQL이 비게 되는 문제 해결)
+        element.text = new_elem.text
+        # 자식 노드 복원 (자식의 text/tail은 lxml이 유지함)
         for child in new_elem:
             element.append(child)
 
@@ -944,7 +946,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         def find_joins(tokens):
             for i, token in enumerate(tokens):
                 if hasattr(token, 'tokens'):
-                    joins.extend(find_joins(token.tokens))
+                    # 하위 토큰을 재귀적으로 탐색 (리턴값은 사용하지 않음)
+                    find_joins(token.tokens)
                 elif token.ttype is None and 'join' in str(token).lower():
                     # JOIN 구문 발견, ON 조건 찾기
                     join_info = self._parse_join_condition(tokens[i:i+5])  # 다음 5개 토큰 검사
@@ -956,8 +959,9 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         if not joins:
             try:
                 stmt_text = str(statement)
-                for m in re.finditer(r"\bON\b\s+([^\n]+)", stmt_text, re.IGNORECASE):
-                    cond_text = m.group(1)
+                # ON 다음 조건을 WHERE/ORDER/GROUP 등 다음 키워드 이전까지 캡처
+                for m in re.finditer(r"\bON\b\s+(.+?)(?:\bWHERE\b|\bGROUP\s+BY\b|\bORDER\s+BY\b|$)", stmt_text, re.IGNORECASE | re.DOTALL):
+                    cond_text = m.group(1).strip()
                     j = self._parse_join_condition(cond_text)
                     if j:
                         joins.append(j)
@@ -968,17 +972,28 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
     def _extract_filters_from_statement(self, statement, sql_unit) -> List[RequiredFilter]:
         """sqlparse Statement에서 필터 조건 추출"""
         filters = []
-        
+
         def find_where_clause(tokens):
             for token in tokens:
                 if hasattr(token, 'tokens'):
-                    filters.extend(find_where_clause(token.tokens))
+                    # 하위 토큰을 재귀적으로 탐색 (리턴값은 사용하지 않음)
+                    find_where_clause(token.tokens)
                 elif token.ttype is sqlparse.tokens.Keyword and token.value.upper() == 'WHERE':
                     # WHERE 절 발견, 조건 분석
                     where_conditions = self._parse_where_conditions(tokens)
                     filters.extend(where_conditions)
-        
+
         find_where_clause(statement.tokens)
+        # 문자열 기반 폴백: 토큰 탐색이 실패한 경우 WHERE ~ (GROUP|ORDER|LIMIT|$) 구간에서 조건 추출
+        if not filters:
+            try:
+                stmt_text = str(statement)
+                m = re.search(r"\bWHERE\b(.*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)", stmt_text, re.I | re.S)
+                if m:
+                    where_body = m.group(1)
+                    filters.extend(self._parse_where_conditions(where_body))
+            except Exception:
+                pass
         return filters
     
     def _calculate_jsp_sql_confidence(self, sql_content: str, match) -> float:
@@ -1236,7 +1251,11 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
     def _parse_join_condition(self, tokens) -> Optional[Join]:
         """JOIN 조건 파싱 (정규식 기반 1차 고도화)"""
         try:
-            text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
+            # tokens가 문자열(폴백 경로)일 수도 있으므로 분기 처리
+            if isinstance(tokens, str):
+                text = tokens
+            else:
+                text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
             text = re.sub(r"\s+", " ", text)
             m = re.search(r"([\w\.]+)\s*\.\s*(\w+)\s*(=|!=|>=|<=|<>|<|>)\s*([\w\.]+)\s*\.\s*(\w+)", text, re.I)
             if not m:
@@ -1261,7 +1280,11 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         """WHERE 조건 파싱 (정규식 기반 1차 고도화)"""
         results: List[RequiredFilter] = []
         try:
-            text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
+            # tokens가 문자열(폴백 경로)일 수도 있으므로 분기 처리
+            if isinstance(tokens, str):
+                text = tokens
+            else:
+                text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
             # 조건 분할(단순 AND 분해)
             parts = re.split(r"\bAND\b", text, flags=re.I)
             for p in parts:

@@ -16,16 +16,15 @@ import time
 import os
 import json
 
-from models.database import (
-    DatabaseManager, Project, File, Class, Method, SqlUnit, 
+from src.models.database import (
+    DatabaseManager, Project, File, Class, Method, SqlUnit,
     Join, RequiredFilter, Edge, Summary, EnrichmentLog,
-    DbTable, DbColumn, DbPk, DbView, ParseResultModel, VulnerabilityFix
+    DbTable, DbColumn, DbPk, DbView, ParseResultModel, VulnerabilityFix,
 )
-from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
-from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
+from src.utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
+from src.utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
 from src.llm.assist import LlmAssist
 from src.llm.enricher import generate_text
-from llm.enricher import generate_text
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -666,7 +665,7 @@ class MetadataEngine:
             
     async def _resolve_method_calls(self, session, project_id: int):
         """메서드 호출 관계 해결"""
-        from models.database import EdgeHint, Method, Class, File
+        from src.models.database import EdgeHint, Method, Class, File
         import json as _json
         # 미해결된 메서드 호출 엣지들 조회
         unresolved_calls = session.query(Edge).filter(
@@ -1012,7 +1011,14 @@ class MetadataEngine:
                         snippet = "\n".join(lines[s:e])
                 except Exception:
                     snippet = ''
-                user = f"SQL 종류: {u.stmt_kind}\n조인: {jtxt or '없음'}\n필터: {ftxt or '없음'}\n{('원문:\n'+snippet) if snippet else ''}"
+                # f-string 표현식 내의 백슬래시(\n) 사용은 문법 오류를 유발하므로 미리 구성
+                snippet_block = f"원문:\n{snippet}" if snippet else ""
+                user = (
+                    f"SQL 종류: {u.stmt_kind}\n"
+                    f"조인: {jtxt or '없음'}\n"
+                    f"필터: {ftxt or '없음'}\n"
+                    f"{snippet_block}"
+                )
                 try:
                     text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
                 except Exception as e:
@@ -1261,7 +1267,7 @@ class MetadataEngine:
                     called_name = None
                 if not called_name:
                     continue
-                from models.database import EdgeHint
+                from src.models.database import EdgeHint
                 hint = {"called_name": called_name}
                 row = EdgeHint(
                     project_id=1,  # unknown here; left as 1 for hint bucket

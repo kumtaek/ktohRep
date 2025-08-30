@@ -10,8 +10,15 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-# Add phase1/src to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'phase1', 'src')))
+# Add phase1 and phase1/src to the Python path so both 'src' and top-level
+# subpackages (e.g., 'database') are importable.
+from pathlib import Path as _Path
+_REPO_ROOT = _Path(__file__).resolve().parents[2]
+_PHASE1_ROOT = _REPO_ROOT / 'phase1'
+_PHASE1_SRC = _PHASE1_ROOT / 'src'
+for _p in (str(_PHASE1_ROOT), str(_PHASE1_SRC)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from flask import Flask, jsonify, request, Response
 try:
@@ -100,10 +107,10 @@ def API(path: str) -> str:
         path = '/' + path
     return f"{base}{path}" if base else path
 
-# Initialize MetadataEngine
-db_path = config['database']['sqlite']['path']
-db_manager = DatabaseManager(db_path) # Instantiate DatabaseManager
-metadata_engine = MetadataEngine(config, db_manager) # Pass config and db_manager
+# Initialize MetadataEngine (fix: pass full config and initialize DB)
+db_manager = DatabaseManager(config)
+db_manager.initialize()
+metadata_engine = MetadataEngine(config, db_manager)
 
 @app.route('/')
 def hello_world():

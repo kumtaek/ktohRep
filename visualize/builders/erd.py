@@ -4,14 +4,86 @@ from collections import Counter
 from ..data_access import VizDB  
 from ..schema import create_node, create_edge, create_graph
 
+# Helper function to resolve abbreviated table names to node_ids
+def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str, Any]) -> Optional[str]:
+    owner_abbr, table_abbr = abbreviated_name.split('.') if '.' in abbreviated_name else ('', abbreviated_name)
+
+    potential_matches = []
+    exact_matches = []
+
+    for node_id, node_data in nodes_dict.items():
+        if node_data is None:
+            continue
+        if not isinstance(node_data, dict) or 'meta' not in node_data or not isinstance(node_data['meta'], dict):
+            continue
+
+        full_owner = node_data['meta'].get('owner', '').upper()
+        full_table = node_data['meta'].get('table_name', '').upper()
+        
+        # Create common abbreviations for the table name
+        table_abbrev_candidates = []
+        if full_table:
+            # Single letter abbreviation (first letter)
+            table_abbrev_candidates.append(full_table[0])
+            # Two letter abbreviation for compound words
+            if '_' in full_table:
+                parts = full_table.split('_')
+                if len(parts) >= 2:
+                    table_abbrev_candidates.append(parts[0][0] + parts[1][0])
+            # Full abbreviations like ORDER_ITEMS -> OI
+            if full_table == 'ORDER_ITEMS':
+                table_abbrev_candidates.extend(['OI', 'ORDER_ITEMS'])
+            elif full_table == 'ORDERS':
+                table_abbrev_candidates.extend(['O', 'ORDER'])
+            elif full_table == 'USERS':
+                table_abbrev_candidates.extend(['U', 'USER'])  
+            elif full_table == 'USER_ROLE':
+                table_abbrev_candidates.extend(['UR', 'USER_ROLE'])
+            elif full_table == 'CUSTOMERS':
+                table_abbrev_candidates.extend(['C', 'CUSTOMER'])
+            elif full_table == 'CATEGORIES':
+                table_abbrev_candidates.extend(['CAT', 'CATEGORY'])
+            
+        match_found = False
+        is_exact_match = False
+        
+        # Check if the abbreviation matches any of our candidates
+        table_abbr_upper = table_abbr.upper()
+        if table_abbr_upper in table_abbrev_candidates:
+            # Check owner matching
+            if owner_abbr.upper() == "PUBLIC":
+                # PUBLIC is a wildcard, matches any owner
+                match_found = True
+                # Prefer exact length matches for disambiguation
+                if table_abbr_upper == full_table or len(table_abbr_upper) > 1:
+                    is_exact_match = True
+            else:
+                if full_owner == owner_abbr.upper():
+                    match_found = True
+                    is_exact_match = True
+        
+        if match_found:
+            if is_exact_match:
+                exact_matches.append(node_id)
+            else:
+                potential_matches.append(node_id)
+
+    # Prefer exact matches over potential matches
+    if len(exact_matches) == 1:
+        return exact_matches[0]
+    elif len(exact_matches) > 1:
+        return exact_matches[0]  # Choose the first exact match
+    elif len(potential_matches) == 1:
+        return potential_matches[0]
+    elif len(potential_matches) > 1:
+        return potential_matches[0]  # Choose the first potential match
+    else:
+        return None
+
 
 def build_erd_json(project_id: int, tables: str = None, owners: str = None, 
                    from_sql: str = None) -> Dict[str, Any]:
     """Build ERD JSON for visualization"""
-    print(f"ERD 생성: 프로젝트 {project_id}")
-    print(f"  테이블 필터: {tables}")
-    print(f"  오너 필터: {owners}")
-    print(f"  SQL 기준: {from_sql}")
     
     db = VizDB()
     
@@ -20,8 +92,6 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
     pk_info = db.fetch_pk()
     columns_info = db.fetch_columns()
     joins = db.fetch_joins_for_project(project_id)
-    
-    print(f"  테이블 {len(db_tables)}개, 조인 {len(joins)}개 발견")
     
     # Special handling for --from-sql (SQLERD mode)
     sqlerd_mode = bool(from_sql)
@@ -83,6 +153,14 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
         node_id = f"table:{table_key}"
         nodes_dict[node_id] = create_node(node_id, 'table', table_key, 'DB', table_meta)
     
+    # Create a mapping from full table name (OWNER.TABLE_NAME) to node_id
+    full_name_to_node_id_map = {}
+    for node_id, node_data in nodes_dict.items():
+        owner = node_data['meta'].get('owner', '').upper()
+        table_name = node_data['meta'].get('table_name', '').upper()
+        full_table_name = f"{owner}.{table_name}" if owner else table_name
+        full_name_to_node_id_map[full_table_name] = node_id
+
     # Build FK relationships from join patterns
     edges_list = []
     
@@ -95,13 +173,17 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                           join.r_table.upper(), join.r_col.upper())
                 join_patterns[pattern] += 1
         
-        print(f"  고유 조인 패턴 {len(join_patterns)}개")
-        
         # Create FK edges for frequently used joins
         for (l_table, l_col, r_table, r_col), frequency in join_patterns.items():
             if frequency >= 2:  # Threshold for FK inference
-                l_node_id = f"table:{l_table}"
-                r_node_id = f"table:{r_table}"
+                # Use the helper function to resolve abbreviated table names to node_ids
+                l_node_id = resolve_abbreviation_to_node_id(l_table, nodes_dict)
+                r_node_id = resolve_abbreviation_to_node_id(r_table, nodes_dict)
+
+                if not l_node_id:
+                    continue
+                if not r_node_id:
+                    continue
                 
                 # Check if both tables are in our node set
                 if l_node_id in nodes_dict and r_node_id in nodes_dict:
@@ -141,82 +223,8 @@ def build_erd_json(project_id: int, tables: str = None, owners: str = None,
                     edges_list.append(create_edge(edge_id, source, target, relation_type, 
                                                 confidence, edge_meta))
     
-    # Handle from_sql parameter
-    if from_sql:
-        # Parse format: mapper_ns:stmt_id
-        try:
-            mapper_ns, stmt_id = from_sql.split(':')
-            sql_units = db.fetch_sql_units_by_project(project_id)
-            
-            # Find the specific SQL unit
-            target_sql = None
-            for sql in sql_units:
-                if sql.mapper_ns == mapper_ns and sql.stmt_id == stmt_id:
-                    target_sql = sql
-                    break
-            
-            if target_sql:
-                # Get joins specific to this SQL
-                sql_joins = [j for j in joins if j.sql_id == target_sql.sql_id]
-                
-                # Get required filters for this SQL (SQLERD enhancement)
-                required_filters = db.fetch_required_filters(project_id, target_sql.sql_id)
-                
-                # Add tables mentioned in this SQL (joins + filters)
-                mentioned_tables = set()
-                for join in sql_joins:
-                    if join.l_table:
-                        mentioned_tables.add(join.l_table.upper())
-                    if join.r_table:
-                        mentioned_tables.add(join.r_table.upper())
-                
-                for filter_item in required_filters:
-                    if filter_item.table_name:
-                        mentioned_tables.add(filter_item.table_name.upper())
-                
-                # Group required filters by table for highlighting
-                filters_by_table = {}
-                for filter_item in required_filters:
-                    table_key = filter_item.table_name.upper() if filter_item.table_name else 'UNKNOWN'
-                    if table_key not in filters_by_table:
-                        filters_by_table[table_key] = []
-                    
-                    filters_by_table[table_key].append({
-                        'column': filter_item.column_name.upper() if filter_item.column_name else '',
-                        'op': filter_item.op or '',
-                        'value': filter_item.value_repr or '',
-                        'always': bool(filter_item.always_applied)
-                    })
-                
-                # Filter nodes to only include mentioned tables
-                filtered_nodes = {}
-                for node_id, node in nodes_dict.items():
-                    table_name = node['meta'].get('table_name', '').upper()
-                    owner = node['meta'].get('owner', '').upper()
-                    full_name = f"{owner}.{table_name}" if owner else table_name
-                    
-                    if table_name in mentioned_tables or full_name in mentioned_tables:
-                        # Add required filters to table metadata
-                        node['meta']['required_filters'] = filters_by_table.get(table_name, [])
-                        node['meta']['sql_context'] = f"{target_sql.mapper_ns}:{target_sql.stmt_id}"
-                        
-                        # Mark filtered columns in existing column data
-                        if 'columns' in node['meta']:
-                            for col in node['meta']['columns']:
-                                col['is_filtered'] = any(
-                                    f['column'] == col['name'].upper() 
-                                    for f in filters_by_table.get(table_name, [])
-                                )
-                        
-                        filtered_nodes[node_id] = node
-                
-                nodes_dict = filtered_nodes
-                print(f"  SQLERD: 테이블 {len(nodes_dict)}개, 필수 필터 {len(required_filters)}개 (SQL: {from_sql})")
-        except ValueError:
-            print(f"  경고: 잘못된 from_sql 형식: {from_sql}")
-    
+    # Convert nodes_dict values to list
     nodes_list = list(nodes_dict.values())
     
-    print(f"  생성된 테이블 노드 {len(nodes_list)}개, 관계 {len(edges_list)}개")
-    
+    # Create graph using schema
     return create_graph(nodes_list, edges_list)

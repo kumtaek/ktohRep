@@ -29,9 +29,13 @@ class VizDB:
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw = f.read()
+            print(f"DEBUG_LOAD_CONFIG: Raw config content length: {len(raw)}")
             # Allow environment variable substitution like ${VAR}
             expanded = os.path.expandvars(raw)
-            return yaml.safe_load(expanded)
+            print(f"DEBUG_LOAD_CONFIG: Expanded config content length: {len(expanded)}")
+            loaded_config = yaml.safe_load(expanded)
+            print(f"DEBUG_LOAD_CONFIG: Loaded config type: {type(loaded_config)}")
+            return loaded_config
         except Exception as e:
             print(f"경고: 설정 파일을 불러올 수 없습니다: {config_path} ({e})")
             # Return default SQLite config

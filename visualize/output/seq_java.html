@@ -85,12 +85,62 @@
         }
     </style>
     <!-- Offline assets -->
-    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
-    <script src="./static/vendor/dagre/dagre.min.js"></script>
-    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="../static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="../static/vendor/dagre/dagre.min.js"></script>
+    <script src="../static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script>
         const DATA = {
   "nodes": [
+    {
+      "id": "file:43",
+      "type": "file",
+      "label": "page1.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page1.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:44",
+      "type": "file",
+      "label": "page10.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page10.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:45",
+      "type": "file",
+      "label": "page2.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page2.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:46",
+      "type": "file",
+      "label": "page3.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page3.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:47",
+      "type": "file",
+      "label": "page4.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page4.jsp",
+        "language": "JSP"
+      }
+    },
     {
       "id": "sql_unit:1",
       "type": "sql_unit",
@@ -202,14 +252,63 @@
       }
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "flow_edge:0",
+      "source": "file:43",
+      "target": "sql_unit:1",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 0,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:1",
+      "source": "file:44",
+      "target": "sql_unit:2",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 1,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:2",
+      "source": "file:45",
+      "target": "sql_unit:3",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 2,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:3",
+      "source": "file:46",
+      "target": "sql_unit:4",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 3,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:4",
+      "source": "file:47",
+      "target": "sql_unit:5",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 4,
+      "depth": 0
+    }
+  ],
   "metadata": {
-    "node_count": 10,
-    "edge_count": 0,
+    "node_count": 15,
+    "edge_count": 5,
     "node_types": [
+      "file",
       "sql_unit"
     ],
-    "edge_kinds": []
+    "edge_kinds": [
+      "renders"
+    ]
   }
 };
     </script>

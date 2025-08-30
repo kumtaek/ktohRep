@@ -364,12 +364,14 @@ class DatabaseManager:
         """Initialize database connection and create tables."""
         db_config = self.config['database']
         
+        db_url = ""
+        engine_args = {}
+
         if db_config['type'] == 'sqlite':
             sqlite_config = db_config['sqlite']
             db_url = f"sqlite:///{sqlite_config['path']}"
             
             # Enable WAL mode for better concurrency
-            engine_args = {}
             if sqlite_config.get('wal_mode', False):
                 engine_args['connect_args'] = {'check_same_thread': False}
                 

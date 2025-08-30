@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Source Analyzer - 의존성 그래프</title>
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #toolbar { 
+            padding: 12px; 
+            border-bottom: 1px solid #ddd; 
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #cy { 
+            width: 100%; 
+            height: calc(100% - 60px); 
+        }
+        
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #search {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .stats {
+            background: rgba(0, 123, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+    </style>
+    <!-- Offline assets -->
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script>
+        const DATA = {
+  "nodes": [
+    {
+      "id": "file:43",
+      "type": "file",
+      "label": "page1.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page1.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:44",
+      "type": "file",
+      "label": "page10.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page10.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:45",
+      "type": "file",
+      "label": "page2.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page2.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:46",
+      "type": "file",
+      "label": "page3.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page3.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "file:47",
+      "type": "file",
+      "label": "page4.jsp",
+      "layer": 0,
+      "details": {
+        "path": "E:\\SourceAnalyzer.git\\tests\\samples\\jsp\\page4.jsp",
+        "language": "JSP"
+      }
+    },
+    {
+      "id": "sql_unit:1",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectUserOrders",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectUserOrders",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:2",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectUserOrdersWithInclude",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectUserOrdersWithInclude",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:3",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectCompositeJoin",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectCompositeJoin",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:4",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectDynamicChoose",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectDynamicChoose",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:5",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectWithForeach",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectWithForeach",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:6",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectWithNestedInclude",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectWithNestedInclude",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:7",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.commonWhere",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "commonWhere",
+        "stmt_kind": "sql"
+      }
+    },
+    {
+      "id": "sql_unit:8",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.commonWhere",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "commonWhere",
+        "stmt_kind": "sql"
+      }
+    },
+    {
+      "id": "sql_unit:9",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectUserOrders",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectUserOrders",
+        "stmt_kind": "select"
+      }
+    },
+    {
+      "id": "sql_unit:10",
+      "type": "sql_unit",
+      "label": "TestJoinMapper.selectUserOrdersWithInclude",
+      "layer": 1,
+      "details": {
+        "mapper_ns": "TestJoinMapper",
+        "stmt_id": "selectUserOrdersWithInclude",
+        "stmt_kind": "select"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "flow_edge:0",
+      "source": "file:43",
+      "target": "sql_unit:1",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 0,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:1",
+      "source": "file:44",
+      "target": "sql_unit:2",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 1,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:2",
+      "source": "file:45",
+      "target": "sql_unit:3",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 2,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:3",
+      "source": "file:46",
+      "target": "sql_unit:4",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 3,
+      "depth": 0
+    },
+    {
+      "id": "flow_edge:4",
+      "source": "file:47",
+      "target": "sql_unit:5",
+      "kind": "renders",
+      "confidence": 0.7,
+      "sequence_order": 4,
+      "depth": 0
+    }
+  ],
+  "metadata": {
+    "node_count": 15,
+    "edge_count": 5,
+    "node_types": [
+      "sql_unit",
+      "file"
+    ],
+    "edge_kinds": [
+      "renders"
+    ]
+  }
+};
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btns = [
+                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
+                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
+                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
+                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
+                { sel: 'button[onclick="togglePhysics()"]', text: '물리 레이아웃', title: '물리 레이아웃 토글' }
+            ];
+            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text; el.title = b.title; } });
+            const search = document.getElementById('search'); if (search) search.placeholder = '노드 검색...';
+            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '노드: <span id="node-count">0</span> | 엣지: <span id="edge-count">0</span>';
+            const h = document.getElementById('info-title'); if (h) h.textContent = '노드 정보';
+            document.title = 'Source Analyzer - 의존성 그래프';
+        });
+    </script>
+</head>
+<body>
+    <div id="toolbar">
+        <button onclick="cy.fit()" title="Fit to view">🔍 Fit</button>
+        <button onclick="cy.center()" title="Center view">🎯 Center</button>
+        <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
+        <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
+        <button onclick="togglePhysics()" title="Toggle physics">⚡ Physics</button>
+        <input id="search" placeholder="Search nodes..." oninput="searchNode(this.value)" />
+        <div class="stats" id="stats">
+            Nodes: <span id="node-count">0</span> | 
+            Edges: <span id="edge-count">0</span>
+        </div>
+        <div class="legend" id="legend"></div>
+    </div>
+    
+    <div id="cy"></div>
+    
+    <div id="info-panel" class="info-panel">
+        <h4 id="info-title">Node Info</h4>
+        <div id="info-content"></div>
+    </div>
+
+    <script>
+        // Build Cytoscape elements
+        const elements = [];
+        
+        // Add nodes
+        for (const node of DATA.nodes || []) {
+            elements.push({
+                data: {
+                    id: node.id,
+                    label: node.label,
+                    type: node.type,
+                    group: node.group,
+                    meta: node.meta
+                }
+            });
+        }
+        
+        // Add edges
+        for (const edge of DATA.edges || []) {
+            elements.push({
+                data: {
+                    id: edge.id,
+                    source: edge.source,
+                    target: edge.target,
+                    kind: edge.kind,
+                    confidence: edge.confidence,
+                    meta: edge.meta
+                }
+            });
+        }
+
+        let usePhysics = false;
+
+        // Initialize Cytoscape
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elements,
+            style: [
+                // Node styles
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '10px',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '150px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'background-color': '#f0f0f0',
+                        'border-width': 1,
+                        'border-color': '#999',
+                        'width': 'mapData(label.length, 5, 50, 30, 120)',
+                        'height': 'mapData(label.length, 5, 50, 20, 40)',
+                        'font-family': 'monospace'
+                    }
+                },
+                
+                // Group-specific node colors
+                {
+                    selector: 'node[group = "Controller"]',
+                    style: { 'background-color': '#e3f2fd', 'border-color': '#1976d2' }
+                },
+                {
+                    selector: 'node[group = "Service"]',
+                    style: { 'background-color': '#e8f5e8', 'border-color': '#388e3c' }
+                },
+                {
+                    selector: 'node[group = "Repository"]',
+                    style: { 'background-color': '#fff3e0', 'border-color': '#f57c00' }
+                },
+                {
+                    selector: 'node[group = "Mapper"]',
+                    style: { 'background-color': '#f3e5f5', 'border-color': '#7b1fa2' }
+                },
+                {
+                    selector: 'node[group = "JSP"]',
+                    style: { 'background-color': '#ffebee', 'border-color': '#d32f2f' }
+                },
+                {
+                    selector: 'node[group = "DB"]',
+                    style: { 'background-color': '#fff9c4', 'border-color': '#f9a825', 'shape': 'round-rectangle' }
+                },
+                {
+                    selector: 'node[group = "Code"]',
+                    style: { 'background-color': '#f5f5f5', 'border-color': '#616161' }
+                },
+                {
+                    selector: 'node[type = "component"]',
+                    style: { 
+                        'background-color': '#80deea', 
+                        'border-color': '#00acc1',
+                        'shape': 'round-rectangle',
+                        'width': 'mapData(label.length, 5, 50, 80, 200)',
+                        'height': 60,
+                        'font-size': '12px',
+                        'font-weight': 'bold'
+                    }
+                },
+                
+                // Edge styles
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 'mapData(confidence, 0, 1, 1, 3)',
+                        'line-color': '#666',
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': '#666',
+                        'arrow-scale': 1.2
+                    }
+                },
+                
+                // Edge kind specific colors
+                {
+                    selector: 'edge[kind = "call"]',
+                    style: { 'line-color': '#2196f3', 'target-arrow-color': '#2196f3' }
+                },
+                {
+                    selector: 'edge[kind = "call_unresolved"]',
+                    style: { 
+                        'line-color': '#9e9e9e', 
+                        'target-arrow-color': '#9e9e9e',
+                        'line-style': 'dashed',
+                        'opacity': 0.7
+                    }
+                },
+                {
+                    selector: 'edge[kind = "use_table"]',
+                    style: { 'line-color': '#ff9800', 'target-arrow-color': '#ff9800' }
+                },
+                {
+                    selector: 'edge[kind = "include"]',
+                    style: { 'line-color': '#9c27b0', 'target-arrow-color': '#9c27b0' }
+                },
+                {
+                    selector: 'edge[kind = "extends"]',
+                    style: { 'line-color': '#4caf50', 'target-arrow-color': '#4caf50' }
+                },
+                {
+                    selector: 'edge[kind = "implements"]',
+                    style: { 'line-color': '#4caf50', 'target-arrow-color': '#4caf50', 'line-style': 'dashed' }
+                },
+                {
+                    selector: 'edge[kind = "mixed"]',
+                    style: { 'line-color': '#795548', 'target-arrow-color': '#795548', 'width': 3 }
+                },
+                
+                // Selected/highlighted styles
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': 3,
+                        'border-color': '#ff6b6b',
+                        'background-color': '#ffe0e0'
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff6b6b',
+                        'target-arrow-color': '#ff6b6b',
+                        'width': 4
+                    }
+                }
+            ],
+            layout: {
+                name: 'dagre',
+                rankDir: 'LR',
+                nodeSep: 40,
+                rankSep: 80,
+                animate: false
+            }
+        });
+
+        // Update stats
+        document.getElementById('node-count').textContent = DATA.nodes ? DATA.nodes.length : 0;
+        document.getElementById('edge-count').textContent = DATA.edges ? DATA.edges.length : 0;
+
+        // Create legend
+        function createLegend() {
+            const groups = [...new Set((DATA.nodes || []).map(n => n.group))];
+            const legend = document.getElementById('legend');
+            
+            const groupColors = {
+                'Controller': '#1976d2',
+                'Service': '#388e3c',
+                'Repository': '#f57c00',
+                'Mapper': '#7b1fa2',
+                'JSP': '#d32f2f',
+                'DB': '#f9a825',
+                'Code': '#616161',
+                'Entity': '#9c27b0',
+                'Util': '#607d8b',
+                'Config': '#ff5722'
+            };
+            
+            groups.forEach(group => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = groupColors[group] || '#666';
+                
+                const label = document.createElement('span');
+                label.textContent = group;
+                
+                item.appendChild(color);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+        
+        createLegend();
+
+        // Event handlers
+        function exportPng() {
+            const png64 = cy.png({ 
+                full: true, 
+                scale: 2,
+                bg: 'white'
+            });
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = 'dependency-graph.png';
+            link.click();
+        }
+
+        function resetView() {
+            const layout = usePhysics ? 'cose' : 'dagre';
+            const layoutOptions = usePhysics ? 
+                {
+                    name: 'cose',
+                    animate: true,
+                    nodeRepulsion: 4000,
+                    idealEdgeLength: 100
+                } :
+                {
+                    name: 'dagre',
+                    rankDir: 'LR',
+                    nodeSep: 40,
+                    rankSep: 80,
+                    animate: true
+                };
+            
+            cy.layout(layoutOptions).run();
+        }
+
+        function togglePhysics() {
+            usePhysics = !usePhysics;
+            resetView();
+        }
+
+        function searchNode(query) {
+            cy.nodes().removeClass('highlighted');
+            
+            if (!query.trim()) {
+                cy.nodes().unselect();
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label') || '';
+                const type = node.data('type') || '';
+                const group = node.data('group') || '';
+                
+                return label.toLowerCase().includes(query.toLowerCase()) ||
+                       type.toLowerCase().includes(query.toLowerCase()) ||
+                       group.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                matchedNodes.select();
+                cy.fit(matchedNodes, 50);
+            }
+        }
+
+        // Node click handler
+        cy.on('tap', 'node', function(evt) {
+            const node = evt.target;
+            const data = node.data();
+            
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+            
+            title.textContent = data.label || data.id;
+            
+            let html = `<p><strong>유형:</strong> ${data.type}</p>`;
+            html += `<p><strong>그룹:</strong> ${data.group}</p>`;
+            html += `<p><strong>ID:</strong> ${data.id}</p>`;
+            
+            if (data.meta) {
+                for (const [key, value] of Object.entries(data.meta)) {
+                    if (value !== null && value !== undefined && key !== 'entities') {
+                        if (typeof value === 'object') {
+                            html += `<p><strong>${key}:</strong> <pre>${JSON.stringify(value, null, 2)}</pre></p>`;
+                        } else {
+                            html += `<p><strong>${key}:</strong> ${value}</p>`;
+                        }
+                    }
+                }
+                
+                // Special handling for component entities
+                if (data.meta.entities && data.meta.entities.length > 0) {
+                    html += `<p><strong>엔티티 (${data.meta.total_entities || data.meta.entities.length}):</strong></p>`;
+                    html += '<ul>';
+                    data.meta.entities.forEach(entity => {
+                        html += `<li>${entity.label} (${entity.type})</li>`;
+                    });
+                    if (data.meta.total_entities > data.meta.entities.length) {
+                        html += `<li>... 외 ${data.meta.total_entities - data.meta.entities.length}개</li>`;
+                    }
+                    html += '</ul>';
+                }
+            }
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        });
+
+        // Click outside to hide panel
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#info-panel') && !e.target.closest('#cy')) {
+                document.getElementById('info-panel').style.display = 'none';
+            }
+        });
+
+        // Double-click to focus on node
+        cy.on('dblclick', 'node', function(evt) {
+            const node = evt.target;
+            cy.fit(node, 100);
+        });
+
+        console.log('의존성 그래프 로드 완료:', DATA.nodes?.length || 0, '노드,', DATA.edges?.length || 0, '엣지');
+    </script>
+</body>
+</html>

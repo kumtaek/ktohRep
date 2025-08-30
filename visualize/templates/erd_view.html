@@ -85,9 +85,9 @@
         }
     </style>
     <!-- Offline assets -->
-    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
-    <script src="./static/vendor/dagre/dagre.min.js"></script>
-    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="../static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="../static/vendor/dagre/dagre.min.js"></script>
+    <script src="../static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
     </script>
@@ -193,7 +193,11 @@
         let currentSearchIndex = -1;
 
         // Initialize Cytoscape
-        const cy = cytoscape({
+        console.log('ERD initializing with', DATA.nodes?.length || 0, 'tables and', DATA.edges?.length || 0, 'relationships');
+        console.log('Elements created:', elements.length);
+        
+        try {
+            const cy = cytoscape({
             container: document.getElementById('cy'),
             elements: elements,
             style: [
@@ -671,6 +675,15 @@
         });
 
         console.log('ERD loaded with', DATA.nodes?.length || 0, 'tables and', DATA.edges?.length || 0, 'relationships');
+        
+        } catch (error) {
+            console.error('Cytoscape initialization failed:', error);
+            document.getElementById('cy').innerHTML = '<div style="padding: 20px; color: red; text-align: center;">' +
+                '<h3>ERD 로딩 실패</h3>' +
+                '<p>오류: ' + error.message + '</p>' +
+                '<p>브라우저 개발자 도구(F12)의 Console 탭을 확인하세요.</p>' +
+                '</div>';
+        }
     </script>
 </body>
 </html>

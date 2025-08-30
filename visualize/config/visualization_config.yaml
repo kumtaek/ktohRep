@@ -1,4 +1,3 @@
-```yaml
 # Visualization Configuration for Source Analyzer
 # This file contains customizable rules and settings for visualization components
 
@@ -74,4 +73,3 @@ ui_settings:
     max_nodes_default: 2000
     lazy_rendering_threshold: 500
     animation_duration: 1000
-```

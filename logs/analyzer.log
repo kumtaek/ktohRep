@@ -4820,3 +4820,67 @@ TypeError: JavaParser._extract_method_calls() missing 1 required positional argu
 2025-08-31 20:26:01,226 - main - DEBUG - [logger.py:72] - 파일 분석 시작: project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
 2025-08-31 20:26:01,236 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 0개 처리
 2025-08-31 20:26:01,239 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-08-31 20:32:39,117 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-08-31 20:32:39,118 - main - INFO - [logger.py:76] - ============================================================
+2025-08-31 20:32:39,118 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-08-31 20:32:39,118 - main - INFO - [logger.py:76] - ============================================================
+2025-08-31 20:32:39,133 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-08-31 20:32:39,136 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql']
+2025-08-31 20:32:39,138 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-08-31 20:32:39,140 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-08-31 20:32:39,167 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-08-31 20:32:39,245 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-08-31 20:32:39,246 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-08-31 20:32:39,246 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-08-31 20:32:39,256 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 25
+2025-08-31 20:32:39,257 - main - INFO - [logger.py:76] - 발견된 소스 파일: 25개
+2025-08-31 20:32:39,257 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-08-31 20:32:39,268 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-08-31 20:32:39,268 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-08-31 20:32:39,275 - main - DEBUG - [logger.py:72] - 엣지 11개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,279 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-08-31 20:32:39,279 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-08-31 20:32:39,299 - main - DEBUG - [logger.py:72] - 엣지 54개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,302 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-08-31 20:32:39,302 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-08-31 20:32:39,310 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-08-31 20:32:39,311 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-08-31 20:32:39,318 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-08-31 20:32:39,318 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-08-31 20:32:39,326 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-08-31 20:32:39,327 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-08-31 20:32:39,333 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-08-31 20:32:39,333 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-08-31 20:32:39,340 - main - DEBUG - [logger.py:72] - 엣지 11개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,347 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-08-31 20:32:39,348 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-08-31 20:32:39,353 - main - DEBUG - [logger.py:72] - 엣지 4개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,358 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-08-31 20:32:39,359 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-08-31 20:32:39,367 - main - DEBUG - [logger.py:72] - 엣지 12개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,371 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-08-31 20:32:39,371 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-08-31 20:32:39,378 - main - DEBUG - [logger.py:72] - 엣지 13개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,382 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-08-31 20:32:39,382 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-08-31 20:32:39,388 - main - DEBUG - [logger.py:72] - 엣지 16개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,394 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-08-31 20:32:39,394 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-08-31 20:32:39,397 - main - DEBUG - [logger.py:72] - 엣지 1개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,400 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-08-31 20:32:39,401 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-08-31 20:32:39,403 - main - DEBUG - [logger.py:72] - 엣지 2개는 src_id/dst_id가 None이라 스킵함
+2025-08-31 20:32:39,412 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 2개
+2025-08-31 20:32:39,412 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-08-31 20:32:39,422 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-08-31 20:32:39,423 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-08-31 20:32:39,440 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-08-31 20:32:39,480 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-08-31 20:32:39,491 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-08-31 20:32:39,500 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-08-31 20:32:39,514 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-08-31 20:32:39,529 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-08-31 20:32:39,538 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-08-31 20:32:39,552 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-08-31 20:32:39,562 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 0개 처리
+2025-08-31 20:32:39,565 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc

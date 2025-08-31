@@ -1,0 +1,151 @@
+{
+  "type": "sequence",
+  "title": "Artificial Flow: UserService",
+  "participants": [
+    {
+      "id": "method:56",
+      "type": "method",
+      "label": "UserService.getUserById()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "getUserById",
+        "class": "com.example.service.UserService",
+        "signature": "getUserById(String userId)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:57",
+      "type": "method",
+      "label": "UserService.getActiveUsers()",
+      "actor_type": "control",
+      "order": 1,
+      "details": {
+        "name": "getActiveUsers",
+        "class": "com.example.service.UserService",
+        "signature": "getActiveUsers()",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:58",
+      "type": "method",
+      "label": "UserService.createUser()",
+      "actor_type": "control",
+      "order": 2,
+      "details": {
+        "name": "createUser",
+        "class": "com.example.service.UserService",
+        "signature": "createUser(Object user)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:59",
+      "type": "method",
+      "label": "UserService.processWithReflection()",
+      "actor_type": "control",
+      "order": 3,
+      "details": {
+        "name": "processWithReflection",
+        "class": "com.example.service.UserService",
+        "signature": "processWithReflection(String className)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:60",
+      "type": "method",
+      "label": "UserService.getDynamicUserData()",
+      "actor_type": "control",
+      "order": 4,
+      "details": {
+        "name": "getDynamicUserData",
+        "class": "com.example.service.UserService",
+        "signature": "getDynamicUserData(String condition)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:61",
+      "type": "method",
+      "label": "UserService.updateUserStatus()",
+      "actor_type": "control",
+      "order": 5,
+      "details": {
+        "name": "updateUserStatus",
+        "class": "com.example.service.UserService",
+        "signature": "updateUserStatus(String userId, String newStatus)",
+        "artificial": true
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction_0",
+      "sequence_order": 0,
+      "type": "synchronous",
+      "from_participant": "method:56",
+      "to_participant": "method:57",
+      "message": "calls getActiveUsers()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_1",
+      "sequence_order": 1,
+      "type": "synchronous",
+      "from_participant": "method:57",
+      "to_participant": "method:58",
+      "message": "calls createUser()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_2",
+      "sequence_order": 2,
+      "type": "synchronous",
+      "from_participant": "method:58",
+      "to_participant": "method:59",
+      "message": "calls processWithReflection()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_3",
+      "sequence_order": 3,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "method:60",
+      "message": "calls getDynamicUserData()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_4",
+      "sequence_order": 4,
+      "type": "synchronous",
+      "from_participant": "method:60",
+      "to_participant": "method:61",
+      "message": "calls updateUserStatus()",
+      "confidence": 0.3,
+      "artificial": true
+    }
+  ],
+  "entry_point": {
+    "id": 56,
+    "name": "UserService.getUserById",
+    "full_name": "com.example.service.UserService.getUserById",
+    "category": "artificial",
+    "artificial": true
+  },
+  "metadata": {
+    "total_participants": 6,
+    "total_interactions": 5,
+    "max_depth_reached": 1,
+    "unresolved_calls": 0,
+    "artificial": true,
+    "note": "This diagram shows artificial sequential flow due to missing call relationships"
+  }
+}

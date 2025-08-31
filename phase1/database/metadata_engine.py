@@ -822,48 +822,49 @@ class MetadataEngine:
                             ).first()
                         if target_method:
                             break
-+                        # 외부 라이브러리 메서드 검색
-+                        external_method = session.query(Method).join(Class).join(File).filter(
-+                            and_(
-+                                Method.name == simple_called_name,
-+                                File.project_id == project_id,
-+                                File.language == 'jar'
-+                            )
-+                        ).first()
-+                        if external_method:
-+                            edge.dst_type = 'method'
-+                            edge.dst_id = external_method.method_id
-+                            edge.confidence = min(1.0, edge.confidence + 0.1)
-+                            self.logger.debug(
-+                                f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
-+                            )
-+                            continue
-+                        else:
-+                            # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
-+                            edge.confidence = max(0.1, edge.confidence - 0.3)
-+                            hint = {
-+                                'called_name': called_method_name
-+                            }
-+                            if qualifier:
-+                                hint['callee_qualifier_type'] = qualifier
-+                            if unique_candidates:
-+                                hint['candidates'] = unique_candidates
-+                            session.add(EdgeHint(
-+                                project_id=project_id,
-+                                src_type='method',
-+                                src_id=edge.src_id or 0,
-+                                hint_type='method_call',
-+                                hint=_json.dumps(hint, ensure_ascii=False),
-+                                confidence=edge.confidence,
-+                            ))
-+                            self.logger.debug(
-+                                f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
-+                            )
-+
-+                    session.commit()
-+                    self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
-+
-+                async def _resolve_table_usage(self, session, project_id: int):
+                        # 외부 라이브러리 메서드 검색 (임시 초기화)
+                        simple_called_name = called_method_name
+                        external_method = session.query(Method).join(Class).join(File).filter(
+                            and_(
+                                Method.name == simple_called_name,
+                                File.project_id == project_id,
+                                File.language == 'jar'
+                            )
+                        ).first()
+                        if external_method:
+                            edge.dst_type = 'method'
+                            edge.dst_id = external_method.method_id
+                            edge.confidence = min(1.0, edge.confidence + 0.1)
+                            self.logger.debug(
+                                f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
+                            )
+                            continue
+                        else:
+                            # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
+                            edge.confidence = max(0.1, edge.confidence - 0.3)
+                            hint = {
+                                'called_name': called_method_name
+                            }
+                            if qualifier:
+                                hint['callee_qualifier_type'] = qualifier
+                            if unique_candidates:
+                                hint['candidates'] = unique_candidates
+                            session.add(EdgeHint(
+                                project_id=project_id,
+                                src_type='method',
+                                src_id=edge.src_id or 0,
+                                hint_type='method_call',
+                                hint=_json.dumps(hint, ensure_ascii=False),
+                                confidence=edge.confidence,
+                            ))
+                            self.logger.debug(
+                                f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
+                            )
+
+                    session.commit()
+                    self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
+
+                async def _resolve_table_usage(self, session, project_id: int):
 
                         # 기존 전역 검색 (패키지/임포트 기반) 보조
                         if not target_method:
@@ -912,27 +913,28 @@ class MetadataEngine:
                                 self.logger.debug(
                                     f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
                                 )
-                                continue
-                            # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
-                            edge.confidence = max(0.1, edge.confidence - 0.3)
-                            hint = {
-                                'called_name': called_method_name
-                            }
-                            if qualifier:
-                                hint['callee_qualifier_type'] = qualifier
-                            if unique_candidates:
-                                hint['candidates'] = unique_candidates
-                            session.add(EdgeHint(
-                                project_id=project_id,
-                                src_type='method',
-                                src_id=edge.src_id or 0,
-                                hint_type='method_call',
-                                hint=_json.dumps(hint, ensure_ascii=False),
-                                confidence=edge.confidence,
-                            ))
-                            self.logger.debug(
-                                f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
-                            )
+                                # continue
+                            else:
+                                # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
+                                edge.confidence = max(0.1, edge.confidence - 0.3)
+                                hint = {
+                                    'called_name': called_method_name
+                                }
+                                if qualifier:
+                                    hint['callee_qualifier_type'] = qualifier
+                                if unique_candidates:
+                                    hint['candidates'] = unique_candidates
+                                session.add(EdgeHint(
+                                    project_id=project_id,
+                                    src_type='method',
+                                    src_id=edge.src_id or 0,
+                                    hint_type='method_call',
+                                    hint=_json.dumps(hint, ensure_ascii=False),
+                                    confidence=edge.confidence,
+                                ))
+                                self.logger.debug(
+                                    f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
+                                )
                     
         session.commit()
         self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")

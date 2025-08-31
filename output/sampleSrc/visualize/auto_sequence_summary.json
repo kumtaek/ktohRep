@@ -1,0 +1,51 @@
+{
+  "project": "sampleSrc",
+  "generated_diagrams": 5,
+  "summary": [
+    {
+      "diagram": 1,
+      "title": "Artificial Flow: VulnerabilityTestService",
+      "entry_point": "com.example.integrated.VulnerabilityTestService.getUsersByName_VULNERABLE",
+      "category": "artificial",
+      "participants": 12,
+      "interactions": 11,
+      "unresolved_calls": 0
+    },
+    {
+      "diagram": 2,
+      "title": "Artificial Flow: OrderMapper",
+      "entry_point": "com.example.mapper.OrderMapper.selectOrderById",
+      "category": "artificial",
+      "participants": 7,
+      "interactions": 6,
+      "unresolved_calls": 0
+    },
+    {
+      "diagram": 3,
+      "title": "Artificial Flow: UserService",
+      "entry_point": "com.example.service.UserService.getUserById",
+      "category": "artificial",
+      "participants": 6,
+      "interactions": 5,
+      "unresolved_calls": 0
+    },
+    {
+      "diagram": 4,
+      "title": "Artificial Flow: OrderService",
+      "entry_point": "com.example.service.OrderService.calculateOrderTotal",
+      "category": "artificial",
+      "participants": 6,
+      "interactions": 5,
+      "unresolved_calls": 0
+    },
+    {
+      "diagram": 5,
+      "title": "Artificial Flow: UserMapper",
+      "entry_point": "com.example.mapper.UserMapper.selectUserById",
+      "category": "artificial",
+      "participants": 6,
+      "interactions": 5,
+      "unresolved_calls": 0
+    }
+  ]
+}

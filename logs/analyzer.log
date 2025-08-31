@@ -4994,3 +4994,778 @@ TypeError: JavaParser._extract_method_calls() missing 1 required positional argu
 2025-08-31 21:54:25,073 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
 2025-08-31 21:54:25,398 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 237개 처리
 2025-08-31 21:54:25,402 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-01 00:25:31,430 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-01 00:25:31,430 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:25:31,430 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-01 00:25:31,430 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:25:31,446 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-01 00:25:31,452 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-01 00:25:31,454 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-01 00:25:31,455 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-01 00:25:31,487 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-01 00:25:31,561 - main - DEBUG - [logger.py:72] - 파일 수집 중: PROJECT\sampleSrc
+2025-09-01 00:25:31,561 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-01 00:25:31,561 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-01 00:25:31,572 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 25
+2025-09-01 00:25:31,573 - main - INFO - [logger.py:76] - 발견된 소스 파일: 25개
+2025-09-01 00:25:31,576 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-01 00:25:31,576 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-01 00:25:31,587 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-01 00:25:31,587 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-01 00:25:31,589 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,595 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,595 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-01 00:25:31,601 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,606 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,606 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-01 00:25:31,614 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-01 00:25:31,614 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-01 00:25:31,622 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-01 00:25:31,622 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-01 00:25:31,629 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-01 00:25:31,629 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-01 00:25:31,635 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-01 00:25:31,635 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-01 00:25:31,637 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,642 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,642 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-01 00:25:31,643 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,648 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,648 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-01 00:25:31,650 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,656 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,656 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-01 00:25:31,658 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,666 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,666 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-01 00:25:31,668 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,677 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,677 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-01 00:25:31,678 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,683 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,683 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-01 00:25:31,684 - parser.java - ERROR - [logger.py:85] - Java 파싱 중 오류: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java: module 'javalang.tree' has no attribute 'ThisMethodInvocation'
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 161, in parse_file
+    class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 241, in _extract_class
+    method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 454, in _extract_method
+    method_calls = self._extract_method_calls(node.body, symbol_table)
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 663, in _extract_method_calls
+    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "E:\SourceAnalyzer.git\phase1\parsers\java_parser.py", line 702, in _find_method_invocations_recursive
+    elif isinstance(node, javalang.tree.ThisMethodInvocation):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. Did you mean: 'MethodInvocation'?
+2025-09-01 00:25:31,690 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-01 00:25:31,690 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-01 00:25:31,699 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-01 00:25:31,700 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-01 00:25:31,717 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-01 00:25:31,759 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-01 00:25:31,769 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-01 00:25:31,778 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-01 00:25:31,790 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-01 00:25:31,805 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-01 00:25:31,814 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-01 00:25:31,825 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-01 00:26:11,919 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-01 00:26:11,919 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:26:11,919 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-01 00:26:11,919 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:26:11,933 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-01 00:26:11,936 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-01 00:26:11,938 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-01 00:26:11,939 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-01 00:26:11,972 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-01 00:26:12,045 - main - DEBUG - [logger.py:72] - 파일 수집 중: PROJECT\sampleSrc
+2025-09-01 00:26:12,045 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-01 00:26:12,046 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-01 00:26:12,057 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 25
+2025-09-01 00:26:12,058 - main - INFO - [logger.py:76] - 발견된 소스 파일: 25개
+2025-09-01 00:26:12,060 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-01 00:26:12,061 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-01 00:26:12,071 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-01 00:26:12,071 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-01 00:26:12,083 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 00:26:12,083 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-01 00:26:12,109 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-01 00:26:12,110 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-01 00:26:12,117 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-01 00:26:12,118 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-01 00:26:12,125 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-01 00:26:12,125 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-01 00:26:12,133 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-01 00:26:12,133 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-01 00:26:12,141 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-01 00:26:12,141 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-01 00:26:12,155 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 00:26:12,155 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-01 00:26:12,164 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-01 00:26:12,164 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-01 00:26:12,177 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-01 00:26:12,177 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-01 00:26:12,190 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-01 00:26:12,190 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-01 00:26:12,203 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-01 00:26:12,204 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-01 00:26:12,214 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-01 00:26:12,214 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-01 00:26:12,223 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-01 00:26:12,223 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-01 00:26:12,234 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-01 00:26:12,235 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-01 00:26:12,252 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-01 00:26:12,294 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-01 00:26:12,309 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-01 00:26:12,319 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-01 00:26:12,331 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-01 00:26:12,346 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-01 00:26:12,355 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-01 00:26:12,367 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-01 00:26:12,394 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,401 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,410 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,419 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,431 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,438 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,447 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,455 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,461 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,468 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,474 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,481 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,488 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,494 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,501 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,511 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,518 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,525 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,531 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,537 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,543 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,549 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,556 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,563 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,569 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,575 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,582 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,590 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,600 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,607 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,616 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,622 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,629 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,638 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,644 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,653 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,662 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,670 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,677 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,684 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,690 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,696 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,703 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,709 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,717 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,723 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,730 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,738 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,746 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,753 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,760 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,767 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,774 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,780 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,787 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,793 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,799 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,807 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,815 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,823 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,831 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,838 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,845 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,851 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,857 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,863 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,873 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,884 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,891 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,898 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,905 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,912 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,918 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,925 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,934 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,943 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,951 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,959 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,966 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,972 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,978 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,985 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,992 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:12,999 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,006 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,013 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,020 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,028 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,037 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,046 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,053 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,059 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,065 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,071 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,078 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,084 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,092 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,099 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,107 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,114 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,121 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,128 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,135 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,142 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,148 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,154 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,161 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,168 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,175 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,182 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,192 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,201 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,208 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,215 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,222 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,229 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,235 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,242 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,250 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,258 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,271 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,281 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,288 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,295 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,302 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,311 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,320 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,329 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,336 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,348 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,357 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,365 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,372 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,379 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,386 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,391 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,398 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,406 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,414 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,420 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,427 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,433 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,439 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,445 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,451 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,457 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,463 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,469 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,475 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,481 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,490 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,499 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,506 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,513 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,521 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,528 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,535 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,541 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,548 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,556 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,565 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,572 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,578 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,585 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,591 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,597 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,603 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,610 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,616 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,624 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,632 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,638 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,645 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,651 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,659 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,666 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,672 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,678 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,685 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,691 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,699 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,709 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,718 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,726 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,733 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,739 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,745 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,753 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,760 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,768 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,778 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,785 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,791 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,797 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,804 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,810 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,817 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,823 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,831 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,840 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,850 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,857 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,865 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,871 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,878 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,884 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,890 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,896 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,902 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,909 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,916 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,925 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,934 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,941 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,947 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,954 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,960 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,967 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,973 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,980 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,987 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:13,996 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,004 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,009 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,016 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,022 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,028 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,034 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,035 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 351개 처리
+2025-09-01 00:26:14,038 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-01 00:26:50,319 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-01 00:26:50,319 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:26:50,320 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-01 00:26:50,320 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 00:26:50,335 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-01 00:26:50,339 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-01 00:26:50,341 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-01 00:26:50,342 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-01 00:26:50,374 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-01 00:26:50,455 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-01 00:26:50,456 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-01 00:26:50,458 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-01 00:26:50,470 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 25
+2025-09-01 00:26:50,470 - main - INFO - [logger.py:76] - 발견된 소스 파일: 25개
+2025-09-01 00:26:50,473 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-01 00:26:50,474 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-01 00:26:50,484 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-01 00:26:50,485 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-01 00:26:50,499 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 00:26:50,500 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-01 00:26:50,528 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-01 00:26:50,529 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-01 00:26:50,540 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-01 00:26:50,540 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-01 00:26:50,548 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-01 00:26:50,548 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-01 00:26:50,557 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-01 00:26:50,557 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-01 00:26:50,564 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-01 00:26:50,564 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-01 00:26:50,579 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 00:26:50,581 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-01 00:26:50,593 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-01 00:26:50,594 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-01 00:26:50,607 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-01 00:26:50,607 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-01 00:26:50,620 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-01 00:26:50,621 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-01 00:26:50,633 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-01 00:26:50,633 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-01 00:26:50,642 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-01 00:26:50,642 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-01 00:26:50,650 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-01 00:26:50,653 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-01 00:26:50,664 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-01 00:26:50,666 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-01 00:26:50,683 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-01 00:26:50,725 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-01 00:26:50,737 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-01 00:26:50,747 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-01 00:26:50,759 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-01 00:26:50,776 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-01 00:26:50,785 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-01 00:26:50,796 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-01 00:26:50,826 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,834 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,841 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,848 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,855 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,863 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,873 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,884 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,892 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,899 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,906 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,913 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,919 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,926 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,933 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,942 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,950 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,959 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,966 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,972 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,979 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,986 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,992 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:50,999 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,005 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,012 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,019 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,027 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,037 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,044 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,051 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,057 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,066 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,072 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,079 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,088 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,096 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,105 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,111 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,118 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,125 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,132 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,139 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,145 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,152 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,159 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,166 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,175 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,184 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,191 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,198 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,204 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,211 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,218 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,225 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,231 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,237 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,245 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,252 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,260 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,274 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,283 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,291 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,298 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,307 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,316 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,327 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,338 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,348 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,355 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,362 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,371 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,378 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,388 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,396 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,406 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,414 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,426 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,433 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,440 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,447 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,454 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,461 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,470 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,480 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,489 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,497 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,505 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,513 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,521 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,528 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,535 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,542 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,551 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,558 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,565 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,574 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,581 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,588 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,594 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,601 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,609 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,615 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,623 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,632 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,642 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,649 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,658 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,664 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,672 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,678 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,685 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,692 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,698 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,707 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,717 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,727 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,735 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,742 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,750 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,759 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,768 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,776 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,786 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,793 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,800 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,807 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,814 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,821 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,830 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,837 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,846 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,855 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,862 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,870 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,877 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,884 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,891 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,897 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,904 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,911 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,918 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,926 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,936 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,945 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,952 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,959 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,966 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,973 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,980 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,987 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:51,994 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,001 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,009 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,019 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,026 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,033 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,040 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,046 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,053 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,060 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,066 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,077 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,085 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,093 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,100 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,107 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,114 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,121 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,128 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,135 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,143 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,152 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,160 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,169 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,176 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,183 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,190 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,197 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,204 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,214 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,223 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,231 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,239 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,247 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,254 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,260 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,270 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,279 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,288 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,296 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,306 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,314 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,321 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,328 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,335 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,342 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,349 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,358 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,367 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,376 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,385 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,394 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,401 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,408 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,415 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,424 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,430 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,437 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,445 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,456 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,463 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,471 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,477 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,483 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,493 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,499 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,507 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,513 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,520 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,528 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,538 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,545 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,553 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,560 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,566 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,574 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,580 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,582 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
+2025-09-01 00:26:52,585 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc

@@ -1,0 +1,174 @@
+{
+  "type": "sequence",
+  "title": "Artificial Flow: OrderMapper",
+  "participants": [
+    {
+      "id": "method:23",
+      "type": "method",
+      "label": "OrderMapper.selectOrderById()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "selectOrderById",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "selectOrderById(String orderId)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:24",
+      "type": "method",
+      "label": "OrderMapper.calculateOrderAmount()",
+      "actor_type": "control",
+      "order": 1,
+      "details": {
+        "name": "calculateOrderAmount",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "calculateOrderAmount(String orderId)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:25",
+      "type": "method",
+      "label": "OrderMapper.selectOrdersByStatus()",
+      "actor_type": "control",
+      "order": 2,
+      "details": {
+        "name": "selectOrdersByStatus",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "selectOrdersByStatus(String status)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:26",
+      "type": "method",
+      "label": "OrderMapper.getOrdersWithCustomerImplicitJoin()",
+      "actor_type": "control",
+      "order": 3,
+      "details": {
+        "name": "getOrdersWithCustomerImplicitJoin",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "getOrdersWithCustomerImplicitJoin(String status)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:27",
+      "type": "method",
+      "label": "OrderMapper.getComplexOrderReport()",
+      "actor_type": "control",
+      "order": 4,
+      "details": {
+        "name": "getComplexOrderReport",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "getComplexOrderReport(Map params)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:28",
+      "type": "method",
+      "label": "OrderMapper.searchOrdersWithCriteria()",
+      "actor_type": "control",
+      "order": 5,
+      "details": {
+        "name": "searchOrdersWithCriteria",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "searchOrdersWithCriteria(Map criteria)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:29",
+      "type": "method",
+      "label": "OrderMapper.executeDynamicQuery()",
+      "actor_type": "control",
+      "order": 6,
+      "details": {
+        "name": "executeDynamicQuery",
+        "class": "com.example.mapper.OrderMapper",
+        "signature": "executeDynamicQuery(String sql)",
+        "artificial": true
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction_0",
+      "sequence_order": 0,
+      "type": "synchronous",
+      "from_participant": "method:23",
+      "to_participant": "method:24",
+      "message": "calls calculateOrderAmount()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_1",
+      "sequence_order": 1,
+      "type": "synchronous",
+      "from_participant": "method:24",
+      "to_participant": "method:25",
+      "message": "calls selectOrdersByStatus()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_2",
+      "sequence_order": 2,
+      "type": "synchronous",
+      "from_participant": "method:25",
+      "to_participant": "method:26",
+      "message": "calls getOrdersWithCustomerImplicitJoin()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_3",
+      "sequence_order": 3,
+      "type": "synchronous",
+      "from_participant": "method:26",
+      "to_participant": "method:27",
+      "message": "calls getComplexOrderReport()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_4",
+      "sequence_order": 4,
+      "type": "synchronous",
+      "from_participant": "method:27",
+      "to_participant": "method:28",
+      "message": "calls searchOrdersWithCriteria()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_5",
+      "sequence_order": 5,
+      "type": "synchronous",
+      "from_participant": "method:28",
+      "to_participant": "method:29",
+      "message": "calls executeDynamicQuery()",
+      "confidence": 0.3,
+      "artificial": true
+    }
+  ],
+  "entry_point": {
+    "id": 23,
+    "name": "OrderMapper.selectOrderById",
+    "full_name": "com.example.mapper.OrderMapper.selectOrderById",
+    "category": "artificial",
+    "artificial": true
+  },
+  "metadata": {
+    "total_participants": 7,
+    "total_interactions": 6,
+    "max_depth_reached": 1,
+    "unresolved_calls": 0,
+    "artificial": true,
+    "note": "This diagram shows artificial sequential flow due to missing call relationships"
+  }
+}

@@ -699,7 +699,7 @@ class JavaParser:
             if self.logger:
                 self.logger.debug(f"[_find_method_invocations_recursive] Found MethodInvocation: {call_info}")
 
-        elif isinstance(node, javalang.tree.ThisMethodInvocation):
+        elif isinstance(node, javalang.tree.MethodInvocation):
             invocations.append({
                 'member': node.member,
                 'qualifier': 'this',
@@ -908,7 +908,13 @@ class JavaParser:
                     methods.append(constructor_obj)
                     edges.extend(constructor_edges)
             
-            def _extract_class_from_tree_sitter(self, class_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+            return class_obj, methods, edges
+            
+        except Exception as e:
+            logger.error(f"Failed to extract class from tree-sitter node: {e}")
+            return None, [], []
+
+    def _extract_class_from_tree_sitter_backup(self, class_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
         """
         Tree-sitter 노드에서 클래스 정보 추출
         """

@@ -1,0 +1,289 @@
+{
+  "type": "sequence",
+  "title": "Artificial Flow: VulnerabilityTestService",
+  "participants": [
+    {
+      "id": "method:11",
+      "type": "method",
+      "label": "VulnerabilityTestService.getUsersByName_VULNERABLE()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "getUsersByName_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "getUsersByName_VULNERABLE(String userName)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:12",
+      "type": "method",
+      "label": "VulnerabilityTestService.getUsersByName_SAFE()",
+      "actor_type": "control",
+      "order": 1,
+      "details": {
+        "name": "getUsersByName_SAFE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "getUsersByName_SAFE(String userName)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:13",
+      "type": "method",
+      "label": "VulnerabilityTestService.searchUsers_VULNERABLE()",
+      "actor_type": "control",
+      "order": 2,
+      "details": {
+        "name": "searchUsers_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "searchUsers_VULNERABLE(String searchTerm, String category)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:14",
+      "type": "method",
+      "label": "VulnerabilityTestService.displayUserInfo_VULNERABLE()",
+      "actor_type": "control",
+      "order": 3,
+      "details": {
+        "name": "displayUserInfo_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "displayUserInfo_VULNERABLE(String userInput)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:15",
+      "type": "method",
+      "label": "VulnerabilityTestService.readFile_VULNERABLE()",
+      "actor_type": "control",
+      "order": 4,
+      "details": {
+        "name": "readFile_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "readFile_VULNERABLE(String filename)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:16",
+      "type": "method",
+      "label": "VulnerabilityTestService.hashPassword_WEAK()",
+      "actor_type": "control",
+      "order": 5,
+      "details": {
+        "name": "hashPassword_WEAK",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "hashPassword_WEAK(String password)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:17",
+      "type": "method",
+      "label": "VulnerabilityTestService.authenticateAdmin_VULNERABLE()",
+      "actor_type": "control",
+      "order": 6,
+      "details": {
+        "name": "authenticateAdmin_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "authenticateAdmin_VULNERABLE(String username, String password)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:18",
+      "type": "method",
+      "label": "VulnerabilityTestService.connectToDatabase_VULNERABLE()",
+      "actor_type": "control",
+      "order": 7,
+      "details": {
+        "name": "connectToDatabase_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "connectToDatabase_VULNERABLE()",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:19",
+      "type": "method",
+      "label": "VulnerabilityTestService.executeCommand_VULNERABLE()",
+      "actor_type": "control",
+      "order": 8,
+      "details": {
+        "name": "executeCommand_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "executeCommand_VULNERABLE(String userCommand)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:20",
+      "type": "method",
+      "label": "VulnerabilityTestService.searchLDAP_VULNERABLE()",
+      "actor_type": "control",
+      "order": 9,
+      "details": {
+        "name": "searchLDAP_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "searchLDAP_VULNERABLE(String username)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:21",
+      "type": "method",
+      "label": "VulnerabilityTestService.deserializeData_VULNERABLE()",
+      "actor_type": "control",
+      "order": 10,
+      "details": {
+        "name": "deserializeData_VULNERABLE",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "deserializeData_VULNERABLE(byte data)",
+        "artificial": true
+      }
+    },
+    {
+      "id": "method:22",
+      "type": "method",
+      "label": "VulnerabilityTestService.processComplexBusiness()",
+      "actor_type": "control",
+      "order": 11,
+      "details": {
+        "name": "processComplexBusiness",
+        "class": "com.example.integrated.VulnerabilityTestService",
+        "signature": "processComplexBusiness(String type, int level, boolean isActive, String category, Double threshold)",
+        "artificial": true
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction_0",
+      "sequence_order": 0,
+      "type": "synchronous",
+      "from_participant": "method:11",
+      "to_participant": "method:12",
+      "message": "calls getUsersByName_SAFE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_1",
+      "sequence_order": 1,
+      "type": "synchronous",
+      "from_participant": "method:12",
+      "to_participant": "method:13",
+      "message": "calls searchUsers_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_2",
+      "sequence_order": 2,
+      "type": "synchronous",
+      "from_participant": "method:13",
+      "to_participant": "method:14",
+      "message": "calls displayUserInfo_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_3",
+      "sequence_order": 3,
+      "type": "synchronous",
+      "from_participant": "method:14",
+      "to_participant": "method:15",
+      "message": "calls readFile_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_4",
+      "sequence_order": 4,
+      "type": "synchronous",
+      "from_participant": "method:15",
+      "to_participant": "method:16",
+      "message": "calls hashPassword_WEAK()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_5",
+      "sequence_order": 5,
+      "type": "synchronous",
+      "from_participant": "method:16",
+      "to_participant": "method:17",
+      "message": "calls authenticateAdmin_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_6",
+      "sequence_order": 6,
+      "type": "synchronous",
+      "from_participant": "method:17",
+      "to_participant": "method:18",
+      "message": "calls connectToDatabase_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_7",
+      "sequence_order": 7,
+      "type": "synchronous",
+      "from_participant": "method:18",
+      "to_participant": "method:19",
+      "message": "calls executeCommand_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_8",
+      "sequence_order": 8,
+      "type": "synchronous",
+      "from_participant": "method:19",
+      "to_participant": "method:20",
+      "message": "calls searchLDAP_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_9",
+      "sequence_order": 9,
+      "type": "synchronous",
+      "from_participant": "method:20",
+      "to_participant": "method:21",
+      "message": "calls deserializeData_VULNERABLE()",
+      "confidence": 0.3,
+      "artificial": true
+    },
+    {
+      "id": "interaction_10",
+      "sequence_order": 10,
+      "type": "synchronous",
+      "from_participant": "method:21",
+      "to_participant": "method:22",
+      "message": "calls processComplexBusiness()",
+      "confidence": 0.3,
+      "artificial": true
+    }
+  ],
+  "entry_point": {
+    "id": 11,
+    "name": "VulnerabilityTestService.getUsersByName_VULNERABLE",
+    "full_name": "com.example.integrated.VulnerabilityTestService.getUsersByName_VULNERABLE",
+    "category": "artificial",
+    "artificial": true
+  },
+  "metadata": {
+    "total_participants": 12,
+    "total_interactions": 11,
+    "max_depth_reached": 1,
+    "unresolved_calls": 0,
+    "artificial": true,
+    "note": "This diagram shows artificial sequential flow due to missing call relationships"
+  }
+}

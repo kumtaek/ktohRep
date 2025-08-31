@@ -37,6 +37,8 @@ class File(Base):
     hash = Column(String(64))  # SHA-256 hash for change detection
     loc = Column(Integer)  # Lines of code
     mtime = Column(DateTime)  # Modification time
+    llm_summary = Column(Text)  # LLM-generated summary
+    llm_summary_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships
     project = relationship("Project", back_populates="files")
@@ -54,6 +56,8 @@ class Class(Base):
     end_line = Column(Integer)
     modifiers = Column(Text)  # JSON array of modifiers
     annotations = Column(Text)  # JSON array of annotations
+    llm_summary = Column(Text)  # LLM-generated summary
+    llm_summary_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships  
     file = relationship("File", back_populates="classes")
@@ -72,6 +76,8 @@ class Method(Base):
     annotations = Column(Text)  # JSON array of annotations
     parameters = Column(Text)   # JSON or string-joined parameter list
     modifiers = Column(Text)    # JSON array of modifiers
+    llm_summary = Column(Text)  # LLM-generated summary
+    llm_summary_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships
     class_ = relationship("Class", back_populates="methods")
@@ -88,6 +94,8 @@ class SqlUnit(Base):
     end_line = Column(Integer)
     stmt_kind = Column(String(50))  # select, insert, update, delete, procedure, function
     normalized_fingerprint = Column(Text)  # Structural fingerprint (not original SQL)
+    llm_summary = Column(Text)  # LLM-generated summary
+    llm_summary_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships
     file = relationship("File", back_populates="sql_units")
@@ -102,6 +110,8 @@ class DbTable(Base):
     table_name = Column(String(128), nullable=False)
     status = Column(String(50))
     table_comment = Column(Text)  # Table comment/description
+    llm_comment = Column(Text)  # LLM-enhanced comment
+    llm_comment_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships
     columns = relationship("DbColumn", back_populates="table", cascade="all, delete-orphan")
@@ -116,6 +126,8 @@ class DbColumn(Base):
     data_type = Column(String(128))
     nullable = Column(String(1))  # Y/N
     column_comment = Column(Text)  # Column comment/description
+    llm_comment = Column(Text)  # LLM-enhanced comment
+    llm_comment_confidence = Column(Float, default=0.0)  # Confidence score
     
     # Relationships
     table = relationship("DbTable", back_populates="columns")

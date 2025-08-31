@@ -14093,7 +14093,7 @@
     "total_nodes": 130,
     "total_edges": 1008,
     "total_relations": 1008,
-    "min_score_threshold": 0.3,
+    "min_score_threshold": 0.5,
     "style_theme": "professional_blue",
     "clusters": {
       "cluster_0": "fill:#1976d2,stroke:#0d47a1",
@@ -14261,7 +14261,7 @@
                 elements: elements,
                 style: styles,
                 layout: getLayoutConfig('fcose'),
-                wheelSensitivity: 0.25
+                wheelSensitivity: 0.05
             });
 
             setupEventHandlers();
@@ -14426,33 +14426,33 @@
                     animate: true,
                     animationDuration: 2500,
                     fit: true,
-                    padding: 120,
-                    nodeSeparation: 300,
+                    padding: 250,
+                    nodeSeparation: 800,
                     idealEdgeLength: edge => {
                         const confidence = edge.data('confidence') || 0.5;
                         const strength = edge.data('strength') || 'medium';
-                        let baseLength = 350;
-                        if (strength === 'strong') baseLength = 220;
-                        else if (strength === 'weak') baseLength = 450;
-                        return Math.max(150, baseLength - (confidence * 100));
+                        let baseLength = 600;
+                        if (strength === 'strong') baseLength = 400;
+                        else if (strength === 'weak') baseLength = 800;
+                        return Math.max(300, baseLength - (confidence * 100));
                     },
                     nodeRepulsion: node => {
                         const degree = node.degree();
-                        return Math.max(12000, degree * 2000);
+                        return Math.max(30000, degree * 5000);
                     },
                     edgeElasticity: edge => {
                         const confidence = edge.data('confidence') || 0.5;
                         const strength = edge.data('strength') || 'medium';
-                        if (strength === 'strong') return confidence * 0.6;
-                        if (strength === 'weak') return confidence * 0.2;
-                        return confidence * 0.35;
+                        if (strength === 'strong') return confidence * 0.4;
+                        if (strength === 'weak') return confidence * 0.1;
+                        return confidence * 0.2;
                     },
-                    gravityRange: 7.0,
-                    gravity: 0.25,
-                    numIter: 3500,
-                    initialTemp: 450,
-                    coolingFactor: 0.94,
-                    minTemp: 1.5
+                    gravityRange: 12.0,
+                    gravity: 0.1,
+                    numIter: 2000,
+                    initialTemp: 700,
+                    coolingFactor: 0.98,
+                    minTemp: 3.0
                 },
                 dagre: {
                     name: 'dagre',

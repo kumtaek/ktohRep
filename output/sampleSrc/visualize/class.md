@@ -3,9 +3,9 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: CLASS
-- 생성 시각: 2025-08-31 14:23:07
-- 노드 수: 156
-- 엣지 수: 3162
+- 생성 시각: 2025-08-31 16:40:52
+- 노드 수: 169
+- 엣지 수: 3718
 
 ## 다이어그램
 
@@ -83,7 +83,13 @@ classDiagram
     +getOrdersWithCustomerAnsiJoin()
     +getOrdersWithCustomerImplicitJoin()
   }
-  class n13_class_2 {
+  class n13_class_157 {
+    +findDynamicData()
+    +getComplexReport()
+    +getOrdersWithCustomerAnsiJoin()
+    +getOrdersWithCustomerImplicitJoin()
+  }
+  class n14_class_2 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -91,7 +97,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n14_class_15 {
+  class n15_class_15 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -99,7 +105,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n15_class_28 {
+  class n16_class_28 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -107,7 +113,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n16_class_41 {
+  class n17_class_41 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -115,7 +121,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n17_class_54 {
+  class n18_class_54 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -123,7 +129,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n18_class_67 {
+  class n19_class_67 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -131,7 +137,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n19_class_80 {
+  class n20_class_80 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -139,7 +145,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n20_class_93 {
+  class n21_class_93 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -147,7 +153,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n21_class_106 {
+  class n22_class_106 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -155,7 +161,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n22_class_119 {
+  class n23_class_119 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -163,7 +169,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n23_class_132 {
+  class n24_class_132 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -171,7 +177,7 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n24_class_145 {
+  class n25_class_145 {
     +startProcess()
     +doWork()
     +getStaticUserData()
@@ -179,7 +185,15 @@ classDiagram
     +getFormattedId()
     +log()
   }
-  class n25_class_3 {
+  class n26_class_158 {
+    +startProcess()
+    +doWork()
+    +getStaticUserData()
+    +calculateOrderTotal()
+    +getFormattedId()
+    +log()
+  }
+  class n27_class_3 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -191,7 +205,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n26_class_16 {
+  class n28_class_16 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -203,7 +217,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n27_class_29 {
+  class n29_class_29 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -215,7 +229,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n28_class_42 {
+  class n30_class_42 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -227,7 +241,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n29_class_55 {
+  class n31_class_55 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -239,7 +253,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n30_class_68 {
+  class n32_class_68 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -251,7 +265,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n31_class_81 {
+  class n33_class_81 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -263,7 +277,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n32_class_94 {
+  class n34_class_94 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -275,7 +289,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n33_class_107 {
+  class n35_class_107 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -287,7 +301,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n34_class_120 {
+  class n36_class_120 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -299,7 +313,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n35_class_133 {
+  class n37_class_133 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -311,7 +325,7 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n36_class_146 {
+  class n38_class_146 {
     +getUsersByName_VULNERABLE()
     +getUsersByName_SAFE()
     +searchUsers_VULNERABLE()
@@ -323,7 +337,19 @@ classDiagram
     +executeCommand_VULNERABLE()
     +searchLDAP_VULNERABLE()
   }
-  class n37_class_4 {
+  class n39_class_159 {
+    +getUsersByName_VULNERABLE()
+    +getUsersByName_SAFE()
+    +searchUsers_VULNERABLE()
+    +displayUserInfo_VULNERABLE()
+    +readFile_VULNERABLE()
+    +hashPassword_WEAK()
+    +authenticateAdmin_VULNERABLE()
+    +connectToDatabase_VULNERABLE()
+    +executeCommand_VULNERABLE()
+    +searchLDAP_VULNERABLE()
+  }
+  class n40_class_4 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -332,7 +358,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n38_class_17 {
+  class n41_class_17 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -341,7 +367,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n39_class_30 {
+  class n42_class_30 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -350,7 +376,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n40_class_43 {
+  class n43_class_43 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -359,7 +385,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n41_class_56 {
+  class n44_class_56 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -368,7 +394,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n42_class_69 {
+  class n45_class_69 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -377,7 +403,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n43_class_82 {
+  class n46_class_82 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -386,7 +412,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n44_class_95 {
+  class n47_class_95 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -395,7 +421,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n45_class_108 {
+  class n48_class_108 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -404,7 +430,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n46_class_121 {
+  class n49_class_121 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -413,7 +439,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n47_class_134 {
+  class n50_class_134 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -422,7 +448,7 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n48_class_147 {
+  class n51_class_147 {
     +selectOrderById()
     +calculateOrderAmount()
     +selectOrdersByStatus()
@@ -431,91 +457,107 @@ classDiagram
     +searchOrdersWithCriteria()
     +executeDynamicQuery()
   }
-  class n49_class_5 {
+  class n52_class_160 {
+    +selectOrderById()
+    +calculateOrderAmount()
+    +selectOrdersByStatus()
+    +getOrdersWithCustomerImplicitJoin()
+    +getComplexOrderReport()
+    +searchOrdersWithCriteria()
+    +executeDynamicQuery()
+  }
+  class n53_class_5 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n50_class_18 {
+  class n54_class_18 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n51_class_31 {
+  class n55_class_31 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n52_class_44 {
+  class n56_class_44 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n53_class_57 {
+  class n57_class_57 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n54_class_70 {
+  class n58_class_70 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n55_class_83 {
+  class n59_class_83 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n56_class_96 {
+  class n60_class_96 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n57_class_109 {
+  class n61_class_109 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n58_class_122 {
+  class n62_class_122 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n59_class_135 {
+  class n63_class_135 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n60_class_148 {
+  class n64_class_148 {
     +selectAllProducts()
     +selectProductById()
     +searchProductsWithCriteria()
     +getComplexProductAnalysis()
     +executeDynamicQuery()
   }
-  class n61_class_6 {
+  class n65_class_161 {
+    +selectAllProducts()
+    +selectProductById()
+    +searchProductsWithCriteria()
+    +getComplexProductAnalysis()
+    +executeDynamicQuery()
+  }
+  class n66_class_6 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -523,7 +565,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n62_class_19 {
+  class n67_class_19 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -531,7 +573,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n63_class_32 {
+  class n68_class_32 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -539,7 +581,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n64_class_45 {
+  class n69_class_45 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -547,7 +589,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n65_class_58 {
+  class n70_class_58 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -555,7 +597,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n66_class_71 {
+  class n71_class_71 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -563,7 +605,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n67_class_84 {
+  class n72_class_84 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -571,7 +613,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n68_class_97 {
+  class n73_class_97 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -579,7 +621,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n69_class_110 {
+  class n74_class_110 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -587,7 +629,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n70_class_123 {
+  class n75_class_123 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -595,7 +637,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n71_class_136 {
+  class n76_class_136 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -603,7 +645,7 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n72_class_149 {
+  class n77_class_149 {
     +selectUserById()
     +selectActiveUsers()
     +searchUsersByCondition()
@@ -611,43 +653,54 @@ classDiagram
     +insertUser()
     +executeDynamicQuery()
   }
-  class n73_class_7 {
+  class n78_class_162 {
+    +selectUserById()
+    +selectActiveUsers()
+    +searchUsersByCondition()
+    +findUsersWithDynamicConditions()
+    +insertUser()
+    +executeDynamicQuery()
+  }
+  class n79_class_7 {
     +list()
   }
-  class n74_class_20 {
+  class n80_class_20 {
     +list()
   }
-  class n75_class_33 {
+  class n81_class_33 {
     +list()
   }
-  class n76_class_46 {
+  class n82_class_46 {
     +list()
   }
-  class n77_class_59 {
+  class n83_class_59 {
     +list()
   }
-  class n78_class_72 {
+  class n84_class_72 {
     +list()
   }
-  class n79_class_85 {
+  class n85_class_85 {
     +list()
   }
-  class n80_class_98 {
+  class n86_class_98 {
     +list()
   }
-  class n81_class_111 {
+  class n87_class_111 {
     +list()
   }
-  class n82_class_124 {
+  class n88_class_124 {
     +list()
   }
-  class n83_class_137 {
+  class n89_class_137 {
     +list()
   }
-  class n84_class_150 {
+  class n90_class_150 {
     +list()
   }
-  class n85_class_8 {
+  class n91_class_163 {
+    +list()
+  }
+  class n92_class_8 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -655,7 +708,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n86_class_21 {
+  class n93_class_21 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -663,7 +716,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n87_class_34 {
+  class n94_class_34 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -671,7 +724,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n88_class_47 {
+  class n95_class_47 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -679,7 +732,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n89_class_60 {
+  class n96_class_60 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -687,7 +740,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n90_class_73 {
+  class n97_class_73 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -695,7 +748,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n91_class_86 {
+  class n98_class_86 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -703,7 +756,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n92_class_99 {
+  class n99_class_99 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -711,7 +764,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n93_class_112 {
+  class n100_class_112 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -719,7 +772,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n94_class_125 {
+  class n101_class_125 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -727,7 +780,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n95_class_138 {
+  class n102_class_138 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -735,7 +788,7 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n96_class_151 {
+  class n103_class_151 {
     +calculateOrderTotal()
     +getOrdersByStatus()
     +generateOrderReport()
@@ -743,316 +796,350 @@ classDiagram
     +largeOrderMethod2()
     +largeOrderMethod3()
   }
-  class n97_class_9 {
+  class n104_class_164 {
+    +calculateOrderTotal()
+    +getOrdersByStatus()
+    +generateOrderReport()
+    +largeOrderMethod1()
+    +largeOrderMethod2()
+    +largeOrderMethod3()
+  }
+  class n105_class_9 {
     +find()
     +find()
     +process()
   }
-  class n98_class_22 {
+  class n106_class_22 {
     +find()
     +find()
     +process()
   }
-  class n99_class_35 {
+  class n107_class_35 {
     +find()
     +find()
     +process()
   }
-  class n100_class_48 {
+  class n108_class_48 {
     +find()
     +find()
     +process()
   }
-  class n101_class_61 {
+  class n109_class_61 {
     +find()
     +find()
     +process()
   }
-  class n102_class_74 {
+  class n110_class_74 {
     +find()
     +find()
     +process()
   }
-  class n103_class_87 {
+  class n111_class_87 {
     +find()
     +find()
     +process()
   }
-  class n104_class_100 {
+  class n112_class_100 {
     +find()
     +find()
     +process()
   }
-  class n105_class_113 {
+  class n113_class_113 {
     +find()
     +find()
     +process()
   }
-  class n106_class_126 {
+  class n114_class_126 {
     +find()
     +find()
     +process()
   }
-  class n107_class_139 {
+  class n115_class_139 {
     +find()
     +find()
     +process()
   }
-  class n108_class_152 {
+  class n116_class_152 {
     +find()
     +find()
     +process()
   }
-  class n109_class_10 {
+  class n117_class_165 {
+    +find()
+    +find()
+    +process()
+  }
+  class n118_class_10 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n110_class_23 {
+  class n119_class_23 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n111_class_36 {
+  class n120_class_36 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n112_class_49 {
+  class n121_class_49 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n113_class_62 {
+  class n122_class_62 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n114_class_75 {
+  class n123_class_75 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n115_class_88 {
+  class n124_class_88 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n116_class_101 {
+  class n125_class_101 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n117_class_114 {
+  class n126_class_114 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n118_class_127 {
+  class n127_class_127 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n119_class_140 {
+  class n128_class_140 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n120_class_153 {
+  class n129_class_153 {
     +getProductList()
     +getProductDetails()
     +searchProducts()
     +processComplexBusiness()
     +unsafeProductSearch()
   }
-  class n121_class_11 {
+  class n130_class_166 {
+    +getProductList()
+    +getProductDetails()
+    +searchProducts()
+    +processComplexBusiness()
+    +unsafeProductSearch()
+  }
+  class n131_class_11 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n122_class_24 {
+  class n132_class_24 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n123_class_37 {
+  class n133_class_37 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n124_class_50 {
+  class n134_class_50 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n125_class_63 {
+  class n135_class_63 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n126_class_76 {
+  class n136_class_76 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n127_class_89 {
+  class n137_class_89 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n128_class_102 {
+  class n138_class_102 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n129_class_115 {
+  class n139_class_115 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n130_class_128 {
+  class n140_class_128 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n131_class_141 {
+  class n141_class_141 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n132_class_154 {
+  class n142_class_154 {
     +getUserById()
     +getActiveUsers()
     +createUser()
     +processWithReflection()
     +getDynamicUserData()
   }
-  class n133_class_13 {
+  class n143_class_167 {
+    +getUserById()
+    +getActiveUsers()
+    +createUser()
+    +processWithReflection()
+    +getDynamicUserData()
+  }
+  class n144_class_13 {
     +list()
     +helper()
   }
-  class n134_class_26 {
+  class n145_class_26 {
     +list()
     +helper()
   }
-  class n135_class_39 {
+  class n146_class_39 {
     +list()
     +helper()
   }
-  class n136_class_52 {
+  class n147_class_52 {
     +list()
     +helper()
   }
-  class n137_class_65 {
+  class n148_class_65 {
     +list()
     +helper()
   }
-  class n138_class_78 {
+  class n149_class_78 {
     +list()
     +helper()
   }
-  class n139_class_91 {
+  class n150_class_91 {
     +list()
     +helper()
   }
-  class n140_class_104 {
+  class n151_class_104 {
     +list()
     +helper()
   }
-  class n141_class_117 {
+  class n152_class_117 {
     +list()
     +helper()
   }
-  class n142_class_130 {
+  class n153_class_130 {
     +list()
     +helper()
   }
-  class n143_class_143 {
+  class n154_class_143 {
     +list()
     +helper()
   }
-  class n144_class_156 {
+  class n155_class_156 {
     +list()
     +helper()
   }
-  class n145_class_12 {
+  class n156_class_169 {
+    +list()
+    +helper()
+  }
+  class n157_class_12 {
     +isEmpty()
   }
-  class n146_class_25 {
+  class n158_class_25 {
     +isEmpty()
   }
-  class n147_class_38 {
+  class n159_class_38 {
     +isEmpty()
   }
-  class n148_class_51 {
+  class n160_class_51 {
     +isEmpty()
   }
-  class n149_class_64 {
+  class n161_class_64 {
     +isEmpty()
   }
-  class n150_class_77 {
+  class n162_class_77 {
     +isEmpty()
   }
-  class n151_class_90 {
+  class n163_class_90 {
     +isEmpty()
   }
-  class n152_class_103 {
+  class n164_class_103 {
     +isEmpty()
   }
-  class n153_class_116 {
+  class n165_class_116 {
     +isEmpty()
   }
-  class n154_class_129 {
+  class n166_class_129 {
     +isEmpty()
   }
-  class n155_class_142 {
+  class n167_class_142 {
     +isEmpty()
   }
-  class n156_class_155 {
+  class n168_class_155 {
+    +isEmpty()
+  }
+  class n169_class_168 {
     +isEmpty()
   }
 
@@ -1071,4 +1158,4 @@ classDiagram
 - `*` : static 멤버
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-08-31 14:23:07*
+*Source Analyzer v1.1 — 생성 시각: 2025-08-31 16:40:52*

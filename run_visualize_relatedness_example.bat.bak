@@ -19,3 +19,4 @@ echo 결과 파일: output/sampleSrc/visualize/
 echo - relatedness_0.3.html (낮은 임계값)
 echo - relatedness_0.5.html (높은 임계값)
 echo ===============================================
+pause

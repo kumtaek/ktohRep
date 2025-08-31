@@ -248,6 +248,7 @@ class JavaParser:
                     
         # Extract inheritance relationships
         if node.extends:
+            target = self._get_type_string(node.extends)
             inheritance_edge = Edge(
                 src_type='class',
                 src_id=None,  # Will be set after class is saved
@@ -256,11 +257,17 @@ class JavaParser:
                 edge_kind='extends',
                 confidence=0.9
             )
+            setattr(inheritance_edge, 'src_class_fqn', fqn)
+            try:
+                setattr(inheritance_edge, 'meta', json.dumps({'target': target}))
+            except Exception:
+                pass
             edges.append(inheritance_edge)
-            
-        # Extract interface implementations  
+
+        # Extract interface implementations
         if node.implements:
             for interface in node.implements:
+                target = self._get_type_string(interface)
                 implementation_edge = Edge(
                     src_type='class',
                     src_id=None,
@@ -269,6 +276,11 @@ class JavaParser:
                     edge_kind='implements',
                     confidence=0.9
                 )
+                setattr(implementation_edge, 'src_class_fqn', fqn)
+                try:
+                    setattr(implementation_edge, 'meta', json.dumps({'target': target}))
+                except Exception:
+                    pass
                 edges.append(implementation_edge)
                 
         return class_obj, methods, edges
@@ -306,7 +318,7 @@ class JavaParser:
         
         methods = []
         edges = []
-        
+
         # 인터페이스 메서드 추출
         if hasattr(node, 'body') and node.body:
             for member in node.body:
@@ -314,7 +326,26 @@ class JavaParser:
                     method_obj, method_edges = self._extract_method(member, interface_obj, {})  # Pass empty dict for fields
                     methods.append(method_obj)
                     edges.extend(method_edges)
-                    
+
+        # 인터페이스 상속 관계 추출
+        if node.extends:
+            for parent in node.extends:
+                target = self._get_type_string(parent)
+                extends_edge = Edge(
+                    src_type='interface',
+                    src_id=None,
+                    dst_type='interface',
+                    dst_id=None,
+                    edge_kind='extends',
+                    confidence=0.9,
+                )
+                setattr(extends_edge, 'src_class_fqn', fqn)
+                try:
+                    setattr(extends_edge, 'meta', json.dumps({'target': target}))
+                except Exception:
+                    pass
+                edges.append(extends_edge)
+
         return interface_obj, methods, edges
         
     def _extract_enum(self, node: javalang.tree.EnumDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
@@ -358,7 +389,10 @@ class JavaParser:
                     method_obj, method_edges = self._extract_method(member, enum_obj, {})  # Pass empty dict for fields
                     methods.append(method_obj)
                     edges.extend(method_edges)
-                    
+
+        # 열거형은 암묵적으로 java.lang.Enum을 상속받지만, 명시적인 extends는 없음.
+        # 필요하다면 여기에 Enum 상속 엣지를 추가할 수 있음.
+
         return enum_obj, methods, edges
         
     def _extract_method(self, node: javalang.tree.MethodDeclaration, class_obj: Class, fields: Dict[str, str]) -> Tuple[Method, List[Edge]]:
@@ -406,10 +440,18 @@ class JavaParser:
             pass
         
         edges = []
-        
+
+        # 심볼 테이블 초기화: 클래스 필드, this, 메서드 매개변수
+        symbol_table = dict(fields)
+        symbol_table['this'] = class_obj.fqn
+        if node.parameters:
+            for param in node.parameters:
+                param_type = self._get_type_string(param.type)
+                symbol_table[param.name] = param_type
+
         # 메서드 본문에서 호출 관계 추출
         if node.body:
-            method_calls = self._extract_method_calls(node.body, fields)
+            method_calls = self._extract_method_calls(node.body, symbol_table)
             for call_info in method_calls:
                 call_edge = Edge(
                     src_type='method',
@@ -421,17 +463,17 @@ class JavaParser:
                 )
                 # 메타데이터(JSON) 또는 보조 힌트로 저장
                 try:
-                    setattr(call_edge, 'meta', json.dumps({ 
+                    setattr(call_edge, 'meta', json.dumps({
                         'called_name': call_info['member'],
                         'callee_qualifier_type': call_info.get('qualifier_type'),
-                        'src_method_fqn': f"{class_obj.fqn}.{method_obj.name}" # 호출하는 메서드의 FQN 추가
+                        'src_method_fqn': f"{class_obj.fqn}.{method_obj.name}"  # 호출하는 메서드의 FQN 추가
                     }))
                 except Exception:
                     setattr(call_edge, 'called_method_name', call_info['member'])
                     setattr(call_edge, 'callee_qualifier_type', call_info.get('qualifier_type'))
-                    setattr(call_edge, 'src_method_fqn', f"{class_obj.fqn}.{method_obj.name}") # 대체 속성에도 추가
+                    setattr(call_edge, 'src_method_fqn', f"{class_obj.fqn}.{method_obj.name}")  # 대체 속성에도 추가
                 edges.append(call_edge)
-                
+
         return method_obj, edges
         
     def _extract_constructor(self, node: javalang.tree.ConstructorDeclaration, class_obj: Class) -> Tuple[Method, List[Edge]]:
@@ -473,10 +515,17 @@ class JavaParser:
             pass
         
         edges = []
-        
+
+        # 심볼 테이블 초기화: this 및 매개변수
+        symbol_table: Dict[str, str] = {'this': class_obj.fqn}
+        if node.parameters:
+            for param in node.parameters:
+                param_type = self._get_type_string(param.type)
+                symbol_table[param.name] = param_type
+
         # 생성자 본문에서 메서드 호출 관계 추출
         if node.body:
-            method_calls = self._extract_method_calls(node.body)
+            method_calls = self._extract_method_calls(node.body, symbol_table)
             for call in method_calls:
                 call_edge = Edge(
                     src_type='method',
@@ -486,8 +535,18 @@ class JavaParser:
                     edge_kind='call',
                     confidence=0.8
                 )
+                try:
+                    setattr(call_edge, 'meta', json.dumps({
+                        'called_name': call['member'],
+                        'callee_qualifier_type': call.get('qualifier_type'),
+                        'src_method_fqn': f"{class_obj.fqn}.<init>"
+                    }))
+                except Exception:
+                    setattr(call_edge, 'called_method_name', call['member'])
+                    setattr(call_edge, 'callee_qualifier_type', call.get('qualifier_type'))
+                    setattr(call_edge, 'src_method_fqn', f"{class_obj.fqn}.<init>")
                 edges.append(call_edge)
-                
+
         return constructor_obj, edges
         
     def _get_package_name(self, path: List) -> Optional[str]:
@@ -583,13 +642,13 @@ class JavaParser:
         
         return start_line, end_line
         
-    def _extract_method_calls(self, body, fields: Dict[str, str]) -> List[Dict[str, str]]:
+    def _extract_method_calls(self, body, symbol_table: Dict[str, str]) -> List[Dict[str, str]]:
         """
         메서드 본문에서 메서드 호출을 추출 (재귀적 AST 순회)
 
         Args:
             body: 메서드 본문 AST 노드 (list 또는 javalang.tree.Node)
-            fields: 클래스 필드 정보
+            symbol_table: 변수 -> 타입 매핑을 보유한 심볼 테이블
 
         Returns:
             호출된 메서드 정보 딕셔너리 리스트
@@ -601,21 +660,21 @@ class JavaParser:
             # body가 리스트인 경우 각 요소를 순회
             if isinstance(body, list):
                 for item in body:
-                    method_calls.extend(self._find_method_invocations_recursive(item, fields))
+                    method_calls.extend(self._find_method_invocations_recursive(item, symbol_table))
             # body가 단일 AST 노드인 경우
             else:
-                method_calls.extend(self._find_method_invocations_recursive(body, fields))
+                method_calls.extend(self._find_method_invocations_recursive(body, symbol_table))
         if self.logger:
             self.logger.debug(f"[_extract_method_calls] found {len(method_calls)} method calls.")
         return method_calls
 
-    def _find_method_invocations_recursive(self, node, fields: Dict[str, str]) -> List[Dict[str, str]]:
+    def _find_method_invocations_recursive(self, node, symbol_table: Dict[str, str]) -> List[Dict[str, str]]:
         """
         AST 노드를 재귀적으로 순회하며 메서드 호출 노드를 찾음
 
         Args:
             node: 검색할 AST 노드
-            fields: 클래스 필드 정보
+            symbol_table: 현재 스코프의 변수 -> 타입 매핑
 
         Returns:
             발견된 메서드 호출 정보 딕셔너리 리스트
@@ -626,8 +685,11 @@ class JavaParser:
 
         if isinstance(node, javalang.tree.MethodInvocation):
             qualifier = getattr(node, 'qualifier', None)
-            qualifier_type = fields.get(qualifier) if qualifier in fields else None
-            
+            if qualifier is None:
+                qualifier_type = symbol_table.get('this')
+            else:
+                qualifier_type = symbol_table.get(qualifier, qualifier)
+
             call_info = {
                 'member': node.member,
                 'qualifier': qualifier,
@@ -637,17 +699,51 @@ class JavaParser:
             if self.logger:
                 self.logger.debug(f"[_find_method_invocations_recursive] Found MethodInvocation: {call_info}")
 
+        elif isinstance(node, javalang.tree.ThisMethodInvocation):
+            invocations.append({
+                'member': node.member,
+                'qualifier': 'this',
+                'qualifier_type': symbol_table.get('this')
+            })
+
+        elif isinstance(node, javalang.tree.SuperMethodInvocation):
+            invocations.append({
+                'member': node.member,
+                'qualifier': 'super',
+                'qualifier_type': symbol_table.get('this')
+            })
+
+        elif isinstance(node, javalang.tree.LocalVariableDeclaration):
+            var_type = self._get_type_string(node.type)
+            for declarator in node.declarators:
+                symbol_table[declarator.name] = var_type
+                if getattr(declarator, 'initializer', None):
+                    invocations.extend(self._find_method_invocations_recursive(declarator.initializer, symbol_table))
+            # 변수 선언 자체는 호출이 아니므로 바로 반환
+            return invocations
+
+        elif isinstance(node, javalang.tree.Assignment):
+            # 오른쪽 값을 먼저 분석하여 호출을 수집
+            if hasattr(node, 'value'):
+                invocations.extend(self._find_method_invocations_recursive(node.value, symbol_table))
+            # 단순한 타입 추론 (new 연산자)
+            if isinstance(node.expressionl, javalang.tree.MemberReference) and isinstance(getattr(node, 'value', None), javalang.tree.ClassCreator):
+                var_name = node.expressionl.member
+                var_type = self._get_type_string(node.value.type)
+                symbol_table[var_name] = var_type
+            return invocations
+
         # 노드의 자식들을 재귀적으로 검색
         if hasattr(node, 'children') and node.children:
             for child in node.children:
-                invocations.extend(self._find_method_invocations_recursive(child, fields))
-        elif isinstance(node, list): # 리스트인 경우 각 요소를 순회
+                invocations.extend(self._find_method_invocations_recursive(child, symbol_table))
+        elif isinstance(node, list):  # 리스트인 경우 각 요소를 순회
             for item in node:
-                invocations.extend(self._find_method_invocations_recursive(item, fields))
-        elif hasattr(node, '__dict__'): # 다른 속성들도 확인 (javalang AST 구조에 따라)
+                invocations.extend(self._find_method_invocations_recursive(item, symbol_table))
+        elif hasattr(node, '__dict__'):  # 다른 속성들도 확인 (javalang AST 구조에 따라)
             for attr_value in node.__dict__.values():
                 if isinstance(attr_value, (javalang.tree.Node, list)):
-                    invocations.extend(self._find_method_invocations_recursive(attr_value, fields))
+                    invocations.extend(self._find_method_invocations_recursive(attr_value, symbol_table))
 
         return invocations
     
@@ -812,28 +908,139 @@ class JavaParser:
                     methods.append(constructor_obj)
                     edges.extend(constructor_edges)
             
+            def _extract_class_from_tree_sitter(self, class_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+        """
+        Tree-sitter 노드에서 클래스 정보 추출
+        """
+        try:
+            # 클래스 이름 추출
+            name_node = None
+            for child in class_node.children:
+                if child.type == 'identifier':
+                    name_node = child
+                    break
+
+            if not name_node:
+                return None, [], []
+
+            class_name = self._get_node_text(name_node, lines)
+
+            # 위치 정보
+            start_line = class_node.start_point[0] + 1  # 0-based to 1-based
+            end_line = class_node.end_point[0] + 1
+
+            # 클래스 객체 생성
+            class_obj = Class(
+                file_id=None,
+                fqn=f"{package_name}.{class_name}" if package_name else class_name,
+                name=class_name,
+                start_line=start_line,
+                end_line=end_line,
+                modifiers=json.dumps(self._extract_modifiers(class_node, lines)),
+                annotations=json.dumps(self._extract_annotations_ts(class_node, lines))
+            )
+
+            methods = []
+            edges = []
+
+            # 메서드 추출
+            method_nodes = self._find_nodes_by_type(class_node, 'method_declaration')
+            for method_node in method_nodes:
+                method_obj, method_edges = self._extract_method_from_tree_sitter(
+                    method_node, class_obj, lines
+                )
+                if method_obj:
+                    methods.append(method_obj)
+                    edges.extend(method_edges)
+
+            # 생성자 추출
+            constructor_nodes = self._find_nodes_by_type(class_node, 'constructor_declaration')
+            for constructor_node in constructor_nodes:
+                constructor_obj, constructor_edges = self._extract_constructor_from_tree_sitter(
+                    constructor_node, class_obj, lines
+                )
+                if constructor_obj:
+                    methods.append(constructor_obj)
+                    edges.extend(constructor_edges)
+
+            # 상속/구현 관계 추출
+            kind = class_node.type
+            if kind == 'class_declaration':
+                superclass_nodes = [c for c in class_node.children if c.type == 'superclass']
+                if superclass_nodes:
+                    ids = self._find_nodes_by_type(superclass_nodes[0], 'type_identifier') or \
+                          self._find_nodes_by_type(superclass_nodes[0], 'identifier')
+                    if ids:
+                        target = self._get_node_text(ids[0], lines)
+                        edge = Edge(
+                            src_type='class',
+                            src_id=None,
+                            dst_type='class',
+                            dst_id=None,
+                            edge_kind='extends',
+                            confidence=0.9,
+                            meta=json.dumps({'target': target})
+                        )
+                        setattr(edge, 'src_class_fqn', class_obj.fqn)
+                        edges.append(edge)
+                super_interfaces = [c for c in class_node.children if c.type == 'super_interfaces']
+                for sinode in super_interfaces:
+                    ids = self._find_nodes_by_type(sinode, 'type_identifier') or \
+                          self._find_nodes_by_type(sinode, 'identifier')
+                    for id_node in ids:
+                        target = self._get_node_text(id_node, lines)
+                        edge = Edge(
+                            src_type='class',
+                            src_id=None,
+                            dst_type='interface',
+                            dst_id=None,
+                            edge_kind='implements',
+                            confidence=0.9,
+                            meta=json.dumps({'target': target})
+                        )
+                        setattr(edge, 'src_class_fqn', class_obj.fqn)
+                        edges.append(edge)
+            elif kind == 'interface_declaration':
+                extends_nodes = [c for c in class_node.children if c.type == 'extends_interfaces']
+                for enode in extends_nodes:
+                    ids = self._find_nodes_by_type(enode, 'type_identifier') or \
+                          self._find_nodes_by_type(enode, 'identifier')
+                    for id_node in ids:
+                        target = self._get_node_text(id_node, lines)
+                        edge = Edge(
+                            src_type='interface',
+                            src_id=None,
+                            dst_type='interface',
+                            dst_id=None,
+                            edge_kind='extends',
+                            confidence=0.9,
+                            meta=json.dumps({'target': target})
+                        )
+                        setattr(edge, 'src_class_fqn', class_obj.fqn)
+                        edges.append(edge)
+
             return class_obj, methods, edges
-            
+
         except Exception as e:
             if self.logger:
                 self.logger.error("Tree-sitter 클래스 추출 오류", exception=e)
             else:
                 print(f"Tree-sitter 클래스 추출 오류: {e}")
             return None, [], []
-            
-    def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+
+    def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
         """
         Tree-sitter 노드에서 인터페이스 정보 추출
         """
         # 인터페이스도 클래스와 비슷한 방식으로 처리
-        return self._extract_class_from_tree_sitter(interface_node, file_obj, lines)
-        
-    def _extract_enum_from_tree_sitter(self, enum_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+        return self._extract_class_from_tree_sitter(interface_node, file_obj, lines, package_name)
+
+    def _extract_enum_from_tree_sitter(self, enum_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
         """
         Tree-sitter 노드에서 열거형 정보 추출
         """
         # 열거형도 클래스와 비슷한 방식으로 처리
-        return self._extract_class_from_tree_sitter(enum_node, file_obj, lines)
+        return self._extract_class_from_tree_sitter(enum_node, file_obj, lines, package_name)
         
     def _extract_method_from_tree_sitter(self, method_node, class_obj: Class, lines: List[str]) -> Tuple[Optional[Method], List[Edge]]:
         """

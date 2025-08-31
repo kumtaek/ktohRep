@@ -1,0 +1,509 @@
+1단계 메타데이터에 대한 클래스 관계 추출
+8월 31일
+금택/ktohRep
+주인
++143
+-16
+
+아카이브에 보관
+
+공유하기
+
+PR 만들기
+
+
+1. `phase1` 메타정보 생성 시 모든 클래스의 `extends`/`implements` 관계를 추출한다.
+2. 인터페이스나 추상 메서드 호출 시, 하위 구현 클래스의 동일 시그니처 메서드를 찾도록 호출 해석 로직을 확장한다.
+3. 분석 결과를 기존 메타정보(예: 호출 관계 테이블)에 추가한다.
+
+복사
+요약
+인터페이스 상속 및 Tree‑sitter 추출을 포함하여 각 에지에 대상 유형을 저장하여 레코드 extends및 관계에 대한 확장된 Java 구문 분석implements
+
+저장 중에 프로젝트 메타데이터와 확인된 클래스 참조를 사용하여 이러한 상속 에지를 유지하는 동시에 확인되지 않은 대상도 수용했습니다.
+
+호출이 인터페이스나 추상 유형을 타겟으로 할 때 구현 클래스를 검색하여 메서드 가장자리가 구체적 구현에 연결되도록 하는 향상된 호출 확인 기능
+
+diff --git a/phase1/database/metadata_engine.py b/phase1/database/metadata_engine.py
+index 6d8c6803d16422f1f3a11248d83297653a16e814..52809ec0358814e0c5f750121cdc38b5856af77d 100644
+--- a/phase1/database/metadata_engine.py
++++ b/phase1/database/metadata_engine.py
+@@ -346,79 +346,98 @@ class MetadataEngine:
+             saved_counts = {'files': 1, 'classes': 0, 'methods': 0, 'edges': 0}
+             
+             # 클래스 저장 및 FQN 매핑
+             fqn_to_class_id = {}
+             for class_obj in classes:
+                 class_obj.file_id = file_obj.file_id
+                 session.add(class_obj)
+                 session.flush()
+                 try:
+                     if class_obj.fqn:
+                         fqn_to_class_id[class_obj.fqn] = class_obj.class_id
+                 except Exception:
+                     pass
+                 
+                 # 해당 클래스의 메서드들 저장
+                 class_methods = [m for m in methods if getattr(m, 'owner_fqn', None) == class_obj.fqn]
+                 for method_obj in class_methods:
+                     method_obj.class_id = class_obj.class_id
+                     session.add(method_obj)
+                     session.flush()
+                     
+                 saved_counts['classes'] += 1
+                 
+             saved_counts['methods'] = len(methods)
+ 
+-            # 모든 메서드가 저장된 후, 엣지의 src_id를 채웁니다.
++            # 모든 메서드가 저장된 후, 엣지의 src_id 및 project_id를 채웁니다.
+             # 이전에 생성된 모든 메서드 객체에 대해 method_id를 가져와 매핑합니다.
+             method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
+             for edge in edges:
++                # project_id 설정
++                edge.project_id = file_obj.project_id
++
+                 if edge.src_type == 'method' and edge.src_id is None:
+                     # Edge의 meta 필드에서 src_method_fqn을 가져와 매핑합니다.
+                     src_method_fqn = None
+                     try:
+                         if getattr(edge, 'meta', None):
+                             md = json.loads(edge.meta)
+                             src_method_fqn = md.get('src_method_fqn')
+                     except Exception:
+                         # meta 필드가 없거나 파싱 오류 시, 대체 속성 확인
+                         src_method_fqn = getattr(edge, 'src_method_fqn', None)
+-                    
++
+                     if src_method_fqn and src_method_fqn in method_id_map:
+                         edge.src_id = method_id_map[src_method_fqn]
+-                    # else:
+-                    #     self.logger.warning(f"엣지 src_id를 해결할 수 없음: {getattr(edge, 'meta', 'N/A')}")
+ 
+-            # 의존성 엣지 저장: call 엣지는 dst 미해결 상태도 저장
++                elif edge.src_type == 'class' and edge.src_id is None:
++                    src_fqn = getattr(edge, 'src_class_fqn', None)
++                    if src_fqn and src_fqn in fqn_to_class_id:
++                        edge.src_id = fqn_to_class_id[src_fqn]
++
++                # 가능하다면 dst_id도 해결
++                if edge.edge_kind in ('extends', 'implements') and edge.dst_id is None:
++                    target = None
++                    try:
++                        if getattr(edge, 'meta', None):
++                            md = json.loads(edge.meta)
++                            target = md.get('target')
++                    except Exception:
++                        target = None
++                    if target and target in fqn_to_class_id:
++                        edge.dst_id = fqn_to_class_id[target]
++
++            # 의존성 엣지 저장: call/extends/implements 엣지는 dst 미해결 상태도 저장
+             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
+             count_edges = 0
+             for edge in edges:
+-                if edge.edge_kind == 'call':
+-                    session.add(edge)
+-                    count_edges += 1
++                if edge.edge_kind in ('call', 'extends', 'implements'):
++                    if edge.src_id is not None:
++                        session.add(edge)
++                        count_edges += 1
+                 else:
+-                    if (edge.src_id is not None and edge.dst_id is not None 
++                    if (edge.src_id is not None and edge.dst_id is not None
+                         and edge.src_id != 0 and edge.dst_id != 0
+                         and edge.confidence >= confidence_threshold):
+                         session.add(edge)
+                         count_edges += 1
+             saved_counts['edges'] += count_edges
+             self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 저장 엣지: {count_edges}")
+                 
+             session.commit()
+             return saved_counts
+ 
+     def _augment_java_from_json(self, file_id: int, data: Dict[str, Any]) -> Dict[str, int]:
+         added = {"classes": 0, "methods": 0}
+         if not isinstance(data, dict):
+             return added
+         classes = data.get("classes")
+         if not isinstance(classes, list):
+             return added
+         with self._get_sync_session() as session:
+             existing_classes = session.query(Class).filter(Class.file_id == file_id).all()
+             class_key_to_row = {}
+             for c in existing_classes:
+                 key = (c.fqn or c.name or "").strip()
+                 class_key_to_row[key] = c
+             for c in classes:
+                 if not isinstance(c, dict):
+diff --git a/phase1/database/metadata_engine.py b/phase1/database/metadata_engine.py
+index 6d8c6803d16422f1f3a11248d83297653a16e814..52809ec0358814e0c5f750121cdc38b5856af77d 100644
+--- a/phase1/database/metadata_engine.py
++++ b/phase1/database/metadata_engine.py
+@@ -738,50 +757,71 @@ class MetadataEngine:
+                         # 동일 클래스 우선 후보
+                         if src_method.class_ and src_method.class_.fqn:
+                             candidate_fqns.append(f"{src_method.class_.fqn}.{called_method_name}")
+ 
+                         # called_name 자체가 FQN일 경우
+                         if '.' in called_method_name:
+                             candidate_fqns.append(called_method_name)
+ 
+                         # qualifier 기반 후보 생성
+                         if qualifier:
+                             if '.' in qualifier:
+                                 candidate_fqns.append(f"{qualifier}.{called_method_name}")
+                             else:
+                                 # 동일 패키지 내 단일 클래스명
+                                 if src_method_fqn:
+                                     src_package = ".".join(src_method_fqn.split('.')[:-1])
+                                     if src_package:
+                                         candidate_fqns.append(f"{src_package}.{qualifier}.{called_method_name}")
+                                 # DB에서 동일 클래스명 검색
+                                 classes = session.query(Class).join(File).filter(
+                                     and_(File.project_id == project_id, Class.name == qualifier)
+                                 ).all()
+                                 for cls in classes:
+                                     candidate_fqns.append(f"{cls.fqn}.{called_method_name}")
+ 
++                        # 인터페이스/추상 클래스 구현체 탐색
++                        if qualifier:
++                            impl_edges = session.query(Edge).filter(
++                                and_(
++                                    Edge.project_id == project_id,
++                                    Edge.edge_kind.in_(['implements', 'extends'])
++                                )
++                            ).all()
++                            for ie in impl_edges:
++                                try:
++                                    md_ie = _json.loads(ie.meta) if ie.meta else {}
++                                except Exception:
++                                    md_ie = {}
++                                target = md_ie.get('target')
++                                if target == qualifier or (target and target.endswith(f".{qualifier}")):
++                                    impl_class = session.query(Class).filter(
++                                        Class.class_id == ie.src_id
++                                    ).first()
++                                    if impl_class:
++                                        candidate_fqns.append(f"{impl_class.fqn}.{called_method_name}")
++
+                         # 중복 제거
+                         seen = set()
+                         unique_candidates = []
+                         for fqn in candidate_fqns:
+                             if fqn not in seen:
+                                 unique_candidates.append(fqn)
+                                 seen.add(fqn)
+ 
+                         target_method = None
+                         for fqn in unique_candidates:
+                             if '.' not in fqn:
+                                 continue
+                             cls_fqn, m_name = fqn.rsplit('.', 1)
+                             target_method = session.query(Method).join(Class).join(File).filter(
+                                 and_(
+                                     Method.name == m_name,
+                                     Class.fqn == cls_fqn,
+                                     File.project_id == project_id,
+                                 )
+                             ).first()
+                             if target_method:
+                                 break
+ 
+                         # 기존 전역 검색 (패키지/임포트 기반) 보조
+                         if not target_method:
+
+
+
+diff --git a/phase1/parsers/java_parser.py b/phase1/parsers/java_parser.py
+index 419b23f9d10a5e1f4ac7aa9f4ad4383630b32f1b..62ae306463a4f244bc5019d61bceb059bcfff49d 100644
+--- a/phase1/parsers/java_parser.py
++++ b/phase1/parsers/java_parser.py
+@@ -226,117 +226,148 @@ class JavaParser:
+         edges = []
+         
+         # Extract fields to resolve method calls later
+         fields = {}
+         if hasattr(node, 'body') and node.body:
+             for member in node.body:
+                 if isinstance(member, javalang.tree.FieldDeclaration):
+                     field_type = self._get_type_string(member.type)
+                     for declarator in member.declarators:
+                         fields[declarator.name] = field_type
+ 
+         # Extract methods
+         if hasattr(node, 'body') and node.body:
+             for member in node.body:
+                 if isinstance(member, javalang.tree.MethodDeclaration):
+                     method_obj, method_edges = self._extract_method(member, class_obj, fields)
+                     methods.append(method_obj)
+                     edges.extend(method_edges)
+                 elif isinstance(member, javalang.tree.ConstructorDeclaration):
+                     constructor_obj, constructor_edges = self._extract_constructor(member, class_obj)
+                     methods.append(constructor_obj)
+                     edges.extend(constructor_edges)
+                     
+         # Extract inheritance relationships
+         if node.extends:
++            target = self._get_type_string(node.extends)
+             inheritance_edge = Edge(
+                 src_type='class',
+                 src_id=None,  # Will be set after class is saved
+                 dst_type='class',
+                 dst_id=None,  # Need to resolve later
+                 edge_kind='extends',
+                 confidence=0.9
+             )
++            setattr(inheritance_edge, 'src_class_fqn', fqn)
++            try:
++                setattr(inheritance_edge, 'meta', json.dumps({'target': target}))
++            except Exception:
++                pass
+             edges.append(inheritance_edge)
+-            
+-        # Extract interface implementations  
++
++        # Extract interface implementations
+         if node.implements:
+             for interface in node.implements:
++                target = self._get_type_string(interface)
+                 implementation_edge = Edge(
+                     src_type='class',
+                     src_id=None,
+                     dst_type='interface',
+                     dst_id=None,  # Need to resolve later
+                     edge_kind='implements',
+                     confidence=0.9
+                 )
++                setattr(implementation_edge, 'src_class_fqn', fqn)
++                try:
++                    setattr(implementation_edge, 'meta', json.dumps({'target': target}))
++                except Exception:
++                    pass
+                 edges.append(implementation_edge)
+                 
+         return class_obj, methods, edges
+         
+     def _extract_interface(self, node: javalang.tree.InterfaceDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
+         """
+         인터페이스 정보와 메서드들을 추출
+         
+         Args:
+             node: 인터페이스 선언 AST 노드
+             file_obj: 파일 객체
+             path: AST 경로
+             
+         Returns:
+             (Interface, Methods, Edges) 튜플
+         """
+         
+         package_name = self._get_package_name(path)
+         fqn = f"{package_name}.{node.name}" if package_name else node.name
+         
+         modifiers = [mod for mod in node.modifiers] if node.modifiers else []
+         annotations = self._extract_annotations(node.annotations)
+         
+         start_line, end_line = self._estimate_line_numbers(node, file_obj)
+         
+         interface_obj = Class(  # 인터페이스도 Class 테이블 사용
+             file_id=None,
+             fqn=fqn,
+             name=node.name,
+             start_line=start_line,
+             end_line=end_line,
+             modifiers=json.dumps(['interface'] + modifiers),
+             annotations=json.dumps(annotations)
+         )
+         
+         methods = []
+         edges = []
+-        
++
+         # 인터페이스 메서드 추출
+         if hasattr(node, 'body') and node.body:
+             for member in node.body:
+                 if isinstance(member, javalang.tree.MethodDeclaration):
+                     method_obj, method_edges = self._extract_method(member, interface_obj, {})  # Pass empty dict for fields
+                     methods.append(method_obj)
+                     edges.extend(method_edges)
+-                    
++
++        # 인터페이스 상속 관계 추출
++        if node.extends:
++            for parent in node.extends:
++                target = self._get_type_string(parent)
++                extends_edge = Edge(
++                    src_type='interface',
++                    src_id=None,
++                    dst_type='interface',
++                    dst_id=None,
++                    edge_kind='extends',
++                    confidence=0.9,
++                )
++                setattr(extends_edge, 'src_class_fqn', fqn)
++                try:
++                    setattr(extends_edge, 'meta', json.dumps({'target': target}))
++                except Exception:
++                    pass
++                edges.append(extends_edge)
++
+         return interface_obj, methods, edges
+         
+     def _extract_enum(self, node: javalang.tree.EnumDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
+         """
+         열거형(enum) 정보와 메서드들을 추출
+         
+         Args:
+             node: 열거형 선언 AST 노드
+             file_obj: 파일 객체
+             path: AST 경로
+             
+         Returns:
+             (Enum, Methods, Edges) 튜플
+         """
+         
+         package_name = self._get_package_name(path)
+         fqn = f"{package_name}.{node.name}" if package_name else node.name
+         
+         modifiers = [mod for mod in node.modifiers] if node.modifiers else []
+         annotations = self._extract_annotations(node.annotations)
+         
+         start_line, end_line = self._estimate_line_numbers(node, file_obj)
+         
+         enum_obj = Class(  # 열거형도 Class 테이블 사용
+             file_id=None,
+diff --git a/phase1/parsers/java_parser.py b/phase1/parsers/java_parser.py
+index 419b23f9d10a5e1f4ac7aa9f4ad4383630b32f1b..62ae306463a4f244bc5019d61bceb059bcfff49d 100644
+--- a/phase1/parsers/java_parser.py
++++ b/phase1/parsers/java_parser.py
+@@ -769,71 +800,127 @@ class JavaParser:
+                     name_node = child
+                     break
+                     
+             if not name_node:
+                 return None, [], []
+                 
+             class_name = self._get_node_text(name_node, lines)
+             
+             # 위치 정보
+             start_line = class_node.start_point[0] + 1  # 0-based to 1-based
+             end_line = class_node.end_point[0] + 1
+             
+             # 클래스 객체 생성
+             class_obj = Class(
+                 file_id=None,
+                 fqn=f"{package_name}.{class_name}" if package_name else class_name,
+                 name=class_name,
+                 start_line=start_line,
+                 end_line=end_line,
+                 modifiers=json.dumps(self._extract_modifiers(class_node, lines)),
+                 annotations=json.dumps(self._extract_annotations_ts(class_node, lines))
+             )
+             
+             methods = []
+             edges = []
+-            
++
+             # 메서드 추출
+             method_nodes = self._find_nodes_by_type(class_node, 'method_declaration')
+             for method_node in method_nodes:
+                 method_obj, method_edges = self._extract_method_from_tree_sitter(
+                     method_node, class_obj, lines
+                 )
+                 if method_obj:
+                     methods.append(method_obj)
+                     edges.extend(method_edges)
+-                    
++
+             # 생성자 추출
+             constructor_nodes = self._find_nodes_by_type(class_node, 'constructor_declaration')
+             for constructor_node in constructor_nodes:
+                 constructor_obj, constructor_edges = self._extract_constructor_from_tree_sitter(
+                     constructor_node, class_obj, lines
+                 )
+                 if constructor_obj:
+                     methods.append(constructor_obj)
+                     edges.extend(constructor_edges)
+-            
++
++            # 상속/구현 관계 추출
++            kind = class_node.type
++            if kind == 'class_declaration':
++                superclass_nodes = [c for c in class_node.children if c.type == 'superclass']
++                if superclass_nodes:
++                    ids = self._find_nodes_by_type(superclass_nodes[0], 'type_identifier') or \
++                          self._find_nodes_by_type(superclass_nodes[0], 'identifier')
++                    if ids:
++                        target = self._get_node_text(ids[0], lines)
++                        edge = Edge(
++                            src_type='class',
++                            src_id=None,
++                            dst_type='class',
++                            dst_id=None,
++                            edge_kind='extends',
++                            confidence=0.9,
++                            meta=json.dumps({'target': target})
++                        )
++                        setattr(edge, 'src_class_fqn', class_obj.fqn)
++                        edges.append(edge)
++                super_interfaces = [c for c in class_node.children if c.type == 'super_interfaces']
++                for sinode in super_interfaces:
++                    ids = self._find_nodes_by_type(sinode, 'type_identifier') or \
++                          self._find_nodes_by_type(sinode, 'identifier')
++                    for id_node in ids:
++                        target = self._get_node_text(id_node, lines)
++                        edge = Edge(
++                            src_type='class',
++                            src_id=None,
++                            dst_type='interface',
++                            dst_id=None,
++                            edge_kind='implements',
++                            confidence=0.9,
++                            meta=json.dumps({'target': target})
++                        )
++                        setattr(edge, 'src_class_fqn', class_obj.fqn)
++                        edges.append(edge)
++            elif kind == 'interface_declaration':
++                extends_nodes = [c for c in class_node.children if c.type == 'extends_interfaces']
++                for enode in extends_nodes:
++                    ids = self._find_nodes_by_type(enode, 'type_identifier') or \
++                          self._find_nodes_by_type(enode, 'identifier')
++                    for id_node in ids:
++                        target = self._get_node_text(id_node, lines)
++                        edge = Edge(
++                            src_type='interface',
++                            src_id=None,
++                            dst_type='interface',
++                            dst_id=None,
++                            edge_kind='extends',
++                            confidence=0.9,
++                            meta=json.dumps({'target': target})
++                        )
++                        setattr(edge, 'src_class_fqn', class_obj.fqn)
++                        edges.append(edge)
++
+             return class_obj, methods, edges
+             
+         except Exception as e:
+             if self.logger:
+                 self.logger.error("Tree-sitter 클래스 추출 오류", exception=e)
+             else:
+                 print(f"Tree-sitter 클래스 추출 오류: {e}")
+             return None, [], []
+             
+     def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+         """
+         Tree-sitter 노드에서 인터페이스 정보 추출
+         """
+         # 인터페이스도 클래스와 비슷한 방식으로 처리
+         return self._extract_class_from_tree_sitter(interface_node, file_obj, lines)
+         
+     def _extract_enum_from_tree_sitter(self, enum_node, file_obj: File, lines: List[str]) -> Tuple[Optional[Class], List[Method], List[Edge]]:
+         """
+         Tree-sitter 노드에서 열거형 정보 추출
+         """
+         # 열거형도 클래스와 비슷한 방식으로 처리
+         return self._extract_class_from_tree_sitter(enum_node, file_obj, lines)
+         
+     def _extract_method_from_tree_sitter(self, method_node, class_obj: Class, lines: List[str]) -> Tuple[Optional[Method], List[Edge]]:
+         """

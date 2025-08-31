@@ -107,6 +107,9 @@ class SourceAnalyzer:
             parsers['jsp_mybatis'] = JspMybatisParser(self.config)
         if self.config.get('parsers', {}).get('sql', {}).get('enabled', True):
             parsers['sql'] = SqlParser(self.config)
+        if self.config.get('parsers', {}).get('jar', {}).get('enabled', True):
+            from phase1.parsers.jar_parser import JarParser
+            parsers['jar'] = JarParser(self.config)
         if not parsers:
             raise ValueError("사용 가능한 파서가 없습니다. 설정을 확인하세요.")
         return parsers
@@ -118,12 +121,15 @@ class SourceAnalyzer:
         project_id = await self.metadata_engine.create_project(project_root, project_name)
         await self._load_db_schema(project_root, project_name, project_id)
         source_files = self._collect_source_files(project_root)
+        jar_files = self._collect_dependency_jars(Path(project_root).parent)
         if incremental:
             source_files = await self._filter_changed_files(source_files, project_id)
         if not source_files:
             self.logger.warning("분석할 소스 파일이 없습니다.")
             return
         await self._analyze_files(source_files, project_id)
+        if jar_files:
+            await self._analyze_jars(jar_files, project_id)
         await self.metadata_engine.build_dependency_graph(project_id)
         self.logger.info(f"프로젝트 분석 완료: {project_name}")
 
@@ -173,6 +179,56 @@ class SourceAnalyzer:
     async def _filter_changed_files(self, source_files: List[str], project_id: int) -> List[str]:
         # ... (Implementation from previous version) ...
         return source_files # Placeholder
+
+    def _collect_dependency_jars(self, project_base: Path) -> List[str]:
+        """프로젝트의 의존 JAR 파일을 수집"""
+        jar_files: List[str] = []
+        exclude_patterns = self.config.get('file_patterns', {}).get('exclude', ["**/target/**", "**/build/**"])
+        for jar_path in project_base.rglob('*.jar'):
+            str_path = str(jar_path)
+            should_exclude = False
+            for pattern in exclude_patterns:
+                if fnmatch.fnmatch(str_path, pattern) or pattern.replace("**/", "") in str_path:
+                    should_exclude = True
+                    break
+            if not should_exclude:
+                jar_files.append(str_path)
+        self.logger.info(f"발견된 JAR 파일: {len(jar_files)}개")
+        return jar_files
+
+    async def _analyze_jars(self, jar_files: List[str], project_id: int):
+        parser = self.parsers.get('jar')
+        if not parser:
+            return
+        for jar_path in jar_files:
+            try:
+                file_obj, classes, methods, _ = parser.parse_file(jar_path, project_id)
+                session = self.db_manager.get_session()
+                try:
+                    session.add(file_obj)
+                    session.flush()
+                    file_id = file_obj.file_id
+                    class_id_map = {}
+                    for cls in classes:
+                        cls.file_id = file_id
+                        session.add(cls)
+                        session.flush()
+                        class_id_map[cls.fqn] = cls.class_id
+                    for m in methods:
+                        m.file_id = file_id
+                        if hasattr(m, 'owner_fqn') and m.owner_fqn in class_id_map:
+                            m.class_id = class_id_map[m.owner_fqn]
+                        session.add(m)
+                        session.flush()
+                    session.commit()
+                    self.logger.debug(f"저장 완료: JAR {jar_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개")
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"JAR 저장 오류 {jar_path}: {e}")
+                finally:
+                    session.close()
+            except Exception as e:
+                self.logger.error(f"JAR 분석 실패 {jar_path}: {e}")
 
     async def _analyze_files(self, source_files: List[str], project_id: int):
         """파일 분석 실행"""

@@ -443,21 +443,30 @@ class VizDB:
         finally:
             session.close()
 
-    def get_files_with_methods(self, project_id: int, limit: int = 20) -> List[Dict[str, str]]:
-        """Get a list of files and their methods, suitable for sequence diagrams."""
+    def get_files_with_methods(self, project_id: int, limit: int | None = 20) -> List[Dict[str, str]]:
+        """Get a list of files and their methods for potential sequence diagram start points.
+
+        Args:
+            project_id: Target project identifier.
+            limit: Optional maximum number of file/method pairs to return. ``None`` means no limit.
+
+        Returns:
+            List of dictionaries containing ``file_path`` and ``method_name``.
+        """
         session = self.session()
         try:
-            # Query for files and methods, ensuring distinct file-method pairs
-            # Order by file path and then method name for consistent sampling
-            file_methods = (session.query(File.path, Method.name)
-                            .distinct(File.path, Method.name)
-                            .join(Class, File.file_id == Class.file_id)
-                            .join(Method, Class.class_id == Method.class_id)
-                            .filter(File.project_id == project_id)
-                            .order_by(File.path, Method.name)
-                            .limit(limit)
-                            .all())
-            
+            # Query for files and methods, ensuring distinct file-method pairs.
+            query = (session.query(File.path, Method.name)
+                     .distinct(File.path, Method.name)
+                     .join(Class, File.file_id == Class.file_id)
+                     .join(Method, Class.class_id == Method.class_id)
+                     .filter(File.project_id == project_id)
+                     .order_by(File.path, Method.name))
+
+            if limit is not None:
+                query = query.limit(limit)
+
+            file_methods = query.all()
             return [{'file_path': fm.path, 'method_name': fm.name} for fm in file_methods]
         finally:
             session.close()

@@ -132,10 +132,18 @@ def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, 
     
     # Build adjacency map
     adjacency = defaultdict(list)
-    
+    unknown_counter = 0
+
     for edge in edges:
         src_id = f"{edge.src_type}:{edge.src_id}"
-        dst_id = f"{edge.dst_type}:{edge.dst_id}" if edge.dst_id else None
+        if edge.dst_id:
+            dst_id = f"{edge.dst_type}:{edge.dst_id}"
+        elif edge.edge_kind == 'call_unresolved':
+            dst_id = f"unknown:{unknown_counter}"
+            unknown_counter += 1
+        else:
+            dst_id = None
+
         if dst_id:
             adjacency[src_id].append({
                 'target': dst_id,

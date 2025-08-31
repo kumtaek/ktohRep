@@ -97,7 +97,7 @@ class MetadataEnhancementEngine:
                     edge = Edge(
                         src_type='method',
                         src_id=hint.src_id,
-                        dst_type='method', 
+                        dst_type='method',
                         dst_id=target_method.method_id,
                         edge_kind='call',
                         confidence=confidence
@@ -106,7 +106,7 @@ class MetadataEnhancementEngine:
                     edges_created += 1
                     resolved_count += 1
                     
-                    logger.debug(f"Resolved method call: {src_method.name} -> {target_method.name}")
+                                        logger.debug(f"Resolved method call: {src_method.name} -> {target_method.name}")
                 else:
                     # Create unresolved edge with lower confidence
                     edge = Edge(
@@ -119,7 +119,20 @@ class MetadataEnhancementEngine:
                     )
                     self.session.add(edge)
                     edges_created += 1
-                
+
+                    # Log unresolved call location and signature for future analysis
+                    try:
+                        file_path = src_method.class_.file.path if src_method.class_ and src_method.class_.file else 'unknown'
+                        caller_fqn = src_method.class_.fqn if src_method.class_ and src_method.class_.fqn else ''
+                        caller_sig = f"{caller_fqn}.{src_method.name}()" if caller_fqn else f"{src_method.name}()"
+                        called_sig = f"{called_name}({arg_count})"
+                        location_info = f"{file_path}:{line_number}" if line_number is not None else file_path
+                        logger.warning(
+                            f"Unresolved method call at {location_info} - {caller_sig} -> {called_sig}"
+                        )
+                    except Exception as log_exc:
+                        logger.debug(f"Failed to log unresolved call: {log_exc}")
+
                 # Remove processed hint
                 self.session.delete(hint)
                 

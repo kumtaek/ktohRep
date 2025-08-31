@@ -368,10 +368,13 @@ class MetadataEngine:
                 
             saved_counts['methods'] = len(methods)
 
-            # 모든 메서드가 저장된 후, 엣지의 src_id를 채웁니다.
+            # 모든 메서드가 저장된 후, 엣지의 src_id 및 project_id를 채웁니다.
             # 이전에 생성된 모든 메서드 객체에 대해 method_id를 가져와 매핑합니다.
             method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
             for edge in edges:
+                # project_id 설정
+                edge.project_id = file_obj.project_id
+
                 if edge.src_type == 'method' and edge.src_id is None:
                     # Edge의 meta 필드에서 src_method_fqn을 가져와 매핑합니다.
                     src_method_fqn = None
@@ -382,21 +385,37 @@ class MetadataEngine:
                     except Exception:
                         # meta 필드가 없거나 파싱 오류 시, 대체 속성 확인
                         src_method_fqn = getattr(edge, 'src_method_fqn', None)
-                    
+
                     if src_method_fqn and src_method_fqn in method_id_map:
                         edge.src_id = method_id_map[src_method_fqn]
-                    # else:
-                    #     self.logger.warning(f"엣지 src_id를 해결할 수 없음: {getattr(edge, 'meta', 'N/A')}")
 
-            # 의존성 엣지 저장: call 엣지는 dst 미해결 상태도 저장
+                elif edge.src_type == 'class' and edge.src_id is None:
+                    src_fqn = getattr(edge, 'src_class_fqn', None)
+                    if src_fqn and src_fqn in fqn_to_class_id:
+                        edge.src_id = fqn_to_class_id[src_fqn]
+
+                # 가능하다면 dst_id도 해결
+                if edge.edge_kind in ('extends', 'implements') and edge.dst_id is None:
+                    target = None
+                    try:
+                        if getattr(edge, 'meta', None):
+                            md = json.loads(edge.meta)
+                            target = md.get('target')
+                    except Exception:
+                        target = None
+                    if target and target in fqn_to_class_id:
+                        edge.dst_id = fqn_to_class_id[target]
+
+            # 의존성 엣지 저장: call/extends/implements 엣지는 dst 미해결 상태도 저장
             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             count_edges = 0
             for edge in edges:
-                if edge.edge_kind == 'call':
-                    session.add(edge)
-                    count_edges += 1
+                if edge.edge_kind in ('call', 'extends', 'implements'):
+                    if edge.src_id is not None:
+                        session.add(edge)
+                        count_edges += 1
                 else:
-                    if (edge.src_id is not None and edge.dst_id is not None 
+                    if (edge.src_id is not None and edge.dst_id is not None
                         and edge.src_id != 0 and edge.dst_id != 0
                         and edge.confidence >= confidence_threshold):
                         session.add(edge)
@@ -760,6 +779,27 @@ class MetadataEngine:
                                 for cls in classes:
                                     candidate_fqns.append(f"{cls.fqn}.{called_method_name}")
 
+                        # 인터페이스/추상 클래스 구현체 탐색
+                        if qualifier:
+                            impl_edges = session.query(Edge).filter(
+                                and_(
+                                    Edge.project_id == project_id,
+                                    Edge.edge_kind.in_(['implements', 'extends'])
+                                )
+                            ).all()
+                            for ie in impl_edges:
+                                try:
+                                    md_ie = _json.loads(ie.meta) if ie.meta else {}
+                                except Exception:
+                                    md_ie = {}
+                                target = md_ie.get('target')
+                                if target == qualifier or (target and target.endswith(f".{qualifier}")):
+                                    impl_class = session.query(Class).filter(
+                                        Class.class_id == ie.src_id
+                                    ).first()
+                                    if impl_class:
+                                        candidate_fqns.append(f"{impl_class.fqn}.{called_method_name}")
+
                         # 중복 제거
                         seen = set()
                         unique_candidates = []
@@ -780,8 +820,50 @@ class MetadataEngine:
                                     File.project_id == project_id,
                                 )
                             ).first()
-                            if target_method:
-                                break
+                        if target_method:
+                            break
++                        # 외부 라이브러리 메서드 검색
++                        external_method = session.query(Method).join(Class).join(File).filter(
++                            and_(
++                                Method.name == simple_called_name,
++                                File.project_id == project_id,
++                                File.language == 'jar'
++                            )
++                        ).first()
++                        if external_method:
++                            edge.dst_type = 'method'
++                            edge.dst_id = external_method.method_id
++                            edge.confidence = min(1.0, edge.confidence + 0.1)
++                            self.logger.debug(
++                                f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
++                            )
++                            continue
++                        else:
++                            # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
++                            edge.confidence = max(0.1, edge.confidence - 0.3)
++                            hint = {
++                                'called_name': called_method_name
++                            }
++                            if qualifier:
++                                hint['callee_qualifier_type'] = qualifier
++                            if unique_candidates:
++                                hint['candidates'] = unique_candidates
++                            session.add(EdgeHint(
++                                project_id=project_id,
++                                src_type='method',
++                                src_id=edge.src_id or 0,
++                                hint_type='method_call',
++                                hint=_json.dumps(hint, ensure_ascii=False),
++                                confidence=edge.confidence,
++                            ))
++                            self.logger.debug(
++                                f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
++                            )
++
++                    session.commit()
++                    self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
++
++                async def _resolve_table_usage(self, session, project_id: int):
 
                         # 기존 전역 검색 (패키지/임포트 기반) 보조
                         if not target_method:
@@ -815,6 +897,22 @@ class MetadataEngine:
 
                             self.logger.debug(f"메서드 호출 해결: {src_method.name} -> {target_method.name}")
                         else:
+                            # 외부 라이브러리 메서드 검색
+                            external_method = session.query(Method).join(Class).join(File).filter(
+                                and_(
+                                    Method.name == simple_called_name,
+                                    File.project_id == project_id,
+                                    File.language == 'jar'
+                                )
+                            ).first()
+                            if external_method:
+                                edge.dst_type = 'method'
+                                edge.dst_id = external_method.method_id
+                                edge.confidence = min(1.0, edge.confidence + 0.1)
+                                self.logger.debug(
+                                    f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
+                                )
+                                continue
                             # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
                             edge.confidence = max(0.1, edge.confidence - 0.3)
                             hint = {

@@ -36,6 +36,11 @@ def copy_static_files(output_dir: Path) -> None:
     shutil.copytree(static_source_dir, static_target_dir)
 
 
+def sanitize_filename(name: str) -> str:
+    """Sanitize strings to be safe for file names."""
+    return re.sub(r'[^A-Za-z0-9_.-]', '_', name)
+
+
 def setup_logging(args) -> logging.Logger:
     """Setup logging configuration based on command line arguments"""
     # Determine log level
@@ -276,26 +281,47 @@ def main():
                                                    args.min_score, args.max_nodes, args.cluster_method)
                 html = render_html('relatedness_view.html', data)
             elif cmd_name == 'sequence':
-                if args.cmd == 'all' and (not args.start_file or not args.start_method):
-                    logger.info("'all' 모드에서는 시퀀스 다이어그램을 생성하지 않습니다. --start-file과 --start-method 인자를 지정하여 수동으로 생성해주세요.")
-                    continue
-                elif not args.start_file or not args.start_method:
-                    logger.warning("시퀀스 다이어그램을 생성하려면 --start-file과 --start-method 인자가 반드시 필요합니다.")
-                    # Display 10 sample file_path - method_name combinations
-                    sample_methods = db.get_files_with_methods(project_id, limit=10)
-                    if sample_methods:
-                        logger.info("시작 파일과 메서드로 사용할 수 있는 샘플 목록 (최대 10개):")
-                        for item in sample_methods:
-                            print(f"  - {item['file_path']} - {item['method_name']}")
-                        logger.info("위 샘플 중 하나를 선택하여 --start-file과 --start-method 인자로 지정하여 다시 시도해주세요.")
-                    else:
+                if not args.start_file and not args.start_method:
+                    logger.info("시작 파일/메서드가 지정되지 않았습니다. 프로젝트 전체를 스캔하여 시퀀스 다이어그램을 생성합니다.")
+                    file_methods = db.get_files_with_methods(project_id, limit=None)
+                    if not file_methods:
                         logger.warning("메소드를 포함한 파일을 찾을 수 없습니다. 프로젝트 분석을 먼저 실행하세요.")
+                        continue
+
+                    project_name_for_path = getattr(args, 'project_name', 'default')
+                    visualize_dir = Path(f"./output/{project_name_for_path}/visualize")
+                    visualize_dir.mkdir(parents=True, exist_ok=True)
+                    copy_static_files(visualize_dir)
+
+                    for fm in file_methods:
+                        start_file = fm['file_path']
+                        start_method = fm['method_name']
+                        try:
+                            data = build_sequence_graph_json(config, project_id, args.project_name,
+                                                             start_file, start_method,
+                                                             args.depth, args.max_nodes)
+                            html = render_html('sequence_view.html', data)
+
+                            base = sanitize_filename(f"{Path(start_file).stem}_{start_method}")
+                            html_path = visualize_dir / f"{base}_sequence.html"
+                            with open(html_path, 'w', encoding='utf-8') as f:
+                                f.write(html)
+
+                            mermaid_path = visualize_dir / f"{base}_sequence.md"
+                            export_mermaid(data, str(mermaid_path), 'sequence', logger,
+                                           {'project_id': project_id})
+
+                            logger.info(f"시퀀스 다이어그램 저장: {html_path}")
+                        except Exception as e:
+                            logger.error(f"{start_file}:{start_method} 처리 실패: {e}")
                     continue
-                data = build_sequence_graph_json(config, project_id, args.project_name, args.start_file,
-                                           args.start_method, args.depth, args.max_nodes)
+
+                data = build_sequence_graph_json(config, project_id, args.project_name,
+                                                 args.start_file, args.start_method,
+                                                 args.depth, args.max_nodes)
                 if not data.get('edges'):
                     logger.warning("시퀀스 다이어그램 결과에 호출 엣지가 없습니다. 최소 참여자만 표시됩니다.")
-                html = render_html('graph_view.html', data)
+                html = render_html('sequence_view.html', data)
             
             if not data or not html:
                 logger.warning(f"'{cmd_name}'에 대한 데이터를 생성하지 못했습니다. 건너뜁니다.")

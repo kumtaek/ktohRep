@@ -1,0 +1,456 @@
+JAR 종속성 수집 및 서명 추출
+8월 31일
+금택/ktohRep
+주인
++194
+-2
+
+아카이브에 보관
+
+공유하기
+
+PR 만들기
+
+
+1. `project/<project_name>`의 의존 JAR 목록을 수집하고 각 JAR의 클래스/메서드 시그니처를 추출한다(예: ASM, javap).
+2. 추출된 라이브러리 메타정보를 `phase1` 결과와 동일한 스키마로 저장한다.
+3. `phase2` 호출 해석 단계에서 외부 메서드도 탐색하여 dst\_id를 결정한다.
+
+복사
+요약
+JarParserJAR 아카이브를 스캔하고, javap포함된 클래스에서 실행하고, 이후 그래프 확인을 위해 메서드 시그니처를 기록하는 전용 기능이 추가되었습니다.
+
+JAR 종속성을 발견하고 구문 분석하기 위해 기본 분석 워크플로를 확장하고 새 구문 분석기를 기존 구문 분석기 초기화 및 프로젝트 분석 파이프라인에 연결했습니다.
+
+해결되지 않은 메서드 호출을 해결할 때 저장된 라이브러리 메타데이터를 검색하여 호출 해결 기능이 향상되어 2단계에서 외부 메서드에 연결할 수 있습니다.
+
+
+diff --git a/phase1/database/metadata_engine.py b/phase1/database/metadata_engine.py
+index 6d8c6803d16422f1f3a11248d83297653a16e814..f039c7d1f640d997f8097fb866c3f1c14e260b02 100644
+--- a/phase1/database/metadata_engine.py
++++ b/phase1/database/metadata_engine.py
+@@ -758,85 +758,101 @@ class MetadataEngine:
+                                     and_(File.project_id == project_id, Class.name == qualifier)
+                                 ).all()
+                                 for cls in classes:
+                                     candidate_fqns.append(f"{cls.fqn}.{called_method_name}")
+ 
+                         # 중복 제거
+                         seen = set()
+                         unique_candidates = []
+                         for fqn in candidate_fqns:
+                             if fqn not in seen:
+                                 unique_candidates.append(fqn)
+                                 seen.add(fqn)
+ 
+                         target_method = None
+                         for fqn in unique_candidates:
+                             if '.' not in fqn:
+                                 continue
+                             cls_fqn, m_name = fqn.rsplit('.', 1)
+                             target_method = session.query(Method).join(Class).join(File).filter(
+                                 and_(
+                                     Method.name == m_name,
+                                     Class.fqn == cls_fqn,
+                                     File.project_id == project_id,
+                                 )
+                             ).first()
+-                            if target_method:
+-                                break
++                        if target_method:
++                            break
+ 
+                         # 기존 전역 검색 (패키지/임포트 기반) 보조
+                         if not target_method:
+                             target_class_name = None
+                             simple_called_name = called_method_name
+                             if '.' in called_method_name:
+                                 parts = called_method_name.rsplit('.', 1)
+                                 target_class_name = parts[0]
+                                 simple_called_name = parts[1]
+ 
+                             query = session.query(Method).join(Class).join(File).filter(
+                                 and_(
+                                     Method.name == simple_called_name,
+                                     File.project_id == project_id
+                                 )
+                             )
+ 
+                             if target_class_name:
+                                 query = query.filter(Class.fqn.like(f"%{target_class_name}"))
+                             elif src_method_fqn:
+                                 src_package = ".".join(src_method_fqn.split('.')[:-1])
+                                 if src_package:
+                                     query = query.filter(Class.fqn.like(f"{src_package}.%"))
+ 
+                             target_method = query.first()
+ 
+                         if target_method:
+                             edge.dst_type = 'method'
+                             edge.dst_id = target_method.method_id
+                             edge.confidence = min(1.0, edge.confidence + 0.2)  # 해결된 호출에 신뢰도 보너스
+ 
+                             self.logger.debug(f"메서드 호출 해결: {src_method.name} -> {target_method.name}")
+                         else:
++                            # 외부 라이브러리 메서드 검색
++                            external_method = session.query(Method).join(Class).join(File).filter(
++                                and_(
++                                    Method.name == simple_called_name,
++                                    File.project_id == project_id,
++                                    File.language == 'jar'
++                                )
++                            ).first()
++                            if external_method:
++                                edge.dst_type = 'method'
++                                edge.dst_id = external_method.method_id
++                                edge.confidence = min(1.0, edge.confidence + 0.1)
++                                self.logger.debug(
++                                    f"외부 메서드 호출 해결: {src_method.name} -> {external_method.name}"
++                                )
++                                continue
+                             # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
+                             edge.confidence = max(0.1, edge.confidence - 0.3)
+                             hint = {
+                                 'called_name': called_method_name
+                             }
+                             if qualifier:
+                                 hint['callee_qualifier_type'] = qualifier
+                             if unique_candidates:
+                                 hint['candidates'] = unique_candidates
+                             session.add(EdgeHint(
+                                 project_id=project_id,
+                                 src_type='method',
+                                 src_id=edge.src_id or 0,
+                                 hint_type='method_call',
+                                 hint=_json.dumps(hint, ensure_ascii=False),
+                                 confidence=edge.confidence,
+                             ))
+                             self.logger.debug(
+                                 f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
+                             )
+                     
+         session.commit()
+         self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
+                     
+     async def _resolve_table_usage(self, session, project_id: int):
+
+
+
+diff --git a/phase1/main.py b/phase1/main.py
+index 484fc98c4039e6137c65000a7c56251487e20c04..e7abd1da13a57bbb16a1a9abb67ab24a2653b06f 100644
+--- a/phase1/main.py
++++ b/phase1/main.py
+@@ -85,117 +85,173 @@ class SourceAnalyzer:
+             if self.project_name:
+                 config = self._substitute_project_name(config, self.project_name)
+             self._set_default_config(config)
+             return config
+         except Exception as e:
+             print(f"ERROR: 설정 파일 로드 및 병합 중 오류: {e}")
+             raise
+ 
+     def _set_default_config(self, config: Dict[str, Any]):
+         config.setdefault('processing', {}).setdefault('max_workers', 4)
+         config.setdefault('logging', {}).setdefault('level', 'INFO')
+ 
+     def _substitute_project_name(self, config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
+         config_str = json.dumps(config)
+         config_str = config_str.replace("{project_name}", project_name)
+         return json.loads(config_str)
+ 
+     def _initialize_parsers(self) -> Dict[str, Any]:
+         parsers = {}
+         if self.config.get('parsers', {}).get('java', {}).get('enabled', True):
+             parsers['java'] = JavaParser(self.config)
+         if self.config.get('parsers', {}).get('jsp', {}).get('enabled', True):
+             parsers['jsp_mybatis'] = JspMybatisParser(self.config)
+         if self.config.get('parsers', {}).get('sql', {}).get('enabled', True):
+             parsers['sql'] = SqlParser(self.config)
++        if self.config.get('parsers', {}).get('jar', {}).get('enabled', True):
++            from phase1.parsers.jar_parser import JarParser
++            parsers['jar'] = JarParser(self.config)
+         if not parsers:
+             raise ValueError("사용 가능한 파서가 없습니다. 설정을 확인하세요.")
+         return parsers
+ 
+     async def analyze_project(self, project_root: str, project_name: str = None, incremental: bool = False):
+         if not project_name:
+             project_name = os.path.basename(project_root.rstrip('/\\'))
+         self.logger.info(f"프로젝트 분석 시작: {project_name}")
+         project_id = await self.metadata_engine.create_project(project_root, project_name)
+         await self._load_db_schema(project_root, project_name, project_id)
+         source_files = self._collect_source_files(project_root)
++        jar_files = self._collect_dependency_jars(Path(project_root).parent)
+         if incremental:
+             source_files = await self._filter_changed_files(source_files, project_id)
+         if not source_files:
+             self.logger.warning("분석할 소스 파일이 없습니다.")
+             return
+         await self._analyze_files(source_files, project_id)
++        if jar_files:
++            await self._analyze_jars(jar_files, project_id)
+         await self.metadata_engine.build_dependency_graph(project_id)
+         self.logger.info(f"프로젝트 분석 완료: {project_name}")
+ 
+     async def _load_db_schema(self, project_root: str, project_name: str, project_id: int):
+         self.logger.info(f"DB 스키마 정보 로드 시작: {project_name}")
+         await self.csv_loader.load_project_db_schema(project_name, project_id)
+ 
+     def _collect_source_files(self, project_root: str) -> List[str]:
+         """소스 파일 수집"""
+         source_files = []
+         
+         # 설정에서 포함/제외 패턴 가져오기
+         include_patterns = self.config.get('file_patterns', {}).get('include', [
+             "**/*.java", "**/*.jsp", "**/*.xml", "**/*.properties"
+         ])
+         exclude_patterns = self.config.get('file_patterns', {}).get('exclude', [
+             "**/target/**", "**/build/**", "**/test/**", "**/.git/**"
+         ])
+         
+         self.logger.debug(f"파일 수집 중: {project_root}")
+         self.logger.debug(f"포함 패턴: {include_patterns}")
+         self.logger.debug(f"제외 패턴: {exclude_patterns}")
+         
+         # 프로젝트 루트에서 파일 검색
+         root_path = Path(project_root)
+         
+         for include_pattern in include_patterns:
+             for file_path in root_path.rglob(include_pattern.replace("**/", "")):
+                 if file_path.is_file():
+                     str_path = str(file_path)
+                     
+                     # 제외 패턴 확인
+                     should_exclude = False
+                     for exclude_pattern in exclude_patterns:
+                         if fnmatch.fnmatch(str_path, exclude_pattern) or exclude_pattern.replace("**/", "") in str_path:
+                             should_exclude = True
+                             break
+                     
+                     if not should_exclude:
+                         source_files.append(str_path)
+         
+         self.logger.debug(f"수집된 파일 수: {len(source_files)}")
+         self.logger.info(f"발견된 소스 파일: {len(source_files)}개")
+         
+         return source_files
+ 
+     async def _filter_changed_files(self, source_files: List[str], project_id: int) -> List[str]:
+         # ... (Implementation from previous version) ...
+         return source_files # Placeholder
+ 
++    def _collect_dependency_jars(self, project_base: Path) -> List[str]:
++        """프로젝트의 의존 JAR 파일을 수집"""
++        jar_files: List[str] = []
++        exclude_patterns = self.config.get('file_patterns', {}).get('exclude', ["**/target/**", "**/build/**"])
++        for jar_path in project_base.rglob('*.jar'):
++            str_path = str(jar_path)
++            should_exclude = False
++            for pattern in exclude_patterns:
++                if fnmatch.fnmatch(str_path, pattern) or pattern.replace("**/", "") in str_path:
++                    should_exclude = True
++                    break
++            if not should_exclude:
++                jar_files.append(str_path)
++        self.logger.info(f"발견된 JAR 파일: {len(jar_files)}개")
++        return jar_files
++
++    async def _analyze_jars(self, jar_files: List[str], project_id: int):
++        parser = self.parsers.get('jar')
++        if not parser:
++            return
++        for jar_path in jar_files:
++            try:
++                file_obj, classes, methods, _ = parser.parse_file(jar_path, project_id)
++                session = self.db_manager.get_session()
++                try:
++                    session.add(file_obj)
++                    session.flush()
++                    file_id = file_obj.file_id
++                    class_id_map = {}
++                    for cls in classes:
++                        cls.file_id = file_id
++                        session.add(cls)
++                        session.flush()
++                        class_id_map[cls.fqn] = cls.class_id
++                    for m in methods:
++                        m.file_id = file_id
++                        if hasattr(m, 'owner_fqn') and m.owner_fqn in class_id_map:
++                            m.class_id = class_id_map[m.owner_fqn]
++                        session.add(m)
++                        session.flush()
++                    session.commit()
++                    self.logger.debug(f"저장 완료: JAR {jar_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개")
++                except Exception as e:
++                    session.rollback()
++                    self.logger.error(f"JAR 저장 오류 {jar_path}: {e}")
++                finally:
++                    session.close()
++            except Exception as e:
++                self.logger.error(f"JAR 분석 실패 {jar_path}: {e}")
++
+     async def _analyze_files(self, source_files: List[str], project_id: int):
+         """파일 분석 실행"""
+         for file_path in source_files:
+             try:
+                 self.logger.debug(f"파일 분석 시작: {file_path}")
+                 
+                 # 파일 확장자에 따라 적절한 파서 선택
+                 file_ext = Path(file_path).suffix.lower()
+                 parser = None
+                 
+                 if file_ext == '.java':
+                     parser = self.parsers.get('java')
+                 elif file_ext == '.jsp':
+                     parser = self.parsers.get('jsp_mybatis')
+                 elif file_ext in ['.xml', '.sql']:
+                     if 'mybatis' in file_path.lower() or file_ext == '.xml':
+                         parser = self.parsers.get('jsp_mybatis')
+                     else:
+                         parser = self.parsers.get('sql')
+                 elif file_ext == '.properties':
+                     continue  # Properties 파일은 현재 분석하지 않음
+                 
+                 if parser:
+                     parse_result = parser.parse_file(file_path, project_id)
+                     if parse_result and len(parse_result) == 4:
+
+
+
+
+
+
+diff --git a//dev/null b/phase1/parsers/jar_parser.py
+index 0000000000000000000000000000000000000000..1bf3636af7ec05bb2f75839933fd5a4c00a27fa7 100644
+--- a//dev/null
++++ b/phase1/parsers/jar_parser.py
+@@ -0,0 +1,88 @@
++import hashlib
++import os
++import re
++import subprocess
++import zipfile
++from datetime import datetime
++from typing import Dict, List, Tuple, Any
++
++from models.database import File, Class, Method
++
++
++class JarParser:
++    """Parser to extract class and method signatures from JAR files."""
++
++    def __init__(self, config: Dict[str, Any]):
++        self.config = config
++        try:
++            from utils.logger import LoggerFactory
++            self.logger = LoggerFactory.get_parser_logger("jar")
++        except Exception:
++            self.logger = None
++
++    def can_parse(self, file_path: str) -> bool:
++        return file_path.endswith('.jar')
++
++    def parse_file(self, jar_path: str, project_id: int) -> Tuple[File, List[Class], List[Method], List]:
++        """Parse the JAR file and extract classes and method signatures."""
++        with open(jar_path, 'rb') as f:
++            jar_bytes = f.read()
++        file_hash = hashlib.sha256(jar_bytes).hexdigest()
++        file_stat = os.stat(jar_path)
++        file_obj = File(
++            project_id=project_id,
++            path=jar_path,
++            language='jar',
++            hash=file_hash,
++            loc=0,
++            mtime=datetime.fromtimestamp(file_stat.st_mtime)
++        )
++
++        classes: List[Class] = []
++        methods: List[Method] = []
++
++        try:
++            with zipfile.ZipFile(jar_path, 'r') as jar:
++                class_entries = [c for c in jar.namelist() if c.endswith('.class')]
++        except zipfile.BadZipFile:
++            if self.logger:
++                self.logger.warning(f"잘못된 JAR 파일: {jar_path}")
++            return file_obj, classes, methods, []
++
++        for entry in class_entries:
++            class_name = entry[:-6].replace('/', '.')
++            cls = Class(file_id=None, fqn=class_name, name=class_name.split('.')[-1])
++            classes.append(cls)
++            try:
++                result = subprocess.run(
++                    ['javap', '-p', '-classpath', jar_path, class_name],
++                    stdout=subprocess.PIPE,
++                    stderr=subprocess.PIPE,
++                    text=True,
++                    check=False
++                )
++                output = result.stdout
++                for line in output.splitlines():
++                    line = line.strip()
++                    if '(' not in line or ';' not in line:
++                        continue
++                    m = re.match(r'^.*?([\w\[\]<>$]+)\s+(\w+)\(([^)]*)\);', line)
++                    if not m:
++                        continue
++                    return_type, name, params = m.groups()
++                    signature = f"{return_type} {name}({params})".strip()
++                    method_obj = Method(
++                        class_id=None,
++                        name=name,
++                        signature=signature,
++                        return_type=return_type,
++                        parameters=params
++                    )
++                    method_obj.owner_fqn = class_name
++                    methods.append(method_obj)
++            except FileNotFoundError:
++                if self.logger:
++                    self.logger.warning('javap 명령을 찾을 수 없습니다. 메서드 추출을 건너뜁니다.')
++                break
++
++        return file_obj, classes, methods, []
+
+
+
+
+diff --git a//dev/null b/tests/test_jar_parser.py
+index 0000000000000000000000000000000000000000..7d87d577a123581cb0e16a885f0e41718377260b 100644
+--- a//dev/null
++++ b/tests/test_jar_parser.py
+@@ -0,0 +1,32 @@
++import os
++import sys
++from pathlib import Path
++
++REPO_ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(REPO_ROOT))
++sys.path.insert(0, str(REPO_ROOT / 'phase1'))
++
++from phase1.parsers.jar_parser import JarParser
++
++
++def test_jar_parser_extracts_methods(tmp_path):
++    java_src = tmp_path / "Hello.java"
++    java_src.write_text(
++        "public class Hello {\n"\
++        "  public void sayHi() {}\n"\
++        "  private int add(int a, int b) { return a + b; }\n"\
++        "}\n"
++    )
++    # Compile and package into jar
++    os.system(f"javac {java_src}")
++    os.system(f"jar cf {tmp_path/'hello.jar'} -C {tmp_path} Hello.class")
++
++    parser = JarParser({})
++    file_obj, classes, methods, _ = parser.parse_file(str(tmp_path/'hello.jar'), project_id=1)
++
++    assert file_obj.path.endswith('hello.jar')
++    class_names = [c.name for c in classes]
++    assert 'Hello' in class_names
++    method_names = [m.name for m in methods]
++    assert 'sayHi' in method_names
++    assert 'add' in method_names

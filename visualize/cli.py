@@ -223,8 +223,8 @@ def main():
 
             # Validate that at least one export option is provided for the specific command
             if args.export_html is None and args.export_mermaid is None:
-                logger.warning(f"'{cmd_name}'에 대한 export 옵션이 없습니다. 기본값으로 HTML을 생성합니다.")
                 args.export_html = '' # Enable default html export for this run
+                args.export_mermaid = '' # Enable default mermaid export for this run
 
             # Load config.yaml with project name substitution
             import yaml
@@ -262,6 +262,12 @@ def main():
                 data = build_component_graph_json(config, project_id, args.project_name, args.min_confidence, args.max_nodes)
                 html = render_html('graph_view.html', data)
             elif cmd_name == 'class':
+                # Check for Python files to determine if class diagram is relevant
+                python_files = list(Path(config['project']['paths']['source_dir'].format(project_name=args.project_name)).glob('**/*.py'))
+                if not python_files:
+                    logger.info("Python 파일이 감지되지 않아 클래스 다이어그램 생성을 건너뜁니다.")
+                    continue
+
                 from .builders.class_diagram import build_class_diagram_json
                 data = build_class_diagram_json(config, project_id, args.project_name, args.modules, 
                                               args.include_private, args.max_methods, args.max_nodes)
@@ -275,7 +281,10 @@ def main():
                                                    args.min_score, args.max_nodes, args.cluster_method)
                 html = render_html('relatedness_view.html', data)
             elif cmd_name == 'sequence':
-                if not args.start_file or not args.start_method:
+                if args.cmd == 'all' and (not args.start_file or not args.start_method):
+                    logger.info("'all' 모드에서는 시퀀스 다이어그램을 생성하지 않습니다. --start-file과 --start-method 인자를 지정하여 수동으로 생성해주세요.")
+                    continue
+                elif not args.start_file or not args.start_method:
                     logger.warning("시퀀스 다이어그램을 생성하려면 --start-file과 --start-method 인자가 반드시 필요합니다.")
                     possible_files = db.get_files_with_methods(project_id, limit=20)
                     if possible_files:

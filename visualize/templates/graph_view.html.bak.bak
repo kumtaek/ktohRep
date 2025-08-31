@@ -444,22 +444,6 @@
                 };
             
             cy.layout(layoutOptions).run();
-
-            try {
-                cy.layout(layoutOptions).run();
-            } catch (e) {
-                if (layoutOptions.name === 'fcose') {
-                    console.warn('fcose layout unavailable, falling back to cose');
-                    cy.layout({
-                        name: 'cose',
-                        animate: true,
-                        nodeRepulsion: 4500,
-                        idealEdgeLength: 100
-                    }).run();
-                } else {
-                    throw e;
-                }
-            }
         }
 
         function togglePhysics() {

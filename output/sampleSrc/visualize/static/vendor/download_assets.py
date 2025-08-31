@@ -15,20 +15,24 @@ class AssetDownloader:
         
     def download_file(self, url: str, local_path: str) -> bool:
         """Download a file from URL to local path"""
+        local_file = self.vendor_dir / local_path
+        if local_file.exists():
+            print(f"[SKIP] {local_path} already exists")
+            return True
+
         try:
             print(f"Downloading {url} -> {local_path}")
             response = requests.get(url, timeout=30)
             response.raise_for_status()
-            
-            local_file = self.vendor_dir / local_path
+
             local_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(local_file, 'w', encoding='utf-8') as f:
                 f.write(response.text)
-            
+
             print(f"[OK] Downloaded {local_path} ({len(response.text)} chars)")
             return True
-            
+
         except Exception as e:
             print(f"[ERROR] Failed to download {url}: {e}")
             return False

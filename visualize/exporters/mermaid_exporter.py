@@ -58,6 +58,8 @@ class MermaidExporter:
             return self._export_class(data)
         elif diagram_type in ['graph', 'component']:
             return self._export_graph(data, diagram_type)
+        elif diagram_type == 'relatedness':
+            return self._export_relatedness_graph(data)
         else:
             raise ValueError(f"Unsupported diagram type: {diagram_type}")
 
@@ -497,6 +499,44 @@ class MermaidExporter:
             else:
                 dropped.append(e)
         return kept, dropped
+
+    def _export_relatedness_graph(self, data: Dict[str, Any]) -> str:
+        """연관성 그래프 데이터를 Mermaid graph 문법으로 변환"""
+        lines: List[str] = ["graph TD"]
+
+        for node in data.get('nodes', []):
+            node_id = self._sanitize_id(node['id'])
+            label = self._sanitize_label(node.get('label', ''))
+            node_type = node.get('type', 'unknown')
+            
+            # Relatedness graph nodes are typically files or entities
+            # We can use a default shape or add specific shapes if needed
+            shape = f"{node_id}({label})"
+            lines.append(f"  {shape}")
+
+        lines.append("")
+
+        for edge in data.get('edges', []):
+            src_id = self._sanitize_id(edge['source'])
+            dst_id = self._sanitize_id(edge['target'])
+            confidence = edge.get('confidence', 1.0)
+            label = f"연관성: {confidence:.2f}"
+            lines.append(f"  {src_id} -- {label} --> {dst_id}")
+
+        # Clustering styling
+        lines.append("")
+        lines.append("  %% Clustering Styling")
+        clusters = (data.get('metadata', {}) or {}).get('clusters', {})
+        if clusters:
+            for cluster_id, nodes_in_cluster in clusters.items():
+                # Mermaid subgraph for clusters
+                lines.append(f"  subgraph Cluster {cluster_id}")
+                for node_name in nodes_in_cluster:
+                    sanitized_node_id = self._sanitize_id(node_name)
+                    lines.append(f"    {sanitized_node_id}")
+                lines.append(f"  end")
+
+        return "\n".join(lines)
 
     def _find_node_by_id(self, data: Dict[str, Any], node_id: str) -> Optional[Dict[str, Any]]:
         """ID로 노드를 조회"""

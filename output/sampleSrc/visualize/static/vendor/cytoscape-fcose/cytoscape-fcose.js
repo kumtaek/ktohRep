@@ -10,11 +10,13 @@
 
   function FcoseLayout(options){
     this.options = options || {};
+    this.cy = this.options.cy;
   }
 
   FcoseLayout.prototype.run = function(){
     // Fall back to the built-in cose layout
     var opts = Object.assign({}, this.options, { name: 'cose' });
+    delete opts.cy;
     this.cy.layout(opts).run();
   };
 

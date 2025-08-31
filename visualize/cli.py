@@ -290,8 +290,10 @@ def main():
                     else:
                         logger.warning("메소드를 포함한 파일을 찾을 수 없습니다. 프로젝트 분석을 먼저 실행하세요.")
                     continue
-                data = build_sequence_graph_json(config, project_id, args.project_name, args.start_file, 
+                data = build_sequence_graph_json(config, project_id, args.project_name, args.start_file,
                                            args.start_method, args.depth, args.max_nodes)
+                if not data.get('edges'):
+                    logger.warning("시퀀스 다이어그램 결과에 호출 엣지가 없습니다. 최소 참여자만 표시됩니다.")
                 html = render_html('graph_view.html', data)
             
             if not data or not html:
@@ -304,8 +306,8 @@ def main():
             project_name_for_path = getattr(args, 'project_name', 'default')
             visualize_dir = f"./output/{project_name_for_path}/visualize"
             
-            default_html_names = {'graph': 'graph.html', 'erd': 'erd.html', 'component': 'components.html', 'class': 'class.html', 'relatedness': 'relatedness.html'}
-            default_mermaid_names = {'graph': 'dependency_graph.md', 'erd': 'erd.md', 'component': 'component.md', 'class': 'class.md', 'relatedness': 'relatedness.md'}
+            default_html_names = {'graph': 'graph.html', 'erd': 'erd.html', 'component': 'components.html', 'sequence': 'sequence.html', 'class': 'class.html', 'relatedness': 'relatedness.html'}
+            default_mermaid_names = {'graph': 'dependency_graph.md', 'erd': 'erd.md', 'component': 'component.md', 'sequence': 'sequence.md', 'class': 'class.md', 'relatedness': 'relatedness.md'}
 
             current_export_html = args.export_html
             current_export_mermaid = args.export_mermaid

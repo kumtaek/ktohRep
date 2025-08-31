@@ -298,19 +298,36 @@ class MermaidExporter:
         """시퀀스 데이터를 Mermaid sequenceDiagram 문법으로 변환"""
         lines: List[str] = ["sequenceDiagram"]
 
-        participants: set[tuple[str, str]] = set()
-        for edge in data.get('edges', []):
-            src_node = self._find_node_by_id(data, edge['source'])
-            dst_node = self._find_node_by_id(data, edge['target'])
-            if src_node:
-                participants.add((edge['source'], src_node.get('label', 'Unknown')))
-            if dst_node:
-                participants.add((edge['target'], dst_node.get('label', 'Unknown')))
+        participants: Dict[str, str] = {
+            node['id']: node.get('label', 'Unknown')
+            for node in data.get('nodes', [])
+        }
 
-        for node_id, label in sorted(participants):
-            safe_id = self._sanitize_id(node_id)
+        for edge in data.get('edges', []):
+            if edge.get('source') not in participants:
+                src_node = self._find_node_by_id(data, edge['source'])
+                participants[edge['source']] = (
+                    src_node.get('label', 'Unknown') if src_node else 'Unknown'
+                )
+            if edge.get('target') not in participants:
+                dst_node = self._find_node_by_id(data, edge['target'])
+                participants[edge['target']] = (
+                    dst_node.get('label', 'Unknown') if dst_node else 'Unknown'
+                )
+
+        placeholder_id: Optional[str] = None
+        if len(participants) < 2:
+            placeholder_id = 'Dummy'
+            participants[placeholder_id] = 'Dummy'
+
+        for node_id, label in sorted(participants.items()):
+            safe_id = node_id if node_id == placeholder_id else self._sanitize_id(node_id)
             safe_label = self._sanitize_label(label)
             lines.append(f"  participant {safe_id} as {safe_label}")
+
+        if placeholder_id:
+            lines.append("")
+            lines.append(f"  Note over {placeholder_id}: No interactions")
 
         lines.append("")
 

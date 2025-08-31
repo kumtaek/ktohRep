@@ -55,4 +55,18 @@ public class UserService {
         String sql = "SELECT * FROM users WHERE status = '" + condition + "'";
         return userMapper.executeDynamicQuery(sql);
     }
+
+    /**
+     * @MethodName : updateUserStatus
+     * @Description : 사용자 ID와 새로운 상태로 사용자 상태를 업데이트합니다.
+     * @Parameters : String userId - 업데이트할 사용자 ID, String newStatus - 새로운 상태
+     * @Return : int - 업데이트된 레코드 수
+     */
+    public int updateUserStatus(String userId, String newStatus) {
+        // 실제 구현에서는 UserMapper에 해당 메소드가 정의되어야 합니다.
+        // 여기서는 예시를 위해 가상의 호출을 사용합니다.
+        System.out.println("사용자 " + userId + "의 상태를 " + newStatus + "(으)로 업데이트합니다.");
+        // userMapper.updateUserStatus(userId, newStatus); // 실제 매퍼 호출
+        return 1; // 성공 가정
+    }
 }

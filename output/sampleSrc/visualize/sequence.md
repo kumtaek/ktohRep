@@ -3,7 +3,7 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: SEQUENCE
-- 생성 시각: 2025-08-31 16:40:53
+- 생성 시각: 2025-08-31 17:12:00
 - 노드 수: 0
 - 엣지 수: 0
 
@@ -11,6 +11,9 @@
 
 ```mermaid
 sequenceDiagram
+  participant Dummy as Dummy
+
+  Note over Dummy: No interactions
 
 ```
 
@@ -37,4 +40,4 @@ sequenceDiagram
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-08-31 16:40:53*
+*Source Analyzer v1.1 — 생성 시각: 2025-08-31 17:12:00*

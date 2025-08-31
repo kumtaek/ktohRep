@@ -145,14 +145,51 @@
     <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = {
-  "nodes": [],
+  "nodes": [
+    {
+      "id": "method:42",
+      "type": "method",
+      "label": "calculateOrderTotal()",
+      "group": "control",
+      "meta": {
+        "name": "calculateOrderTotal",
+        "signature": "calculateOrderTotal(String orderId, BigDecimal discountRate)",
+        "class": "com.example.service.OrderService",
+        "file": "project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
+        "line": 23,
+        "llm_summary": null
+      }
+    }
+  ],
   "edges": [],
   "metadata": {
-    "node_count": 0,
+    "node_count": 1,
     "edge_count": 0,
-    "node_types": [],
+    "node_types": [
+      "method"
+    ],
     "edge_kinds": []
-  }
+  },
+  "mermaid": "sequenceDiagram\n    participant method_42 as calculateOrderTotal()\n",
+  "type": "sequence_diagram",
+  "participants": [
+    {
+      "id": "method:42",
+      "type": "method",
+      "label": "calculateOrderTotal()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "calculateOrderTotal",
+        "signature": "calculateOrderTotal(String orderId, BigDecimal discountRate)",
+        "class": "com.example.service.OrderService",
+        "file": "project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
+        "line": 23,
+        "llm_summary": null
+      }
+    }
+  ],
+  "interactions": []
 };
         
         // Register extensions

@@ -83,3 +83,9 @@ server:
     enabled: false          # 정적 파일 서빙 활성화 여부
     folder: "./web-dashboard/frontend/dist" # 정적 파일이 위치한 폴더 경로
     url_path: "/static"     # 정적 파일에 접근할 URL 경로
+
+# LLM 설정
+llm:
+  enabled: true             # LLM 기반 보강 활성화 여부
+  base_model: "gemma3:1b"  # 기본 LLM 모델 이름
+  fallback_model: "gemma3:1b" # 기본 모델 실패 시 사용할 대체 LLM 모델 이름

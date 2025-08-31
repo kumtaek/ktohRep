@@ -225,11 +225,20 @@ class JavaParser:
         methods = []
         edges = []
         
+        # Extract fields to resolve method calls later
+        fields = {}
+        if hasattr(node, 'body') and node.body:
+            for member in node.body:
+                if isinstance(member, javalang.tree.FieldDeclaration):
+                    field_type = self._get_type_string(member.type)
+                    for declarator in member.declarators:
+                        fields[declarator.name] = field_type
+
         # Extract methods
         if hasattr(node, 'body') and node.body:
             for member in node.body:
                 if isinstance(member, javalang.tree.MethodDeclaration):
-                    method_obj, method_edges = self._extract_method(member, class_obj)
+                    method_obj, method_edges = self._extract_method(member, class_obj, fields)
                     methods.append(method_obj)
                     edges.extend(method_edges)
                 elif isinstance(member, javalang.tree.ConstructorDeclaration):
@@ -302,7 +311,7 @@ class JavaParser:
         if hasattr(node, 'body') and node.body:
             for member in node.body:
                 if isinstance(member, javalang.tree.MethodDeclaration):
-                    method_obj, method_edges = self._extract_method(member, interface_obj)
+                    method_obj, method_edges = self._extract_method(member, interface_obj, {})  # Pass empty dict for fields
                     methods.append(method_obj)
                     edges.extend(method_edges)
                     
@@ -346,13 +355,13 @@ class JavaParser:
         if hasattr(node, 'body') and node.body:
             for member in node.body.declarations if hasattr(node.body, 'declarations') else []:
                 if isinstance(member, javalang.tree.MethodDeclaration):
-                    method_obj, method_edges = self._extract_method(member, enum_obj)
+                    method_obj, method_edges = self._extract_method(member, enum_obj, {})  # Pass empty dict for fields
                     methods.append(method_obj)
                     edges.extend(method_edges)
                     
         return enum_obj, methods, edges
         
-    def _extract_method(self, node: javalang.tree.MethodDeclaration, class_obj: Class) -> Tuple[Method, List[Edge]]:
+    def _extract_method(self, node: javalang.tree.MethodDeclaration, class_obj: Class, fields: Dict[str, str]) -> Tuple[Method, List[Edge]]:
         """
         메서드 정보와 호출 관계를 추출
         
@@ -400,8 +409,8 @@ class JavaParser:
         
         # 메서드 본문에서 호출 관계 추출
         if node.body:
-            method_calls = self._extract_method_calls(node.body)
-            for called_name in method_calls:
+            method_calls = self._extract_method_calls(node.body, fields)
+            for call_info in method_calls:
                 call_edge = Edge(
                     src_type='method',
                     src_id=None,  # Will be set after method is saved
@@ -412,9 +421,15 @@ class JavaParser:
                 )
                 # 메타데이터(JSON) 또는 보조 힌트로 저장
                 try:
-                    setattr(call_edge, 'meta', json.dumps({ 'called_name': called_name }))
+                    setattr(call_edge, 'meta', json.dumps({ 
+                        'called_name': call_info['member'],
+                        'callee_qualifier_type': call_info.get('qualifier_type'),
+                        'src_method_fqn': f"{class_obj.fqn}.{method_obj.name}" # 호출하는 메서드의 FQN 추가
+                    }))
                 except Exception:
-                    setattr(call_edge, 'called_method_name', called_name)
+                    setattr(call_edge, 'called_method_name', call_info['member'])
+                    setattr(call_edge, 'callee_qualifier_type', call_info.get('qualifier_type'))
+                    setattr(call_edge, 'src_method_fqn', f"{class_obj.fqn}.{method_obj.name}") # 대체 속성에도 추가
                 edges.append(call_edge)
                 
         return method_obj, edges
@@ -568,53 +583,72 @@ class JavaParser:
         
         return start_line, end_line
         
-    def _extract_method_calls(self, body) -> List[str]:
+    def _extract_method_calls(self, body, fields: Dict[str, str]) -> List[Dict[str, str]]:
         """
-        메서드 본문에서 메서드 호출을 추출
-        
+        메서드 본문에서 메서드 호출을 추출 (재귀적 AST 순회)
+
         Args:
-            body: 메서드 본문 AST 노드
-            
+            body: 메서드 본문 AST 노드 (list 또는 javalang.tree.Node)
+            fields: 클래스 필드 정보
+
         Returns:
-            호출된 메서드 이름 리스트
+            호출된 메서드 정보 딕셔너리 리스트
         """
         method_calls = []
-        
-        # 단순화된 구현
-        # 실제로는 AST를 더 철저하게 순회해야 함
-        if hasattr(body, '__iter__'):
-            for statement in body:
-                if hasattr(statement, 'expression'):
-                    calls = self._find_method_invocations(statement.expression)
-                    method_calls.extend(calls)
-                    
+        if self.logger:
+            self.logger.debug(f"[_extract_method_calls] body type: {type(body)}")
+        if body:
+            # body가 리스트인 경우 각 요소를 순회
+            if isinstance(body, list):
+                for item in body:
+                    method_calls.extend(self._find_method_invocations_recursive(item, fields))
+            # body가 단일 AST 노드인 경우
+            else:
+                method_calls.extend(self._find_method_invocations_recursive(body, fields))
+        if self.logger:
+            self.logger.debug(f"[_extract_method_calls] found {len(method_calls)} method calls.")
         return method_calls
-        
-    def _find_method_invocations(self, node) -> List[str]:
+
+    def _find_method_invocations_recursive(self, node, fields: Dict[str, str]) -> List[Dict[str, str]]:
         """
-        AST에서 메서드 호출 노드를 찾음
-        
+        AST 노드를 재귀적으로 순회하며 메서드 호출 노드를 찾음
+
         Args:
             node: 검색할 AST 노드
-            
+            fields: 클래스 필드 정보
+
         Returns:
-            발견된 메서드 호출 이름 리스트
+            발견된 메서드 호출 정보 딕셔너리 리스트
         """
         invocations = []
-        
+        if self.logger:
+            self.logger.debug(f"[_find_method_invocations_recursive] node type: {type(node)}, node: {node}")
+
         if isinstance(node, javalang.tree.MethodInvocation):
-            invocations.append(node.member)
+            qualifier = getattr(node, 'qualifier', None)
+            qualifier_type = fields.get(qualifier) if qualifier in fields else None
             
-        # 자식 노드들을 재귀적으로 검색
-        if hasattr(node, '__dict__'):
+            call_info = {
+                'member': node.member,
+                'qualifier': qualifier,
+                'qualifier_type': qualifier_type
+            }
+            invocations.append(call_info)
+            if self.logger:
+                self.logger.debug(f"[_find_method_invocations_recursive] Found MethodInvocation: {call_info}")
+
+        # 노드의 자식들을 재귀적으로 검색
+        if hasattr(node, 'children') and node.children:
+            for child in node.children:
+                invocations.extend(self._find_method_invocations_recursive(child, fields))
+        elif isinstance(node, list): # 리스트인 경우 각 요소를 순회
+            for item in node:
+                invocations.extend(self._find_method_invocations_recursive(item, fields))
+        elif hasattr(node, '__dict__'): # 다른 속성들도 확인 (javalang AST 구조에 따라)
             for attr_value in node.__dict__.values():
-                if isinstance(attr_value, list):
-                    for item in attr_value:
-                        if hasattr(item, '__dict__'):
-                            invocations.extend(self._find_method_invocations(item))
-                elif hasattr(attr_value, '__dict__'):
-                    invocations.extend(self._find_method_invocations(attr_value))
-                    
+                if isinstance(attr_value, (javalang.tree.Node, list)):
+                    invocations.extend(self._find_method_invocations_recursive(attr_value, fields))
+
         return invocations
     
     def _parse_with_tree_sitter(self, content: str):

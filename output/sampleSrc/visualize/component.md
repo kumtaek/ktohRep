@@ -3,19 +3,18 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: COMPONENT
-- 생성 시각: 2025-08-31 17:11:58
+- 생성 시각: 2025-08-31 20:02:15
 - 노드 수: 3
-- 엣지 수: 1
+- 엣지 수: 0
 
 ## 다이어그램
 
 ```mermaid
 graph TB
-  n1_component_{{ Mapper (416) }}
-  n2_component_{{ Service (769) }}
-  n3_component_{{ Util (36) }}
+  n1_component_{{ Mapper (52) }}
+  n2_component_{{ Service (98) }}
+  n3_component_{{ Util (12) }}
 
-  n1_component_ -->|package_relation| n2_component_
 
   %% Dynamic Cluster Styling
   classDef JSP fill:#ffebee,stroke:#d32f2f
@@ -44,7 +43,6 @@ graph TB
 
 ### Component 범례
 
-- package_relation: Package Relation
 
 ### 스타일 레이어
 - Hotspot(채움): low/med/high/crit
@@ -58,17 +56,16 @@ graph TB
 
 노드 목록 (3)
 ```json
-  component:Mapper: Mapper (416) (component)
-  component:Service: Service (769) (component)
-  component:Util: Util (36) (component)
+  component:Mapper: Mapper (52) (component)
+  component:Service: Service (98) (component)
+  component:Util: Util (12) (component)
 ```
 
-엣지 목록 (1)
+엣지 목록 (0)
 ```json
-  component:Mapper -> component:Service (package_relation)
 ```
 
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-08-31 17:11:58*
+*Source Analyzer v1.1 — 생성 시각: 2025-08-31 20:02:15*

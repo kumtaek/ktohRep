@@ -3,9 +3,9 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: ERD
-- 생성 시각: 2025-08-31 17:11:57
-- 노드 수: 15
-- 엣지 수: 30
+- 생성 시각: 2025-08-31 20:02:14
+- 노드 수: 14
+- 엣지 수: 26
 
 ## 다이어그램
 
@@ -38,18 +38,6 @@ erDiagram
     CHAR DEL_YN
   }
   n4_table_SAMP {
-    VARCHAR2 ADDRESS
-    DATE CREATED_DATE
-    VARCHAR2 CUSTOMER_ID PK
-    VARCHAR2 CUSTOMER_NAME
-    CHAR DEL_YN
-    VARCHAR2 EMAIL
-    VARCHAR2 PHONE
-    VARCHAR2 ADDRESS
-    DATE CREATED_DATE
-    VARCHAR2 CUSTOMER_ID PK
-  }
-  n5_table_SAMP {
     CHAR ACTIVE_YN
     VARCHAR2 DISCOUNT_ID PK
     NUMBER DISCOUNT_RATE
@@ -61,7 +49,7 @@ erDiagram
     NUMBER DISCOUNT_RATE
     DATE END_DATE
   }
-  n6_table_SAMP {
+  n5_table_SAMP {
     NUMBER CURRENT_STOCK
     VARCHAR2 INVENTORY_ID PK
     VARCHAR2 PRODUCT_ID
@@ -71,7 +59,7 @@ erDiagram
     VARCHAR2 PRODUCT_ID
     DATE UPDATED_DATE
   }
-  n7_table_SAMP {
+  n6_table_SAMP {
     DATE CREATED_DATE
     VARCHAR2 CUSTOMER_ID
     CHAR DEL_YN
@@ -83,7 +71,7 @@ erDiagram
     NUMBER TOTAL_AMOUNT
     DATE UPDATED_DATE
   }
-  n8_table_SAMP {
+  n7_table_SAMP {
     CHAR DEL_YN
     VARCHAR2 ORDER_ID
     VARCHAR2 ORDER_ITEM_ID PK
@@ -95,7 +83,7 @@ erDiagram
     VARCHAR2 ORDER_ITEM_ID PK
     VARCHAR2 PRODUCT_ID
   }
-  n9_table_SAMP {
+  n8_table_SAMP {
     VARCHAR2 BRAND_ID
     VARCHAR2 CATEGORY_ID
     DATE CREATED_DATE
@@ -107,7 +95,7 @@ erDiagram
     VARCHAR2 STATUS
     NUMBER STOCK_QUANTITY
   }
-  n10_table_SAMP {
+  n9_table_SAMP {
     DATE CREATED_DATE
     VARCHAR2 CUSTOMER_ID
     CHAR DEL_YN
@@ -119,7 +107,7 @@ erDiagram
     VARCHAR2 CUSTOMER_ID
     CHAR DEL_YN
   }
-  n11_table_SAMP {
+  n10_table_SAMP {
     CHAR DEL_YN
     VARCHAR2 SUPPLIER_ID PK
     VARCHAR2 SUPPLIER_NAME
@@ -127,7 +115,7 @@ erDiagram
     VARCHAR2 SUPPLIER_ID PK
     VARCHAR2 SUPPLIER_NAME
   }
-  n12_table_SAMP {
+  n11_table_SAMP {
     DATE CREATED_DATE
     CHAR DEL_YN
     VARCHAR2 EMAIL
@@ -139,7 +127,7 @@ erDiagram
     DATE CREATED_DATE
     CHAR DEL_YN
   }
-  n13_table_SAMP {
+  n12_table_SAMP {
     CHAR DEL_YN
     VARCHAR2 LOCATION
     VARCHAR2 WAREHOUSE_ID PK
@@ -148,53 +136,49 @@ erDiagram
     VARCHAR2 LOCATION
     VARCHAR2 WAREHOUSE_ID PK
     VARCHAR2 WAREHOUSE_NAME
+  }
+  n13_table_SCOT {
+    NUMBER ID PK
+    VARCHAR2 NAME
+    VARCHAR2 STATUS
+    NUMBER ID PK
+    VARCHAR2 NAME
+    VARCHAR2 STATUS
   }
   n14_table_SCOT {
     NUMBER ID PK
-    VARCHAR2 NAME
-    VARCHAR2 STATUS
-    NUMBER ID PK
-    VARCHAR2 NAME
-    VARCHAR2 STATUS
-  }
-  n15_table_SCOT {
-    NUMBER ID PK
     NUMBER RELATED_ID
     VARCHAR2 VALUE
     NUMBER ID PK
     NUMBER RELATED_ID
     VARCHAR2 VALUE
   }
-  n1_table_PUBL ||--|| n12_table_SAMP : "foreign_key"
-  n1_table_PUBL ||--|| n12_table_SAMP : "foreign_key"
-  n5_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n5_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n6_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n6_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n7_table_SAMP ||--|| n4_table_SAMP : "foreign_key"
-  n7_table_SAMP ||--|| n4_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n7_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n7_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n11_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n11_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n13_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n13_table_SAMP : "foreign_key"
-  n10_table_SAMP ||--|| n4_table_SAMP : "foreign_key"
-  n10_table_SAMP ||--|| n4_table_SAMP : "foreign_key"
-  n10_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n10_table_SAMP ||--|| n9_table_SAMP : "foreign_key"
-  n12_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
-  n12_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
-  n14_table_SCOT ||--|| n15_table_SCOT : "foreign_key"
-  n14_table_SCOT ||--|| n15_table_SCOT : "foreign_key"
-  n15_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
-  n15_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
+  n1_table_PUBL ||--|| n11_table_SAMP : "foreign_key"
+  n1_table_PUBL ||--|| n11_table_SAMP : "foreign_key"
+  n4_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n4_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n5_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n5_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n6_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n6_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n10_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n10_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n12_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n12_table_SAMP : "foreign_key"
+  n9_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n9_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n11_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
+  n11_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
+  n13_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
+  n13_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
+  n14_table_SCOT ||--|| n13_table_SCOT : "foreign_key"
+  n14_table_SCOT ||--|| n13_table_SCOT : "foreign_key"
 ```
 
 ## 범례
@@ -210,12 +194,11 @@ erDiagram
 <details>
 <summary>원본 데이터를 보려면 클릭</summary>
 
-노드 목록 (15)
+노드 목록 (14)
 ```json
   table:PUBLIC.USER_ROLE: PUBLIC.USER_ROLE (table)
   table:SAMPLE.BRANDS: SAMPLE.BRANDS (table)
   table:SAMPLE.CATEGORIES: SAMPLE.CATEGORIES (table)
-  table:SAMPLE.CUSTOMERS: SAMPLE.CUSTOMERS (table)
   table:SAMPLE.DISCOUNTS: SAMPLE.DISCOUNTS (table)
   table:SAMPLE.INVENTORIES: SAMPLE.INVENTORIES (table)
   table:SAMPLE.ORDERS: SAMPLE.ORDERS (table)
@@ -229,7 +212,7 @@ erDiagram
   table:SCOTT.RELATED_DATA: SCOTT.RELATED_DATA (table)
 ```
 
-엣지 목록 (30)
+엣지 목록 (26)
 ```json
   table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (foreign_key)
   table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (foreign_key)
@@ -237,8 +220,6 @@ erDiagram
   table:SAMPLE.DISCOUNTS -> table:SAMPLE.PRODUCTS (foreign_key)
   table:SAMPLE.INVENTORIES -> table:SAMPLE.PRODUCTS (foreign_key)
   table:SAMPLE.INVENTORIES -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.ORDERS -> table:SAMPLE.CUSTOMERS (foreign_key)
-  table:SAMPLE.ORDERS -> table:SAMPLE.CUSTOMERS (foreign_key)
   table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.ORDERS (foreign_key)
   table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.ORDERS (foreign_key)
   table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.PRODUCTS (foreign_key)
@@ -251,9 +232,11 @@ erDiagram
   table:SAMPLE.PRODUCTS -> table:SAMPLE.SUPPLIERS (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.WAREHOUSES (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.WAREHOUSES (foreign_key)
+  table:SAMPLE.PRODUCT_REVIEWS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SAMPLE.PRODUCT_REVIEWS -> table:SAMPLE.PRODUCTS (foreign_key)
 ```
 
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-08-31 17:11:57*
+*Source Analyzer v1.1 — 생성 시각: 2025-08-31 20:02:14*

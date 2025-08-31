@@ -363,14 +363,31 @@ class MetadataEngine:
                     method_obj.class_id = class_obj.class_id
                     session.add(method_obj)
                     session.flush()
-                    # 메서드 기원 엣지의 src_id 채우기(호출관계 저장용)
-                    for e in [e for e in edges if e.src_type == 'method' and e.src_id is None]:
-                        e.src_id = method_obj.method_id
                     
                 saved_counts['classes'] += 1
                 
             saved_counts['methods'] = len(methods)
-            
+
+            # 모든 메서드가 저장된 후, 엣지의 src_id를 채웁니다.
+            # 이전에 생성된 모든 메서드 객체에 대해 method_id를 가져와 매핑합니다.
+            method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
+            for edge in edges:
+                if edge.src_type == 'method' and edge.src_id is None:
+                    # Edge의 meta 필드에서 src_method_fqn을 가져와 매핑합니다.
+                    src_method_fqn = None
+                    try:
+                        if getattr(edge, 'meta', None):
+                            md = json.loads(edge.meta)
+                            src_method_fqn = md.get('src_method_fqn')
+                    except Exception:
+                        # meta 필드가 없거나 파싱 오류 시, 대체 속성 확인
+                        src_method_fqn = getattr(edge, 'src_method_fqn', None)
+                    
+                    if src_method_fqn and src_method_fqn in method_id_map:
+                        edge.src_id = method_id_map[src_method_fqn]
+                    # else:
+                    #     self.logger.warning(f"엣지 src_id를 해결할 수 없음: {getattr(edge, 'meta', 'N/A')}")
+
             # 의존성 엣지 저장: call 엣지는 dst 미해결 상태도 저장
             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             count_edges = 0
@@ -719,12 +736,40 @@ class MetadataEngine:
                         
                         # 2) 전역 검색 (패키지/임포트 정보 고려 필요)
                         if not target_method:
-                            target_method = session.query(Method).join(Class).join(File).filter(
+                            # Edge의 meta 필드에서 src_method_fqn을 가져옵니다.
+                            src_method_fqn = None
+                            try:
+                                if getattr(edge, 'meta', None):
+                                    md = _json.loads(edge.meta)
+                                    src_method_fqn = md.get('src_method_fqn')
+                            except Exception:
+                                pass
+
+                            # 호출된 메서드 이름이 FQN 형태일 수 있으므로 파싱 시도
+                            target_class_name = None
+                            simple_called_name = called_method_name
+                            if '.' in called_method_name:
+                                parts = called_method_name.rsplit('.', 1)
+                                target_class_name = parts[0]
+                                simple_called_name = parts[1]
+
+                            query = session.query(Method).join(Class).join(File).filter(
                                 and_(
-                                    Method.name == called_method_name,
+                                    Method.name == simple_called_name,
                                     File.project_id == project_id
                                 )
-                            ).first()
+                            )
+
+                            if target_class_name:
+                                # 특정 클래스 내에서 검색
+                                query = query.filter(Class.fqn.like(f"%{target_class_name}"))
+                            elif src_method_fqn:
+                                # 호출하는 메서드의 클래스 FQN을 기반으로 패키지 내에서 검색
+                                src_package = ".".join(src_method_fqn.split('.')[:-1])
+                                if src_package:
+                                    query = query.filter(Class.fqn.like(f"{src_package}.%"))
+
+                            target_method = query.first()
                         
                         # 3) 호출 관계 엣지 업데이트
                         if target_method:

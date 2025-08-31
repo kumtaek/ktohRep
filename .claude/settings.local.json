@@ -56,7 +56,9 @@
       "Bash(.run_relationships.bat --project-name sampleSrc)",
       "Bash(./run_visualize.bat --project-name sampleSrc erd)",
       "Bash(./run_visualize.bat --project-name sampleSrc graph)",
-      "Bash(./run_relationships.bat sampleSrc)"
+      "Bash(./run_relationships.bat sampleSrc)",
+      "WebFetch(domain:blog.naver.com)",
+      "Bash(.run_visualize.bat sequence --project-name sampleSrc --start-file \"com\\example\\integrated\\IntegratedMapper.java\" --start-method \"findDynamicData\" --max-depth 3)"
     ],
     "deny": [],
     "ask": []

@@ -105,14 +105,14 @@
           "USER_ID",
           "ROLE_ID"
         ],
-        "comment": "NULL",
+        "comment": "사용자역할",
         "columns": [
           {
             "name": "ROLE_ID",
             "data_type": "NUMBER",
             "nullable": "N",
             "is_pk": true,
-            "comment": "NULL"
+            "comment": "역할ID"
           },
           {
             "name": "USER_ID",
@@ -158,7 +158,7 @@
             "data_type": "VARCHAR2",
             "nullable": "N",
             "is_pk": false,
-            "comment": "NULL"
+            "comment": "브랜드코드"
           },
           {
             "name": "BRAND_ID",
@@ -225,14 +225,14 @@
         "pk_columns": [
           "CATEGORY_ID"
         ],
-        "comment": "상품 카테고리 테이블",
+        "comment": "분류코드",
         "columns": [
           {
             "name": "CATEGORY_CODE",
             "data_type": "VARCHAR2",
             "nullable": "N",
             "is_pk": false,
-            "comment": ""
+            "comment": "분류코드"
           },
           {
             "name": "CATEGORY_ID",
@@ -280,122 +280,6 @@
             "name": "DEL_YN",
             "data_type": "CHAR",
             "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          }
-        ],
-        "sample_joins": []
-      }
-    },
-    {
-      "id": "table:SAMPLE.CUSTOMERS",
-      "type": "table",
-      "label": "SAMPLE.CUSTOMERS",
-      "group": "DB",
-      "meta": {
-        "owner": "SAMPLE",
-        "table_name": "CUSTOMERS",
-        "status": "VALID",
-        "pk_columns": [
-          "CUSTOMER_ID"
-        ],
-        "comment": "NULL",
-        "columns": [
-          {
-            "name": "ADDRESS",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "CREATED_DATE",
-            "data_type": "DATE",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "CUSTOMER_ID",
-            "data_type": "VARCHAR2",
-            "nullable": "N",
-            "is_pk": true,
-            "comment": ""
-          },
-          {
-            "name": "CUSTOMER_NAME",
-            "data_type": "VARCHAR2",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "DEL_YN",
-            "data_type": "CHAR",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "EMAIL",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "PHONE",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "ADDRESS",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "CREATED_DATE",
-            "data_type": "DATE",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "CUSTOMER_ID",
-            "data_type": "VARCHAR2",
-            "nullable": "N",
-            "is_pk": true,
-            "comment": ""
-          },
-          {
-            "name": "CUSTOMER_NAME",
-            "data_type": "VARCHAR2",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "DEL_YN",
-            "data_type": "CHAR",
-            "nullable": "N",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "EMAIL",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
-            "is_pk": false,
-            "comment": ""
-          },
-          {
-            "name": "PHONE",
-            "data_type": "VARCHAR2",
-            "nullable": "Y",
             "is_pk": false,
             "comment": ""
           }
@@ -450,7 +334,7 @@
             "data_type": "VARCHAR2",
             "nullable": "N",
             "is_pk": false,
-            "comment": ""
+            "comment": "상품코드"
           },
           {
             "name": "START_DATE",
@@ -591,7 +475,7 @@
         "pk_columns": [
           "ORDER_ID"
         ],
-        "comment": "",
+        "comment": "주문",
         "columns": [
           {
             "name": "CREATED_DATE",
@@ -640,7 +524,7 @@
             "data_type": "VARCHAR2",
             "nullable": "N",
             "is_pk": false,
-            "comment": ""
+            "comment": "상태"
           },
           {
             "name": "TAX_AMOUNT",
@@ -1051,7 +935,7 @@
         "pk_columns": [
           "REVIEW_ID"
         ],
-        "comment": "",
+        "comment": "상품리뷰",
         "columns": [
           {
             "name": "CREATED_DATE",
@@ -1227,7 +1111,7 @@
         "pk_columns": [
           "USER_ID"
         ],
-        "comment": "",
+        "comment": "사용자",
         "columns": [
           {
             "name": "CREATED_DATE",
@@ -1615,270 +1499,222 @@
     },
     {
       "id": "fk_7",
-      "source": "table:SAMPLE.ORDERS",
-      "target": "table:SAMPLE.CUSTOMERS",
+      "source": "table:SAMPLE.ORDER_ITEMS",
+      "target": "table:SAMPLE.ORDERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CUSTOMER_ID",
-        "references": "CUSTOMERS.CUSTOMER_ID",
+        "column": "ORDER_ID",
+        "references": "ORDERS.ORDER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_8",
-      "source": "table:SAMPLE.ORDERS",
-      "target": "table:SAMPLE.CUSTOMERS",
+      "source": "table:SAMPLE.ORDER_ITEMS",
+      "target": "table:SAMPLE.ORDERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CUSTOMER_ID",
-        "references": "CUSTOMERS.CUSTOMER_ID",
+        "column": "ORDER_ID",
+        "references": "ORDERS.ORDER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_9",
       "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.ORDERS",
+      "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "ORDER_ID",
-        "references": "ORDERS.ORDER_ID",
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_10",
       "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.ORDERS",
+      "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "ORDER_ID",
-        "references": "ORDERS.ORDER_ID",
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_11",
-      "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.BRANDS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "column": "BRAND_ID",
+        "references": "BRANDS.BRAND_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_12",
-      "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.BRANDS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "column": "BRAND_ID",
+        "references": "BRANDS.BRAND_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_13",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.BRANDS",
+      "target": "table:SAMPLE.CATEGORIES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "BRAND_ID",
-        "references": "BRANDS.BRAND_ID",
+        "column": "CATEGORY_ID",
+        "references": "CATEGORIES.CATEGORY_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_14",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.BRANDS",
+      "target": "table:SAMPLE.CATEGORIES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "BRAND_ID",
-        "references": "BRANDS.BRAND_ID",
+        "column": "CATEGORY_ID",
+        "references": "CATEGORIES.CATEGORY_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_15",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.CATEGORIES",
+      "target": "table:SAMPLE.SUPPLIERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CATEGORY_ID",
-        "references": "CATEGORIES.CATEGORY_ID",
+        "column": "SUPPLIER_ID",
+        "references": "SUPPLIERS.SUPPLIER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_16",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.CATEGORIES",
+      "target": "table:SAMPLE.SUPPLIERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CATEGORY_ID",
-        "references": "CATEGORIES.CATEGORY_ID",
+        "column": "SUPPLIER_ID",
+        "references": "SUPPLIERS.SUPPLIER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_17",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.SUPPLIERS",
+      "target": "table:SAMPLE.WAREHOUSES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "SUPPLIER_ID",
-        "references": "SUPPLIERS.SUPPLIER_ID",
+        "column": "WAREHOUSE_ID",
+        "references": "WAREHOUSES.WAREHOUSE_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_18",
       "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.SUPPLIERS",
+      "target": "table:SAMPLE.WAREHOUSES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "SUPPLIER_ID",
-        "references": "SUPPLIERS.SUPPLIER_ID",
+        "column": "WAREHOUSE_ID",
+        "references": "WAREHOUSES.WAREHOUSE_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_19",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.WAREHOUSES",
+      "source": "table:SAMPLE.PRODUCT_REVIEWS",
+      "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "WAREHOUSE_ID",
-        "references": "WAREHOUSES.WAREHOUSE_ID",
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_20",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.WAREHOUSES",
+      "source": "table:SAMPLE.PRODUCT_REVIEWS",
+      "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "WAREHOUSE_ID",
-        "references": "WAREHOUSES.WAREHOUSE_ID",
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_21",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.CUSTOMERS",
+      "source": "table:SAMPLE.USERS",
+      "target": "table:PUBLIC.USER_ROLE",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CUSTOMER_ID",
-        "references": "CUSTOMERS.CUSTOMER_ID",
+        "column": "USER_ID",
+        "references": "USER_ROLE.USER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_22",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.CUSTOMERS",
+      "source": "table:SAMPLE.USERS",
+      "target": "table:PUBLIC.USER_ROLE",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "CUSTOMER_ID",
-        "references": "CUSTOMERS.CUSTOMER_ID",
+        "column": "USER_ID",
+        "references": "USER_ROLE.USER_ID",
         "inferred": true
       }
     },
     {
       "id": "fk_23",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SCOTT.DYNAMIC_DATA",
+      "target": "table:SCOTT.RELATED_DATA",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "column": "ID",
+        "references": "RELATED_DATA.ID",
         "inferred": true
       }
     },
     {
       "id": "fk_24",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SCOTT.DYNAMIC_DATA",
+      "target": "table:SCOTT.RELATED_DATA",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "column": "ID",
+        "references": "RELATED_DATA.ID",
         "inferred": true
       }
     },
     {
       "id": "fk_25",
-      "source": "table:SAMPLE.USERS",
-      "target": "table:PUBLIC.USER_ROLE",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "column": "USER_ID",
-        "references": "USER_ROLE.USER_ID",
-        "inferred": true
-      }
-    },
-    {
-      "id": "fk_26",
-      "source": "table:SAMPLE.USERS",
-      "target": "table:PUBLIC.USER_ROLE",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "column": "USER_ID",
-        "references": "USER_ROLE.USER_ID",
-        "inferred": true
-      }
-    },
-    {
-      "id": "fk_27",
-      "source": "table:SCOTT.DYNAMIC_DATA",
-      "target": "table:SCOTT.RELATED_DATA",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "column": "ID",
-        "references": "RELATED_DATA.ID",
-        "inferred": true
-      }
-    },
-    {
-      "id": "fk_28",
-      "source": "table:SCOTT.DYNAMIC_DATA",
-      "target": "table:SCOTT.RELATED_DATA",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "column": "ID",
-        "references": "RELATED_DATA.ID",
-        "inferred": true
-      }
-    },
-    {
-      "id": "fk_29",
       "source": "table:SCOTT.RELATED_DATA",
       "target": "table:SCOTT.DYNAMIC_DATA",
       "kind": "foreign_key",
@@ -1890,7 +1726,7 @@
       }
     },
     {
-      "id": "fk_30",
+      "id": "fk_26",
       "source": "table:SCOTT.RELATED_DATA",
       "target": "table:SCOTT.DYNAMIC_DATA",
       "kind": "foreign_key",
@@ -1903,8 +1739,8 @@
     }
   ],
   "metadata": {
-    "node_count": 15,
-    "edge_count": 30,
+    "node_count": 14,
+    "edge_count": 26,
     "node_types": [
       "table"
     ],

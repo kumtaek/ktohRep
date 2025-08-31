@@ -6,7 +6,7 @@
 parsers:
   java:
     enabled: true          # Java 파서 활성화 여부
-    parser_type: "javaparser"  # Java 파서 유형 (javaparser 또는 tree-sitter)
+    parser_type: "javalang"  # Java 파서 유형 (javaparser 또는 tree-sitter)
     java_version: 8        # 분석할 Java 소스 코드 버전
   jsp:
     enabled: true          # JSP 파서 활성화 여부

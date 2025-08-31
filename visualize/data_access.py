@@ -11,7 +11,7 @@ phase1_path = project_root / "phase1"
 sys.path.insert(0, str(phase1_path))
 
 from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project, Relatedness
-from sqlalchemy import and_, or_, func
+from sqlalchemy import and_, or_, func, text
 import yaml
 
 
@@ -263,7 +263,7 @@ class VizDB:
             session.close()
 
     def get_node_details(self, node_type: str, node_id: int) -> Optional[Dict[str, Any]]:
-        """Get detailed information about a specific node"""
+        """Get detailed information about a specific node including LLM summaries"""
         session = self.session()
         try:
             if node_type == 'method':
@@ -271,41 +271,96 @@ class VizDB:
                 if method:
                     cls = session.query(Class).filter(Class.class_id == method.class_id).first()
                     file = session.query(File).filter(File.file_id == cls.file_id).first() if cls else None
+                    
+                    # Get LLM summary if available
+                    llm_summary = None
+                    try:
+                        result = session.execute(
+                            text("SELECT llm_summary FROM methods WHERE method_id = :method_id"),
+                            {"method_id": method.method_id}
+                        ).fetchone()
+                        if result and result[0]:
+                            llm_summary = result[0]
+                    except Exception:
+                        pass
+                    
                     return {
                         'name': method.name,
                         'signature': method.signature,
                         'class': cls.fqn if cls else None,
                         'file': file.path if file else None,
-                        'line': method.start_line
+                        'line': method.start_line,
+                        'llm_summary': llm_summary
                     }
             elif node_type == 'class':
                 cls = session.query(Class).filter(Class.class_id == node_id).first()
                 if cls:
                     file = session.query(File).filter(File.file_id == cls.file_id).first()
+                    
+                    # Get LLM summary if available
+                    llm_summary = None
+                    try:
+                        result = session.execute(
+                            text("SELECT llm_summary FROM classes WHERE class_id = :class_id"),
+                            {"class_id": cls.class_id}
+                        ).fetchone()
+                        if result and result[0]:
+                            llm_summary = result[0]
+                    except Exception:
+                        pass
+                    
                     return {
                         'name': cls.name,
                         'fqn': cls.fqn,
                         'file': file.path if file else None,
-                        'line': cls.start_line
+                        'line': cls.start_line,
+                        'llm_summary': llm_summary
                     }
             elif node_type == 'file':
                 file = session.query(File).filter(File.file_id == node_id).first()
                 if file:
+                    # Get LLM summary if available
+                    llm_summary = None
+                    try:
+                        result = session.execute(
+                            text("SELECT llm_summary FROM files WHERE file_id = :file_id"),
+                            {"file_id": file.file_id}
+                        ).fetchone()
+                        if result and result[0]:
+                            llm_summary = result[0]
+                    except Exception:
+                        pass
+                    
                     return {
                         'path': file.path,
                         'language': file.language,
-                        'loc': file.loc
+                        'loc': file.loc,
+                        'llm_summary': llm_summary
                     }
             elif node_type == 'sql_unit':
                 sql = session.query(SqlUnit).filter(SqlUnit.sql_id == node_id).first()
                 if sql:
                     file = session.query(File).filter(File.file_id == sql.file_id).first()
+                    
+                    # Get LLM summary if available
+                    llm_summary = None
+                    try:
+                        result = session.execute(
+                            text("SELECT llm_summary FROM sql_units WHERE sql_id = :sql_id"),
+                            {"sql_id": sql.sql_id}
+                        ).fetchone()
+                        if result and result[0]:
+                            llm_summary = result[0]
+                    except Exception:
+                        pass
+                    
                     return {
                         'stmt_id': sql.stmt_id,
                         'mapper_ns': sql.mapper_ns,
                         'stmt_kind': sql.stmt_kind,
                         'file': file.path if file else None,
-                        'line': sql.start_line
+                        'line': sql.start_line,
+                        'llm_summary': llm_summary
                     }
             elif node_type == 'table':
                 # Handle table nodes by table_id or name lookup
@@ -317,13 +372,27 @@ class VizDB:
                     table = session.query(DbTable).filter(DbTable.table_name.ilike(f'%{node_id}%')).first()
                 
                 if table:
+                    # Get LLM comment if available
+                    llm_comment = None
+                    try:
+                        result = session.execute(
+                            text("SELECT llm_comment FROM db_tables WHERE table_id = :table_id"),
+                            {"table_id": table.table_id}
+                        ).fetchone()
+                        if result and result[0]:
+                            llm_comment = result[0]
+                    except Exception:
+                        pass
+                    
                     return {
                         'name': f"{table.owner}.{table.table_name}" if table.owner else table.table_name,
                         'type': 'table',
                         'owner': table.owner,
                         'table_name': table.table_name,
                         'table_id': table.table_id,
-                        'status': getattr(table, 'status', 'VALID')
+                        'status': getattr(table, 'status', 'VALID'),
+                        'comment': table.comment,
+                        'llm_comment': llm_comment
                     }
                 else:
                     # Fallback for unknown table
@@ -359,18 +428,21 @@ class VizDB:
         finally:
             session.close()
 
-    def get_files_with_methods(self, project_id: int, limit: int = 20) -> List[str]:
-        """Get a list of files that contain methods, suitable for sequence diagrams."""
+    def get_files_with_methods(self, project_id: int, limit: int = 20) -> List[Dict[str, str]]:
+        """Get a list of files and their methods, suitable for sequence diagrams."""
         session = self.session()
         try:
-            # Query for files that have at least one class which has at least one method.
-            files = (session.query(File.path)
-                     .distinct()
-                     .join(Class)
-                     .join(Method)
-                     .filter(File.project_id == project_id)
-                     .limit(limit)
-                     .all())
-            return [file[0] for file in files]
+            # Query for files and methods, ensuring distinct file-method pairs
+            # Order by file path and then method name for consistent sampling
+            file_methods = (session.query(File.path, Method.name)
+                            .distinct(File.path, Method.name)
+                            .join(Class, File.file_id == Class.file_id)
+                            .join(Method, Class.class_id == Method.class_id)
+                            .filter(File.project_id == project_id)
+                            .order_by(File.path, Method.name)
+                            .limit(limit)
+                            .all())
+            
+            return [{'file_path': fm.path, 'method_name': fm.name} for fm in file_methods]
         finally:
             session.close()

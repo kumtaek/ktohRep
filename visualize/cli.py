@@ -281,12 +281,13 @@ def main():
                     continue
                 elif not args.start_file or not args.start_method:
                     logger.warning("시퀀스 다이어그램을 생성하려면 --start-file과 --start-method 인자가 반드시 필요합니다.")
-                    possible_files = db.get_files_with_methods(project_id, limit=20)
-                    if possible_files:
-                        logger.info("시작 파일로 사용할 수 있는 파일 목록 (최대 20개):")
-                        for f_path in possible_files:
-                            print(f"  - {f_path}")
-                        logger.info("위 파일 중 하나와 해당 파일의 메소드 이름을 지정하여 다시 시도해주세요.")
+                    # Display 10 sample file_path - method_name combinations
+                    sample_methods = db.get_files_with_methods(project_id, limit=10)
+                    if sample_methods:
+                        logger.info("시작 파일과 메서드로 사용할 수 있는 샘플 목록 (최대 10개):")
+                        for item in sample_methods:
+                            print(f"  - {item['file_path']} - {item['method_name']}")
+                        logger.info("위 샘플 중 하나를 선택하여 --start-file과 --start-method 인자로 지정하여 다시 시도해주세요.")
                     else:
                         logger.warning("메소드를 포함한 파일을 찾을 수 없습니다. 프로젝트 분석을 먼저 실행하세요.")
                     continue

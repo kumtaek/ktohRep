@@ -1,7 +1,9 @@
 import os
 import json
 from typing import Iterator, List, Dict, Optional, Union, Any
+from pathlib import Path
 
+import yaml
 import requests
 
 try:
@@ -23,6 +25,13 @@ class OllamaClient:
         self.config = config
         self.base_url = base_url or self.config.get("ollama_host", "http://localhost:11434").rstrip("/")
         self.model = model or self.config.get("ollama_model", "gemma3:1b")
+
+    def is_model_available(self) -> bool:
+        try:
+            resp = requests.post(f"{self.base_url}/api/show", json={"name": self.model}, timeout=10)
+            return resp.status_code == 200
+        except Exception:
+            return False
 
     def chat(
         self,
@@ -140,19 +149,78 @@ class VLLMClient:
             return res.choices[0].message.content or ""
 
 
-def get_client(config: Dict[str, Any], provider: Optional[str] = None):
-    provider = (provider or config.get("provider", "ollama")).strip().lower()
+def _load_llm_config(config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if config is not None:
+        return config
+    try:
+        root = Path(__file__).resolve().parents[2]
+        cfg_path = root / "config" / "config.yaml"
+        if cfg_path.exists():
+            raw = cfg_path.read_text(encoding="utf-8")
+            expanded = os.path.expandvars(raw)
+            full = yaml.safe_load(expanded) or {}
+            return full.get("llm", {})
+    except Exception:
+        pass
+    return {}
+
+
+def get_client(config: Optional[Dict[str, Any]] = None, provider: Optional[str] = None):
+    if isinstance(config, str) and provider is None:
+        provider = config
+        config = None
+    print(f"DEBUG: get_client called with provider='{provider}'")
+    cfg = _load_llm_config(config)
+    provider = (provider or cfg.get("provider", "ollama")).strip().lower()
     if provider in ("ollama", "local"):
-        return OllamaClient(config)
+        base_url = cfg.get("ollama_host", "http://localhost:11434").rstrip("/")
+        base_model = cfg.get("base_model") or cfg.get("ollama_model", "gemma3:1b")
+        fallback_model = cfg.get("fallback_model")
+        enabled = cfg.get("enabled", True)
+        client = OllamaClient({"ollama_host": base_url, "ollama_model": base_model})
+        print(f"DEBUG: Checking if base model '{base_model}' is available at {base_url}...")
+        
+        # If LLM is disabled, return client without availability check
+        if not enabled:
+            print(f"DEBUG: LLM is disabled by config. Returning client without availability check.")
+            return client
+        
+        # LLM is enabled, so we must validate models are available
+        base_available = client.is_model_available()
+        if base_available:
+            print(f"DEBUG: Base model '{base_model}' is available.")
+            return client
+        
+        print(f"DEBUG: Base model '{base_model}' is NOT available.")
+        
+        # Check fallback model if different from base model
+        if fallback_model and fallback_model != base_model:
+            fb_client = OllamaClient({"ollama_host": base_url, "ollama_model": fallback_model})
+            print(f"DEBUG: Checking if fallback model '{fallback_model}' is available at {base_url}...")
+            if fb_client.is_model_available():
+                print(f"DEBUG: Fallback model '{fallback_model}' is available.")
+                return fb_client
+            print(f"DEBUG: Fallback model '{fallback_model}' is NOT available.")
+        
+        # Both base and fallback models are unavailable and LLM is enabled
+        error_message = f"LLM is enabled but no models are available. "
+        if fallback_model and fallback_model != base_model:
+            error_message += f"Tried models: {base_model}, {fallback_model}"
+        else:
+            error_message += f"Tried model: {base_model}"
+        
+        error_message += f"\nPlease ensure Ollama is running at {base_url} and the models are available, or set llm.enabled: false in config.yaml"
+        
+        raise RuntimeError(error_message)
     if provider in ("vllm", "openai"):
-        return VLLMClient(config)
+        return VLLMClient(cfg)
     # Default to Ollama
-    return OllamaClient(config)
+    return OllamaClient(cfg)
 
 
 def simple_chat(
     prompt: str,
-    config: Dict[str, Any],
+    config: Optional[Dict[str, Any]] = None,
     *,
     system: Optional[str] = None,
     provider: Optional[str] = None,

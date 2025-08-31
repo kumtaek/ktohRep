@@ -52,10 +52,68 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 15px;
-            max-width: 300px;
+            max-width: 350px;
+            max-height: 500px;
+            overflow-y: auto;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
             z-index: 1000;
+        }
+        
+        .summary-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .summary-content {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            max-height: 70vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+        
+        .summary-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-section {
+            margin-bottom: 15px;
+        }
+        
+        .summary-section h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .summary-text {
+            background: #f8f9fa;
+            padding: 10px;
+            border-left: 3px solid #007bff;
+            border-radius: 0 4px 4px 0;
+            font-style: italic;
+        }
+        
+        .close-btn {
+            float: right;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
         }
         
         .stats {
@@ -107,6 +165,7 @@
         <button onclick="cy.center()" title="Center view">🎯 Center</button>
         <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
         <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
+        <button onclick="clusterByGroup()" title="Cluster by component type">🗂️ Group</button>
         <input id="search" placeholder="Search nodes..." oninput="searchNode(this.value)" />
         <div class="stats" id="stats">
             Nodes: <span id="node-count">0</span> | 
@@ -120,6 +179,17 @@
     <div id="info-panel" class="info-panel">
         <h4 id="info-title">Node Info</h4>
         <div id="info-content"></div>
+    </div>
+    
+    <div id="summary-modal" class="summary-modal">
+        <div class="summary-content">
+            <div class="summary-header">
+                <h3 id="summary-title">Node Summary</h3>
+                <button class="close-btn" onclick="closeSummaryModal()">×</button>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="summary-body"></div>
+        </div>
     </div>
 
     <script>
@@ -262,28 +332,101 @@
             ],
             layout: {
                 name: 'fcose',
-                quality: 'draft',
-                randomize: true,
+                quality: 'default',
+                randomize: false,
                 animate: true,
-                animationDuration: 1500,
+                animationDuration: 2000,
                 fit: true,
-                padding: 200,
-                nodeSeparation: 600,
+                padding: 150,
+                
+                // Improved spacing for better readability
+                nodeSeparation: 150,
                 idealEdgeLength: edge => {
                     const confidence = edge.data('confidence') || 0.5;
-                    return Math.max(300, 700 - (confidence * 200));
+                    const kind = edge.data('kind');
+                    
+                    // Shorter edges for high-confidence relationships
+                    let baseLength = 200;
+                    if (confidence > 0.8) baseLength = 120;
+                    else if (confidence > 0.6) baseLength = 160;
+                    
+                    // Different lengths for different relationship types
+                    if (kind === 'call') baseLength *= 0.8;
+                    else if (kind === 'use_table') baseLength *= 1.2;
+                    else if (kind === 'include' || kind === 'extends') baseLength *= 0.9;
+                    
+                    return baseLength;
                 },
-                nodeRepulsion: 30000,
+                
+                // Enhanced node repulsion for better spacing
+                nodeRepulsion: node => {
+                    const group = node.data('group');
+                    // Different repulsion for different node types
+                    if (group === 'DB') return 8000;      // Tables spread out more
+                    if (group === 'JSP') return 6000;     // JSP files well-spaced
+                    if (group === 'Controller') return 5000;
+                    return 4000; // Default for other types
+                },
+                
                 edgeElasticity: edge => {
                     const confidence = edge.data('confidence') || 0.5;
-                    return confidence * 0.15;
+                    const kind = edge.data('kind');
+                    
+                    // Strong edges pull nodes closer
+                    let elasticity = confidence * 0.2;
+                    if (kind === 'call') elasticity *= 1.2;
+                    if (kind === 'use_table') elasticity *= 0.8;
+                    
+                    return Math.max(0.05, elasticity);
                 },
-                gravityRange: 10.0,
-                gravity: 0.1,
-                numIter: 1800,
-                initialTemp: 500,
-                coolingFactor: 0.98,
-                minTemp: 2.0
+                
+                // Gravity settings for cluster formation
+                gravityRange: 15.0,
+                gravity: edge => {
+                    // Stronger gravity for related components
+                    const source = cy.getElementById(edge.data('source'));
+                    const target = cy.getElementById(edge.data('target'));
+                    
+                    if (source.length && target.length) {
+                        const sourceGroup = source.data('group');
+                        const targetGroup = target.data('group');
+                        
+                        // Same group = stronger gravity (cluster together)
+                        if (sourceGroup === targetGroup) return 0.3;
+                        
+                        // Related groups get medium gravity
+                        const relatedGroups = [
+                            ['Controller', 'Service'],
+                            ['Service', 'Repository'], 
+                            ['Repository', 'Mapper'],
+                            ['Mapper', 'DB']
+                        ];
+                        
+                        for (const pair of relatedGroups) {
+                            if ((pair[0] === sourceGroup && pair[1] === targetGroup) ||
+                                (pair[1] === sourceGroup && pair[0] === targetGroup)) {
+                                return 0.2;
+                            }
+                        }
+                    }
+                    
+                    return 0.1; // Default gravity
+                },
+                
+                // Clustering settings
+                numIter: 2500,
+                initialTemp: 200,
+                coolingFactor: 0.95,
+                minTemp: 1.0,
+                
+                // Additional positioning improvements
+                uniformNodeDimensions: false,
+                packComponents: true,
+                
+                // Constraint-based positioning for better organization
+                fixedNodeConstraint: undefined,
+                alignmentConstraint: undefined,
+                relativePlacementConstraint: undefined
             },
             wheelSensitivity: 0.1
         });
@@ -342,28 +485,185 @@
         function resetView() {
             cy.layout({
                 name: 'fcose',
-                quality: 'draft',
-                randomize: true,
+                quality: 'default',
+                randomize: false,
                 animate: true,
-                animationDuration: 1500,
+                animationDuration: 2000,
                 fit: true,
-                padding: 200,
-                nodeSeparation: 600,
+                padding: 150,
+                
+                // Improved spacing for better readability
+                nodeSeparation: 150,
                 idealEdgeLength: edge => {
                     const confidence = edge.data('confidence') || 0.5;
-                    return Math.max(300, 700 - (confidence * 200));
+                    const kind = edge.data('kind');
+                    
+                    // Shorter edges for high-confidence relationships
+                    let baseLength = 200;
+                    if (confidence > 0.8) baseLength = 120;
+                    else if (confidence > 0.6) baseLength = 160;
+                    
+                    // Different lengths for different relationship types
+                    if (kind === 'call') baseLength *= 0.8;
+                    else if (kind === 'use_table') baseLength *= 1.2;
+                    else if (kind === 'include' || kind === 'extends') baseLength *= 0.9;
+                    
+                    return baseLength;
                 },
-                nodeRepulsion: 30000,
+                
+                // Enhanced node repulsion for better spacing
+                nodeRepulsion: node => {
+                    const group = node.data('group');
+                    // Different repulsion for different node types
+                    if (group === 'DB') return 8000;      // Tables spread out more
+                    if (group === 'JSP') return 6000;     // JSP files well-spaced
+                    if (group === 'Controller') return 5000;
+                    return 4000; // Default for other types
+                },
+                
                 edgeElasticity: edge => {
                     const confidence = edge.data('confidence') || 0.5;
-                    return confidence * 0.15;
+                    const kind = edge.data('kind');
+                    
+                    // Strong edges pull nodes closer
+                    let elasticity = confidence * 0.2;
+                    if (kind === 'call') elasticity *= 1.2;
+                    if (kind === 'use_table') elasticity *= 0.8;
+                    
+                    return Math.max(0.05, elasticity);
                 },
-                gravityRange: 10.0,
-                gravity: 0.1,
-                numIter: 1800,
-                initialTemp: 500,
-                coolingFactor: 0.98,
-                minTemp: 2.0
+                
+                // Gravity settings for cluster formation
+                gravityRange: 15.0,
+                gravity: edge => {
+                    // Stronger gravity for related components
+                    const source = cy.getElementById(edge.data('source'));
+                    const target = cy.getElementById(edge.data('target'));
+                    
+                    if (source.length && target.length) {
+                        const sourceGroup = source.data('group');
+                        const targetGroup = target.data('group');
+                        
+                        // Same group = stronger gravity (cluster together)
+                        if (sourceGroup === targetGroup) return 0.3;
+                        
+                        // Related groups get medium gravity
+                        const relatedGroups = [
+                            ['Controller', 'Service'],
+                            ['Service', 'Repository'], 
+                            ['Repository', 'Mapper'],
+                            ['Mapper', 'DB']
+                        ];
+                        
+                        for (const pair of relatedGroups) {
+                            if ((pair[0] === sourceGroup && pair[1] === targetGroup) ||
+                                (pair[1] === sourceGroup && pair[0] === targetGroup)) {
+                                return 0.2;
+                            }
+                        }
+                    }
+                    
+                    return 0.1; // Default gravity
+                },
+                
+                // Clustering settings
+                numIter: 2500,
+                initialTemp: 200,
+                coolingFactor: 0.95,
+                minTemp: 1.0,
+                
+                // Additional positioning improvements
+                uniformNodeDimensions: false,
+                packComponents: true,
+                
+                // Constraint-based positioning for better organization
+                fixedNodeConstraint: undefined,
+                alignmentConstraint: undefined,
+                relativePlacementConstraint: undefined
+            }).run();
+        }
+        
+        function clusterByGroup() {
+            // Enhanced layout specifically for group-based clustering
+            cy.layout({
+                name: 'fcose',
+                quality: 'proof',
+                randomize: false,
+                animate: true,
+                animationDuration: 3000,
+                fit: true,
+                padding: 100,
+                
+                // Tight clustering for same groups
+                nodeSeparation: 80,
+                idealEdgeLength: edge => {
+                    const source = cy.getElementById(edge.data('source'));
+                    const target = cy.getElementById(edge.data('target'));
+                    
+                    if (source.length && target.length) {
+                        const sourceGroup = source.data('group');
+                        const targetGroup = target.data('group');
+                        
+                        // Same group = very short edges (tight clustering)
+                        if (sourceGroup === targetGroup) return 50;
+                        
+                        // Related groups = medium edges
+                        const relatedGroups = [
+                            ['Controller', 'Service'],
+                            ['Service', 'Repository'], 
+                            ['Repository', 'Mapper'],
+                            ['Mapper', 'DB']
+                        ];
+                        
+                        for (const pair of relatedGroups) {
+                            if ((pair[0] === sourceGroup && pair[1] === targetGroup) ||
+                                (pair[1] === sourceGroup && pair[0] === targetGroup)) {
+                                return 150;
+                            }
+                        }
+                        
+                        // Different groups = long edges
+                        return 300;
+                    }
+                    
+                    return 200;
+                },
+                
+                nodeRepulsion: node => {
+                    // Strong repulsion between different groups
+                    return 12000;
+                },
+                
+                edgeElasticity: edge => {
+                    const source = cy.getElementById(edge.data('source'));
+                    const target = cy.getElementById(edge.data('target'));
+                    
+                    if (source.length && target.length) {
+                        const sourceGroup = source.data('group');
+                        const targetGroup = target.data('group');
+                        
+                        // Same group = strong pull (cluster together)
+                        if (sourceGroup === targetGroup) return 0.4;
+                        
+                        // Different groups = weak pull
+                        return 0.1;
+                    }
+                    
+                    return 0.2;
+                },
+                
+                // Strong gravity for group formation
+                gravityRange: 20.0,
+                gravity: 0.3,
+                
+                // High iteration count for better clustering
+                numIter: 4000,
+                initialTemp: 100,
+                coolingFactor: 0.92,
+                minTemp: 0.5,
+                
+                uniformNodeDimensions: false,
+                packComponents: true
             }).run();
         }
 
@@ -425,10 +725,80 @@
             }
         });
 
-        // Double-click to focus on node
+        // Double-click to show detailed summary
         cy.on('dblclick', 'node', function(evt) {
             const node = evt.target;
-            cy.fit(node, 100);
+            const data = node.data();
+            
+            showDetailedSummary(data);
+            evt.stopPropagation();
+        });
+        
+        // Summary modal functions
+        function showDetailedSummary(nodeData) {
+            const modal = document.getElementById('summary-modal');
+            const title = document.getElementById('summary-title');
+            const body = document.getElementById('summary-body');
+            
+            title.textContent = nodeData.label || nodeData.id;
+            
+            let html = '<div class="summary-section">';
+            html += '<h4>Basic Information</h4>';
+            html += `<p><strong>Type:</strong> ${nodeData.type}</p>`;
+            html += `<p><strong>Group:</strong> ${nodeData.group}</p>`;
+            html += `<p><strong>ID:</strong> ${nodeData.id}</p>`;
+            html += '</div>';
+            
+            // Show LLM summary if available
+            if (nodeData.meta && nodeData.meta.llm_summary) {
+                html += '<div class="summary-section">';
+                html += '<h4>AI-Generated Summary</h4>';
+                html += `<div class="summary-text">${nodeData.meta.llm_summary}</div>`;
+                html += '</div>';
+            }
+            
+            // Show LLM comment for tables
+            if (nodeData.meta && nodeData.meta.llm_comment) {
+                html += '<div class="summary-section">';
+                html += '<h4>Enhanced Description</h4>';
+                html += `<div class="summary-text">${nodeData.meta.llm_comment}</div>`;
+                html += '</div>';
+            }
+            
+            // Show original comment if available
+            if (nodeData.meta && nodeData.meta.comment && nodeData.meta.comment !== nodeData.meta.llm_comment) {
+                html += '<div class="summary-section">';
+                html += '<h4>Original Comment</h4>';
+                html += `<p>${nodeData.meta.comment}</p>`;
+                html += '</div>';
+            }
+            
+            // Show additional details
+            if (nodeData.meta) {
+                html += '<div class="summary-section">';
+                html += '<h4>Additional Details</h4>';
+                for (const [key, value] of Object.entries(nodeData.meta)) {
+                    if (key !== 'llm_summary' && key !== 'llm_comment' && key !== 'comment' && 
+                        value !== null && value !== undefined) {
+                        html += `<p><strong>${key}:</strong> ${JSON.stringify(value)}</p>`;
+                    }
+                }
+                html += '</div>';
+            }
+            
+            body.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+        
+        function closeSummaryModal() {
+            document.getElementById('summary-modal').style.display = 'none';
+        }
+        
+        // Close modal on background click
+        document.getElementById('summary-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSummaryModal();
+            }
         });
 
         console.log('Visualization loaded with', DATA.nodes?.length || 0, 'nodes and', DATA.edges?.length || 0, 'edges');

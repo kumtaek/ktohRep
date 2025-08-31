@@ -382,10 +382,27 @@ class DatabaseManager:
         self.engine = None
         self.Session = None
         
-    def initialize(self):
-        """Initialize database connection and create tables."""
-        db_config = self.config['database']
-        
+
+    def initialize(self, db_scope: str = 'project'):
+        """Initialize database connection and create tables.
+
+        Args:
+            db_scope: Which database configuration to use when multiple are
+                defined in the global config. Defaults to ``'project'`` so that
+                project-level analysis works out of the box. Specify ``'global'``
+                to use the global metadata database, e.g. for the web dashboard.
+        """
+        # ``self.config`` may be either the full config (containing a "database"
+        # section) or a database section itself. Normalize accordingly.
+        cfg = self.config
+        if isinstance(cfg, dict) and 'database' in cfg:
+            cfg = cfg['database']
+
+        # If the configuration nests project/global sections, pick one.
+        if 'type' not in cfg:
+            cfg = cfg.get(db_scope) or cfg.get('project') or cfg.get('global') or cfg
+ 
+        db_config = cfg
         db_url = ""
         engine_args = {}
 

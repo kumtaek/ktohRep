@@ -34,7 +34,25 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
         src_details = db.get_node_details(edge.src_type, edge.src_id)
         dst_details = db.get_node_details(edge.dst_type, edge.dst_id) if edge.dst_id else None
         
-        nodes_list = list(nodes_dict.values())
+        # Add source node
+        if src_id not in nodes_dict and src_details:
+            nodes_dict[src_id] = create_node(src_id, edge.src_type, src_details)
+        
+        # Add destination node
+        if dst_id not in nodes_dict and dst_details:
+            nodes_dict[dst_id] = create_node(dst_id, edge.dst_type, dst_details)
+        
+        # Add edge
+        json_edges.append(create_edge(
+            f"edge_{edge.edge_id}",
+            src_id,
+            dst_id,
+            edge.edge_kind,
+            edge.confidence,
+            edge.meta
+        ))
+    
+    nodes_list = list(nodes_dict.values())
     print(f"  노드 {len(nodes_list)}개 생성")
 
     # Initialize the clusterer with all nodes and edges

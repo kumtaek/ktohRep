@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연관성 분석 - 우리금융지주 스타일</title>
+    <style>
+        /* 우리금융지주 브랜드 스타일 */
+        :root {
+            --woori-primary: #1976d2;
+            --woori-primary-dark: #0d47a1;
+            --woori-primary-light: #42a5f5;
+            --woori-accent: #2196f3;
+            --woori-pale: #e3f2fd;
+            --woori-ice: #f1f8ff;
+            --woori-gradient: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
+            color: #212121;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .woori-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--woori-primary);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* 컨트롤 패널 */
+        .controls {
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--woori-primary);
+            font-size: 14px;
+        }
+
+        .woori-input, .woori-select {
+            padding: 10px 12px;
+            border: 2px solid rgba(25, 118, 210, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .woori-input:focus, .woori-select:focus {
+            outline: none;
+            border-color: var(--woori-primary);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .woori-btn {
+            background: var(--woori-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .woori-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        .woori-btn-secondary {
+            background: white;
+            color: var(--woori-primary);
+            border: 2px solid var(--woori-primary);
+        }
+
+        .woori-btn-secondary:hover {
+            background: var(--woori-pale);
+        }
+
+        /* 통계 패널 */
+        .stats-panel {
+            background: white;
+            margin: 0 auto 24px;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: var(--woori-ice);
+            border-radius: 8px;
+            border: 1px solid rgba(25, 118, 210, 0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--woori-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #616161;
+            font-weight: 500;
+        }
+
+        /* 메인 시각화 영역 */
+        .visualization-container {
+            background: white;
+            margin: 0 auto;
+            max-width: 1200px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.12);
+            overflow: hidden;
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .viz-header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viz-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .viz-toolbar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #cy {
+            width: 100%;
+            height: 600px;
+            background: #fafafa;
+        }
+
+        /* 범례 */
+        .legend {
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .legend h3 {
+            color: var(--woori-primary);
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--woori-ice);
+            border-radius: 6px;
+            border: 1px solid rgba(25, 118, 210, 0.1);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid currentColor;
+        }
+
+        .legend-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 정보 패널 */
+        .info-panel {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+            max-width: 300px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .info-panel.active {
+            display: block;
+        }
+
+        .info-title {
+            color: var(--woori-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .info-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--woori-primary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--woori-pale);
+            border-top: 4px solid var(--woori-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header-content {
+                padding: 0 16px;
+            }
+            
+            .controls, .stats-panel, .visualization-container, .legend {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+            
+            .info-panel {
+                position: static;
+                transform: none;
+                margin: 16px;
+                max-width: none;
+            }
+        }
+    </style>
+    
+    <!-- Cytoscape.js and extensions -->
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script>
+        const DATA = __DATA_PLACEHOLDER__;
+    </script>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <div class="woori-logo">우</div>
+                연관성 분석 리포트
+            </h1>
+            <div style="font-size: 14px; opacity: 0.9;">
+                Source Analyzer - 우리금융지주 스타일
+            </div>
+        </div>
+    </header>
+
+    <!-- 컨트롤 패널 -->
+    <div class="controls">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>연관성 임계값</label>
+                <input type="range" id="scoreThreshold" class="woori-input" 
+                       min="0" max="1" step="0.1" value="0.5" 
+                       oninput="updateThreshold(this.value)">
+                <span id="thresholdValue">0.5</span>
+            </div>
+            
+            <div class="control-group">
+                <label>레이아웃 방식</label>
+                <select id="layoutType" class="woori-select" onchange="changeLayout(this.value)">
+                    <option value="fcose">물리 기반 (fcose)</option>
+                    <option value="dagre">계층형 (dagre)</option>
+                    <option value="circle">원형 (circle)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>검색</label>
+                <input type="text" id="searchInput" class="woori-input" 
+                       placeholder="노드 이름으로 검색..." 
+                       oninput="searchNodes(this.value)">
+            </div>
+            
+            <div class="control-group">
+                <button class="woori-btn" onclick="exportToPng()">
+                    📷 PNG 내보내기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 패널 -->
+    <div class="stats-panel">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="nodeCount">0</div>
+                <div class="stat-label">노드 수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="edgeCount">0</div>
+                <div class="stat-label">연관 관계</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="clusterCount">0</div>
+                <div class="stat-label">클러스터</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgScore">0.0</div>
+                <div class="stat-label">평균 연관도</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 시각화 컨테이너 -->
+    <div class="visualization-container">
+        <div class="viz-header">
+            <div class="viz-title">연관성 네트워크</div>
+            <div class="viz-toolbar">
+                <button class="toolbar-btn" onclick="cy.fit()" title="화면에 맞춤">🔍</button>
+                <button class="toolbar-btn" onclick="cy.center()" title="중앙 정렬">🎯</button>
+                <button class="toolbar-btn" onclick="resetLayout()" title="레이아웃 재설정">🔄</button>
+                <button class="toolbar-btn" onclick="togglePhysics()" title="물리 효과 토글">⚡</button>
+            </div>
+        </div>
+        <div id="cy">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                연관성 데이터를 로딩중입니다...
+            </div>
+        </div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend">
+        <h3>클러스터 범례</h3>
+        <div class="legend-grid" id="legendGrid">
+            <!-- 동적으로 생성됨 -->
+        </div>
+    </div>
+
+    <!-- 정보 패널 -->
+    <div class="info-panel" id="infoPanel">
+        <div class="info-title" id="infoTitle">노드 정보</div>
+        <div class="info-content" id="infoContent">
+            노드를 클릭하면 상세 정보가 표시됩니다.
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let cy = null;
+        let currentLayout = 'fcose';
+        let usePhysics = true;
+
+        // 우리금융지주 브랜드 색상
+        const WOORI_COLORS = {
+            primary: '#1976d2',
+            primaryDark: '#0d47a1', 
+            primaryLight: '#42a5f5',
+            accent: '#2196f3',
+            clusters: [
+                { fill: '#1976d2', border: '#0d47a1', name: '핵심 클러스터' },
+                { fill: '#2196f3', border: '#1565c0', name: '주요 클러스터' },
+                { fill: '#42a5f5', border: '#1976d2', name: '보조 클러스터' },
+                { fill: '#81d4fa', border: '#42a5f5', name: '연결 클러스터' },
+                { fill: '#7986cb', border: '#5c6bc0', name: '특수 클러스터' }
+            ]
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            if (DATA && DATA.nodes && DATA.nodes.length > 0) {
+                initializeVisualization();
+            } else {
+                showNoDataMessage();
+            }
+        });
+
+        function initializeVisualization() {
+            const elements = buildCytoscapeElements();
+            const styles = buildWooriStyles();
+            
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: styles,
+                layout: getLayoutConfig('fcose')
+            });
+
+            setupEventHandlers();
+            updateStatistics();
+            updateLegend();
+        }
+
+        function buildCytoscapeElements() {
+            const elements = [];
+
+            // 노드 추가
+            if (DATA.nodes) {
+                DATA.nodes.forEach(node => {
+                    elements.push({
+                        data: {
+                            id: node.id,
+                            label: node.label,
+                            type: node.type,
+                            group: node.group || 'default',
+                            cluster_id: node.cluster_id || 0,
+                            meta: node.meta || {}
+                        }
+                    });
+                });
+            }
+
+            // 엣지 추가
+            if (DATA.edges) {
+                DATA.edges.forEach(edge => {
+                    elements.push({
+                        data: {
+                            id: edge.id,
+                            source: edge.source,
+                            target: edge.target,
+                            kind: edge.kind,
+                            confidence: edge.confidence || 0.5,
+                            strength: edge.meta?.strength || 'medium',
+                            meta: edge.meta || {}
+                        }
+                    });
+                });
+            }
+
+            return elements;
+        }
+
+        function buildWooriStyles() {
+            const styles = [
+                // 기본 노드 스타일
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '12px',
+                        'font-weight': '600',
+                        'font-family': 'Malgun Gothic, sans-serif',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '120px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'color': '#ffffff',
+                        'text-outline-width': '1px',
+                        'text-outline-color': '#000000',
+                        'text-outline-opacity': 0.3,
+                        'background-color': WOORI_COLORS.primary,
+                        'border-width': '2px',
+                        'border-color': WOORI_COLORS.primaryDark,
+                        'width': '50px',
+                        'height': '50px',
+                        'shape': 'round-rectangle',
+                        'overlay-opacity': 0
+                    }
+                },
+
+                // 클러스터별 노드 색상
+                ...WOORI_COLORS.clusters.map((cluster, idx) => ({
+                    selector: `node[cluster_id = "${idx}"]`,
+                    style: {
+                        'background-color': cluster.fill,
+                        'border-color': cluster.border
+                    }
+                })),
+
+                // 기본 엣지 스타일
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 'mapData(confidence, 0, 1, 1, 4)',
+                        'line-color': WOORI_COLORS.primary,
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': WOORI_COLORS.primary,
+                        'arrow-scale': 1.2,
+                        'opacity': 0.8
+                    }
+                },
+
+                // 엣지 강도별 색상
+                {
+                    selector: 'edge[strength = "strong"]',
+                    style: {
+                        'line-color': WOORI_COLORS.primaryDark,
+                        'target-arrow-color': WOORI_COLORS.primaryDark,
+                        'width': 4
+                    }
+                },
+                {
+                    selector: 'edge[strength = "medium"]',
+                    style: {
+                        'line-color': WOORI_COLORS.primary,
+                        'target-arrow-color': WOORI_COLORS.primary,
+                        'width': 2
+                    }
+                },
+                {
+                    selector: 'edge[strength = "weak"]',
+                    style: {
+                        'line-color': WOORI_COLORS.primaryLight,
+                        'target-arrow-color': WOORI_COLORS.primaryLight,
+                        'width': 1
+                    }
+                },
+
+                // 선택 상태 스타일
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': '4px',
+                        'border-color': '#ff6b35',
+                        'background-color': '#ffe0d6'
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff6b35',
+                        'target-arrow-color': '#ff6b35',
+                        'width': 6
+                    }
+                },
+
+                // 하이라이트 상태
+                {
+                    selector: '.highlighted',
+                    style: {
+                        'border-width': '3px',
+                        'border-color': '#ffd700',
+                        'z-index': 10
+                    }
+                }
+            ];
+
+            return styles;
+        }
+
+        function getLayoutConfig(layoutType) {
+            const configs = {
+                fcose: {
+                    name: 'fcose',
+                    quality: 'proof',
+                    animate: true,
+                    animationDuration: 1000,
+                    idealEdgeLength: edge => 120 * (1 - (edge.data('confidence') || 0.5)),
+                    nodeRepulsion: node => {
+                        const degree = node.degree();
+                        return Math.max(4000, degree * 800);
+                    },
+                    gravity: 0.1,
+                    gravityRangeCompound: 1.5
+                },
+                dagre: {
+                    name: 'dagre',
+                    rankDir: 'TB',
+                    nodeSep: 60,
+                    rankSep: 80,
+                    animate: true
+                },
+                circle: {
+                    name: 'circle',
+                    animate: true,
+                    animationDuration: 1000
+                }
+            };
+            return configs[layoutType] || configs.fcose;
+        }
+
+        function setupEventHandlers() {
+            // 노드 클릭 이벤트
+            cy.on('tap', 'node', function(evt) {
+                const node = evt.target;
+                showNodeInfo(node);
+                highlightConnectedNodes(node);
+            });
+
+            // 배경 클릭 시 정보 패널 숨기기
+            cy.on('tap', function(evt) {
+                if (evt.target === cy) {
+                    hideNodeInfo();
+                    clearHighlights();
+                }
+            });
+
+            // 노드 호버 효과
+            cy.on('mouseover', 'node', function(evt) {
+                this.style('cursor', 'pointer');
+            });
+        }
+
+        function showNodeInfo(node) {
+            const data = node.data();
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+
+            title.textContent = data.label || data.id;
+            
+            let info = `<div style="margin-bottom: 12px;"><strong>유형:</strong> ${data.type}</div>`;
+            info += `<div style="margin-bottom: 12px;"><strong>클러스터:</strong> ${data.group || 'Unknown'}</div>`;
+            
+            const degree = node.degree();
+            info += `<div style="margin-bottom: 12px;"><strong>연결 수:</strong> ${degree}</div>`;
+            
+            if (data.meta && Object.keys(data.meta).length > 0) {
+                info += '<div style="margin-bottom: 8px;"><strong>상세 정보:</strong></div>';
+                info += '<div style="font-size: 12px; color: #616161;">';
+                Object.entries(data.meta).forEach(([key, value]) => {
+                    if (value) {
+                        info += `<div>${key}: ${value}</div>`;
+                    }
+                });
+                info += '</div>';
+            }
+
+            content.innerHTML = info;
+            panel.classList.add('active');
+        }
+
+        function hideNodeInfo() {
+            document.getElementById('infoPanel').classList.remove('active');
+        }
+
+        function highlightConnectedNodes(node) {
+            clearHighlights();
+            
+            const connectedEdges = node.connectedEdges();
+            const connectedNodes = connectedEdges.connectedNodes();
+            
+            node.addClass('highlighted');
+            connectedNodes.addClass('highlighted');
+            connectedEdges.addClass('highlighted');
+        }
+
+        function clearHighlights() {
+            cy.elements().removeClass('highlighted');
+        }
+
+        function updateStatistics() {
+            const nodeCount = DATA.nodes ? DATA.nodes.length : 0;
+            const edgeCount = DATA.edges ? DATA.edges.length : 0;
+            
+            const clusterIds = new Set();
+            let totalScore = 0;
+            
+            if (DATA.nodes) {
+                DATA.nodes.forEach(node => {
+                    if (node.cluster_id !== undefined) {
+                        clusterIds.add(node.cluster_id);
+                    }
+                });
+            }
+            
+            if (DATA.edges) {
+                DATA.edges.forEach(edge => {
+                    totalScore += (edge.confidence || 0);
+                });
+            }
+            
+            const avgScore = edgeCount > 0 ? (totalScore / edgeCount).toFixed(2) : '0.0';
+            
+            document.getElementById('nodeCount').textContent = nodeCount;
+            document.getElementById('edgeCount').textContent = edgeCount;
+            document.getElementById('clusterCount').textContent = clusterIds.size;
+            document.getElementById('avgScore').textContent = avgScore;
+        }
+
+        function updateLegend() {
+            const legendGrid = document.getElementById('legendGrid');
+            legendGrid.innerHTML = '';
+            
+            const clusterIds = new Set();
+            if (DATA.nodes) {
+                DATA.nodes.forEach(node => {
+                    if (node.cluster_id !== undefined) {
+                        clusterIds.add(node.cluster_id);
+                    }
+                });
+            }
+            
+            Array.from(clusterIds).sort().forEach(clusterId => {
+                const colorInfo = WOORI_COLORS.clusters[clusterId] || WOORI_COLORS.clusters[0];
+                
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = colorInfo.fill;
+                colorBox.style.borderColor = colorInfo.border;
+                
+                const label = document.createElement('span');
+                label.className = 'legend-label';
+                label.textContent = `클러스터 ${clusterId + 1}`;
+                
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legendGrid.appendChild(item);
+            });
+        }
+
+        function changeLayout(layoutType) {
+            currentLayout = layoutType;
+            cy.layout(getLayoutConfig(layoutType)).run();
+        }
+
+        function resetLayout() {
+            cy.layout(getLayoutConfig(currentLayout)).run();
+        }
+
+        function togglePhysics() {
+            usePhysics = !usePhysics;
+            const newLayout = usePhysics ? 'fcose' : 'dagre';
+            changeLayout(newLayout);
+            document.getElementById('layoutType').value = newLayout;
+        }
+
+        function updateThreshold(value) {
+            document.getElementById('thresholdValue').textContent = value;
+            // 실제 구현에서는 서버에서 데이터를 다시 가져와야 함
+            console.log(`Threshold updated to: ${value}`);
+        }
+
+        function searchNodes(query) {
+            clearHighlights();
+            
+            if (!query.trim()) {
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label') || '';
+                const type = node.data('type') || '';
+                return label.toLowerCase().includes(query.toLowerCase()) ||
+                       type.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                matchedNodes.addClass('highlighted');
+                cy.fit(matchedNodes, 50);
+            }
+        }
+
+        function exportToPng() {
+            const png64 = cy.png({
+                full: true,
+                scale: 2,
+                bg: 'white'
+            });
+            
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = '연관성_분석_결과.png';
+            link.click();
+        }
+
+        function showNoDataMessage() {
+            document.getElementById('cy').innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #616161;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div style="font-size: 18px; margin-bottom: 8px;">연관성 데이터가 없습니다</div>
+                    <div style="font-size: 14px;">먼저 연관성 계산을 실행해주세요.</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

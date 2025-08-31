@@ -1,19 +1,10 @@
 @echo off
-REM SourceAnalyzer 실행 배치 파일
-REM phase1 디렉토리에서 main.py를 실행합니다
-
 setlocal
 
-REM Activate the virtual environment
 call "%~dp0venvSrcAnalyzer\Scripts\activate.bat"
 
-REM Set PYTHONPATH for phase1 module imports
-set PYTHONPATH=%~dp0phase1
+set "PYTHONPATH=%~dp0"
 
-REM Change to phase1 directory and run main.py
-cd /d "%~dp0phase1"
-python main.py %*
+python.exe "%~dp0phase1\main.py" %*
 
-pause
-
-exit /b %ERRORLEVEL%
+endlocal

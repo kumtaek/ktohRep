@@ -9,6 +9,71 @@ from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph
 
 
+# Component classification rules
+COMPONENT_RULES = {
+    'Controller': [
+        r'.*[Cc]ontroller.*',
+        r'.*/controller/.*',
+        r'.*Controller\.java$'
+    ],
+    'Service': [
+        r'.*[Ss]ervice.*',
+        r'.*/service/.*',
+        r'.*Service\.java$',
+        r'.*ServiceImpl.*'
+    ],
+    'Repository': [
+        r'.*[Rr]epository.*',
+        r'.*[Dd]ao.*',
+        r'.*/dao/.*',
+        r'.*/repository/.*',
+        r'.*Dao\.java$',
+        r'.*Repository\.java$'
+    ],
+    'Mapper': [
+        r'.*[Mm]apper.*',
+        r'.*/mapper/.*',
+        r'.*Mapper\.java$',
+        r'.*Mapper\.xml$'
+    ],
+    'Model': [
+        r'.*[Mm]odel.*',
+        r'.*[Ee]ntity.*',
+        r'.*[Dd]to.*',
+        r'.*[Vv]o.*',
+        r'.*/model/.*',
+        r'.*/entity/.*',
+        r'.*/dto/.*',
+        r'.*/vo/.*'
+    ],
+    'View': [
+        r'.*\.jsp$',
+        r'.*\.html$',
+        r'.*\.ftl$',
+        r'.*/jsp/.*',
+        r'.*/view/.*',
+        r'.*/template/.*'
+    ],
+    'Config': [
+        r'.*[Cc]onfig.*',
+        r'.*\.properties$',
+        r'.*\.yml$',
+        r'.*\.yaml$',
+        r'.*/config/.*'
+    ],
+    'Util': [
+        r'.*[Uu]til.*',
+        r'.*[Hh]elper.*',
+        r'.*/util/.*',
+        r'.*/utils/.*',
+        r'.*/helper/.*'
+    ]
+}
+
+DEFAULT_COMPONENT = 'Other'
+LOG_MISMATCHES = True
+
+
 def build_component_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], min_conf: float, max_nodes: int = 2000) -> Dict[str, Any]:
     """Build component diagram JSON for visualization"""
     print(f"Building component diagram for project {project_id}")

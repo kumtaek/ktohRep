@@ -759,7 +759,7 @@ class MetadataEngine:
                 # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
                 if join.l_table:
                     # DB 스키마에서 테이블 찾기 (개선된 스키마 매칭)
-                    default_owner = self.config.get('database', {}).get('default_schema', 'SAMPLE')
+                    default_owner = self.config.get('database', {}).get('project', {}).get('default_schema', 'SAMPLE')
                     
                     # 1차: 기본 스키마에서 검색
                     query = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper())

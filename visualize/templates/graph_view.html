@@ -2,21 +2,55 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Source Analyzer - 의존성 그래프</title>
+    <title>우리금융지주 - 의존성 그래프 분석</title>
+    <link rel="stylesheet" href="../static/css/woori-brand-theme.css">
     <style>
         body, html { 
             margin: 0; 
             height: 100%; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
         }
-        #toolbar { 
-            padding: 12px; 
-            border-bottom: 1px solid #ddd; 
-            background: #f8f9fa;
+        
+        .woori-header {
+            background: var(--woori-gradient-header);
+            color: var(--woori-text-on-primary);
+            padding: 16px 24px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            box-shadow: var(--woori-shadow-medium);
+        }
+        
+        .woori-logo {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        #toolbar { 
+            padding: 16px 24px; 
+            background: white;
+            border-bottom: var(--woori-border-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(25,118,210,0.08);
         }
         #cy { 
             width: 100%; 
@@ -24,45 +58,65 @@
         }
         
         button {
-            background: #007bff;
+            background: var(--woori-gradient-main);
             border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
+            color: var(--woori-text-on-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: var(--woori-shadow-light);
         }
         button:hover {
-            background: #0056b3;
+            background: var(--woori-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--woori-shadow-medium);
         }
         
         #search {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px 12px;
+            border: 2px solid rgba(25,118,210,0.2);
+            border-radius: var(--woori-border-radius-small);
             font-size: 14px;
-            min-width: 200px;
+            min-width: 220px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        #search:focus {
+            outline: none;
+            border-color: var(--woori-primary);
+            box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
         }
         
         .info-panel {
             position: absolute;
-            top: 80px;
-            right: 20px;
+            top: 120px;
+            right: 24px;
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            max-width: 300px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: var(--woori-border-light);
+            border-radius: var(--woori-border-radius);
+            padding: 20px;
+            max-width: 320px;
+            box-shadow: var(--woori-shadow-heavy);
             display: none;
             z-index: 1000;
         }
+        .info-panel h4 {
+            color: var(--woori-primary);
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
         
         .stats {
-            background: rgba(0, 123, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+            background: var(--woori-primary-pale);
+            color: var(--woori-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(25,118,210,0.15);
         }
         
         .legend {
@@ -85,9 +139,10 @@
         }
     </style>
     <!-- Offline assets (relative to output dir: output/visualize -> ../static) -->
-    <script src="../static/vendor/cytoscape/cytoscape.min.js"></script>
-    <script src="../static/vendor/dagre/dagre.min.js"></script>
-    <script src="../static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="../static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
     </script>
@@ -109,16 +164,25 @@
     </script>
 </head>
 <body>
+    <!--  헤더 -->
+    <header class="woori-header">
+        <div class="header-title">
+            <div class="woori-logo">우</div>
+            <span>Source Analyzer - 의존성 분석</span>
+        </div>
+        <div style="font-size: 14px; opacity: 0.9;">Enterprise Solution</div>
+    </header>
+    
     <div id="toolbar">
-        <button onclick="cy.fit()" title="Fit to view">🔍 Fit</button>
-        <button onclick="cy.center()" title="Center view">🎯 Center</button>
-        <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
-        <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
-        <button onclick="togglePhysics()" title="Toggle physics">⚡ Physics</button>
-        <input id="search" placeholder="Search nodes..." oninput="searchNode(this.value)" />
+        <button onclick="cy.fit()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="cy.center()" title="중앙 정렬">🎯 중앙정렬</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG 저장</button>
+        <button onclick="resetView()" title="레이아웃 초기화">🔄 초기화</button>
+        <button onclick="togglePhysics()" title="물리 레이아웃 토글">⚡ 물리모드</button>
+        <input id="search" placeholder="노드 이름으로 검색..." oninput="searchNode(this.value)" />
         <div class="stats" id="stats">
-            Nodes: <span id="node-count">0</span> | 
-            Edges: <span id="edge-count">0</span>
+            노드: <span id="node-count">0</span> | 
+            연결: <span id="edge-count">0</span>
         </div>
         <div class="legend" id="legend"></div>
     </div>
@@ -359,13 +423,17 @@
         }
 
         function resetView() {
-            const layout = usePhysics ? 'cose' : 'dagre';
-            const layoutOptions = usePhysics ? 
+            const layoutOptions = usePhysics ?
                 {
                     name: 'cose',
                     animate: true,
                     nodeRepulsion: 4000,
                     idealEdgeLength: 100
+                    name: 'fcose',
+                    randomize: true,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: edge => 100 / (edge.data('confidence') || 1),
+                    animate: true
                 } :
                 {
                     name: 'dagre',
@@ -376,6 +444,22 @@
                 };
             
             cy.layout(layoutOptions).run();
+
+            try {
+                cy.layout(layoutOptions).run();
+            } catch (e) {
+                if (layoutOptions.name === 'fcose') {
+                    console.warn('fcose layout unavailable, falling back to cose');
+                    cy.layout({
+                        name: 'cose',
+                        animate: true,
+                        nodeRepulsion: 4500,
+                        idealEdgeLength: 100
+                    }).run();
+                } else {
+                    throw e;
+                }
+            }
         }
 
         function togglePhysics() {

@@ -4,10 +4,10 @@ setlocal
 REM Activate the virtual environment
 call "%~dp0venvSrcAnalyzer\Scripts\activate.bat"
 
-REM Set PYTHONPATH for phase1 module imports (visualize may need access to phase1 modules)
-set PYTHONPATH=%~dp0phase1
+REM Set project root to PYTHONPATH to handle all imports correctly
+set PYTHONPATH=%~dp0
 
-REM Execute the Python script, passing all arguments
-python "%~dp0visualize\cli.py" %*
+REM Execute the visualize module, passing all arguments
+python -m visualize.cli %*
 
 endlocal

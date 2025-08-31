@@ -107,7 +107,8 @@ def API(path: str) -> str:
 
 # Initialize MetadataEngine (fix: pass full config and initialize DB)
 db_manager = DatabaseManager(config)
-db_manager.initialize()
+# Use the global database for the web dashboard - ktohkr
+db_manager.initialize('global')
 metadata_engine = MetadataEngine(config, db_manager)
 
 @app.route('/')

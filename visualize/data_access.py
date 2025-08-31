@@ -10,7 +10,7 @@ project_root = current_dir.parent
 phase1_path = project_root / "phase1"
 sys.path.insert(0, str(phase1_path))
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project
+from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project, Relatedness
 from sqlalchemy import and_, or_, func
 import yaml
 
@@ -21,13 +21,10 @@ class VizDB:
         self.project_name = project_name
         
         # 새로운 database config 구조에서 project database 사용
-        if 'project' in config.get('database', {}):
-            # 새로운 구조: database.project
-            project_db_config = config['database']['project'].copy()
-            db_config = {'database': project_db_config}
-        else:
-            # 기존 구조 호환성
-            db_config = config
+        db_config = config.get('database', {}).get('project', {})
+        if not db_config:
+            # project 섹션이 없을 경우를 대비한 하위 호환성
+            db_config = config.get('database', {})
         
         self.dbm = DatabaseManager(db_config)
         self.dbm.initialize()
@@ -316,3 +313,43 @@ class VizDB:
         finally:
             session.close()
         return None
+
+    def fetch_relatedness(self, project_id: int, min_score: float = 0.0) -> List[Relatedness]:
+        """
+        연관성 데이터 조회
+        
+        Args:
+            project_id: 프로젝트 ID
+            min_score: 최소 연관성 점수 (0.0-1.0)
+            
+        Returns:
+            연관성 데이터 리스트
+        """
+        session = self.session()
+        try:
+            query = session.query(Relatedness).filter(
+                and_(
+                    Relatedness.project_id == project_id,
+                    Relatedness.score >= min_score
+                )
+            ).order_by(Relatedness.score.desc())
+            
+            return query.all()
+        finally:
+            session.close()
+
+    def get_files_with_methods(self, project_id: int, limit: int = 20) -> List[str]:
+        """Get a list of files that contain methods, suitable for sequence diagrams."""
+        session = self.session()
+        try:
+            # Query for files that have at least one class which has at least one method.
+            files = (session.query(File.path)
+                     .distinct()
+                     .join(Class)
+                     .join(Method)
+                     .filter(File.project_id == project_id)
+                     .limit(limit)
+                     .all())
+            return [file[0] for file in files]
+        finally:
+            session.close()

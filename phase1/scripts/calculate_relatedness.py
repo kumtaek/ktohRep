@@ -178,7 +178,8 @@ class RelatednessCalculator:
     def __init__(self, project_name: str, config: dict):
         self.project_name = project_name
         self.config = config
-        self.dbm = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        self.dbm = DatabaseManager(db_config)
         self.dbm.initialize()  # Ensure database is initialized
         self.session = self.dbm.get_session()
         self.project_id = self._get_project_id()
@@ -239,28 +240,28 @@ class RelatednessCalculator:
         """Store all calculated relatedness scores to the database efficiently."""
         print("  - Storing scores to database...")
         
+        if not self.relatedness_scores:
+            print("    No relatedness scores to store.")
+            return
+
         try:
-            # First, delete existing relatedness data for this project
+            # First, delete existing relatedness data for this project for a clean slate
             self.session.query(Relatedness).filter(
                 Relatedness.project_id == self.project_id
             ).delete(synchronize_session=False)
-            
-            # Prepare bulk insert data
+            print(f"    Deleted old relatedness data for project {self.project_id}.")
+
+            # Prepare data for bulk insert
             insert_data = []
             for (node1_key, node2_key), (score, reason) in self.relatedness_scores.items():
                 if score <= 0.0:
                     continue
                 
-                # Parse node keys (format: "type:id")
-                node1_parts = node1_key.split(':', 1)
-                node2_parts = node2_key.split(':', 1)
-                
-                if len(node1_parts) != 2 or len(node2_parts) != 2:
-                    continue
-                    
                 try:
-                    node1_type, node1_id = node1_parts[0], int(node1_parts[1])
-                    node2_type, node2_id = node2_parts[0], int(node2_parts[1])
+                    node1_type, node1_id_str = node1_key.split(':', 1)
+                    node2_type, node2_id_str = node2_key.split(':', 1)
+                    node1_id = int(node1_id_str)
+                    node2_id = int(node2_id_str)
                     
                     insert_data.append({
                         'project_id': self.project_id,
@@ -271,16 +272,17 @@ class RelatednessCalculator:
                         'score': score,
                         'reason': reason
                     })
-                except ValueError:
+                except (ValueError, IndexError) as e:
+                    print(f"    Skipping invalid key format: {node1_key}, {node2_key} - Error: {e}")
                     continue
             
             # Bulk insert the data
             if insert_data:
                 self.session.bulk_insert_mappings(Relatedness, insert_data)
                 self.session.commit()
-                print(f"    Stored {len(insert_data)} relatedness records.")
+                print(f"    Successfully stored {len(insert_data)} new relatedness records.")
             else:
-                print("    No valid relatedness data to store.")
+                print("    No valid new relatedness data to store.")
                 
         except Exception as e:
             print(f"    Error storing scores to database: {e}")
@@ -302,20 +304,22 @@ if __name__ == '__main__':
         sys.exit(1)
 
     with open(config_path, 'r', encoding='utf-8') as f:
-        config = yaml.safe_load(f)
+        config = yaml.safe_load(os.path.expandvars(f.read())) or {}
 
-    # Replace with the actual project name you want to analyze
-    # You might need to pass this as a command-line argument
-    project_name_to_analyze = "default_project" # <-- Replace this
+    # Get project name from command line arguments
+    if len(sys.argv) < 2:
+        print(f"Usage: python {sys.argv[0]} <project_name>")
+        sys.exit(1)
+    
+    project_name_to_analyze = sys.argv[1]
+    
+    # Substitute project name in config
+    import json
+    config_str = json.dumps(config)
+    config_str = config_str.replace("{project_name}", project_name_to_analyze)
+    config = json.loads(config_str)
     
     try:
-        # In a real scenario, you might get the project name from sys.argv
-        if len(sys.argv) > 1:
-            project_name_to_analyze = sys.argv[1]
-        else:
-            print(f"Usage: python {sys.argv[0]} <project_name>")
-            print(f"Defaulting to '{project_name_to_analyze}' for now.")
-
         calculator = RelatednessCalculator(project_name_to_analyze, config)
         calculator.run()
     except ValueError as ve:

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Source Analyzer - 클래스 다이어그램</title>
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #toolbar { 
+            padding: 12px; 
+            border-bottom: 1px solid #ddd; 
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #cy { 
+            width: 100%; 
+            height: calc(100% - 60px); 
+        }
+        
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #search {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-width: 400px;
+            max-height: 70vh;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .stats {
+            background: rgba(156, 39, 176, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        .method-list, .attribute-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 5px 0;
+        }
+        
+        .method-item, .attribute-item {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .private { color: #888; }
+        .special { color: #d32f2f; font-weight: bold; }
+        .property { color: #1976d2; }
+        .static { color: #388e3c; }
+    </style>
+    <!-- Offline assets -->
+    <script src=./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src=./static/vendor/dagre/dagre.min.js"></script>
+    <script src=./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script>
+        const DATA = {
+  "nodes": [],
+  "edges": [],
+  "stats": {
+    "total_files": 0,
+    "total_classes": 0
+  }
+};
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btns = [
+                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
+                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
+                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
+                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
+                { sel: 'button[onclick="toggleLayout()"]', text: '레이아웃', title: '레이아웃 전환' }
+            ];
+            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text + (b.sel.includes('toggleLayout') ? ' (' + (document.getElementById('current-layout')?.textContent || 'dagre') + ')' : ''); el.title = b.title; } });
+            const search = document.getElementById('search'); if (search) search.placeholder = '클래스 검색...';
+            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '클래스: <span id="node-count">0</span> | 관계: <span id="edge-count">0</span>';
+            const h = document.getElementById('info-title'); if (h) h.textContent = '클래스 정보';
+            document.title = 'Source Analyzer - 클래스 다이어그램';
+        });
+    </script>
+</head>
+<body>
+    <div id="toolbar">
+        <button onclick="cy.fit()" title="Fit to view">🔍 Fit</button>
+        <button onclick="cy.center()" title="Center view">🎯 Center</button>
+        <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
+        <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
+        <button onclick="toggleLayout()" title="Toggle layout">📐 Layout (<span id="current-layout">dagre</span>)</button>
+        <input id="search" placeholder="Search classes..." oninput="searchNode(this.value)" />
+        <div class="stats" id="stats">
+            Classes: <span id="node-count">0</span> | 
+            Relations: <span id="edge-count">0</span>
+        </div>
+        <div class="legend" id="legend"></div>
+    </div>
+    
+    <div id="cy"></div>
+    
+    <div id="info-panel" class="info-panel">
+        <h4 id="info-title">Class Info</h4>
+        <div id="info-content"></div>
+    </div>
+
+    <script>
+        // Build Cytoscape elements
+        const elements = [];
+        
+        // Add nodes (classes)
+        for (const node of DATA.nodes || []) {
+            elements.push({
+                data: {
+                    id: node.id,
+                    label: node.label,
+                    type: node.type,
+                    group: node.group,
+                    meta: node.meta
+                }
+            });
+        }
+        
+        // Add edges (relationships)
+        for (const edge of DATA.edges || []) {
+            elements.push({
+                data: {
+                    id: edge.id,
+                    source: edge.source,
+                    target: edge.target,
+                    kind: edge.kind,
+                    confidence: edge.confidence,
+                    meta: edge.meta
+                }
+            });
+        }
+
+        let currentLayout = 'dagre';
+        let layoutOptions = {
+            'dagre': {
+                name: 'dagre',
+                rankDir: 'TB',
+                nodeSep: 80,
+                rankSep: 120,
+                animate: true
+            },
+            'circle': {
+                name: 'circle',
+                animate: true,
+                radius: 250
+            },
+            'cose-bilkent': {
+                name: 'cose-bilkent',
+                idealEdgeLength: 120,
+                nodeRepulsion: 4500,
+                animate: true,
+                animationDuration: 1000
+            },
+            'grid': {
+                name: 'grid',
+                animate: true,
+                rows: Math.ceil(Math.sqrt(elements.filter(e => e.data.type === 'class').length))
+            }
+        };
+
+        // Initialize Cytoscape
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elements,
+            style: [
+                // Class node styles
+                {
+                    selector: 'node[type = "class"]',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '14px',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '200px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'background-color': '#e3f2fd',
+                        'border-width': 2,
+                        'border-color': '#2196f3',
+                        'width': 'mapData(label.length, 3, 20, 100, 220)',
+                        'height': 80,
+                        'shape': 'round-rectangle',
+                        'font-family': 'monospace',
+                        'font-weight': 'bold'
+                    }
+                },
+                
+                // Abstract classes
+                {
+                    selector: 'node[meta.is_abstract = true]',
+                    style: {
+                        'background-color': '#fff3e0',
+                        'border-color': '#ff9800',
+                        'font-style': 'italic',
+                        'border-style': 'dashed'
+                    }
+                },
+                
+                // Inheritance relationship edges
+                {
+                    selector: 'edge[kind = "inherits"]',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 2,
+                        'line-color': '#4caf50',
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': '#4caf50',
+                        'arrow-scale': 1.5,
+                        'line-style': 'solid'
+                    }
+                },
+                
+                // Association relationship edges
+                {
+                    selector: 'edge[kind = "association"]',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 1,
+                        'line-color': '#9e9e9e',
+                        'target-arrow-shape': 'triangle-backcurve',
+                        'target-arrow-color': '#9e9e9e',
+                        'line-style': 'solid'
+                    }
+                },
+                
+                // Selected/highlighted styles
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': 4,
+                        'border-color': '#ff6b6b',
+                        'background-color': '#ffebee'
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff6b6b',
+                        'target-arrow-color': '#ff6b6b',
+                        'width': 4
+                    }
+                },
+                
+                // Search result highlighting
+                {
+                    selector: 'node.search-selected',
+                    style: {
+                        'border-width': 6,
+                        'border-color': '#00c851',
+                        'background-color': '#e8f5e8'
+                    }
+                }
+            ],
+            layout: {
+                name: 'dagre',
+                rankDir: 'TB',
+                nodeSep: 80,
+                rankSep: 120,
+                animate: false
+            }
+        });
+
+        // Update stats
+        document.getElementById('node-count').textContent = DATA.nodes ? DATA.nodes.length : 0;
+        document.getElementById('edge-count').textContent = DATA.edges ? DATA.edges.length : 0;
+
+        // Create legend
+        function createLegend() {
+            const legend = document.getElementById('legend');
+            
+            const relationshipTypes = [
+                { name: 'Inheritance', color: '#4caf50', style: 'solid' },
+                { name: 'Association', color: '#9e9e9e', style: 'solid' }
+            ];
+            
+            relationshipTypes.forEach(rel => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = rel.color;
+                
+                const label = document.createElement('span');
+                label.textContent = rel.name;
+                
+                item.appendChild(color);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+        
+        createLegend();
+
+        // Event handlers
+        function exportPng() {
+            const png64 = cy.png({ 
+                full: true, 
+                scale: 2,
+                bg: 'white'
+            });
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = 'class-diagram.png';
+            link.click();
+        }
+
+        function resetView() {
+            cy.layout(layoutOptions[currentLayout]).run();
+        }
+
+        function toggleLayout() {
+            const layouts = ['dagre', 'circle', 'cose-bilkent', 'grid'];
+            const currentIndex = layouts.indexOf(currentLayout);
+            const nextIndex = (currentIndex + 1) % layouts.length;
+            currentLayout = layouts[nextIndex];
+            
+            // Update UI
+            document.getElementById('current-layout').textContent = currentLayout;
+            
+            resetView();
+        }
+
+        function searchNode(query) {
+            cy.nodes().removeClass('search-selected');
+            
+            if (!query.trim()) {
+                cy.nodes().unselect();
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label') || '';
+                const meta = node.data('meta') || {};
+                
+                return label.toLowerCase().includes(query.toLowerCase()) ||
+                       (meta.module_name && meta.module_name.toLowerCase().includes(query.toLowerCase())) ||
+                       (meta.file_path && meta.file_path.toLowerCase().includes(query.toLowerCase()));
+            });
+            
+            if (matchedNodes.length > 0) {
+                matchedNodes.addClass('search-selected');
+                cy.fit(matchedNodes, 50);
+            }
+        }
+
+        // Class click handler
+        cy.on('tap', 'node', function(evt) {
+            const node = evt.target;
+            const data = node.data();
+            
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+            
+            title.textContent = data.label || data.id;
+            
+            let html = `<p><strong>타입:</strong> ${data.type}</p>`;
+            
+            if (data.meta) {
+                if (data.meta.module_name) {
+                    html += `<p><strong>모듈:</strong> ${data.meta.module_name}</p>`;
+                }
+                if (data.meta.file_path) {
+                    html += `<p><strong>파일:</strong> ${data.meta.file_path}</p>`;
+                }
+                if (data.meta.line_number) {
+                    html += `<p><strong>라인:</strong> ${data.meta.line_number}</p>`;
+                }
+                if (data.meta.docstring) {
+                    html += `<p><strong>설명:</strong> ${data.meta.docstring}</p>`;
+                }
+                if (data.meta.base_classes && data.meta.base_classes.length > 0) {
+                    html += `<p><strong>상속:</strong> ${data.meta.base_classes.join(', ')}</p>`;
+                }
+                if (data.meta.is_abstract) {
+                    html += `<p><strong>추상 클래스</strong></p>`;
+                }
+                
+                // Attributes
+                if (data.meta.attributes && data.meta.attributes.length > 0) {
+                    html += `<p><strong>속성 (${data.meta.total_attributes || data.meta.attributes.length}):</strong></p>`;
+                    html += `<div class="attribute-list">`;
+                    data.meta.attributes.forEach(attr => {
+                        const privateClass = attr.is_private ? 'private' : '';
+                        const typeInfo = attr.type === 'class_variable' ? '[클래스]' : '[인스턴스]';
+                        html += `<div class="attribute-item ${privateClass}">${typeInfo} ${attr.name}</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Methods
+                if (data.meta.methods && data.meta.methods.length > 0) {
+                    html += `<p><strong>메서드 (${data.meta.total_methods || data.meta.methods.length}개 중 ${data.meta.methods.length}개 표시):</strong></p>`;
+                    html += `<div class="method-list">`;
+                    data.meta.methods.forEach(method => {
+                        let methodClass = '';
+                        let methodPrefix = '';
+                        
+                        if (method.is_special) {
+                            methodClass = 'special';
+                        } else if (method.is_private) {
+                            methodClass = 'private';
+                        }
+                        
+                        if (method.is_property) {
+                            methodClass = 'property';
+                            methodPrefix = '@property ';
+                        } else if (method.is_static) {
+                            methodClass = 'static';
+                            methodPrefix = '@staticmethod ';
+                        } else if (method.is_class) {
+                            methodClass = 'static';
+                            methodPrefix = '@classmethod ';
+                        }
+                        
+                        const args = method.args.join(', ');
+                        html += `<div class="method-item ${methodClass}">${methodPrefix}${method.name}(${args})</div>`;
+                    });
+                    html += '</div>';
+                }
+            }
+            
+            // Show relationships
+            const connectedEdges = cy.edges().filter(edge => 
+                edge.data('source') === data.id || edge.data('target') === data.id
+            );
+            
+            if (connectedEdges.length > 0) {
+                html += `<p><strong>관계 (${connectedEdges.length}):</strong></p><ul>`;
+                connectedEdges.forEach(edge => {
+                    const edgeData = edge.data();
+                    const isSource = edgeData.source === data.id;
+                    const otherNodeId = isSource ? edgeData.target : edgeData.source;
+                    const otherNode = cy.getElementById(otherNodeId);
+                    const otherLabel = otherNode.data('label') || otherNodeId.split('::')[1];
+                    
+                    if (edgeData.kind === 'inherits') {
+                        if (isSource) {
+                            html += `<li>상속받음: ${otherLabel}</li>`;
+                        } else {
+                            html += `<li>상속함: ${otherLabel}</li>`;
+                        }
+                    } else {
+                        const direction = isSource ? '→' : '←';
+                        html += `<li>${direction} ${otherLabel} (${edgeData.kind})</li>`;
+                    }
+                });
+                html += '</ul>';
+            }
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        });
+
+        // Edge click handler
+        cy.on('tap', 'edge', function(evt) {
+            const edge = evt.target;
+            const data = edge.data();
+            
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+            
+            const sourceLabel = cy.getElementById(data.source).data('label');
+            const targetLabel = cy.getElementById(data.target).data('label');
+            
+            title.textContent = `${sourceLabel} → ${targetLabel}`;
+            
+            let html = `<p><strong>관계 유형:</strong> ${data.kind}</p>`;
+            
+            if (data.kind === 'inherits') {
+                html += `<p><strong>설명:</strong> ${sourceLabel} 클래스가 ${targetLabel} 클래스를 상속받습니다.</p>`;
+            }
+            
+            if (data.meta && data.meta.base_class) {
+                html += `<p><strong>베이스 클래스:</strong> ${data.meta.base_class}</p>`;
+            }
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        });
+
+        // Click outside to hide panel
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#info-panel') && !e.target.closest('#cy')) {
+                document.getElementById('info-panel').style.display = 'none';
+            }
+        });
+
+        // Double-click to focus on class
+        cy.on('dblclick', 'node', function(evt) {
+            const node = evt.target;
+            const connectedNodes = node.neighborhood().union(node);
+            cy.fit(connectedNodes, 50);
+        });
+
+        console.log('클래스 다이어그램 로드 완료:', DATA.nodes?.length || 0, '클래스,', DATA.edges?.length || 0, '관계');
+    </script>
+</body>
+</html>

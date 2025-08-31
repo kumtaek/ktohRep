@@ -14,6 +14,12 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple
 from ..data_access import VizDB
 
+# Import database models
+import sys
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(project_root))
+from phase1.models.database import File
+
 logger = logging.getLogger(__name__)
 
 
@@ -165,6 +171,7 @@ def find_python_files(config: Dict[str, Any], project_id: int, project_name: Opt
         
         # Get project source files
         query = session.query(File.path).filter(File.project_id == project_id, File.path.like('%.py')).order_by(File.path)
+        files = [row.path for row in query.all()]
         
         # Filter by modules if specified
         if modules_filter:

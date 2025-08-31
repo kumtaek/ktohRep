@@ -83,7 +83,8 @@ class CsvLoader:
         from models.database import DatabaseManager
         
         # 임시로 세션 생성 (실제로는 의존성 주입 필요)
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         
@@ -132,7 +133,8 @@ class CsvLoader:
         
         from models.database import DatabaseManager
         
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         
@@ -188,7 +190,8 @@ class CsvLoader:
         from models.database import DatabaseManager
         from models.database import Summary
         
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         
@@ -239,7 +242,8 @@ class CsvLoader:
         from models.database import DatabaseManager
         from models.database import Summary
         
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         
@@ -293,7 +297,8 @@ class CsvLoader:
         
         from models.database import DatabaseManager
         
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         
@@ -345,7 +350,8 @@ class CsvLoader:
         
         from models.database import DatabaseManager
         
-        db_manager = DatabaseManager(self.config)
+        db_config = self.config.get('database', {}).get('project', {})
+        db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
         

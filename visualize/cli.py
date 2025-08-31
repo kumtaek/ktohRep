@@ -4,6 +4,7 @@ import json
 import logging
 import sys
 import csv
+import shutil
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -11,8 +12,28 @@ from .builders.dependency_graph import build_dependency_graph_json
 from .builders.erd import build_erd_json
 from .builders.component_diagram import build_component_graph_json
 from .builders.sequence_diagram import build_sequence_graph_json
+from .builders.relatedness_graph import build_relatedness_graph_json, get_relatedness_summary
 from .templates.render import render_html
 from .exporters.mermaid_exporter import MermaidExporter
+
+
+def copy_static_files(output_dir: Path) -> None:
+    """시각화에 필요한 static 파일들을 output 디렉토리에 복사"""
+    # visualize 모듈의 static 디렉토리 경로 (현재 파일 기준으로 상대 경로)
+    current_file = Path(__file__)
+    static_source_dir = current_file.parent / "static"
+    
+    if not static_source_dir.exists():
+        return
+        
+    static_target_dir = output_dir / "static"
+    
+    # 기존 static 디렉토리가 있으면 제거 후 새로 복사
+    if static_target_dir.exists():
+        shutil.rmtree(static_target_dir)
+    
+    # static 디렉토리 전체 복사
+    shutil.copytree(static_source_dir, static_target_dir)
 
 
 def setup_logging(args) -> logging.Logger:
@@ -144,236 +165,180 @@ def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str,
         logger.error(f"Mermaid/Markdown 내보내기 실패: {e}")
         raise
 
-
 def main():
     p = argparse.ArgumentParser(prog='visualize', description='Source Analyzer 시각화 도구')
-    sub = p.add_subparsers(dest='cmd', required=True)
-
-    def add_common(sp):
-        sp.add_argument('--project-name', required=True, help='프로젝트 이름 (DB 스키마 로드용)')
-        sp.add_argument('--export-html', help='출력 HTML 경로 (미지정 시 HTML 생성 생략)')
-        sp.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
-        sp.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
-        # Mermaid 옵션
-        sp.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
-        sp.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
-        # Export strategy options
-        sp.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
-        sp.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
-        sp.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
-        sp.add_argument('--keep-edge-kinds', default='include,call,use_table', help='Edge kinds to keep')
-        # Logging options
-        sp.add_argument('-v', '--verbose', action='count', default=0, 
-                       help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
-        sp.add_argument('-q', '--quiet', action='store_true', 
-                       help='조용 모드: 경고/오류만 출력')
-        sp.add_argument('--log-file', help='로그를 파일로 기록')
-        # Export options
-        sp.add_argument('--export-json', help='JSON으로 내보내기(파일 경로)')
-        sp.add_argument('--export-csv-dir', help='CSV로 내보내기(디렉토리 경로)')
-        sp.add_argument('--export-mermaid', help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
     
-    # Graph command
-    g = sub.add_parser('graph', help='의존성 그래프 생성')
-    add_common(g)
-    g.add_argument('--kinds', default='use_table,include,extends,implements', 
-                   help='포함할 엣지 종류(콤마 구분)')
-    g.add_argument('--focus', help='시작 노드(이름/경로/테이블)')
-    g.add_argument('--depth', type=int, default=2, help='중심 기준 최대 깊이')
+    # cmd를 subparser 대신 위치 인자로 변경하고, 기본값을 'all'로 설정
+    p.add_argument('cmd', nargs='?', default='all', 
+                   choices=['all', 'graph', 'erd', 'component', 'sequence', 'class', 'relatedness'],
+                   help='생성할 시각화 종류 (기본값: all)')
 
-    # ERD command
-    e = sub.add_parser('erd', help='ERD 생성')
-    add_common(e)
-    e.add_argument('--tables', help='포함할 테이블명 목록(콤마 구분)')
-    e.add_argument('--owners', help='포함할 스키마/소유자 목록(콤마 구분)')
-    e.add_argument('--from-sql', help='특정 SQL 기준 ERD (형식: mapper_ns:stmt_id)')
+    # 공통 인자 추가
+    p.add_argument('--project-name', required=True, help='프로젝트 이름 (DB 스키마 로드용)')
+    p.add_argument('--export-html', nargs='?', const='', default=None, help='출력 HTML 경로 (미지정 시 생성 생략, 값 없이 사용 시 기본 경로)')
+    p.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
+    p.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
+    p.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
+    p.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
+    p.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
+    p.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
+    p.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
+    p.add_argument('--keep-edge-kinds', default='include,call,use_table', help='Edge kinds to keep')
+    p.add_argument('-v', '--verbose', action='count', default=0, help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
+    p.add_argument('-q', '--quiet', action='store_true', help='조용 모드: 경고/오류만 출력')
+    p.add_argument('--log-file', help='로그를 파일로 기록')
+    p.add_argument('--export-json', help='JSON으로 내보내기(파일 경로)')
+    p.add_argument('--export-csv-dir', help='CSV로 내보내기(디렉토리 경로)')
+    p.add_argument('--export-mermaid', nargs='?', const='', default=None, help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
 
-    # Component diagram command
-    c = sub.add_parser('component', help='컴포넌트 다이어그램 생성')
-    add_common(c)
-
-    # Sequence diagram command
-    s = sub.add_parser('sequence', help='시퀀스 다이어그램 생성')
-    add_common(s)
-    s.add_argument('--start-file', help='시작 파일 경로')
-    s.add_argument('--start-method', help='시작 메서드 이름')
-    s.add_argument('--depth', type=int, default=3, help='최대 추적 깊이')
-
-    # Class diagram command (NEW)
-    cl = sub.add_parser('class', help='클래스 다이어그램 생성')
-    add_common(cl)
-    cl.add_argument('--modules', help='포함할 모듈/파일 목록(콤마 구분)')
-    cl.add_argument('--include-private', action='store_true', help='private 멤버 포함')
-    cl.add_argument('--max-methods', type=int, default=10, help='클래스당 최대 메서드 표시 수')
+    # 각 시각화별 특수 인자 추가
+    p.add_argument('--kinds', default='use_table,include,extends,implements', help='[graph] 포함할 엣지 종류(콤마 구분)')
+    p.add_argument('--focus', help='[graph] 시작 노드(이름/경로/테이블)')
+    p.add_argument('--depth', type=int, default=2, help='[graph/sequence] 중심 기준 최대 깊이')
+    p.add_argument('--tables', help='[erd] 포함할 테이블명 목록(콤마 구분)')
+    p.add_argument('--owners', help='[erd] 포함할 스키마/소유자 목록(콤마 구분)')
+    p.add_argument('--from-sql', help='[erd] 특정 SQL 기준 ERD (형식: mapper_ns:stmt_id)')
+    p.add_argument('--start-file', help='[sequence] 시작 파일 경로')
+    p.add_argument('--start-method', help='[sequence] 시작 메서드 이름')
+    p.add_argument('--modules', help='[class] 포함할 모듈/파일 목록(콤마 구분)')
+    p.add_argument('--include-private', action='store_true', help='[class] private 멤버 포함')
+    p.add_argument('--max-methods', type=int, default=10, help='[class] 클래스당 최대 메서드 표시 수')
+    p.add_argument('--min-score', type=float, default=0.5, help='[relatedness] 최소 연관성 점수 임계값 (0.0-1.0)')
+    p.add_argument('--cluster-method', default='louvain', help='[relatedness] 클러스터링 방법')
+    p.add_argument('--summary', action='store_true', help='[relatedness] 연관성 통계 요약만 출력')
 
     try:
         args = p.parse_args()
         logger = setup_logging(args)
 
-        # Validate that at least one export option is provided
-        if not args.export_html and not args.export_mermaid:
-            logger.error("오류: --export-html 또는 --export-mermaid 중 하나는 반드시 지정해야 합니다.")
-            return 1
+        commands_to_run = []
+        if args.cmd == 'all':
+            commands_to_run = ['graph', 'erd', 'component', 'class', 'relatedness']
+            logger.info("명령어가 지정되지 않았습니다. 'sequence'를 제외한 모든 시각화를 생성합니다.")
+        else:
+            commands_to_run.append(args.cmd)
 
-        # Load config.yaml with project name substitution
-        import yaml
-        import os
-        config_path = Path(__file__).parent.parent / "config" / "config.yaml"
-        config = {}
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                raw = f.read()
-                
-            # Project name substitution if provided
-            if hasattr(args, 'project_name') and args.project_name:
-                raw = raw.replace('{project_name}', args.project_name)
-            
-            config = yaml.safe_load(raw) or {}
+        for cmd_name in commands_to_run:
+            logger.info(f"--- {cmd_name.upper()} 시각화 생성 시작 ---")
 
-        logger.info(f"시각화 생성 시작: {args.cmd}")
-        logger.debug(f"인자: {vars(args)}")
-        
-        # Initialize VizDB and get project_id
-        from .data_access import VizDB
-        db = VizDB(config, args.project_name)
-        project_id = db.get_project_id_by_name(args.project_name)
-        
-        if project_id is None:
-            logger.error(f"오류: 프로젝트 '{args.project_name}'를 찾을 수 없습니다. 먼저 프로젝트를 생성해야 합니다.")
-            return 1
+            # Validate that at least one export option is provided for the specific command
+            if args.export_html is None and args.export_mermaid is None:
+                logger.warning(f"'{cmd_name}'에 대한 export 옵션이 없습니다. 기본값으로 HTML을 생성합니다.")
+                args.export_html = '' # Enable default html export for this run
 
-        kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
+            # Load config.yaml with project name substitution
+            import yaml
+            import os
+            config_path = Path(__file__).parent.parent / "config" / "config.yaml"
+            config = {}
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    raw = f.read()
+                if hasattr(args, 'project_name') and args.project_name:
+                    raw = raw.replace('{project_name}', args.project_name)
+                config = yaml.safe_load(raw) or {}
 
-        # Generate visualization data
-        if args.cmd == 'graph':
-            logger.info(f"의존성 그래프 생성: 프로젝트 {args.project_name} (ID: {project_id})")
-            data = build_dependency_graph_json(config, project_id, args.project_name, kinds, args.min_confidence, 
-                                             args.focus, args.depth, args.max_nodes)
-            html = render_html('graph_view.html', data)
-            diagram_type = 'graph'
+            # Initialize VizDB and get project_id
+            from .data_access import VizDB
+            db = VizDB(config, args.project_name)
+            project_id = db.get_project_id_by_name(args.project_name)
             
-        elif args.cmd == 'erd':
-            logger.info(f"ERD 생성: 프로젝트 {args.project_name} (ID: {project_id})")
-            data = build_erd_json(config, project_id, args.project_name, args.tables, args.owners, args.from_sql)
-            html = render_html('erd_view.html', data)
-            diagram_type = 'erd'
-            
-        elif args.cmd == 'component':
-            logger.info(f"컴포넌트 다이어그램 생성: 프로젝트 {args.project_name} (ID: {project_id})")
-            data = build_component_graph_json(config, project_id, args.project_name, args.min_confidence, args.max_nodes)
-            html = render_html('graph_view.html', data)
-            diagram_type = 'component'
-            
-        elif args.cmd == 'class':
-            logger.info(f"클래스 다이어그램 생성: 프로젝트 {args.project_name} (ID: {project_id})")
-            # Import the new class diagram builder
-            from .builders.class_diagram import build_class_diagram_json
-            data = build_class_diagram_json(config, project_id, args.project_name, args.modules, 
-                                          args.include_private, args.max_methods, args.max_nodes)
-            html = render_html('class_view.html', data)
-            diagram_type = 'class'
-            
-        else:  # sequence
-            logger.info(f"시퀀스 다이어그램 생성: 프로젝트 {args.project_name} (ID: {project_id})")
-            data = build_sequence_graph_json(config, project_id, args.project_name, args.start_file, 
+            if project_id is None:
+                logger.error(f"오류: 프로젝트 '{args.project_name}'를 찾을 수 없습니다.")
+                return 1
+
+            data, html, diagram_type = None, None, cmd_name
+
+            # Generate visualization data based on command
+            if cmd_name == 'graph':
+                kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
+                data = build_dependency_graph_json(config, project_id, args.project_name, kinds, args.min_confidence, 
+                                                 args.focus, args.depth, args.max_nodes)
+                html = render_html('graph_view.html', data)
+            elif cmd_name == 'erd':
+                data = build_erd_json(config, project_id, args.project_name, args.tables, args.owners, args.from_sql)
+                html = render_html('erd_view.html', data)
+            elif cmd_name == 'component':
+                data = build_component_graph_json(config, project_id, args.project_name, args.min_confidence, args.max_nodes)
+                html = render_html('graph_view.html', data)
+            elif cmd_name == 'class':
+                from .builders.class_diagram import build_class_diagram_json
+                data = build_class_diagram_json(config, project_id, args.project_name, args.modules, 
+                                              args.include_private, args.max_methods, args.max_nodes)
+                html = render_html('class_view.html', data)
+            elif cmd_name == 'relatedness':
+                if args.summary:
+                    summary = get_relatedness_summary(config, project_id, args.project_name)
+                    logger.info(f"연관성 통계: {summary}")
+                    continue
+                data = build_relatedness_graph_json(config, project_id, args.project_name, 
+                                                   args.min_score, args.max_nodes, args.cluster_method)
+                html = render_html('relatedness_view.html', data)
+            elif cmd_name == 'sequence':
+                if not args.start_file or not args.start_method:
+                    logger.warning("시퀀스 다이어그램을 생성하려면 --start-file과 --start-method 인자가 반드시 필요합니다.")
+                    possible_files = db.get_files_with_methods(project_id, limit=20)
+                    if possible_files:
+                        logger.info("시작 파일로 사용할 수 있는 파일 목록 (최대 20개):")
+                        for f_path in possible_files:
+                            print(f"  - {f_path}")
+                        logger.info("위 파일 중 하나와 해당 파일의 메소드 이름을 지정하여 다시 시도해주세요.")
+                    else:
+                        logger.warning("메소드를 포함한 파일을 찾을 수 없습니다. 프로젝트 분석을 먼저 실행하세요.")
+                    continue
+                data = build_sequence_graph_json(config, project_id, args.project_name, args.start_file, 
                                            args.start_method, args.depth, args.max_nodes)
-            html = render_html('graph_view.html', data)
-            diagram_type = 'sequence'
-
-        logger.debug(f"Generated {len(data.get('nodes', []))} nodes and {len(data.get('edges', []))} edges")
-
-        # Export data if requested (with project-based path resolution)
-        project_name = getattr(args, 'project_name', None) or 'default'
-        visualize_dir = f"./project/{project_name}/output/visualize"
-        
-        if args.export_json:
-            # Make path relative to project visualize directory if not absolute
-            json_path = args.export_json
-            if not Path(json_path).is_absolute():
-                json_path = Path(visualize_dir) / json_path
-            logger.info(f"JSON 내보내기: {json_path}")
-            export_json(data, str(json_path), logger)
+                html = render_html('graph_view.html', data)
             
-        if args.export_csv_dir:
-            # Make path relative to project visualize directory if not absolute
-            csv_path = args.export_csv_dir
-            if not Path(csv_path).is_absolute():
-                csv_path = Path(visualize_dir) / csv_path
-            logger.info(f"CSV 내보내기: {csv_path}")
-            export_csv(data, str(csv_path), logger)
+            if not data or not html:
+                logger.warning(f"'{cmd_name}'에 대한 데이터를 생성하지 못했습니다. 건너뜁니다.")
+                continue
 
-        # Define default filenames based on diagram type
-        default_html_names = {
-            'graph': 'graph.html',
-            'erd': 'erd.html',
-            'component': 'components.html',
-            'sequence': 'sequence.html',
-            'class': 'class.html'
-        }
-        default_mermaid_names = {
-            'graph': 'dependency_graph.md',
-            'erd': 'erd.md',
-            'component': 'component.md',
-            'sequence': 'sequence.md',
-            'class': 'class.md'
-        }
+            logger.debug(f"Generated {len(data.get('nodes', []))} nodes and {len(data.get('edges', []))} edges for {cmd_name}")
 
-        # Set default paths if arguments are present but no value is given
-        if args.export_html is not None and args.export_html == '':
-            args.export_html = default_html_names.get(diagram_type, f'{diagram_type}.html')
-        if args.export_mermaid is not None and args.export_mermaid == '':
-            args.export_mermaid = default_mermaid_names.get(diagram_type, f'{diagram_type}.md')
-
-        if args.export_mermaid:
-            # Make path relative to project visualize directory if not absolute
-            mermaid_path = args.export_mermaid
-            if not Path(mermaid_path).is_absolute():
-                mermaid_path = Path(visualize_dir) / mermaid_path
-            logger.info(f"Mermaid/Markdown 내보내기: {mermaid_path}")
-            keep_edge_kinds = tuple(args.keep_edge_kinds.split(',')) if hasattr(args, 'keep_edge_kinds') else ("include","call","use_table")
-            # Include builder filters for documentation context
-            meta_filters = (data.get('metadata') or {}).get('filters') if isinstance(data, dict) else None
-            export_mermaid(
-                data, str(mermaid_path), diagram_type, logger,
-                {'project_id': project_id, 'filters': meta_filters}, 
-                label_max=getattr(args, 'mermaid_label_max', 20), 
-                erd_cols_max=getattr(args, 'mermaid_erd_max_cols', 10),
-                class_methods_max=getattr(args, 'class_methods_max', 10),
-                class_attrs_max=getattr(args, 'class_attrs_max', 10),
-                min_confidence=args.min_confidence,
-                keep_edge_kinds=keep_edge_kinds
-            )
-
-        # Generate and save HTML (optional with project-based path resolution)
-        if args.export_html:
-            html_path = args.export_html
-            # Make path relative to project visualize directory if not absolute
-            if not Path(html_path).is_absolute():
-                html_path = Path(visualize_dir) / html_path
+            # Export logic
+            project_name_for_path = getattr(args, 'project_name', 'default')
+            visualize_dir = f"./output/{project_name_for_path}/visualize"
             
-            output_path = Path(html_path)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html)
-            logger.info(f"시각화 HTML 저장: {output_path.absolute()}")
-        
+            default_html_names = {'graph': 'graph.html', 'erd': 'erd.html', 'component': 'components.html', 'class': 'class.html', 'relatedness': 'relatedness.html'}
+            default_mermaid_names = {'graph': 'dependency_graph.md', 'erd': 'erd.md', 'component': 'component.md', 'class': 'class.md', 'relatedness': 'relatedness.md'}
+
+            current_export_html = args.export_html
+            current_export_mermaid = args.export_mermaid
+
+            if current_export_html == '':
+                current_export_html = default_html_names.get(diagram_type, f'{diagram_type}.html')
+            if current_export_mermaid == '':
+                current_export_mermaid = default_mermaid_names.get(diagram_type, f'{diagram_type}.md')
+
+            if current_export_html is not None:
+                html_path = Path(visualize_dir) / current_export_html
+                html_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # static 파일들을 output 디렉토리에 복사
+                copy_static_files(html_path.parent)
+                
+                with open(html_path, 'w', encoding='utf-8') as f:
+                    f.write(html)
+                logger.info(f"시각화 HTML 저장: {html_path.absolute()}")
+                logger.info(f"Static 파일 복사 완료: {html_path.parent / 'static'}")
+
+            if current_export_mermaid is not None:
+                mermaid_path = Path(visualize_dir) / current_export_mermaid
+                logger.info(f"Mermaid/Markdown 내보내기: {mermaid_path}")
+                meta_filters = (data.get('metadata') or {}).get('filters')
+                export_mermaid(data, str(mermaid_path), diagram_type, logger, {'project_id': project_id, 'filters': meta_filters})
+
     except KeyboardInterrupt:
         print('사용자에 의해 중단됨', file=sys.stderr)
         return 130
     except SystemExit as e:
-        # argparse error
         return e.code if isinstance(e.code, int) else 2
-    except FileNotFoundError as e:
-        print(f"오류: 파일을 찾을 수 없습니다: {e}", file=sys.stderr)
-        print("확인: 파일 경로, 권한, --project-id 인자", file=sys.stderr)
-        return 1
     except Exception as e:
-        print(f"오류: 실행 중 예기치 못한 오류: {e}", file=sys.stderr)
-        print("확인: 입력 인자, 데이터베이스 상태, -v 로깅 옵션", file=sys.stderr)
+        logger.error(f"오류: 실행 중 예기치 못한 오류: {e}", exc_info=True)
         return 1
     
     return 0
-
 
 if __name__ == '__main__':
     exit(main())

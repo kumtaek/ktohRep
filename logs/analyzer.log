@@ -5769,3 +5769,59 @@ AttributeError: module 'javalang.tree' has no attribute 'ThisMethodInvocation'. 
 2025-09-01 00:26:52,580 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
 2025-09-01 00:26:52,582 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 474개 처리
 2025-09-01 00:26:52,585 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-01 06:51:14,482 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-01 06:51:14,482 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 06:51:14,482 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-01 06:51:14,483 - main - INFO - [logger.py:76] - ============================================================
+2025-09-01 06:51:14,655 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-01 06:51:14,658 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-01 06:51:14,659 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-01 06:51:14,660 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-01 06:51:14,692 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-01 06:51:14,792 - main - DEBUG - [logger.py:72] - 파일 수집 중: PROJECT\sampleSrc
+2025-09-01 06:51:14,792 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-01 06:51:14,792 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-01 06:51:14,806 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 25
+2025-09-01 06:51:14,807 - main - INFO - [logger.py:76] - 발견된 소스 파일: 25개
+2025-09-01 06:51:14,809 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-01 06:51:14,809 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-01 06:51:14,819 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-01 06:51:14,819 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-01 06:51:14,832 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 06:51:14,832 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-01 06:51:14,858 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-01 06:51:14,858 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-01 06:51:14,868 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-01 06:51:14,869 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-01 06:51:14,876 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-01 06:51:14,877 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-01 06:51:14,886 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-01 06:51:14,886 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-01 06:51:14,892 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-01 06:51:14,892 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-01 06:51:14,904 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-01 06:51:14,904 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-01 06:51:14,913 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-01 06:51:14,913 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-01 06:51:14,926 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-01 06:51:14,927 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-01 06:51:14,940 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-01 06:51:14,940 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-01 06:51:14,953 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-01 06:51:14,953 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-01 06:51:14,960 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-01 06:51:14,960 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-01 06:51:14,968 - main - DEBUG - [logger.py:72] - 저장 완료: PROJECT\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-01 06:51:14,968 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-01 06:51:14,977 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-01 06:51:14,978 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-01 06:51:14,994 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-01 06:51:15,036 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-01 06:51:15,045 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-01 06:51:15,054 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-01 06:51:15,066 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-01 06:51:15,080 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-01 06:51:15,088 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-01 06:51:15,101 - main - DEBUG - [logger.py:72] - 파일 분석 시작: PROJECT\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-01 06:51:15,115 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 123개 처리
+2025-09-01 06:51:15,117 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc

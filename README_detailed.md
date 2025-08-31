@@ -28,6 +28,8 @@ E:\SourceAnalyzer.git\
 │       │   ├───metadata_engine.py          # 메타데이터 저장 및 관계 구축 엔진
 │       │   ├───metadata_engine_cleanup.py  # 삭제된 파일 메타데이터 정리
 │       │   └───metadata_enhancement_engine.py # LLM 기반 메타데이터 보강 (선택)
+│       ├───llm\                    # LLM 관련 로직 (클라이언트, 요약 등)
+│       ├───metrics\                 # 메트릭 계산 및 관리
 │       ├───models\                 # SQLAlchemy ORM 모델 정의
 │       │   └───database.py
 │       ├───parsers\                # 언어별 파서
@@ -42,6 +44,7 @@ E:\SourceAnalyzer.git\
 │           ├───csv_loader.py               # CSV 파일 로드
 │           ├───large_file_processor.py     # 대용량 파일 처리
 │           └───logger.py                   # 로깅 설정
+
 ├───visualize\
 │   ├───cli.py                      # 시각화 CLI 엔트리 포인트
 │   ├───data_access.py              # 시각화 데이터 접근 계층
@@ -126,13 +129,14 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
         *   **메서드 호출 관계 해결**: `_resolve_method_calls`는 파싱 단계에서 `dst_id`가 `None`으로 저장된 `call` 엣지들을 대상으로, 동일 클래스 또는 프로젝트 내의 다른 클래스/메서드를 검색하여 호출 대상 메서드를 찾아 `dst_id`를 업데이트합니다. 해결된 엣지의 신뢰도는 증가하고, 미해결 엣지는 감소합니다.
         *   **테이블 사용 관계 해결**: `_resolve_table_usage`는 SQL 구문에서 추출된 테이블 이름과 외부 DB 스키마 정보(`db_tables`)를 매칭하여 `sql_unit`과 `table` 간의 `use_table` 엣지를 생성합니다. `config.yaml`의 `database.default_schema`를 활용한 스키마 우선 검색 및 전역 검색 로직을 포함합니다.
         *   **PK-FK 관계 추론**: `_infer_pk_fk_relationships`는 SQL 조인 조건의 패턴을 분석하여 빈번하게 나타나는 조인 패턴을 PK-FK 관계로 추론하고 `joins` 테이블의 `inferred_pkfk` 플래그를 설정합니다.
+        *   **연관성 계산**: `RelatednessCalculator`를 사용하여 파일, 클래스, 메서드, SQL 단위 간의 연관성 점수를 계산하고 `relatedness` 테이블에 저장합니다.
 7.  **분석 결과 요약**: `_generate_analysis_summary` 메서드는 분석된 파일 수, 클래스/메서드/SQL 구문 수, 언어별 분포, 의존성 통계 등 프로젝트 전반에 대한 요약 정보를 생성합니다.
 
 ## 5) 시각화 (`visualize/cli.py`)
 
 `visualize/cli.py`는 분석된 메타데이터를 기반으로 다양한 다이어그램을 생성하고 내보내는 CLI 도구입니다.
 
-*   **다이어그램 종류**: `graph` (의존성 그래프), `erd` (ERD), `component` (컴포넌트 다이어그램), `sequence` (시퀀스 다이어그램), `class` (클래스 다이어그램).
+*   **다이어그램 종류**: `graph` (의존성 그래프), `erd` (ERD), `component` (컴포넌트 다이어그램), `sequence` (시퀀스 다이어그램 - 자동 시작점 발견 및 폴백 다이어그램 생성 기능 포함), `class` (클래스 다이어그램).
 *   **데이터 빌더**: `visualize/builders` 디렉토리의 모듈들이 각 다이어그램 유형에 맞는 데이터를 데이터베이스에서 조회하고 가공합니다.
 *   **내보내기 형식**: HTML, JSON, CSV, Mermaid/Markdown을 지원합니다.
     *   `MermaidExporter` (`visualize/exporters/mermaid_exporter.py`)는 다이어그램 데이터를 Mermaid 문법으로 변환하여 Markdown 파일에 포함하거나 `.mmd` 파일로 직접 내보냅니다.
@@ -164,6 +168,7 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
 *   **`db_schema`**: 외부 DB 스키마 CSV 파일 경로 및 필수 파일 목록.
 *   **`parsers`**: 각 파서의 활성화 여부 및 특정 파서 설정 (예: Java 파서의 `parser_type`으로 `javalang` 또는 `tree-sitter` 선택).
 *   **`security`**: SQL Injection 및 XSS 탐지 활성화 여부.
+*   **`llm` (선택)**: LLM 연동 관련 설정 (활성화 시).
 *   **`llm` (선택)**: LLM 연동 관련 설정 (활성화 시).
 
 웹 대시보드 백엔드는 `ALLOWED_ORIGINS`, `HOST`, `PORT`, `RELOAD` 환경변수를 통해 CORS, 서버 바인딩 주소, 포트, 자동 리로드 여부 등을 제어합니다.
@@ -236,20 +241,6 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
     # 기본 분석
     python phase1/src/main.py --project-name sampleSrc
     # 프로젝트 이름 지정
-        # 프로젝트 이름 지정
-    python phase1/src/main.py --project-name sampleSrc
-    # 증분 분석 (변경된 파일만)
-    python phase1/src/main.py --project-name sampleSrc --incremental
-    # 특정 확장자만 포함
-    python phase1/src/main.py --project-name sampleSrc --include-ext .java,.jsp
-    # 특정 디렉토리만 포함
-    ### 9.1. CLI (분석 및 시각화)
-
-*   **프로젝트 분석**: `phase1/src/main.py`를 실행하여 소스 코드를 분석하고 메타데이터를 데이터베이스에 저장합니다.
-    ```bash
-    # 기본 분석
-    python phase1/src/main.py --project-name sampleSrc
-    # 프로젝트 이름 지정
     python phase1/src/main.py --project-name sampleSrc
     # 증분 분석 (변경된 파일만)
     python phase1/src/main.py --project-name sampleSrc --incremental
@@ -270,6 +261,22 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
     python visualize/cli.py class --project-name sampleSrc --modules com.example.MyClass --export-json ./out/my_class_diagram.json
     # 시퀀스 다이어그램 (특정 파일/메서드 시작, 깊이 2)
     python visualize/cli.py sequence --project-name sampleSrc --start-file src/main/java/com/example/Service.java --start-method processRequest --depth 2 --export-html ./out/sequence.html
+    ```
+*   **자동 시퀀스 다이어그램 생성**: `auto_sequence_runner.py`를 실행하여 자동으로 시작점을 찾아 시퀀스 다이어그램을 생성합니다.
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    python auto_sequence_runner.py sampleSrc
+
+    # 특정 프로젝트 실행
+    python auto_sequence_runner.py [프로젝트명]
+    ```
+*   **LLM 요약 생성**: `llm_summarize.py`를 실행하여 LLM 기반 코드 요약 및 테이블/컬럼 주석을 생성합니다.
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    python llm_summarize.py --project-name sampleSrc
+
+    # 특정 프로젝트 실행
+    python llm_summarize.py --project-name [프로젝트명]
     ```
 
 ### 9.2. 백엔드 (API)
@@ -295,8 +302,6 @@ python web-dashboard/backend/app.py
 
 | 인자명 | 설명 |
 |---|---|
-| | 인자명 | 설명 |
-|---|---|
 | `--project-name` | 프로젝트 이름 (필수) - `./project/<프로젝트명>` 폴더 구조 사용 |
 | `--config` | 설정 파일 경로 (기본값: `./config/config.yaml`) |
 | `--source-path` | 분석할 소스 코드의 루트 경로 (지정하지 않으면 `./project/<프로젝트명>/src` 사용) |
@@ -311,20 +316,6 @@ python web-dashboard/backend/app.py
 | `--calibrate-confidence` | Confidence formula 자동 캘리브레이션 |
 | `--confidence-report` | Confidence 정확도 보고서 생성 (파일 경로 지정) |
 | `--add-ground-truth` | Ground truth 데이터 엔트리 추가 (FILE_PATH PARSER_TYPE EXPECTED_CONFIDENCE) |
-| `--export-md` | 메타데이터를 Markdown 파일로 내보내기 (지정하지 않으면 기본 경로 사용) | |
-| `--config` | 설정 파일 경로 (기본값: `./config/config.yaml`) |
-| `--all` | 모든 분석 및 시각화 작업 실행 (Quick Start용) |
-| `--incremental` | 증분 분석 모드 (변경된 파일만 분석) |
-| `--include-ext` | 포함할 파일 확장자 목록(콤마 구분). 예: `.java,.jsp,.xml` |
-| `--include-paths` | 포함할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/main/java,src/main/webapp/**/*.java` |
-| `--exclude-paths` | 제외할 파일/디렉토리 경로 목록(콤마 구분). 예: `src/test,**/temp/**` |
-| `--verbose`, `-v` | 상세 로그 출력 |
-| `--quiet`, `-q` | 최소 로그 출력 |
-| `--validate-confidence` | Confidence formula 검증 실행 |
-| `--calibrate-confidence` | Confidence formula 자동 캘리브레이션 |
-| `--confidence-report` | Confidence 정확도 보고서 생성 (파일 경로 지정) |
-| `--add-ground-truth` | Ground truth 데이터 엔트리 추가 (FILE_PATH PARSER_TYPE EXPECTED_CONFIDENCE) |
-|
 | `--export-md` | 메타데이터를 Markdown 파일로 내보내기 (지정하지 않으면 기본 경로 사용) |
 
 ### 10.2) `visualize/cli.py`
@@ -360,6 +351,18 @@ python web-dashboard/backend/app.py
 | `--modules` (class) | 포함할 모듈/파일 목록 (콤마 구분) |
 | `--include-private` (class) | private 멤버 포함 |
 | `--max-methods` (class) | 클래스당 최대 메서드 표시 수 |
+
+### 10.3) `llm_summarize.py`
+
+`llm_summarize.py`는 LLM 기반 코드 요약 및 테이블/컬럼 주석 생성 작업을 수행합니다.
+
+| 인자명 | 설명 |
+|---|---|
+| `--project-name` | 프로젝트 이름 (필수) |
+| `--batch-size` | 처리할 배치 크기 (기본값: 10) |
+| `--code-only` | 코드 요약만 처리 (파일, 메서드, SQL) |
+| `--tables-only` | 테이블/컬럼 주석만 처리 |
+| `--generate-spec` | 테이블 사양 마크다운 생성 |
     # 상세 로그 출력
     python phase1/src/main.py --project-name sampleSrc -v
     ```

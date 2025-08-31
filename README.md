@@ -12,7 +12,7 @@ Source Analyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시�
     *   **ERD (Entity-Relationship Diagram)**: SQL 구문에서 추출된 테이블 및 조인 관계.
     *   **컴포넌트 다이어그램**: 시스템의 주요 컴포넌트 및 그 관계.
     *   **클래스 다이어그램**: Java 클래스의 구조, 상속, 구현 관계.
-    *   **시퀀스 다이어그램**: 특정 메서드 호출 흐름 추적.
+    *   **시퀀스 다이어그램**: 특정 메서드 호출 흐름 추적 및 자동 시작점 발견 및 폴백 다이어그램 생성 기능 포함.
 *   **유연한 내보내기**: 생성된 시각화 데이터를 JSON, CSV, Markdown(Mermaid), HTML 형식으로 내보내어 다양한 문서화 및 공유 요구사항 충족.
 *   **메타데이터 보고서**: 분석된 메타데이터를 Markdown 형식의 요약 및 상세 보고서로 내보냅니다 (`--export-md` 옵션).
 *   **오프라인 보안 문서**: OWASP Top 10 및 CWE 취약점 설명을 내장하여 오프라인 환경에서도 보안 가이드 및 샘플 제공. 웹 대시보드를 통해 API로 접근 가능.
@@ -68,16 +68,19 @@ Source Analyzer는 폐쇄망 환경에서 운영될 수 있도록 설계되었�
 ```bash
 # 기본 분석: sampleSrc 프로젝트를 분석합니다.
 # (분석할 소스는 ./project/sampleSrc/src/ 에 위치해야 합니다.)
-.un_analyzer.bat --project-name sampleSrc
+.\run_analyzer.bat --project-name sampleSrc
 
 # 증분 분석: 변경된 파일만 분석하여 시간 단축
-.un_analyzer.bat --project-name sampleSrc --incremental
+.\run_analyzer.bat --project-name sampleSrc --incremental
 
 # 분석 후 Markdown 보고서 자동 생성
-.un_analyzer.bat --project-name sampleSrc --export-md
+.\run_analyzer.bat --project-name sampleSrc --export-md
 
 # 분석과 모든 시각화 동시 실행
-.un_analyzer.bat --project-name sampleSrc --all
+.\run_analyzer.bat --project-name sampleSrc --all
+
+# LLM 기반 코드 요약 및 테이블/컬럼 주석 생성
+.\run_llm_analysis.bat --project-name sampleSrc
 ```
 
 ### 2단계: 시각화 생성 (`run_visualize.bat`)
@@ -118,11 +121,58 @@ Source Analyzer는 폐쇄망 환경에서 운영될 수 있도록 설계되었�
 *   **시퀀스 다이어그램 (`sequence`)**
     ```bash
     # (1) 사용 가능한 시작 파일 목록 확인 (가이드 모드)
-    .un_visualize.bat sequence --project-name sampleSrc
+    .\run_visualize.bat sequence --project-name sampleSrc
 
     # (2) 확인된 정보를 바탕으로 시퀀스 다이어그램 생성
-    .un_visualize.bat sequence --project-name sampleSrc --start-file "com/example/MyController.java" --start-method "myMethod"
+    .\run_visualize.bat sequence --project-name sampleSrc --start-file "com/example/MyController.java" --start-method "myMethod"
     ```
+
+*   **자동 시퀀스 다이어그램 생성 (`run_auto_sequence.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_auto_sequence.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_auto_sequence.bat [프로젝트명]
+    ```
+
+*   **조인 관계 분석 (`run_analyze_joins.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_analyze_joins.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_analyze_joins.bat [프로젝트명]
+    ```
+
+*   **관계 분석 (`run_relationships.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_relationships.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_relationships.bat [프로젝트명]
+    ```
+
+*   **LLM 요약 생성 (`run_summarize.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_summarize.bat --project-name sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_summarize.bat --project-name [프로젝트명]
+    ```
+
+*   **연관성 시각화 예시 (`run_visualize_relatedness_example.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_visualize_relatedness_example.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_visualize_relatedness_example.bat [프로젝트명]
+    ```
+
+
 
 *   **연관성 그래프 (`relatedness`)**
     ```bash
@@ -153,13 +203,16 @@ Source Analyzer는 폐쇄망 환경에서 운영될 수 있도록 설계되었�
 
 모든 시각화 결과는 `./output/{project_name}/visualize/` 폴더에 생성됩니다:
 - `graph.html` - 의존성 그래프 (인터랙티브)
-- `erd.html` - 엔터티 관계도 (인터랙티브) 
+- `erd.html` - 엔터티 관계도 (인터랙티브)
 - `class.html` - 클래스 다이어그램 (인터랙티브)
 - `component.html` - 컴포넌트 다이어그램 (인터랙티브)
+- `sequence.html` - 시퀀스 다이어그램 (인터랙티브)
+- `relatedness.html` - 연관성 그래프 (인터랙티브)
 - `*.md` - Mermaid 다이어그램 (Markdown)
-
-    .un_visualize.bat erd --project-name sampleSrc --export-html my_erd.html
-    ```
+- `table_specification.md` - 테이블 사양 (Markdown)
+- `auto_sequence_*.json` - 자동 생성 시퀀스 다이어그램 (JSON)
+- `auto_sequence_*.md` - 자동 생성 시퀀스 다이어그램 (Markdown)
+- `auto_sequence_index.html` - 자동 생성 시퀀스 다이어그램 인덱스 (HTML)
 
 ## 웹 대시보드 (선택 사항)
 

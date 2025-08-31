@@ -74,7 +74,10 @@
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" phase1/tools/llm_analyzer.py analyze-joins --project-name sampleSrc --batch-size 2)",
       "Bash(./run_analyze_joins.bat sampleSrc --debug)",
       "Bash(./run_summarize.bat sampleSrc --debug)",
-      "Bash(./run_analyzer.bat sampleSrc)"
+      "Bash(./run_analyzer.bat sampleSrc)",
+      "Bash(./run_analyze_joins.bat sampleSrc)",
+      "Bash(./run_summarize.bat sampleSrc)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

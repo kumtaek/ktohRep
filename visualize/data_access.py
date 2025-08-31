@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import os
 
-# Add phase1 to path
+# phase1 모듈 경로를 시스템 경로에 추가합니다.
 current_dir = Path(__file__).parent
 project_root = current_dir.parent
 phase1_path = project_root / "phase1"
@@ -16,7 +16,8 @@ import yaml
 
 
 def DatabaseManager(config: str | Dict[str, Any]) -> _DatabaseManager:
-    """Convenience wrapper to get an initialized DatabaseManager."""
+    """초기화된 DatabaseManager를 가져오기 위한 편의 래퍼입니다."""
+    # 설정이 문자열인 경우 SQLite 설정 딕셔너리로 변환합니다.
     if isinstance(config, str):
         config = {
             "type": "sqlite",
@@ -25,6 +26,7 @@ def DatabaseManager(config: str | Dict[str, Any]) -> _DatabaseManager:
                 "wal_mode": True,
             },
         }
+    # DatabaseManager를 초기화하고 반환합니다.
     dbm = _DatabaseManager(config)
     dbm.initialize()
     return dbm
@@ -35,48 +37,51 @@ class VizDB:
         self.config = config
         self.project_name = project_name
         
-        # 새로운 database config 구조에서 project database 사용
+        # 새로운 데이터베이스 설정 구조에서 프로젝트 데이터베이스를 사용합니다.
         db_config = config.get('database', {}).get('project', {})
         if not db_config:
-            # project 섹션이 없을 경우를 대비한 하위 호환성
+            # project 섹션이 없을 경우를 대비한 하위 호환성을 유지합니다.
             db_config = config.get('database', {})
         
+        # DatabaseManager를 초기화합니다.
         self.dbm = DatabaseManager(db_config)
         self.dbm.initialize()
 
     def session(self):
-        """Get database session"""
+        """데이터베이스 세션을 가져옵니다."""
         return self.dbm.get_session()
 
     def get_project_id_by_name(self, project_name: str) -> Optional[int]:
-        """Get project_id by project name"""
+        """프로젝트 이름으로 project_id를 가져옵니다."""
         session = self.session()
         try:
+            # 프로젝트 이름으로 프로젝트를 조회합니다.
             project = session.query(Project).filter(Project.name == project_name).first()
             return project.project_id if project else None
         finally:
             session.close()
 
     def load_project_files(self, project_id: int) -> List[File]:
-        """Load all files for a project"""
+        """프로젝트의 모든 파일을 로드합니다."""
         session = self.session()
         try:
+            # 프로젝트 ID로 파일을 조회합니다.
             return session.query(File).filter(File.project_id == project_id).all()
         finally:
             session.close()
 
     def _get_project_scoped_ids(self, session, project_id: int) -> Dict[str, List[int]]:
-        """Get all project-scoped IDs for efficient edge filtering"""
-        # Get file IDs
+        """효율적인 엣지 필터링을 위해 모든 프로젝트 범위 ID를 가져옵니다."""
+        # 파일 ID를 가져옵니다.
         file_ids = [f.file_id for f in session.query(File.file_id).filter(File.project_id == project_id).all()]
         
-        # Get class IDs
+        # 클래스 ID를 가져옵니다.
         class_ids = [c.class_id for c in session.query(Class.class_id).join(File).filter(File.project_id == project_id).all()]
         
-        # Get method IDs  
+        # 메서드 ID를 가져옵니다.
         method_ids = [m.method_id for m in session.query(Method.method_id).join(Class).join(File).filter(File.project_id == project_id).all()]
         
-        # Get SQL unit IDs
+        # SQL 단위 ID를 가져옵니다.
         sql_ids = [s.sql_id for s in session.query(SqlUnit.sql_id).join(File).filter(File.project_id == project_id).all()]
         
         return {
@@ -87,13 +92,13 @@ class VizDB:
         }
 
     def fetch_edges(self, project_id: int, kinds: List[str] = None, min_conf: float = 0.0) -> List[Edge]:
-        """Fetch edges with optional filtering by kind and confidence (optimized)"""
+        """종류 및 신뢰도별 선택적 필터링을 사용하여 엣지를 가져옵니다 (최적화됨)."""
         session = self.session()
         try:
-            # Step 1: Get all project-scoped IDs in memory (much faster)
+            # 1단계: 모든 프로젝트 범위 ID를 메모리에 가져옵니다 (훨씬 빠름).
             project_ids = self._get_project_scoped_ids(session, project_id)
             
-            # Step 2: Filter edges using simple IN clauses
+            # 2단계: 간단한 IN 절을 사용하여 엣지를 필터링합니다.
             query = session.query(Edge).filter(
                 or_(
                     and_(Edge.src_type == 'file', Edge.src_id.in_(project_ids['file_ids'])),
@@ -103,11 +108,11 @@ class VizDB:
                 )
             )
             
-            # Apply confidence filter
+            # 신뢰도 필터를 적용합니다.
             if min_conf > 0:
                 query = query.filter(Edge.confidence >= min_conf)
             
-            # Apply kind filter
+            # 종류 필터를 적용합니다.
             if kinds:
                 query = query.filter(Edge.edge_kind.in_(kinds))
                 
@@ -116,13 +121,13 @@ class VizDB:
             session.close()
 
     def fetch_all_edges(self, project_id: int) -> List[Edge]:
-        """Fetch all edges for a project to determine available edge kinds"""
+        """사용 가능한 엣지 종류를 결정하기 위해 프로젝트의 모든 엣지를 가져옵니다."""
         session = self.session()
         try:
-            # Get all project-scoped IDs
+            # 모든 프로젝트 범위 ID를 가져옵니다.
             project_ids = self._get_project_scoped_ids(session, project_id)
             
-            # Get all edges for this project
+            # 이 프로젝트의 모든 엣지를 가져옵니다.
             query = session.query(Edge).filter(
                 or_(
                     and_(Edge.src_type == 'file', Edge.src_id.in_(project_ids['file_ids'])),
@@ -137,7 +142,7 @@ class VizDB:
             session.close()
 
     def fetch_tables(self) -> List[DbTable]:
-        """Fetch all database tables"""
+        """모든 데이터베이스 테이블을 가져옵니다."""
         session = self.session()
         try:
             return session.query(DbTable).all()
@@ -145,7 +150,7 @@ class VizDB:
             session.close()
 
     def fetch_pk(self) -> List[DbPk]:
-        """Fetch all primary key information"""
+        """모든 기본 키 정보를 가져옵니다."""
         session = self.session()
         try:
             return session.query(DbPk).all()
@@ -153,7 +158,7 @@ class VizDB:
             session.close()
     
     def fetch_columns(self) -> List[DbColumn]:
-        """Fetch all column information"""
+        """모든 컬럼 정보를 가져옵니다."""
         session = self.session()
         try:
             return session.query(DbColumn).all()
@@ -161,18 +166,18 @@ class VizDB:
             session.close()
     
     def fetch_sample_joins_for_table(self, table_id: int, limit: int = 5) -> List[Dict[str, Any]]:
-        """Fetch sample join information for a specific table"""
+        """특정 테이블에 대한 샘플 조인 정보를 가져옵니다."""
         session = self.session()
         try:
-            # Get join patterns for this table - both as left and right table
+            # 이 테이블에 대한 조인 패턴을 가져옵니다 - 왼쪽 및 오른쪽 테이블 모두.
             joins = session.query(Join).join(SqlUnit).join(File).filter(
                 or_(
-                    func.upper(Join.left_table).like(f'%{table_id}%'),  # Simplified for now
+                    func.upper(Join.left_table).like(f'%{table_id}%'),  # 현재는 단순화됨
                     func.upper(Join.right_table).like(f'%{table_id}%')
                 )
-            ).limit(limit * 2).all()  # Get more to filter and rank
+            ).limit(limit * 2).all()  # 필터링 및 순위 지정을 위해 더 많이 가져옵니다.
             
-            # Process and rank joins by frequency
+            # 조인 패턴을 처리하고 빈도별로 순위를 매깁니다.
             join_patterns = {}
             for join in joins:
                 key = f"{join.left_table}|{join.right_table}|{join.left_column}|{join.right_column}"
@@ -188,7 +193,7 @@ class VizDB:
                 join_patterns[key]['frequency'] += 1
                 join_patterns[key]['confidence'] = max(join_patterns[key]['confidence'], join.confidence)
             
-            # Sort by frequency and return top N
+            # 빈도별로 정렬하고 상위 N개를 반환합니다.
             sorted_joins = sorted(join_patterns.values(), key=lambda x: (-x['frequency'], -x['confidence']))
             return sorted_joins[:limit]
             
@@ -196,11 +201,12 @@ class VizDB:
             session.close()
 
     def fetch_required_filters(self, project_id: int, sql_id: int = None) -> List[RequiredFilter]:
-        """Fetch required filters, optionally for a specific SQL unit"""
+        """필요한 필터를 가져옵니다. 선택적으로 특정 SQL 단위에 대한 필터를 가져올 수 있습니다."""
         session = self.session()
         try:
             query = session.query(RequiredFilter).join(SqlUnit).join(File).filter(File.project_id == project_id)
             
+            # SQL ID가 지정된 경우 해당 SQL 단위에 대한 필터를 추가합니다.
             if sql_id:
                 query = query.filter(RequiredFilter.sql_id == sql_id)
                 
@@ -209,7 +215,7 @@ class VizDB:
             session.close()
 
     def fetch_joins_for_project(self, project_id: int) -> List[Join]:
-        """Fetch all joins for a specific project"""
+        """특정 프로젝트의 모든 조인을 가져옵니다."""
         session = self.session()
         try:
             return session.query(Join).join(SqlUnit).join(File).\
@@ -218,7 +224,7 @@ class VizDB:
             session.close()
 
     def fetch_methods_by_project(self, project_id: int) -> List[Method]:
-        """Fetch all methods for a project"""
+        """프로젝트의 모든 메서드를 가져옵니다."""
         session = self.session()
         try:
             return session.query(Method).join(Class).join(File).\
@@ -227,7 +233,7 @@ class VizDB:
             session.close()
 
     def fetch_sql_units_by_project(self, project_id: int) -> List[SqlUnit]:
-        """Fetch all SQL units for a project"""
+        """프로젝트의 모든 SQL 단위를 가져옵니다."""
         session = self.session()
         try:
             return session.query(SqlUnit).join(File).\
@@ -236,9 +242,9 @@ class VizDB:
             session.close()
 
     def fetch_vulnerabilities(self, project_id: int) -> List[VulnerabilityFix]:
-        """Fetch vulnerability fixes related to a project by resolving target relations.
+        """대상 관계를 해결하여 프로젝트와 관련된 취약점 수정 사항을 가져옵니다.
 
-        Joins per target_type to ensure entries belong to the given project:
+        주어진 프로젝트에 항목이 속하도록 대상 유형별로 조인합니다:
         - file -> File.project_id
         - class -> Class -> File.project_id
         - method -> Method -> Class -> File.project_id
@@ -248,26 +254,25 @@ class VizDB:
         try:
             results: List[VulnerabilityFix] = []
 
-            # file targets
+            # 파일 대상을 조회합니다.
             q_file = session.query(VulnerabilityFix).join(
                 File, (VulnerabilityFix.target_type == 'file') & (VulnerabilityFix.target_id == File.file_id)
             ).filter(File.project_id == project_id)
             results.extend(q_file.all())
 
-            # class targets
+            # 클래스 대상을 조회합니다.
             q_class = session.query(VulnerabilityFix).join(
                 Class, (VulnerabilityFix.target_type == 'class') & (VulnerabilityFix.target_id == Class.class_id)
             ).join(File, Class.file_id == File.file_id).filter(File.project_id == project_id)
             results.extend(q_class.all())
 
-            # method targets
+            # 메서드 대상을 조회합니다.
             q_method = session.query(VulnerabilityFix).join(
                 Method, (VulnerabilityFix.target_type == 'method') & (VulnerabilityFix.target_id == Method.method_id)
-            ).join(Class, Method.class_id == Class.class_id).join(File, Class.file_id == File.file_id).\
-                filter(File.project_id == project_id)
+            ).join(Class, Method.class_id == Class.class_id).join(File, Class.file_id == File.file_id).filter(File.project_id == project_id)
             results.extend(q_method.all())
 
-            # sql_unit targets
+            # SQL 단위 대상을 조회합니다.
             q_sql = session.query(VulnerabilityFix).join(
                 SqlUnit, (VulnerabilityFix.target_type == 'sql_unit') & (VulnerabilityFix.target_id == SqlUnit.sql_id)
             ).join(File, SqlUnit.file_id == File.file_id).filter(File.project_id == project_id)
@@ -278,16 +283,18 @@ class VizDB:
             session.close()
 
     def get_node_details(self, node_type: str, node_id: int) -> Optional[Dict[str, Any]]:
-        """Get detailed information about a specific node including LLM summaries"""
+        """LLM 요약을 포함하여 특정 노드에 대한 상세 정보를 가져옵니다."""
         session = self.session()
         try:
             if node_type == 'method':
+                # 메서드 ID로 메서드를 조회합니다.
                 method = session.query(Method).filter(Method.method_id == node_id).first()
                 if method:
+                    # 메서드와 관련된 클래스 및 파일을 조회합니다.
                     cls = session.query(Class).filter(Class.class_id == method.class_id).first()
                     file = session.query(File).filter(File.file_id == cls.file_id).first() if cls else None
                     
-                    # Get LLM summary if available
+                    # 사용 가능한 경우 LLM 요약을 가져옵니다.
                     llm_summary = None
                     try:
                         result = session.execute(
@@ -308,11 +315,13 @@ class VizDB:
                         'llm_summary': llm_summary
                     }
             elif node_type == 'class':
+                # 클래스 ID로 클래스를 조회합니다.
                 cls = session.query(Class).filter(Class.class_id == node_id).first()
                 if cls:
+                    # 클래스와 관련된 파일을 조회합니다.
                     file = session.query(File).filter(File.file_id == cls.file_id).first()
                     
-                    # Get LLM summary if available
+                    # 사용 가능한 경우 LLM 요약을 가져옵니다.
                     llm_summary = None
                     try:
                         result = session.execute(
@@ -332,9 +341,10 @@ class VizDB:
                         'llm_summary': llm_summary
                     }
             elif node_type == 'file':
+                # 파일 ID로 파일을 조회합니다.
                 file = session.query(File).filter(File.file_id == node_id).first()
                 if file:
-                    # Get LLM summary if available
+                    # 사용 가능한 경우 LLM 요약을 가져옵니다.
                     llm_summary = None
                     try:
                         result = session.execute(
@@ -353,11 +363,13 @@ class VizDB:
                         'llm_summary': llm_summary
                     }
             elif node_type == 'sql_unit':
+                # SQL ID로 SQL 단위를 조회합니다.
                 sql = session.query(SqlUnit).filter(SqlUnit.sql_id == node_id).first()
                 if sql:
+                    # SQL 단위와 관련된 파일을 조회합니다.
                     file = session.query(File).filter(File.file_id == sql.file_id).first()
                     
-                    # Get LLM summary if available
+                    # 사용 가능한 경우 LLM 요약을 가져옵니다.
                     llm_summary = None
                     try:
                         result = session.execute(
@@ -378,16 +390,16 @@ class VizDB:
                         'llm_summary': llm_summary
                     }
             elif node_type == 'table':
-                # Handle table nodes by table_id or name lookup
+                # table_id 또는 이름으로 테이블 노드를 처리합니다.
                 if isinstance(node_id, int):
-                    # Lookup by table_id
+                    # table_id로 조회합니다.
                     table = session.query(DbTable).filter(DbTable.table_id == node_id).first()
                 else:
-                    # Lookup by table name (fallback)
+                    # 테이블 이름으로 조회합니다 (대체).
                     table = session.query(DbTable).filter(DbTable.table_name.ilike(f'%{node_id}%')).first()
                 
                 if table:
-                    # Get LLM comment if available
+                    # 사용 가능한 경우 LLM 주석을 가져옵니다.
                     llm_comment = None
                     try:
                         result = session.execute(
@@ -410,7 +422,7 @@ class VizDB:
                         'llm_comment': llm_comment
                     }
                 else:
-                    # Fallback for unknown table
+                    # 알 수 없는 테이블에 대한 대체 값을 반환합니다.
                     return {
                         'name': str(node_id),
                         'type': 'table'
@@ -432,6 +444,7 @@ class VizDB:
         """
         session = self.session()
         try:
+            # 프로젝트 ID와 최소 점수를 기준으로 연관성 데이터를 조회합니다.
             query = session.query(Relatedness).filter(
                 and_(
                     Relatedness.project_id == project_id,
@@ -444,18 +457,18 @@ class VizDB:
             session.close()
 
     def get_files_with_methods(self, project_id: int, limit: int | None = 20) -> List[Dict[str, str]]:
-        """Get a list of files and their methods for potential sequence diagram start points.
+        """시퀀스 다이어그램 시작 지점으로 사용될 파일 및 메서드 목록을 가져옵니다.
 
         Args:
-            project_id: Target project identifier.
-            limit: Optional maximum number of file/method pairs to return. ``None`` means no limit.
+            project_id: 대상 프로젝트 식별자입니다.
+            limit: 반환할 파일/메서드 쌍의 선택적 최대 수입니다. ``None``은 제한이 없음을 의미합니다.
 
         Returns:
-            List of dictionaries containing ``file_path`` and ``method_name``.
+            ``file_path`` 및 ``method_name``을 포함하는 딕셔너리 목록입니다.
         """
         session = self.session()
         try:
-            # Query for files and methods, ensuring distinct file-method pairs.
+            # 고유한 파일-메서드 쌍을 조회합니다.
             query = (session.query(File.path, Method.name)
                      .distinct(File.path, Method.name)
                      .join(Class, File.file_id == Class.file_id)
@@ -463,6 +476,7 @@ class VizDB:
                      .filter(File.project_id == project_id)
                      .order_by(File.path, Method.name))
 
+            # 제한이 있는 경우 쿼리에 적용합니다.
             if limit is not None:
                 query = query.limit(limit)
 

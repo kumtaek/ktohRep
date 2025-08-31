@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Auto-generate sequence diagrams without manual parameters
+# auto_sequence_runner.py
+# 수동 파라미터 없이 시퀀스 다이어그램을 자동으로 생성하는 스크립트입니다.
+# 이 스크립트는 프로젝트의 소스 코드를 분석하여 시퀀스 다이어그램을 만들고 다양한 형식으로 저장합니다.
 """
 import sys
 import json
 from pathlib import Path
 
-# Add project root to path
+# 프로젝트 루트 경로를 시스템 경로에 추가합니다.
 project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 sys.path.append(str(project_root / 'phase1'))
@@ -17,23 +20,27 @@ import yaml
 
 
 def _generate_mermaid_sequence(diagram):
-    """Generate Mermaid sequence diagram syntax"""
+    """
+    주어진 다이어그램 데이터로부터 Mermaid 시퀀스 다이어그램 구문을 생성합니다.
+    참여자(participants)와 상호작용(interactions) 정보를 기반으로 Mermaid 형식의 문자열을 반환합니다.
+    """
     lines = ['sequenceDiagram']
     
-    # Add participants
+    # 다이어그램 참여자를 추가합니다.
     for participant in diagram['participants']:
         pid = participant['id'].replace(':', '_')
-        label = participant['label'].replace('"', '\\"')
+        label = participant['label'].replace('"', '\"')
         lines.append(f'    participant {pid} as {label}')
     
     lines.append('')
     
-    # Add interactions
+    # 다이어그램 상호작용을 추가합니다.
     for interaction in diagram['interactions']:
         from_id = interaction['from_participant'].replace(':', '_')
         to_id = interaction['to_participant'].replace(':', '_')
-        message = interaction['message'].replace('"', '\\"')
+        message = interaction['message'].replace('"', '\"')
         
+        # 미해결 호출인 경우 점선 화살표를 사용합니다.
         if interaction.get('unresolved', False):
             lines.append(f'    {from_id}-->>+{to_id}: {message}')
         else:

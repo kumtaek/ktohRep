@@ -30,16 +30,19 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 ```bash
 # 기본 분석: sampleSrc 프로젝트를 분석합니다.
 # (분석할 소스는 ./project/sampleSrc/src/ 에 위치해야 합니다.)
-.\run_analyzer.bat --project-name sampleSrc
+.un_analyzer.bat --project-name sampleSrc
 
 # 증분 분석: 변경된 파일만 분석하여 시간 단축
-.\run_analyzer.bat --project-name sampleSrc --incremental
+.un_analyzer.bat --project-name sampleSrc --incremental
 
 # 분석 후 Markdown 보고서 자동 생성
-.\run_analyzer.bat --project-name sampleSrc --export-md
+.un_analyzer.bat --project-name sampleSrc --export-md
 
 # 분석과 모든 시각화 동시 실행
-.\run_analyzer.bat --project-name sampleSrc --all
+.un_analyzer.bat --project-name sampleSrc --all
+
+# LLM 기반 코드 요약 및 테이블/컬럼 주석 생성
+.un_llm_analysis.bat --project-name sampleSrc
 ```
 
 ### 2단계: 시각화 생성 (`run_visualize.bat`)
@@ -77,7 +80,7 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
     .\run_visualize.bat class --project-name sampleSrc --modules "com/example/user"
     ```
 
-*   **시퀀스 다이어그램 (`sequence`)**
+*   **시퀀스 다이어그램 (`sequence`)**: 특정 메서드 호출 흐름 추적 및 자동 시작점 발견 및 폴백 다이어그램 생성 기능 포함.
     ```bash
     # (1) 사용 가능한 시작 파일 목록 확인 (가이드 모드)
     .\run_visualize.bat sequence --project-name sampleSrc
@@ -85,6 +88,52 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
     # (2) 확인된 정보를 바탕으로 시퀀스 다이어그램 생성
     .\run_visualize.bat sequence --project-name sampleSrc --start-file "com/example/MyController.java" --start-method "myMethod"
     ```
+
+*   **자동 시퀀스 다이어그램 생성 (`run_auto_sequence.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_auto_sequence.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_auto_sequence.bat [프로젝트명]
+    ```
+
+*   **조인 관계 분석 (`run_analyze_joins.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_analyze_joins.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_analyze_joins.bat [프로젝트명]
+    ```
+
+*   **관계 분석 (`run_relationships.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_relationships.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_relationships.bat [프로젝트명]
+    ```
+
+*   **LLM 요약 생성 (`run_summarize.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_summarize.bat --project-name sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_summarize.bat --project-name [프로젝트명]
+    ```
+
+*   **연관성 시각화 예시 (`run_visualize_relatedness_example.bat`)**
+    ```bash
+    # 기본 실행 (sampleSrc 프로젝트)
+    .\run_visualize_relatedness_example.bat sampleSrc
+
+    # 특정 프로젝트 실행
+    .\run_visualize_relatedness_example.bat [프로젝트명]
+    ```
+
 
 *   **연관성 그래프 (`relatedness`)**
     ```bash
@@ -115,19 +164,13 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 
 모든 시각화 결과는 `./output/{project_name}/visualize/` 폴더에 생성됩니다:
 - `graph.html` - 의존성 그래프 (인터랙티브)
-- `erd.html` - 엔터티 관계도 (인터랙티브) 
+- `erd.html` - 엔터티 관계도 (인터랙티브)
 - `class.html` - 클래스 다이어그램 (인터랙티브)
 - `component.html` - 컴포넌트 다이어그램 (인터랙티브)
+- `sequence.html` - 시퀀스 다이어그램 (인터랙티브)
+- `relatedness.html` - 연관성 그래프 (인터랙티브)
 - `*.md` - Mermaid 다이어그램 (Markdown)
-
-## 웹 대시보드 (선택 사항)
-
-웹 대시보드는 분석 결과를 웹 UI로 조회하고, 오프라인 문서를 API로 제공하는 기능을 합니다.
-
-*   **백엔드 실행**: `python web-dashboard/backend/app.py`
-*   **설정**: 웹 대시보드 백엔드 서버의 모든 설정(호스트, 포트, CORS 등)은 `config/config.yaml` 파일의 `server` 섹션에서 관리됩니다.
-*   **오프라인 문서 API**: `/api/docs/owasp/{code}`, `/api/docs/cwe/{code}` 엔드포인트를 통해 내장된 취약점 문서에 접근할 수 있습니다.
-
-## 다음 단계 및 추가 정보
-
-더 자세한 내부 구조, 데이터 모델, 상세 오프라인 설치 절차 및 트러블슈팅 가이드는 `README_detailed.md`를 참고하세요.
+- `table_specification.md` - 테이블 사양 (Markdown)
+- `auto_sequence_*.json` - 자동 생성 시퀀스 다이어그램 (JSON)
+- `auto_sequence_*.md` - 자동 생성 시퀀스 다이어그램 (Markdown)
+- `auto_sequence_index.html` - 자동 생성 시퀀스 다이어그램 인덱스 (HTML)

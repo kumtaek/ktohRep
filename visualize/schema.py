@@ -3,7 +3,7 @@ from typing import Dict, List, Any, Optional
 
 
 def create_node(id: str, type: str, label: str, group: str, meta: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Create a standardized node dictionary"""
+    """표준화된 노드 딕셔너리를 생성합니다."""
     return {
         'id': id,
         'type': type,
@@ -15,7 +15,7 @@ def create_node(id: str, type: str, label: str, group: str, meta: Optional[Dict[
 
 def create_edge(id: str, source: str, target: str, kind: str, confidence: float = 1.0, 
                 meta: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Create a standardized edge dictionary"""
+    """표준화된 엣지 딕셔너리를 생성합니다."""
     return {
         'id': id,
         'source': source,
@@ -27,7 +27,7 @@ def create_edge(id: str, source: str, target: str, kind: str, confidence: float 
 
 
 def create_graph(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Create a complete graph structure"""
+    """완전한 그래프 구조를 생성합니다."""
     return {
         'nodes': nodes,
         'edges': edges,
@@ -41,7 +41,7 @@ def create_graph(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]]) -> Di
 
 
 def guess_group(type_: str, path: str = None, fqn: str = None) -> str:
-    """Guess the group/component category for a node"""
+    """노드의 그룹/컴포넌트 카테고리를 추측합니다."""
     if type_ in ('table', 'view'):
         return 'DB'
     elif type_ == 'sql_unit':
@@ -84,11 +84,12 @@ def guess_group(type_: str, path: str = None, fqn: str = None) -> str:
 
 def filter_nodes_by_focus(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]], 
                          focus: str, depth: int = 2) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Filter nodes and edges by focus node and depth using BFS"""
+    """BFS를 사용하여 포커스 노드와 깊이별로 노드와 엣지를 필터링합니다."""
+    # 포커스 노드가 없으면 원본 노드와 엣지를 반환합니다.
     if not focus:
         return nodes, edges
     
-    # Build adjacency map
+    # 인접 맵을 구축합니다.
     adj = {}
     for edge in edges:
         src, dst = edge['source'], edge['target']
@@ -97,27 +98,28 @@ def filter_nodes_by_focus(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any
         if dst not in adj:
             adj[dst] = set()
         adj[src].add(dst)
-        adj[dst].add(src)  # Undirected for exploration
+        adj[dst].add(src)  # 탐색을 위해 무방향으로 설정합니다.
     
-    # Find focus node
+    # 포커스 노드를 찾습니다.
     node_map = {node['id']: node for node in nodes}
     focus_node = None
     
-    # Try exact ID match first
+    # 먼저 정확한 ID 일치를 시도합니다.
     if focus in node_map:
         focus_node = focus
     else:
-        # Try label match
+        # 라벨 일치를 시도합니다.
         for node in nodes:
             if node['label'] == focus or focus in node['label']:
                 focus_node = node['id']
                 break
     
+    # 포커스 노드를 찾을 수 없으면 경고를 출력하고 원본 노드와 엣지를 반환합니다.
     if not focus_node:
-        print(f"Warning: Focus node '{focus}' not found")
+        print(f"경고: 포커스 노드 '{focus}'를 찾을 수 없습니다.")
         return nodes, edges
     
-    # BFS to find nodes within depth
+    # BFS를 사용하여 깊이 내의 노드를 찾습니다.
     from collections import deque
     queue = deque([(focus_node, 0)])
     visited = {focus_node}
@@ -133,7 +135,7 @@ def filter_nodes_by_focus(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any
                     kept_nodes.add(neighbor)
                     queue.append((neighbor, current_depth + 1))
     
-    # Filter nodes and edges
+    # 필터링된 노드와 엣지를 반환합니다.
     filtered_nodes = [node for node in nodes if node['id'] in kept_nodes]
     filtered_edges = [edge for edge in edges 
                      if edge['source'] in kept_nodes and edge['target'] in kept_nodes]
@@ -143,11 +145,12 @@ def filter_nodes_by_focus(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any
 
 def limit_nodes(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]], 
                 max_nodes: int) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Limit the number of nodes, keeping the most connected ones"""
+    """가장 많이 연결된 노드를 유지하면서 노드 수를 제한합니다."""
+    # 노드 수가 최대 노드 수보다 작거나 같으면 원본 노드와 엣지를 반환합니다.
     if len(nodes) <= max_nodes:
         return nodes, edges
     
-    # Count connections for each node
+    # 각 노드의 연결 수를 계산합니다.
     node_connections = {}
     for node in nodes:
         node_connections[node['id']] = 0
@@ -158,11 +161,11 @@ def limit_nodes(nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]],
         if edge['target'] in node_connections:
             node_connections[edge['target']] += 1
     
-    # Sort nodes by connection count and take top N
+    # 연결 수별로 노드를 정렬하고 상위 N개를 가져옵니다.
     sorted_nodes = sorted(nodes, key=lambda n: node_connections.get(n['id'], 0), reverse=True)
     kept_nodes_ids = {node['id'] for node in sorted_nodes[:max_nodes]}
     
-    # Filter nodes and edges
+    # 노드와 엣지를 필터링합니다.
     filtered_nodes = [node for node in nodes if node['id'] in kept_nodes_ids]
     filtered_edges = [edge for edge in edges 
                      if edge['source'] in kept_nodes_ids and edge['target'] in kept_nodes_ids]

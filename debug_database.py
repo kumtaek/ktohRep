@@ -6,7 +6,7 @@ import sys
 import json
 from pathlib import Path
 
-# Add project root to path
+# 프로젝트 루트 경로를 시스템 경로에 추가합니다.
 project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 sys.path.append(str(project_root / 'phase1'))
@@ -18,17 +18,18 @@ import yaml
 def main():
     project_name = 'sampleSrc'
     
-    # Load configuration
+    # 설정 파일을 로드합니다.
     config_path = Path('config/config.yaml')
     if config_path.exists():
         with open(config_path, 'r', encoding='utf-8') as f:
             full_config = yaml.safe_load(f)
         
-        # Replace project name in config
+        # 설정 파일 내 프로젝트 이름을 대체합니다.
         config_str = json.dumps(full_config)
         config_str = config_str.replace('{project_name}', project_name)
         full_config = json.loads(config_str)
         
+        # 데이터베이스 설정을 가져옵니다.
         project_config = full_config.get('database', {}).get('project', {
             'type': 'sqlite',
             'sqlite': {
@@ -37,6 +38,7 @@ def main():
             }
         })
     else:
+        # 설정 파일이 없는 경우 기본 데이터베이스 경로를 설정합니다.
         project_config = {
             'type': 'sqlite',
             'sqlite': {
@@ -53,14 +55,14 @@ def main():
         return 1
 
     try:
-        # Create database connection - VizDB expects the full config structure
+        # 데이터베이스 연결을 생성합니다. VizDB는 전체 설정 구조를 예상합니다.
         full_db_config = {'database': {'project': project_config}}
         db = VizDB(full_db_config, project_name)
         
         with db.dbm.get_session() as session:
             from models.database import Project, Method, Class, File, Edge
             
-            # Get project ID
+            # 프로젝트 ID를 가져옵니다.
             project = session.query(Project).filter(Project.name == project_name).first()
             if not project:
                 print(f'Error: Project {project_name} not found in database')

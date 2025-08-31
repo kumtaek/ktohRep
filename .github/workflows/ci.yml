@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout
+
+      - name: Set up Python
+        uses: actions/setup-python
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run silent failure detector
+        run: python phase1/monitoring/silent_failure_detector.py --project-name sampleSrc
+
+      - name: Run comprehensive system tests
+        run: pytest tests/comprehensive_system_tests.py -q

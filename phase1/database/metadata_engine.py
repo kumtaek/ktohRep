@@ -700,15 +700,20 @@ class MetadataEngine:
                 ).first()
                 
                 if src_method:
-                    # 같은 프로젝트 내에서 호출 대상 메서드 찾기
+                    md = {}
                     called_method_name = ''
+                    qualifier = None
+                    src_method_fqn = None
                     # 1) Edge.metadata(JSON) 우선 사용
                     try:
                         if getattr(edge, 'meta', None):
                             md = _json.loads(edge.meta)
                             called_method_name = md.get('called_name', '')
+                            qualifier = md.get('callee_qualifier_type')
+                            src_method_fqn = md.get('src_method_fqn')
                     except Exception:
                         called_method_name = ''
+                        qualifier = None
                     # 2) EdgeHint 보조 사용
                     if not called_method_name:
                         hint_row = session.query(EdgeHint).filter(
@@ -721,31 +726,65 @@ class MetadataEngine:
                         ).order_by(EdgeHint.created_at.desc()).first()
                         if hint_row:
                             try:
-                                called_method_name = _json.loads(hint_row.hint).get('called_name', '')
+                                hint_data = _json.loads(hint_row.hint)
+                                called_method_name = hint_data.get('called_name', '')
+                                qualifier = qualifier or hint_data.get('callee_qualifier_type')
                             except Exception:
                                 called_method_name = ''
-                    
-                    if called_method_name:
-                        # 1) 동일 클래스 내 메서드 우선 검색
-                        target_method = session.query(Method).filter(
-                            and_(
-                                Method.class_id == src_method.class_id,
-                                Method.name == called_method_name
-                            )
-                        ).first()
-                        
-                        # 2) 전역 검색 (패키지/임포트 정보 고려 필요)
-                        if not target_method:
-                            # Edge의 meta 필드에서 src_method_fqn을 가져옵니다.
-                            src_method_fqn = None
-                            try:
-                                if getattr(edge, 'meta', None):
-                                    md = _json.loads(edge.meta)
-                                    src_method_fqn = md.get('src_method_fqn')
-                            except Exception:
-                                pass
 
-                            # 호출된 메서드 이름이 FQN 형태일 수 있으므로 파싱 시도
+                    if called_method_name:
+                        candidate_fqns = []
+
+                        # 동일 클래스 우선 후보
+                        if src_method.class_ and src_method.class_.fqn:
+                            candidate_fqns.append(f"{src_method.class_.fqn}.{called_method_name}")
+
+                        # called_name 자체가 FQN일 경우
+                        if '.' in called_method_name:
+                            candidate_fqns.append(called_method_name)
+
+                        # qualifier 기반 후보 생성
+                        if qualifier:
+                            if '.' in qualifier:
+                                candidate_fqns.append(f"{qualifier}.{called_method_name}")
+                            else:
+                                # 동일 패키지 내 단일 클래스명
+                                if src_method_fqn:
+                                    src_package = ".".join(src_method_fqn.split('.')[:-1])
+                                    if src_package:
+                                        candidate_fqns.append(f"{src_package}.{qualifier}.{called_method_name}")
+                                # DB에서 동일 클래스명 검색
+                                classes = session.query(Class).join(File).filter(
+                                    and_(File.project_id == project_id, Class.name == qualifier)
+                                ).all()
+                                for cls in classes:
+                                    candidate_fqns.append(f"{cls.fqn}.{called_method_name}")
+
+                        # 중복 제거
+                        seen = set()
+                        unique_candidates = []
+                        for fqn in candidate_fqns:
+                            if fqn not in seen:
+                                unique_candidates.append(fqn)
+                                seen.add(fqn)
+
+                        target_method = None
+                        for fqn in unique_candidates:
+                            if '.' not in fqn:
+                                continue
+                            cls_fqn, m_name = fqn.rsplit('.', 1)
+                            target_method = session.query(Method).join(Class).join(File).filter(
+                                and_(
+                                    Method.name == m_name,
+                                    Class.fqn == cls_fqn,
+                                    File.project_id == project_id,
+                                )
+                            ).first()
+                            if target_method:
+                                break
+
+                        # 기존 전역 검색 (패키지/임포트 기반) 보조
+                        if not target_method:
                             target_class_name = None
                             simple_called_name = called_method_name
                             if '.' in called_method_name:
@@ -761,27 +800,41 @@ class MetadataEngine:
                             )
 
                             if target_class_name:
-                                # 특정 클래스 내에서 검색
                                 query = query.filter(Class.fqn.like(f"%{target_class_name}"))
                             elif src_method_fqn:
-                                # 호출하는 메서드의 클래스 FQN을 기반으로 패키지 내에서 검색
                                 src_package = ".".join(src_method_fqn.split('.')[:-1])
                                 if src_package:
                                     query = query.filter(Class.fqn.like(f"{src_package}.%"))
 
                             target_method = query.first()
-                        
-                        # 3) 호출 관계 엣지 업데이트
+
                         if target_method:
                             edge.dst_type = 'method'
                             edge.dst_id = target_method.method_id
                             edge.confidence = min(1.0, edge.confidence + 0.2)  # 해결된 호출에 신뢰도 보너스
-                            
+
                             self.logger.debug(f"메서드 호출 해결: {src_method.name} -> {target_method.name}")
                         else:
-                            # 해결되지 않은 호출은 신뢰도 감소
+                            # 해결되지 않은 호출은 신뢰도 감소 및 힌트 저장
                             edge.confidence = max(0.1, edge.confidence - 0.3)
-                            self.logger.debug(f"미해결 메서드 호출: {src_method.name} -> {called_method_name}")
+                            hint = {
+                                'called_name': called_method_name
+                            }
+                            if qualifier:
+                                hint['callee_qualifier_type'] = qualifier
+                            if unique_candidates:
+                                hint['candidates'] = unique_candidates
+                            session.add(EdgeHint(
+                                project_id=project_id,
+                                src_type='method',
+                                src_id=edge.src_id or 0,
+                                hint_type='method_call',
+                                hint=_json.dumps(hint, ensure_ascii=False),
+                                confidence=edge.confidence,
+                            ))
+                            self.logger.debug(
+                                f"미해결 메서드 호출: {src_method.name} -> {called_method_name} (qualifier={qualifier})"
+                            )
                     
         session.commit()
         self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")

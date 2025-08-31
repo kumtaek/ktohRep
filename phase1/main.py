@@ -221,7 +221,6 @@ class SourceAnalyzer:
                                 class_id_map[cls.fqn] = cls.class_id
                             
                             # 3. 메소드 객체의 file_id, class_id 설정 후 저장
-                            method_id_map = {}  # method name -> method_id mapping
                             for method in methods:
                                 if file_id:
                                     method.file_id = file_id
@@ -230,24 +229,40 @@ class SourceAnalyzer:
                                     method.class_id = class_id_map[method.owner_fqn]
                                 session.add(method)
                                 session.flush()
-                                method_key = f"{method.owner_fqn}.{method.name}" if hasattr(method, 'owner_fqn') else method.name
-                                method_id_map[method_key] = method.method_id
-                            
+
+                            # 모든 메서드가 저장된 후, 엣지의 src_id를 해결
+                            method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
+
                             # 4. 엣지 객체의 project_id, src_id, dst_id 설정 후 저장
+                            confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
                             saved_edges = 0
                             for edge in edges:
                                 edge.project_id = project_id
-                                # src_id와 dst_id가 None이면 스킵 (나중에 dependency graph 빌드에서 해결)
-                                if edge.src_id is not None and edge.dst_id is not None:
+                                if edge.src_type == 'method' and edge.src_id is None:
+                                    src_method_fqn = None
+                                    try:
+                                        if getattr(edge, 'meta', None):
+                                            md = json.loads(edge.meta)
+                                            src_method_fqn = md.get('src_method_fqn')
+                                    except Exception:
+                                        src_method_fqn = getattr(edge, 'src_method_fqn', None)
+                                    if src_method_fqn and src_method_fqn in method_id_map:
+                                        edge.src_id = method_id_map[src_method_fqn]
+
+                                if edge.edge_kind == 'call':
                                     session.add(edge)
                                     saved_edges += 1
-                            
-                            total_edges = len(edges)
-                            if total_edges > saved_edges:
-                                self.logger.debug(f"엣지 {total_edges - saved_edges}개는 src_id/dst_id가 None이라 스킵함")
-                            
+                                else:
+                                    if (edge.src_id is not None and edge.dst_id is not None
+                                        and edge.src_id != 0 and edge.dst_id != 0
+                                        and edge.confidence >= confidence_threshold):
+                                        session.add(edge)
+                                        saved_edges += 1
+
                             session.commit()
-                            self.logger.debug(f"저장 완료: {file_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개, 엣지 {len(edges)}개")
+                            self.logger.debug(
+                                f"저장 완료: {file_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개, 엣지 {saved_edges}개"
+                            )
                         except Exception as e:
                             session.rollback()
                             self.logger.error(f"데이터베이스 저장 오류 {file_path}: {e}")

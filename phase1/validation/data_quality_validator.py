@@ -1,5 +1,5 @@
 # phase1/validation/data_quality_validator.py
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 from dataclasses import dataclass
 from collections import defaultdict, Counter
 import json
@@ -39,8 +39,23 @@ class DataQualityReport:
 
 class DataQualityValidator:
     """Comprehensive data quality validation for source analysis projects"""
-    
-    def __init__(self, config: Dict[str, Any]):
+
+    def __init__(self, config: Union[str, Dict[str, Any]]):
+        # Allow passing a project name string for convenience
+        if isinstance(config, str):
+            project_name = config
+            config = {
+                "database": {
+                    "project": {
+                        "type": "sqlite",
+                        "sqlite": {
+                            "path": f"./project/{project_name}/data/metadata.db",
+                            "wal_mode": True,
+                        },
+                    }
+                }
+            }
+
         self.config = config
         self.dbm = DatabaseManager(config.get('database', {}).get('project', {}))
         self.dbm.initialize()
@@ -61,8 +76,10 @@ class DataQualityValidator:
         """Get database session"""
         return self.dbm.get_session()
     
-    def validate_project(self, project_id: int, project_name: str = None) -> DataQualityReport:
+    def validate_project(self, project_id: int | None = None, project_name: str = None) -> DataQualityReport:
         """Run comprehensive validation on a project"""
+        if project_id is None:
+            project_id = 1
         logger.info(f"Starting data quality validation for project {project_id}")
         
         results = []

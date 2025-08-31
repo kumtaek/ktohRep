@@ -10,9 +10,24 @@ project_root = current_dir.parent
 phase1_path = project_root / "phase1"
 sys.path.insert(0, str(phase1_path))
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project, Relatedness
+from models.database import DatabaseManager as _DatabaseManager, File, Class, Method, SqlUnit, Join, RequiredFilter, Edge, DbTable, DbColumn, DbPk, VulnerabilityFix, Project, Relatedness
 from sqlalchemy import and_, or_, func, text
 import yaml
+
+
+def DatabaseManager(config: str | Dict[str, Any]) -> _DatabaseManager:
+    """Convenience wrapper to get an initialized DatabaseManager."""
+    if isinstance(config, str):
+        config = {
+            "type": "sqlite",
+            "sqlite": {
+                "path": f"./project/{config}/data/metadata.db",
+                "wal_mode": True,
+            },
+        }
+    dbm = _DatabaseManager(config)
+    dbm.initialize()
+    return dbm
 
 
 class VizDB:

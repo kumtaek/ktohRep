@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>의존성 그래프 분석</title>
-    <link rel="stylesheet" href="../static/css/woori-brand-theme.css">
+    <link rel="stylesheet" href="./static/css/woori-brand-theme.css">
     <style>
         body, html { 
             margin: 0; 
@@ -142,17 +142,17 @@
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
-    <script src="../static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = {
   "nodes": [
     {
       "id": "component:Mapper",
       "type": "component",
-      "label": "Mapper (208)",
+      "label": "Mapper (312)",
       "group": "Mapper",
       "meta": {
-        "entity_count": 208,
+        "entity_count": 312,
         "entities": [
           {
             "id": "file:1",
@@ -215,16 +215,16 @@
             "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java"
           }
         ],
-        "total_entities": 208
+        "total_entities": 312
       }
     },
     {
       "id": "component:Service",
       "type": "component",
-      "label": "Service (384)",
+      "label": "Service (576)",
       "group": "Service",
       "meta": {
-        "entity_count": 384,
+        "entity_count": 576,
         "entities": [
           {
             "id": "file:2",
@@ -287,16 +287,16 @@
             "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java"
           }
         ],
-        "total_entities": 384
+        "total_entities": 576
       }
     },
     {
       "id": "component:Util",
       "type": "component",
-      "label": "Util (16)",
+      "label": "Util (24)",
       "group": "Util",
       "meta": {
-        "entity_count": 16,
+        "entity_count": 24,
         "entities": [
           {
             "id": "file:12",
@@ -347,19 +347,19 @@
             "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java"
           },
           {
-            "id": "method:61",
-            "type": "method",
-            "label": "isEmpty()",
-            "class": "com.example.util.Texts"
+            "id": "file:116",
+            "type": "file",
+            "label": "Texts.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java"
           },
           {
-            "id": "method:124",
-            "type": "method",
-            "label": "isEmpty()",
-            "class": "com.example.util.Texts"
+            "id": "file:129",
+            "type": "file",
+            "label": "Texts.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java"
           }
         ],
-        "total_entities": 16
+        "total_entities": 24
       }
     }
   ],
@@ -390,6 +390,14 @@
     ]
   }
 };
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -605,12 +613,35 @@
                 }
             ],
             layout: {
-                name: 'dagre',
-                rankDir: 'LR',
-                nodeSep: 40,
-                rankSep: 80,
-                animate: false
-            }
+                name: 'fcose',
+                quality: 'draft',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 600,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'package_relation') {
+                        return Math.max(350, 700 - (confidence * 200));
+                    }
+                    return Math.max(300, 600 - (confidence * 150));
+                },
+                nodeRepulsion: 35000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return confidence * 0.2;
+                },
+                gravityRange: 10.0,
+                gravity: 0.1,
+                numIter: 1800,
+                initialTemp: 600,
+                coolingFactor: 0.98,
+                minTemp: 2.5
+            },
+            wheelSensitivity: 0.1
         });
 
         // Update stats
@@ -670,40 +701,58 @@
         function resetView() {
             const layoutOptions = usePhysics ?
                 {
-                    name: 'cose',
-                    animate: true,
-                    nodeRepulsion: 4000,
-                    idealEdgeLength: 100
                     name: 'fcose',
+                    quality: 'draft',
                     randomize: true,
-                    nodeRepulsion: 4500,
-                    idealEdgeLength: edge => 100 / (edge.data('confidence') || 1),
-                    animate: true
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 100,
+                    nodeSeparation: 280,
+                    idealEdgeLength: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const kind = edge.data('kind') || '';
+                        if (kind === 'package_relation') {
+                            return Math.max(200, 450 - (confidence * 200));
+                        }
+                        return Math.max(180, 380 - (confidence * 150));
+                    },
+                    nodeRepulsion: 15000,
+                    edgeElasticity: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        return confidence * 0.3;
+                    },
+                    gravityRange: 6.5,
+                    gravity: 0.2,
+                    numIter: 2500,
+                    initialTemp: 400,
+                    coolingFactor: 0.96,
+                    minTemp: 1.2
                 } :
                 {
-                    name: 'dagre',
-                    rankDir: 'LR',
-                    nodeSep: 40,
-                    rankSep: 80,
-                    animate: true
+                    name: 'cose',
+                    animate: true,
+                    animationDuration: 1500,
+                    fit: true,
+                    padding: 50,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
                 };
             
-            cy.layout(layoutOptions).run();
-
             try {
                 cy.layout(layoutOptions).run();
             } catch (e) {
-                if (layoutOptions.name === 'fcose') {
-                    console.warn('fcose layout unavailable, falling back to cose');
-                    cy.layout({
-                        name: 'cose',
-                        animate: true,
-                        nodeRepulsion: 4500,
-                        idealEdgeLength: 100
-                    }).run();
-                } else {
-                    throw e;
-                }
+                console.warn('Advanced layout unavailable, falling back to cose');
+                cy.layout({
+                    name: 'cose',
+                    animate: true,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
+                }).run();
             }
         }
 

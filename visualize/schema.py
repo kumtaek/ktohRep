@@ -48,14 +48,17 @@ def guess_group(type_: str, path: str = None, fqn: str = None) -> str:
         return 'Mapper'
     elif type_ in ('method', 'class'):
         if fqn:
-            if 'controller' in fqn.lower():
+            fqn_lower = fqn.lower()
+            if 'controller' in fqn_lower:
                 return 'Controller'
-            elif 'service' in fqn.lower():
+            elif 'service' in fqn_lower:
                 return 'Service'
-            elif 'repository' in fqn.lower():
+            elif 'repository' in fqn_lower:
                 return 'Repository'
-            elif 'mapper' in fqn.lower():
+            elif 'mapper' in fqn_lower:
                 return 'Mapper'
+            elif 'util' in fqn_lower:
+                return 'Util'
         return 'Code'
     elif type_ == 'file':
         if path:
@@ -68,6 +71,10 @@ def guess_group(type_: str, path: str = None, fqn: str = None) -> str:
                 return 'Service'
             elif 'repository' in path_lower:
                 return 'Repository'
+            elif 'mapper' in path_lower:
+                return 'Mapper'
+            elif 'util' in path_lower:
+                return 'Util'
             elif path_lower.endswith('.xml') and 'mapper' in path_lower:
                 return 'Mapper'
         return 'Code'

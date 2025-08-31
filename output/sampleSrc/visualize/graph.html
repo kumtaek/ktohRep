@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>의존성 그래프 분석</title>
-    <link rel="stylesheet" href="../static/css/woori-brand-theme.css">
+    <link rel="stylesheet" href="./static/css/woori-brand-theme.css">
     <style>
         body, html { 
             margin: 0; 
@@ -142,16 +142,816 @@
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
-    <script src="../static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = {
-  "nodes": [],
-  "edges": [],
+  "nodes": [
+    {
+      "id": "file:1",
+      "type": "file",
+      "label": "IntegratedMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "language": "java",
+        "loc": 9,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:14",
+      "type": "file",
+      "label": "IntegratedMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "language": "java",
+        "loc": 9,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:27",
+      "type": "file",
+      "label": "IntegratedMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "language": "java",
+        "loc": 9,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:40",
+      "type": "file",
+      "label": "IntegratedMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "language": "java",
+        "loc": 9,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:2",
+      "type": "file",
+      "label": "IntegratedService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "language": "java",
+        "loc": 35,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:15",
+      "type": "file",
+      "label": "IntegratedService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "language": "java",
+        "loc": 35,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:28",
+      "type": "file",
+      "label": "IntegratedService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "language": "java",
+        "loc": 35,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:41",
+      "type": "file",
+      "label": "IntegratedService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "language": "java",
+        "loc": 35,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:3",
+      "type": "file",
+      "label": "VulnerabilityTestService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "language": "java",
+        "loc": 181,
+        "complexity_est": 0,
+        "hotspot_bin": "med"
+      }
+    },
+    {
+      "id": "file:16",
+      "type": "file",
+      "label": "VulnerabilityTestService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "language": "java",
+        "loc": 181,
+        "complexity_est": 0,
+        "hotspot_bin": "med"
+      }
+    },
+    {
+      "id": "file:29",
+      "type": "file",
+      "label": "VulnerabilityTestService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "language": "java",
+        "loc": 181,
+        "complexity_est": 0,
+        "hotspot_bin": "med"
+      }
+    },
+    {
+      "id": "file:42",
+      "type": "file",
+      "label": "VulnerabilityTestService.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "language": "java",
+        "loc": 181,
+        "complexity_est": 0,
+        "hotspot_bin": "med"
+      }
+    },
+    {
+      "id": "file:4",
+      "type": "file",
+      "label": "OrderMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "language": "java",
+        "loc": 17,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:17",
+      "type": "file",
+      "label": "OrderMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "language": "java",
+        "loc": 17,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:30",
+      "type": "file",
+      "label": "OrderMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "language": "java",
+        "loc": 17,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:43",
+      "type": "file",
+      "label": "OrderMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "language": "java",
+        "loc": 17,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:5",
+      "type": "file",
+      "label": "ProductMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "language": "java",
+        "loc": 14,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:18",
+      "type": "file",
+      "label": "ProductMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "language": "java",
+        "loc": 14,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:31",
+      "type": "file",
+      "label": "ProductMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "language": "java",
+        "loc": 14,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:44",
+      "type": "file",
+      "label": "ProductMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "language": "java",
+        "loc": 14,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "file:6",
+      "type": "file",
+      "label": "UserMapper.java",
+      "group": "Default",
+      "meta": {
+        "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java",
+        "language": "java",
+        "loc": 15,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:1",
+      "type": "class",
+      "label": "com.example.integrated.IntegratedMapper",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "IntegratedMapper",
+        "fqn": "com.example.integrated.IntegratedMapper",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "line": 6,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:2",
+      "type": "class",
+      "label": "com.example.integrated.IntegratedService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "IntegratedService",
+        "fqn": "com.example.integrated.IntegratedService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 7,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:3",
+      "type": "class",
+      "label": "com.example.integrated.VulnerabilityTestService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "VulnerabilityTestService",
+        "fqn": "com.example.integrated.VulnerabilityTestService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "line": 13,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:4",
+      "type": "class",
+      "label": "com.example.mapper.OrderMapper",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_mapper",
+      "meta": {
+        "name": "OrderMapper",
+        "fqn": "com.example.mapper.OrderMapper",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "line": 10,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:5",
+      "type": "class",
+      "label": "com.example.mapper.ProductMapper",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_mapper",
+      "meta": {
+        "name": "ProductMapper",
+        "fqn": "com.example.mapper.ProductMapper",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "line": 9,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:6",
+      "type": "class",
+      "label": "com.example.mapper.UserMapper",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_mapper",
+      "meta": {
+        "name": "UserMapper",
+        "fqn": "com.example.mapper.UserMapper",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java",
+        "line": 9,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:7",
+      "type": "class",
+      "label": "com.example.service.ListService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service",
+      "meta": {
+        "name": "ListService",
+        "fqn": "com.example.service.ListService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ListService.java",
+        "line": 3,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:8",
+      "type": "class",
+      "label": "com.example.service.OrderService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service",
+      "meta": {
+        "name": "OrderService",
+        "fqn": "com.example.service.OrderService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
+        "line": 11,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:9",
+      "type": "class",
+      "label": "com.example.service.OverloadService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service",
+      "meta": {
+        "name": "OverloadService",
+        "fqn": "com.example.service.OverloadService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OverloadService.java",
+        "line": 6,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:10",
+      "type": "class",
+      "label": "com.example.service.ProductService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service",
+      "meta": {
+        "name": "ProductService",
+        "fqn": "com.example.service.ProductService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ProductService.java",
+        "line": 9,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:11",
+      "type": "class",
+      "label": "com.example.service.UserService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service",
+      "meta": {
+        "name": "UserService",
+        "fqn": "com.example.service.UserService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+        "line": 9,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:12",
+      "type": "class",
+      "label": "com.example.util.Texts",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_util",
+      "meta": {
+        "name": "Texts",
+        "fqn": "com.example.util.Texts",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java",
+        "line": 3,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:13",
+      "type": "class",
+      "label": "com.example.service.impl.ListServiceImpl1",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service_impl",
+      "meta": {
+        "name": "ListServiceImpl1",
+        "fqn": "com.example.service.impl.ListServiceImpl1",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\impl\\ListServiceImpl1.java",
+        "line": 5,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:14",
+      "type": "class",
+      "label": "com.example.integrated.IntegratedMapper",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "IntegratedMapper",
+        "fqn": "com.example.integrated.IntegratedMapper",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "line": 6,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:15",
+      "type": "class",
+      "label": "com.example.integrated.IntegratedService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "IntegratedService",
+        "fqn": "com.example.integrated.IntegratedService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 7,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    },
+    {
+      "id": "class:16",
+      "type": "class",
+      "label": "com.example.integrated.VulnerabilityTestService",
+      "group": "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated",
+      "meta": {
+        "name": "VulnerabilityTestService",
+        "fqn": "com.example.integrated.VulnerabilityTestService",
+        "file": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "line": 13,
+        "loc": 0,
+        "complexity_est": 0,
+        "hotspot_bin": "low"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1",
+      "source": "file:1",
+      "target": "file:14",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_2",
+      "source": "file:1",
+      "target": "file:27",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_3",
+      "source": "file:1",
+      "target": "file:40",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_4",
+      "source": "file:1",
+      "target": "file:2",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_5",
+      "source": "file:1",
+      "target": "file:15",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_6",
+      "source": "file:1",
+      "target": "file:28",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_7",
+      "source": "file:1",
+      "target": "file:41",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_8",
+      "source": "file:1",
+      "target": "file:3",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_9",
+      "source": "file:1",
+      "target": "file:16",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_10",
+      "source": "file:1",
+      "target": "file:29",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_11",
+      "source": "file:1",
+      "target": "file:42",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_12",
+      "source": "file:1",
+      "target": "file:4",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_13",
+      "source": "file:1",
+      "target": "file:17",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_14",
+      "source": "file:1",
+      "target": "file:30",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_15",
+      "source": "file:1",
+      "target": "file:43",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_16",
+      "source": "file:1",
+      "target": "file:5",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_17",
+      "source": "file:1",
+      "target": "file:18",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_18",
+      "source": "file:1",
+      "target": "file:31",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_19",
+      "source": "file:1",
+      "target": "file:44",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_20",
+      "source": "file:1",
+      "target": "file:6",
+      "kind": "package_relation",
+      "confidence": 0.6,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_21",
+      "source": "class:1",
+      "target": "class:2",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_22",
+      "source": "class:1",
+      "target": "class:3",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_23",
+      "source": "class:1",
+      "target": "class:4",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_24",
+      "source": "class:1",
+      "target": "class:5",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_25",
+      "source": "class:1",
+      "target": "class:6",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_26",
+      "source": "class:1",
+      "target": "class:7",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_27",
+      "source": "class:1",
+      "target": "class:8",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_28",
+      "source": "class:1",
+      "target": "class:9",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_29",
+      "source": "class:1",
+      "target": "class:10",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_30",
+      "source": "class:1",
+      "target": "class:11",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_31",
+      "source": "class:1",
+      "target": "class:12",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_32",
+      "source": "class:1",
+      "target": "class:13",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_33",
+      "source": "class:1",
+      "target": "class:14",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_34",
+      "source": "class:1",
+      "target": "class:15",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    },
+    {
+      "id": "edge_35",
+      "source": "class:1",
+      "target": "class:16",
+      "kind": "package_relation",
+      "confidence": 0.7,
+      "meta": "{\"relation_type\": \"same_package\"}"
+    }
+  ],
   "metadata": {
-    "node_count": 0,
-    "edge_count": 0,
-    "node_types": [],
-    "edge_kinds": [],
+    "node_count": 37,
+    "edge_count": 35,
+    "node_types": [
+      "file",
+      "class"
+    ],
+    "edge_kinds": [
+      "package_relation"
+    ],
     "filters": {
       "kinds": "use_table,include,extends,implements",
       "min_confidence": 0.5,
@@ -159,9 +959,23 @@
       "depth": 2,
       "max_nodes": 2000
     },
-    "clusters": {}
+    "clusters": {
+      "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_integrated": "fill:#f24848,stroke:#333,stroke-width:2px",
+      "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_mapper": "fill:#d0f248,stroke:#333,stroke-width:2px",
+      "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service": "fill:#48f28c,stroke:#333,stroke-width:2px",
+      "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_service_impl": "fill:#488cf2,stroke:#333,stroke-width:2px",
+      "E_SourceAnalyzer_git_project_sampleSrc_src_main_java_com_example_util": "fill:#d048f2,stroke:#333,stroke-width:2px"
+    }
   }
 };
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -377,12 +1191,35 @@
                 }
             ],
             layout: {
-                name: 'dagre',
-                rankDir: 'LR',
-                nodeSep: 40,
-                rankSep: 80,
-                animate: false
-            }
+                name: 'fcose',
+                quality: 'draft',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 600,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'package_relation') {
+                        return Math.max(350, 700 - (confidence * 200));
+                    }
+                    return Math.max(300, 600 - (confidence * 150));
+                },
+                nodeRepulsion: 35000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return confidence * 0.2;
+                },
+                gravityRange: 10.0,
+                gravity: 0.1,
+                numIter: 1800,
+                initialTemp: 600,
+                coolingFactor: 0.98,
+                minTemp: 2.5
+            },
+            wheelSensitivity: 0.1
         });
 
         // Update stats
@@ -442,40 +1279,58 @@
         function resetView() {
             const layoutOptions = usePhysics ?
                 {
-                    name: 'cose',
-                    animate: true,
-                    nodeRepulsion: 4000,
-                    idealEdgeLength: 100
                     name: 'fcose',
+                    quality: 'draft',
                     randomize: true,
-                    nodeRepulsion: 4500,
-                    idealEdgeLength: edge => 100 / (edge.data('confidence') || 1),
-                    animate: true
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 100,
+                    nodeSeparation: 280,
+                    idealEdgeLength: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const kind = edge.data('kind') || '';
+                        if (kind === 'package_relation') {
+                            return Math.max(200, 450 - (confidence * 200));
+                        }
+                        return Math.max(180, 380 - (confidence * 150));
+                    },
+                    nodeRepulsion: 15000,
+                    edgeElasticity: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        return confidence * 0.3;
+                    },
+                    gravityRange: 6.5,
+                    gravity: 0.2,
+                    numIter: 2500,
+                    initialTemp: 400,
+                    coolingFactor: 0.96,
+                    minTemp: 1.2
                 } :
                 {
-                    name: 'dagre',
-                    rankDir: 'LR',
-                    nodeSep: 40,
-                    rankSep: 80,
-                    animate: true
+                    name: 'cose',
+                    animate: true,
+                    animationDuration: 1500,
+                    fit: true,
+                    padding: 50,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
                 };
             
-            cy.layout(layoutOptions).run();
-
             try {
                 cy.layout(layoutOptions).run();
             } catch (e) {
-                if (layoutOptions.name === 'fcose') {
-                    console.warn('fcose layout unavailable, falling back to cose');
-                    cy.layout({
-                        name: 'cose',
-                        animate: true,
-                        nodeRepulsion: 4500,
-                        idealEdgeLength: 100
-                    }).run();
-                } else {
-                    throw e;
-                }
+                console.warn('Advanced layout unavailable, falling back to cose');
+                cy.layout({
+                    name: 'cose',
+                    animate: true,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
+                }).run();
             }
         }
 

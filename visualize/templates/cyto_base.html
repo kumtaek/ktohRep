@@ -85,12 +85,20 @@
         }
     </style>
     <!-- Offline assets -->
-    <script src=./static/vendor/cytoscape/cytoscape.min.js"></script>
-    <script src=./static/vendor/dagre/dagre.min.js"></script>
-    <script src=./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
     </script>
 </head>
 <body>
@@ -253,12 +261,31 @@
                 }
             ],
             layout: {
-                name: 'dagre',
-                rankDir: 'LR',
-                nodeSep: 40,
-                rankSep: 80,
-                animate: false
-            }
+                name: 'fcose',
+                quality: 'draft',
+                randomize: true,
+                animate: true,
+                animationDuration: 1500,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 600,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return Math.max(300, 700 - (confidence * 200));
+                },
+                nodeRepulsion: 30000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return confidence * 0.15;
+                },
+                gravityRange: 10.0,
+                gravity: 0.1,
+                numIter: 1800,
+                initialTemp: 500,
+                coolingFactor: 0.98,
+                minTemp: 2.0
+            },
+            wheelSensitivity: 0.1
         });
 
         // Update stats
@@ -314,11 +341,29 @@
 
         function resetView() {
             cy.layout({
-                name: 'dagre',
-                rankDir: 'LR',
-                nodeSep: 40,
-                rankSep: 80,
-                animate: true
+                name: 'fcose',
+                quality: 'draft',
+                randomize: true,
+                animate: true,
+                animationDuration: 1500,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 600,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return Math.max(300, 700 - (confidence * 200));
+                },
+                nodeRepulsion: 30000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return confidence * 0.15;
+                },
+                gravityRange: 10.0,
+                gravity: 0.1,
+                numIter: 1800,
+                initialTemp: 500,
+                coolingFactor: 0.98,
+                minTemp: 2.0
             }).run();
         }
 

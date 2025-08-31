@@ -144,7 +144,16 @@
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
     <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
-        const DATA = __DATA_PLACEHOLDER__;
+        const DATA = {
+  "nodes": [],
+  "edges": [],
+  "metadata": {
+    "node_count": 0,
+    "edge_count": 0,
+    "node_types": [],
+    "edge_kinds": []
+  }
+};
         
         // Register extensions
         if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {

@@ -21,6 +21,18 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
     edges = db.fetch_edges(project_id, kinds, min_conf)
     print(f"  엣지 {len(edges)}개 조회")
     
+    # If no edges found with specified kinds, try to find what kinds exist
+    if len(edges) == 0:
+        all_edges = db.fetch_all_edges(project_id)
+        print(f"  전체 엣지 {len(all_edges)}개 발견")
+        if all_edges:
+            available_kinds = set(edge.edge_kind for edge in all_edges)
+            print(f"  사용 가능한 엣지 종류: {sorted(available_kinds)}")
+            # Use package_relation if available
+            if 'package_relation' in available_kinds:
+                edges = db.fetch_edges(project_id, ['package_relation'], min_conf)
+                print(f"  package_relation 엣지 {len(edges)}개 사용")
+    
     # Build node and edge collections
     nodes_dict = {}
     json_edges = []
@@ -36,11 +48,16 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
         
         # Add source node
         if src_id not in nodes_dict and src_details:
-            nodes_dict[src_id] = create_node(src_id, edge.src_type, src_details)
+            from ..schema import guess_group
+            src_label = _get_node_label(edge.src_type, src_details)
+            src_group = guess_group(edge.src_type, src_details.get('path') or src_details.get('file'), src_details.get('fqn'))
+            nodes_dict[src_id] = create_node(src_id, edge.src_type, src_label, src_group, src_details)
         
         # Add destination node
         if dst_id not in nodes_dict and dst_details:
-            nodes_dict[dst_id] = create_node(dst_id, edge.dst_type, dst_details)
+            dst_label = _get_node_label(edge.dst_type, dst_details)
+            dst_group = guess_group(edge.dst_type, dst_details.get('path') or dst_details.get('file'), dst_details.get('fqn'))
+            nodes_dict[dst_id] = create_node(dst_id, edge.dst_type, dst_label, dst_group, dst_details)
         
         # Add edge
         json_edges.append(create_edge(

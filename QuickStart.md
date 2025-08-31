@@ -44,7 +44,7 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
 
 ### 2단계: 시각화 생성 (`run_visualize.bat`)
 
-분석된 데이터를 바탕으로 다양한 다이어그램을 생성합니다.
+분석된 데이터를 바탕으로 다양한 다이어그램을 생성합니다. 모든 시각화는 관련 항목들이 인접하게 배치되는 개선된 레이아웃 알고리즘을 사용하며, 적절한 간격으로 배치되어 가독성이 향상되었습니다.
 
 **기본 사용법:**
 ```bash
@@ -103,6 +103,22 @@ SourceAnalyzer는 Java, JSP, MyBatis, SQL 코드베이스를 분석하고 시각
     # 지정된 파일명으로 HTML 출력
     .\run_visualize.bat erd --project-name sampleSrc --export-html my_erd.html
     ```
+
+### 시각화 특징
+
+- **개선된 레이아웃**: fcose 물리 시뮬레이션 알고리즘으로 관련성 높은 요소들이 자동 클러스터링됩니다.
+- **적응형 간격**: 신뢰도와 관계 강도에 따라 요소 간 거리가 동적으로 조정됩니다.
+- **상호작용**: 노드 클릭으로 상세 정보 확인, 더블클릭으로 포커스 이동, 검색 기능 지원.
+- **다중 레이아웃**: fcose, cose, circle, grid 레이아웃 간 실시간 전환 가능.
+
+### 출력 파일 위치
+
+모든 시각화 결과는 `./output/{project_name}/visualize/` 폴더에 생성됩니다:
+- `graph.html` - 의존성 그래프 (인터랙티브)
+- `erd.html` - 엔터티 관계도 (인터랙티브) 
+- `class.html` - 클래스 다이어그램 (인터랙티브)
+- `component.html` - 컴포넌트 다이어그램 (인터랙티브)
+- `*.md` - Mermaid 다이어그램 (Markdown)
 
 ## 웹 대시보드 (선택 사항)
 

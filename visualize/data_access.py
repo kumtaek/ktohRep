@@ -100,6 +100,27 @@ class VizDB:
         finally:
             session.close()
 
+    def fetch_all_edges(self, project_id: int) -> List[Edge]:
+        """Fetch all edges for a project to determine available edge kinds"""
+        session = self.session()
+        try:
+            # Get all project-scoped IDs
+            project_ids = self._get_project_scoped_ids(session, project_id)
+            
+            # Get all edges for this project
+            query = session.query(Edge).filter(
+                or_(
+                    and_(Edge.src_type == 'file', Edge.src_id.in_(project_ids['file_ids'])),
+                    and_(Edge.src_type == 'class', Edge.src_id.in_(project_ids['class_ids'])),
+                    and_(Edge.src_type == 'method', Edge.src_id.in_(project_ids['method_ids'])),
+                    and_(Edge.src_type == 'sql_unit', Edge.src_id.in_(project_ids['sql_ids']))
+                )
+            )
+            
+            return query.all()
+        finally:
+            session.close()
+
     def fetch_tables(self) -> List[DbTable]:
         """Fetch all database tables"""
         session = self.session()

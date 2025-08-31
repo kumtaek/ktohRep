@@ -49,7 +49,14 @@
       "Bash(find:*)",
       "Bash(.run_analyzer.bat --project-name sampleSrc)",
       "Bash(grep:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(run_visualize.bat --project-name sampleSrc class)",
+      "Bash(./run_visualize.bat --project-name sampleSrc class)",
+      "Bash(run_relationships.bat sampleSrc)",
+      "Bash(.run_relationships.bat --project-name sampleSrc)",
+      "Bash(./run_visualize.bat --project-name sampleSrc erd)",
+      "Bash(./run_visualize.bat --project-name sampleSrc graph)",
+      "Bash(./run_relationships.bat sampleSrc)"
     ],
     "deny": [],
     "ask": []

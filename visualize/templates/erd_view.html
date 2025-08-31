@@ -88,8 +88,17 @@
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -162,30 +171,61 @@
             });
         }
 
-        let currentLayout = 'dagre';
+        let currentLayout = 'fcose';
         let layoutOptions = {
-            'dagre': {
-                name: 'dagre',
-                rankDir: 'TB',
-                nodeSep: 60,
-                rankSep: 100,
-                animate: true
+            'fcose': {
+                name: 'fcose',
+                quality: 'proof',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 180,
+                nodeSeparation: 400,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return Math.max(250, 550 - (confidence * 150));
+                    }
+                    return Math.max(220, 480 - (confidence * 120));
+                },
+                nodeRepulsion: 20000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return confidence * 0.25;
+                    }
+                    return confidence * 0.15;
+                },
+                gravityRange: 7.0,
+                gravity: 0.12,
+                numIter: 2000,
+                initialTemp: 450,
+                coolingFactor: 0.97,
+                minTemp: 1.8
+            },
+            'cose': {
+                name: 'cose',
+                animate: true,
+                animationDuration: 1500,
+                fit: true,
+                padding: 60,
+                nodeRepulsion: 4500,
+                idealEdgeLength: 150,
+                edgeElasticity: 0.5,
+                gravity: 0.3
             },
             'circle': {
                 name: 'circle',
                 animate: true,
-                radius: 200
-            },
-            'cose-bilkent': {
-                name: 'cose-bilkent',
-                idealEdgeLength: 100,
-                nodeRepulsion: 4500,
-                animate: true,
-                animationDuration: 1000
+                radius: Math.max(250, Math.sqrt(elements.filter(e => e.data.id.startsWith('table')).length) * 60)
             },
             'grid': {
                 name: 'grid',
                 animate: true,
+                padding: 80,
                 rows: Math.ceil(Math.sqrt(elements.filter(e => e.data.id.startsWith('table')).length))
             }
         };
@@ -317,12 +357,39 @@
                 }
             ],
             layout: {
-                name: 'dagre',
-                rankDir: 'TB',
-                nodeSep: 60,
-                rankSep: 100,
-                animate: false
-            }
+                name: 'fcose',
+                quality: 'proof',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 180,
+                nodeSeparation: 400,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return Math.max(250, 550 - (confidence * 150));
+                    }
+                    return Math.max(220, 480 - (confidence * 120));
+                },
+                nodeRepulsion: 20000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return confidence * 0.25;
+                    }
+                    return confidence * 0.15;
+                },
+                gravityRange: 7.0,
+                gravity: 0.12,
+                numIter: 2000,
+                initialTemp: 450,
+                coolingFactor: 0.97,
+                minTemp: 1.8
+            },
+            wheelSensitivity: 0.1
         });
 
         // Toolbar enhancements: add confidence filter and join toggle
@@ -400,11 +467,16 @@
         }
 
         function resetView() {
-            cy.layout(layoutOptions[currentLayout]).run();
+            try {
+                cy.layout(layoutOptions[currentLayout]).run();
+            } catch (e) {
+                console.warn(`Layout ${currentLayout} failed, falling back to cose:`, e.message);
+                cy.layout(layoutOptions['cose']).run();
+            }
         }
 
         function toggleLayout() {
-            const layouts = ['dagre', 'circle', 'cose-bilkent', 'grid'];
+            const layouts = ['fcose', 'cose', 'circle', 'grid'];
             const currentIndex = layouts.indexOf(currentLayout);
             const nextIndex = (currentIndex + 1) % layouts.length;
             currentLayout = layouts[nextIndex];

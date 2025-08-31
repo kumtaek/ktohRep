@@ -363,6 +363,14 @@
     <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
     <script>
         const DATA = __DATA_PLACEHOLDER__;
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
     </script>
 </head>
 <body>
@@ -510,7 +518,7 @@
                 elements: elements,
                 style: styles,
                 layout: getLayoutConfig('fcose'),
-                wheelSensitivity: 0.25
+                wheelSensitivity: 0.05
             });
 
             setupEventHandlers();
@@ -671,27 +679,51 @@
                 fcose: {
                     name: 'fcose',
                     quality: 'proof',
+                    randomize: true,
                     animate: true,
-                    animationDuration: 1000,
-                    idealEdgeLength: edge => 120 * (1 - (edge.data('confidence') || 0.5)),
+                    animationDuration: 2500,
+                    fit: true,
+                    padding: 250,
+                    nodeSeparation: 800,
+                    idealEdgeLength: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const strength = edge.data('strength') || 'medium';
+                        let baseLength = 600;
+                        if (strength === 'strong') baseLength = 400;
+                        else if (strength === 'weak') baseLength = 800;
+                        return Math.max(300, baseLength - (confidence * 100));
+                    },
                     nodeRepulsion: node => {
                         const degree = node.degree();
-                        return Math.max(4000, degree * 800);
+                        return Math.max(30000, degree * 5000);
                     },
+                    edgeElasticity: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const strength = edge.data('strength') || 'medium';
+                        if (strength === 'strong') return confidence * 0.4;
+                        if (strength === 'weak') return confidence * 0.1;
+                        return confidence * 0.2;
+                    },
+                    gravityRange: 12.0,
                     gravity: 0.1,
-                    gravityRangeCompound: 1.5
+                    numIter: 2000,
+                    initialTemp: 700,
+                    coolingFactor: 0.98,
+                    minTemp: 3.0
                 },
                 dagre: {
                     name: 'dagre',
                     rankDir: 'TB',
-                    nodeSep: 60,
-                    rankSep: 80,
-                    animate: true
+                    nodeSep: 100,
+                    rankSep: 140,
+                    animate: true,
+                    animationDuration: 1000
                 },
                 circle: {
                     name: 'circle',
                     animate: true,
-                    animationDuration: 1000
+                    animationDuration: 1500,
+                    radius: Math.max(350, Math.sqrt((DATA.nodes || []).length) * 100)
                 }
             };
             return configs[layoutType] || configs.fcose;

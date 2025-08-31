@@ -18,7 +18,7 @@ from ..data_access import VizDB
 import sys
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
-from phase1.models.database import File
+from phase1.models.database import File, Class, Method, Edge
 
 logger = logging.getLogger(__name__)
 
@@ -347,3 +347,144 @@ def build_class_diagram_json(
             'max_methods': max_methods
         }
     }
+
+
+def build_java_class_diagram_json(
+    config: Dict[str, Any],
+    project_id: int, 
+    project_name: Optional[str] = None,
+    modules_filter: Optional[str] = None,
+    max_methods: int = 10,
+    max_nodes: int = 1000
+) -> Dict[str, Any]:
+    """Java 클래스 다이어그램을 위한 JSON 데이터 구조 생성 (데이터베이스 기반)"""
+    
+    logger.info(f"Java 클래스 다이어그램 데이터 수집 시작: 프로젝트 {project_id}")
+    
+    from ..data_access import VizDB
+    from ..schema import create_node, create_edge, create_graph, guess_group
+    from sqlalchemy import and_, or_
+    
+    db = VizDB(config, project_name)
+    session = db.session()
+    
+    try:
+        # Get all classes from database
+        query = session.query(Class).join(File).filter(File.project_id == project_id).order_by(Class.fqn)
+        
+        # Filter by modules if specified
+        if modules_filter:
+            module_patterns = [m.strip() for m in modules_filter.split(',')]
+            for pattern in module_patterns:
+                query = query.filter(or_(
+                    Class.fqn.like(f'%{pattern}%'),
+                    File.path.like(f'%{pattern}%')
+                ))
+        
+        classes = query.limit(max_nodes).all()
+        logger.info(f"Java 클래스 {len(classes)}개 발견")
+        
+        if not classes:
+            logger.warning("분석할 Java 클래스를 찾을 수 없습니다")
+            return {'nodes': [], 'edges': [], 'stats': {'total_classes': 0}}
+        
+        # Create nodes for classes
+        nodes = []
+        for cls in classes:
+            file = session.query(File).filter(File.file_id == cls.file_id).first()
+            methods = session.query(Method).filter(Method.class_id == cls.class_id).limit(max_methods).all()
+            
+            node = create_node(
+                f"class:{cls.class_id}",
+                "class",
+                cls.name,
+                guess_group("class", file.path if file else None, cls.fqn),
+                {
+                    'fqn': cls.fqn,
+                    'file_path': file.path if file else None,
+                    'line_number': cls.start_line,
+                    'line_range': f"{cls.start_line}-{cls.end_line}" if cls.end_line else str(cls.start_line),
+                    'methods': [{'name': m.name, 'signature': m.signature, 'line': m.start_line} for m in methods],
+                    'method_count': len(methods),
+                    'total_methods': session.query(Method).filter(Method.class_id == cls.class_id).count(),
+                    'modifiers': cls.modifiers
+                }
+            )
+            nodes.append(node)
+        
+        # Create edges for class relationships (inheritance, dependencies)
+        edges = []
+        edge_id = 1
+        
+        # Get inheritance relationships (extends/implements from edges table)
+        inheritance_edges = session.query(Edge).filter(
+            and_(
+                Edge.project_id == project_id,
+                Edge.edge_kind.in_(['extends', 'implements']),
+                Edge.src_type == 'class',
+                Edge.dst_type == 'class'
+            )
+        ).all()
+        
+        class_ids = {cls.class_id for cls in classes}
+        for edge in inheritance_edges:
+            if edge.src_id in class_ids and edge.dst_id in class_ids:
+                edges.append(create_edge(
+                    f"edge_{edge_id}",
+                    f"class:{edge.src_id}",
+                    f"class:{edge.dst_id}",
+                    edge.edge_kind,
+                    edge.confidence,
+                    {'relationship_type': edge.edge_kind}
+                ))
+                edge_id += 1
+        
+        # Package-based relationships for grouping
+        package_groups = {}
+        for cls in classes:
+            package = '.'.join(cls.fqn.split('.')[:-1]) if '.' in cls.fqn else 'default'
+            if package not in package_groups:
+                package_groups[package] = []
+            package_groups[package].append(cls.class_id)
+        
+        # Add package relationship edges
+        for package, class_list in package_groups.items():
+            if len(class_list) > 1:
+                for i, src_class in enumerate(class_list):
+                    for dst_class in class_list[i+1:]:
+                        edges.append(create_edge(
+                            f"edge_{edge_id}",
+                            f"class:{src_class}",
+                            f"class:{dst_class}",
+                            "same_package",
+                            0.5,
+                            {'relationship_type': 'same_package', 'package': package}
+                        ))
+                        edge_id += 1
+        
+        # Statistics
+        stats = {
+            'total_classes': len(classes),
+            'total_methods': sum(node['meta']['total_methods'] for node in nodes),
+            'displayed_nodes': len(nodes),
+            'relationships': len(edges),
+            'packages': len(package_groups)
+        }
+        
+        logger.info(f"Java 클래스 다이어그램 생성 완료: {len(nodes)}개 노드, {len(edges)}개 관계")
+        
+        return {
+            'nodes': nodes,
+            'edges': edges,
+            'stats': stats,
+            'metadata': {
+                'diagram_type': 'class',
+                'project_id': project_id,
+                'modules_filter': modules_filter,
+                'max_methods': max_methods,
+                'language': 'java'
+            }
+        }
+        
+    finally:
+        session.close()

@@ -161,7 +161,7 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
         full_table_name = f"{owner}.{table_name}" if owner else table_name
         full_name_to_node_id_map[full_table_name] = node_id
 
-    # Build FK relationships from join patterns
+    # Build FK relationships from join patterns or infer from column names
     edges_list = []
     
     if joins:
@@ -187,41 +187,56 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                 
                 # Check if both tables are in our node set
                 if l_node_id in nodes_dict and r_node_id in nodes_dict:
-                    # Determine FK direction based on PK information
-                    l_table_meta = nodes_dict[l_node_id]['meta']
-                    r_table_meta = nodes_dict[r_node_id]['meta']
+                    edges_list.append(create_edge(
+                        f"fk_{len(edges_list)+1}",
+                        l_node_id,
+                        r_node_id,
+                        "foreign_key",
+                        0.8,
+                        {"left_column": l_col, "right_column": r_col, "frequency": frequency}
+                    ))
+    else:
+        # No joins data - infer FK relationships from column name patterns
+        edge_id = 1
+        for node1_id, node1 in nodes_dict.items():
+            table1_name = node1['meta']['table_name']
+            table1_columns = [col['name'] for col in node1['meta']['columns']]
+            
+            for node2_id, node2 in nodes_dict.items():
+                if node1_id == node2_id:
+                    continue
                     
-                    l_is_pk = l_col in l_table_meta.get('pk_columns', [])
-                    r_is_pk = r_col in r_table_meta.get('pk_columns', [])
+                table2_name = node2['meta']['table_name'] 
+                table2_pk = node2['meta']['pk_columns']
+                
+                # Look for FK patterns: table2_name + _ID in table1 columns
+                for col_name in table1_columns:
+                    col_upper = col_name.upper()
+                    table2_upper = table2_name.upper()
                     
-                    # Infer relationship direction
-                    if l_is_pk and not r_is_pk:
-                        # L is PK, R is FK - L is referenced by R
-                        source, target = r_node_id, l_node_id
-                        relation_type = "fk_inferred"
-                        confidence = min(0.9, 0.6 + (frequency * 0.1))
-                    elif r_is_pk and not l_is_pk:
-                        # R is PK, L is FK - R is referenced by L
-                        source, target = l_node_id, r_node_id
-                        relation_type = "fk_inferred"
-                        confidence = min(0.9, 0.6 + (frequency * 0.1))
-                    else:
-                        # Both or neither are PK - generic join relationship
-                        source, target = l_node_id, r_node_id
-                        relation_type = "join_inferred"
-                        confidence = min(0.7, 0.4 + (frequency * 0.1))
+                    # Pattern 1: TABLE_ID (e.g., USER_ID, ORDER_ID)
+                    if col_upper == f"{table2_upper}_ID" and f"{table2_upper}_ID" in [pk.upper() for pk in table2_pk]:
+                        edges_list.append(create_edge(
+                            f"fk_{edge_id}",
+                            node1_id,
+                            node2_id,
+                            "foreign_key",
+                            0.7,
+                            {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True}
+                        ))
+                        edge_id += 1
                     
-                    edge_id = f"fk:{l_table}.{l_col}-{r_table}.{r_col}"
-                    edge_meta = {
-                        'left_table': l_table,
-                        'left_column': l_col,
-                        'right_table': r_table,
-                        'right_column': r_col,
-                        'frequency': frequency
-                    }
-                    
-                    edges_list.append(create_edge(edge_id, source, target, relation_type, 
-                                                confidence, edge_meta))
+                    # Pattern 2: Exact PK match (e.g., ID -> ID)
+                    elif col_upper in [pk.upper() for pk in table2_pk] and table1_name != table2_name:
+                        edges_list.append(create_edge(
+                            f"fk_{edge_id}",
+                            node1_id,
+                            node2_id,
+                            "foreign_key",
+                            0.6,
+                            {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True}
+                        ))
+                        edge_id += 1
     
     # Convert nodes_dict values to list
     nodes_list = list(nodes_dict.values())

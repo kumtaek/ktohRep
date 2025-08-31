@@ -3,7 +3,7 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: COMPONENT
-- 생성 시각: 2025-08-31 13:06:05
+- 생성 시각: 2025-08-31 13:27:56
 - 노드 수: 3
 - 엣지 수: 1
 
@@ -11,9 +11,9 @@
 
 ```mermaid
 graph TB
-  n1_component_{{ Mapper (182) }}
-  n2_component_{{ Service (336) }}
-  n3_component_{{ Util (14) }}
+  n1_component_{{ Mapper (208) }}
+  n2_component_{{ Service (384) }}
+  n3_component_{{ Util (16) }}
 
   n1_component_ -->|package_relation| n2_component_
 
@@ -58,9 +58,9 @@ graph TB
 
 노드 목록 (3)
 ```json
-  component:Mapper: Mapper (182) (component)
-  component:Service: Service (336) (component)
-  component:Util: Util (14) (component)
+  component:Mapper: Mapper (208) (component)
+  component:Service: Service (384) (component)
+  component:Util: Util (16) (component)
 ```
 
 엣지 목록 (1)
@@ -71,4 +71,4 @@ graph TB
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-08-31 13:06:05*
+*Source Analyzer v1.1 — 생성 시각: 2025-08-31 13:27:56*

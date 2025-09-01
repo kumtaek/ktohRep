@@ -3,9 +3,9 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: COMPONENT
-- 생성 시각: 2025-09-01 09:47:12
-- 노드 수: 3
-- 엣지 수: 0
+- 생성 시각: 2025-09-01 20:42:28
+- 노드 수: 4
+- 엣지 수: 3
 
 ## 다이어그램
 
@@ -14,7 +14,11 @@ graph TB
   n1_component_{{ Mapper (26) }}
   n2_component_{{ Service (49) }}
   n3_component_{{ Util (6) }}
+  n4_component_{{ DB (5) }}
 
+  n2_component_ -->|call| n1_component_
+  n2_component_ -->|call| n3_component_
+  n1_component_ -->|use_table| n4_component_
 
   %% Dynamic Cluster Styling
   classDef JSP fill:#ffebee,stroke:#d32f2f
@@ -37,12 +41,15 @@ graph TB
   class n1_component_ Mapper
   class n2_component_ Service
   class n3_component_ Util
+  class n4_component_ DB
 ```
 
 ## 범례
 
 ### Component 범례
 
+- call: 메소드 호출
+- use_table: DB 테이블 사용
 
 ### 스타일 레이어
 - Hotspot(채움): low/med/high/crit
@@ -54,18 +61,22 @@ graph TB
 <details>
 <summary>원본 데이터를 보려면 클릭</summary>
 
-노드 목록 (3)
+노드 목록 (4)
 ```json
   component:Mapper: Mapper (26) (component)
   component:Service: Service (49) (component)
   component:Util: Util (6) (component)
+  component:DB: DB (5) (component)
 ```
 
-엣지 목록 (0)
+엣지 목록 (3)
 ```json
+  component:Service -> component:Mapper (call)
+  component:Service -> component:Util (call)
+  component:Mapper -> component:DB (use_table)
 ```
 
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-09-01 09:47:12*
+*Source Analyzer v1.1 — 생성 시각: 2025-09-01 20:42:28*

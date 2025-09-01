@@ -244,6 +244,8 @@ def build_enhanced_erd_json(config: Dict[str, Any], project_id: int, project_nam
 
     # Build FK relationships from join patterns or infer from column names
     edges_list = []
+    # 중복 제거를 위한 관계 추적 (table1, table2) 쌍
+    processed_relationships = set()
     
     if joins:
         # Count join frequency to infer FK relationships
@@ -269,6 +271,46 @@ def build_enhanced_erd_json(config: Dict[str, Any], project_id: int, project_nam
                     # 신뢰도 계산 개선
                     confidence = min(0.9, 0.6 + (frequency * 0.1))
                     
+                    # PK 기준 화살표 표시 규칙 적용
+                    l_node_data = nodes_dict[l_node_id]
+                    r_node_data = nodes_dict[r_node_id]
+                    l_pk_columns = l_node_data['meta'].get('pk_columns', [])
+                    r_pk_columns = r_node_data['meta'].get('pk_columns', [])
+                    
+                    # PK 조건 확인
+                    l_is_pk = l_col in l_pk_columns
+                    r_is_pk = r_col in r_pk_columns
+                    
+                    # 화살표 방향 결정
+                    # 1. 관계선은 하나만 표시
+                    # 2. PK인 쪽으로 화살표 표시 
+                    # 3. 양쪽 다 PK가 아니면 일반선으로 표시
+                    
+                    if r_is_pk and not l_is_pk:
+                        # r_table이 PK이므로 l_table -> r_table로 화살표
+                        source_node = l_node_id
+                        target_node = r_node_id
+                        relationship_kind = "foreign_key"
+                        cardinality = "many_to_one"
+                    elif l_is_pk and not r_is_pk:
+                        # l_table이 PK이므로 r_table -> l_table로 화살표
+                        source_node = r_node_id
+                        target_node = l_node_id
+                        relationship_kind = "foreign_key"
+                        cardinality = "many_to_one"
+                    elif l_is_pk and r_is_pk:
+                        # 양쪽 다 PK인 경우: 일반적으로 l_table -> r_table
+                        source_node = l_node_id
+                        target_node = r_node_id
+                        relationship_kind = "pk_to_pk"
+                        cardinality = "one_to_one"
+                    else:
+                        # 양쪽 다 PK가 아닌 경우: 화살표 없는 일반선
+                        source_node = l_node_id
+                        target_node = r_node_id
+                        relationship_kind = "non_pk_relation"
+                        cardinality = "unknown"
+                    
                     # 조인 조건 상세 정보 생성
                     join_condition = f"{l_table}.{l_col} = {r_table}.{r_col}"
                     
@@ -277,23 +319,30 @@ def build_enhanced_erd_json(config: Dict[str, Any], project_id: int, project_nam
                         "right_column": r_col, 
                         "frequency": frequency,
                         "relationship_type": "inferred_fk",
-                        "cardinality": "many_to_one",  # 대부분의 FK는 N:1
+                        "cardinality": cardinality,
                         "constraint_name": f"FK_{l_table}_{l_col}",
                         "join_condition": join_condition,
                         "source_table": l_table,
                         "target_table": r_table,
                         "join_type": "INNER JOIN",
-                        "description": f"{l_table} 테이블의 {l_col} 컬럼이 {r_table} 테이블의 {r_col} 컬럼을 참조"
+                        "description": f"{l_table} 테이블의 {l_col} 컬럼이 {r_table} 테이블의 {r_col} 컬럼을 참조",
+                        "l_is_pk": l_is_pk,
+                        "r_is_pk": r_is_pk,
+                        "arrow_direction": "pk_based"
                     }
                     
-                    edges_list.append(create_edge(
-                        f"fk_{len(edges_list)+1}",
-                        l_node_id,
-                        r_node_id,
-                        "foreign_key",
-                        confidence,
-                        edge_meta
-                    ))
+                    # 중복 체크: 이미 처리된 테이블 쌍인지 확인
+                    table_pair = (l_table, r_table) if l_table < r_table else (r_table, l_table)
+                    if table_pair not in processed_relationships:
+                        edges_list.append(create_edge(
+                            f"fk_{len(edges_list)+1}",
+                            source_node,
+                            target_node,
+                            relationship_kind,
+                            confidence,
+                            edge_meta
+                        ))
+                        processed_relationships.add(table_pair)
     else:
         # No joins data - infer FK relationships from column name patterns
         edge_id = 1
@@ -315,6 +364,12 @@ def build_enhanced_erd_json(config: Dict[str, Any], project_id: int, project_nam
                     
                     # Pattern 1: TABLE_ID (e.g., USER_ID, ORDER_ID)
                     if col_upper == f"{table2_upper}_ID" and f"{table2_upper}_ID" in [pk.upper() for pk in table2_pk]:
+                        # 중복 체크
+                        table_pair = (table1_name, table2_name) if table1_name < table2_name else (table2_name, table1_name)
+                        if table_pair in processed_relationships:
+                            continue
+                        processed_relationships.add(table_pair)
+                        
                         # 조인 조건 상세 정보 생성
                         join_condition = f"{table1_name}.{col_name} = {table2_name}.{table2_upper}_ID"
                         
@@ -344,6 +399,12 @@ def build_enhanced_erd_json(config: Dict[str, Any], project_id: int, project_nam
                     
                     # Pattern 2: Exact PK match (e.g., ID -> ID)
                     elif col_upper in [pk.upper() for pk in table2_pk] and table1_name != table2_name:
+                        # 중복 체크
+                        table_pair = (table1_name, table2_name) if table1_name < table2_name else (table2_name, table1_name)
+                        if table_pair in processed_relationships:
+                            continue
+                        processed_relationships.add(table_pair)
+                        
                         # 조인 조건 상세 정보 생성
                         join_condition = f"{table1_name}.{col_name} = {table2_name}.{col_name}"
                         

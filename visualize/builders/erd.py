@@ -163,6 +163,35 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
 
     # Build FK relationships from join patterns or infer from column names
     edges_list = []
+    processed_relationships = set()  # 중복 관계 방지용 집합
+    
+    def should_show_arrow(l_node_id, r_node_id, l_col, r_col):
+        """PK 기준으로 화살표 방향 결정"""
+        l_node = nodes_dict.get(l_node_id)
+        r_node = nodes_dict.get(r_node_id)
+        
+        if not l_node or not r_node:
+            return None, False
+            
+        l_pk_cols = l_node['meta'].get('pk_columns', [])
+        r_pk_cols = r_node['meta'].get('pk_columns', [])
+        
+        # PK 컬럼을 모두 조인 조건에 포함하는지 확인
+        l_has_all_pk = l_col.upper() in [pk.upper() for pk in l_pk_cols] if l_pk_cols else False
+        r_has_all_pk = r_col.upper() in [pk.upper() for pk in r_pk_cols] if r_pk_cols else False
+        
+        # 우선순위에 따른 화살표 방향 결정
+        # 1. 한쪽만 PK인 경우 - PK 쪽으로 화살표
+        if r_has_all_pk and not l_has_all_pk:
+            return r_node_id, True
+        elif l_has_all_pk and not r_has_all_pk:  
+            return l_node_id, True
+        # 2. 양쪽 다 PK가 아니면 일반선
+        elif not l_has_all_pk and not r_has_all_pk:
+            return None, False
+        # 3. 양쪽 다 PK면 일반선 
+        else:
+            return None, False
     
     if joins:
         # Count join frequency to infer FK relationships
@@ -180,21 +209,41 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                 l_node_id = resolve_abbreviation_to_node_id(l_table, nodes_dict)
                 r_node_id = resolve_abbreviation_to_node_id(r_table, nodes_dict)
 
-                if not l_node_id:
+                if not l_node_id or not r_node_id:
                     continue
-                if not r_node_id:
+                
+                # 중복 관계 방지 - 테이블 쌍이 이미 처리되었는지 확인
+                table_pair = tuple(sorted([l_node_id, r_node_id]))
+                if table_pair in processed_relationships:
                     continue
+                processed_relationships.add(table_pair)
                 
                 # Check if both tables are in our node set
                 if l_node_id in nodes_dict and r_node_id in nodes_dict:
-                    edges_list.append(create_edge(
-                        f"fk_{len(edges_list)+1}",
-                        l_node_id,
-                        r_node_id,
-                        "foreign_key",
-                        0.8,
-                        {"left_column": l_col, "right_column": r_col, "frequency": frequency}
-                    ))
+                    # 화살표 방향 결정
+                    target_node, has_arrow = should_show_arrow(l_node_id, r_node_id, l_col, r_col)
+                    
+                    if has_arrow and target_node:
+                        # 화살표가 있는 경우: FK -> PK 관계
+                        source_node = r_node_id if target_node == l_node_id else l_node_id
+                        edges_list.append(create_edge(
+                            f"fk_{len(edges_list)+1}",
+                            source_node,
+                            target_node,
+                            "foreign_key",
+                            0.8,
+                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": True}
+                        ))
+                    else:
+                        # 일반선인 경우
+                        edges_list.append(create_edge(
+                            f"rel_{len(edges_list)+1}",
+                            l_node_id,
+                            r_node_id,
+                            "relationship", 
+                            0.7,
+                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": False}
+                        ))
     else:
         # No joins data - infer FK relationships from column name patterns
         edge_id = 1
@@ -205,38 +254,76 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
             for node2_id, node2 in nodes_dict.items():
                 if node1_id == node2_id:
                     continue
+                
+                # 중복 관계 방지
+                table_pair = tuple(sorted([node1_id, node2_id]))
+                if table_pair in processed_relationships:
+                    continue
                     
                 table2_name = node2['meta']['table_name'] 
                 table2_pk = node2['meta']['pk_columns']
                 
                 # Look for FK patterns: table2_name + _ID in table1 columns
+                relationship_found = False
                 for col_name in table1_columns:
                     col_upper = col_name.upper()
                     table2_upper = table2_name.upper()
                     
                     # Pattern 1: TABLE_ID (e.g., USER_ID, ORDER_ID)
                     if col_upper == f"{table2_upper}_ID" and f"{table2_upper}_ID" in [pk.upper() for pk in table2_pk]:
-                        edges_list.append(create_edge(
-                            f"fk_{edge_id}",
-                            node1_id,
-                            node2_id,
-                            "foreign_key",
-                            0.7,
-                            {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True}
-                        ))
+                        processed_relationships.add(table_pair)
+                        target_node, has_arrow = should_show_arrow(node1_id, node2_id, col_name, f"{table2_upper}_ID")
+                        
+                        if has_arrow and target_node:
+                            source_node = node2_id if target_node == node1_id else node1_id
+                            edges_list.append(create_edge(
+                                f"fk_{edge_id}",
+                                source_node,
+                                target_node,
+                                "foreign_key",
+                                0.7,
+                                {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True, "arrow": True}
+                            ))
+                        else:
+                            edges_list.append(create_edge(
+                                f"rel_{edge_id}",
+                                node1_id,
+                                node2_id,
+                                "relationship",
+                                0.6,
+                                {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True, "arrow": False}
+                            ))
                         edge_id += 1
+                        relationship_found = True
+                        break
                     
                     # Pattern 2: Exact PK match (e.g., ID -> ID)
                     elif col_upper in [pk.upper() for pk in table2_pk] and table1_name != table2_name:
-                        edges_list.append(create_edge(
-                            f"fk_{edge_id}",
-                            node1_id,
-                            node2_id,
-                            "foreign_key",
-                            0.6,
-                            {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True}
-                        ))
+                        processed_relationships.add(table_pair)
+                        target_node, has_arrow = should_show_arrow(node1_id, node2_id, col_name, col_name)
+                        
+                        if has_arrow and target_node:
+                            source_node = node2_id if target_node == node1_id else node1_id
+                            edges_list.append(create_edge(
+                                f"fk_{edge_id}",
+                                source_node,
+                                target_node,
+                                "foreign_key",
+                                0.6,
+                                {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True, "arrow": True}
+                            ))
+                        else:
+                            edges_list.append(create_edge(
+                                f"rel_{edge_id}",
+                                node1_id,
+                                node2_id,
+                                "relationship",
+                                0.5,
+                                {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True, "arrow": False}
+                            ))
                         edge_id += 1
+                        relationship_found = True
+                        break
     
     # Convert nodes_dict values to list
     nodes_list = list(nodes_dict.values())

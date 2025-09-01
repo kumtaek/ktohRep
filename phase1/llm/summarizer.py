@@ -594,11 +594,19 @@ def generate_source_specification_md(config: Dict[str, Any], output_path: str):
             md_content.append(f"## {group_name} 파일\n")
             
             for file in group_files:
-                md_content.append(f"### {file.path}\n")
+                # 파일 경로에서 PROJECT 접두사 제거
+                display_path = file.path
+                if display_path and display_path.startswith('PROJECT\\'):
+                    display_path = display_path[8:]  # 'PROJECT\' 제거
                 
-                # File summary
+                md_content.append(f"### {display_path}\n")
+                
+                # File summary (마크다운 표 깨짐 방지)
                 if file.llm_summary:
-                    md_content.append(f"**파일 설명:** {file.llm_summary}\n")
+                    cleaned_summary = file.llm_summary.replace('|', '\\|').replace('\n', ' ')
+                    # '알겠습니다' 같은 불필요한 응답 제거
+                    if cleaned_summary.strip() not in ['알겠습니다', '알겠습니다.', 'OK', 'ok', '네', '네.']:
+                        md_content.append(f"**파일 설명:** {cleaned_summary}\n")
                 
                 # File details
                 md_content.append(f"- **언어:** {file.language or 'Unknown'}")
@@ -611,19 +619,29 @@ def generate_source_specification_md(config: Dict[str, Any], output_path: str):
                 if classes:
                     md_content.append(f"\n**클래스 목록:**")
                     for clazz in classes:
-                        class_info = f"- **{clazz.name}**"
-                        if clazz.llm_summary:
-                            class_info += f": {clazz.llm_summary}"
-                        md_content.append(class_info)
+                        # Unknown 클래스명 필터링
+                        class_name = clazz.name if clazz.name and clazz.name.strip() not in ['Unknown', 'unknown', 'UNKNOWN'] else ''
+                        if class_name:
+                            class_info = f"- **{class_name}**"
+                            if clazz.llm_summary:
+                                cleaned_class_summary = clazz.llm_summary.replace('|', '\\|').replace('\n', ' ')
+                                # 불필요한 응답 제거
+                                if cleaned_class_summary.strip() not in ['알겠습니다', '알겠습니다.', 'OK', 'ok', '네', '네.']:
+                                    class_info += f": {cleaned_class_summary}"
+                            md_content.append(class_info)
                         
-                        # Get methods in this class
-                        methods = session.query(Method).filter(Method.class_id == clazz.class_id).all()
-                        if methods:
-                            for method in methods:
-                                method_info = f"  - `{method.name}()`"
-                                if method.llm_summary:
-                                    method_info += f": {method.llm_summary}"
-                                md_content.append(method_info)
+                        # Get methods in this class (Unknown 클래스만 해당되는 경우만 처리)
+                        if class_name:  # Unknown이 아닌 클래스만
+                            methods = session.query(Method).filter(Method.class_id == clazz.class_id).all()
+                            if methods:
+                                for method in methods:
+                                    method_info = f"  - `{method.name}()`"
+                                    if method.llm_summary:
+                                        cleaned_method_summary = method.llm_summary.replace('|', '\\|').replace('\n', ' ')
+                                        # 불필요한 응답 제거
+                                        if cleaned_method_summary.strip() not in ['알겠습니다', '알겠습니다.', 'OK', 'ok', '네', '네.']:
+                                            method_info += f": {cleaned_method_summary}"
+                                    md_content.append(method_info)
                 
                 # Get SQL units in this file
                 sql_units = session.query(SqlUnit).filter(SqlUnit.file_id == file.file_id).all()
@@ -632,7 +650,10 @@ def generate_source_specification_md(config: Dict[str, Any], output_path: str):
                     for sql in sql_units:
                         sql_info = f"- **{sql.mapper_ns}.{sql.stmt_id}** ({sql.stmt_kind})"
                         if sql.llm_summary:
-                            sql_info += f": {sql.llm_summary}"
+                            cleaned_sql_summary = sql.llm_summary.replace('|', '\\|').replace('\n', ' ')
+                            # 불필요한 응답 제거
+                            if cleaned_sql_summary.strip() not in ['알겠습니다', '알겠습니다.', 'OK', 'ok', '네', '네.']:
+                                sql_info += f": {cleaned_sql_summary}"
                         md_content.append(sql_info)
                 
                 md_content.append("\n---\n")
@@ -665,7 +686,7 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             # Table description
             llm_comment = getattr(table, 'llm_comment', None)
             if llm_comment:
-                md_content.append(f"**Enhanced Description:** {llm_comment}\n")
+                md_content.append(f"**LLM_Description:** {llm_comment}\n")
             if table.table_comment and table.table_comment != llm_comment:
                 md_content.append(f"**Original Comment:** {table.table_comment}\n")
             
@@ -688,6 +709,10 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
                     nullable = "Yes" if col.nullable == 'Y' else "No"
                     original_comment = col.column_comment or ""
                     enhanced_comment = getattr(col, 'llm_comment', None) or ""
+                    
+                    # 마크다운 표 깨짐 방지: 파이프 문자와 줄바꿈 제거
+                    original_comment = original_comment.replace('|', '\\|').replace('\n', ' ')
+                    enhanced_comment = enhanced_comment.replace('|', '\\|').replace('\n', ' ')
                     
                     md_content.append(f"| {col.column_name} | {col.data_type} | {nullable} | {original_comment} | {enhanced_comment} |")
                 

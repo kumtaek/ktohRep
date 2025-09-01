@@ -86,7 +86,20 @@
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" visualizecli.py --project-name sampleSrc erd)",
       "Bash(call:*)",
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc erd)",
-      "Bash(set PYTHONPATH=E:SourceAnalyzer.git)"
+      "Bash(set PYTHONPATH=E:SourceAnalyzer.git)",
+      "Bash(move class_view.html class_view.html.bak)",
+      "Bash(move class_view_enhanced.html class_view.html)",
+      "Bash(ren:*)",
+      "Bash(\"E:\\SourceAnalyzer.git\\venvSrcAnalyzer\\Scripts\\python.exe\" E:SourceAnalyzer.gitvisualizecli.py --project-name sampleSrc graph --help)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" visualizecli.py --project-name sampleSrc graph --help)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc graph --help)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc graph)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc graph --kinds call)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc components)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc component)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc component --min-confidence 0.1)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\":*)",
+      "Bash(./run_analyzer.bat:*)"
     ],
     "deny": [],
     "ask": []

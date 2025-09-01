@@ -2648,29 +2648,29 @@
     },
     {
       "id": "fk_2",
-      "source": "table:PUBLIC.USER_ROLE",
-      "target": "table:SAMPLE.USERS",
+      "source": "table:SAMPLE.DISCOUNTS",
+      "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "USER_ID",
-        "right_column": "USER_ID",
-        "column": "USER_ID",
-        "references": "USERS.USER_ID",
+        "left_column": "PRODUCT_ID",
+        "right_column": "PRODUCT_ID",
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "USER_ROLE.USER_ID = USERS.USER_ID",
-        "source_table": "USER_ROLE",
-        "target_table": "USERS",
+        "join_condition": "DISCOUNTS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
+        "source_table": "DISCOUNTS",
+        "target_table": "PRODUCTS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "USER_ROLE 테이블이 USERS 테이블의 USER_ID 컬럼을 참조"
+        "description": "DISCOUNTS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_3",
-      "source": "table:SAMPLE.DISCOUNTS",
+      "source": "table:SAMPLE.INVENTORIES",
       "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
@@ -2681,40 +2681,40 @@
         "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "DISCOUNTS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "DISCOUNTS",
+        "join_condition": "INVENTORIES.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
+        "source_table": "INVENTORIES",
         "target_table": "PRODUCTS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "DISCOUNTS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "INVENTORIES 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_4",
-      "source": "table:SAMPLE.DISCOUNTS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SAMPLE.ORDER_ITEMS",
+      "target": "table:SAMPLE.ORDERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "PRODUCT_ID",
-        "right_column": "PRODUCT_ID",
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "left_column": "ORDER_ID",
+        "right_column": "ORDER_ID",
+        "column": "ORDER_ID",
+        "references": "ORDERS.ORDER_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "DISCOUNTS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "DISCOUNTS",
-        "target_table": "PRODUCTS",
+        "join_condition": "ORDER_ITEMS.ORDER_ID = ORDERS.ORDER_ID",
+        "source_table": "ORDER_ITEMS",
+        "target_table": "ORDERS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "DISCOUNTS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "ORDER_ITEMS 테이블이 ORDERS 테이블의 ORDER_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_5",
-      "source": "table:SAMPLE.INVENTORIES",
+      "source": "table:SAMPLE.ORDER_ITEMS",
       "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
@@ -2725,106 +2725,106 @@
         "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "INVENTORIES.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "INVENTORIES",
+        "join_condition": "ORDER_ITEMS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
+        "source_table": "ORDER_ITEMS",
         "target_table": "PRODUCTS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "INVENTORIES 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "ORDER_ITEMS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_6",
-      "source": "table:SAMPLE.INVENTORIES",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.BRANDS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "PRODUCT_ID",
-        "right_column": "PRODUCT_ID",
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "left_column": "BRAND_ID",
+        "right_column": "BRAND_ID",
+        "column": "BRAND_ID",
+        "references": "BRANDS.BRAND_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "INVENTORIES.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "INVENTORIES",
-        "target_table": "PRODUCTS",
+        "join_condition": "PRODUCTS.BRAND_ID = BRANDS.BRAND_ID",
+        "source_table": "PRODUCTS",
+        "target_table": "BRANDS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "INVENTORIES 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "PRODUCTS 테이블이 BRANDS 테이블의 BRAND_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_7",
-      "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.ORDERS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.CATEGORIES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "ORDER_ID",
-        "right_column": "ORDER_ID",
-        "column": "ORDER_ID",
-        "references": "ORDERS.ORDER_ID",
+        "left_column": "CATEGORY_ID",
+        "right_column": "CATEGORY_ID",
+        "column": "CATEGORY_ID",
+        "references": "CATEGORIES.CATEGORY_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "ORDER_ITEMS.ORDER_ID = ORDERS.ORDER_ID",
-        "source_table": "ORDER_ITEMS",
-        "target_table": "ORDERS",
+        "join_condition": "PRODUCTS.CATEGORY_ID = CATEGORIES.CATEGORY_ID",
+        "source_table": "PRODUCTS",
+        "target_table": "CATEGORIES",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "ORDER_ITEMS 테이블이 ORDERS 테이블의 ORDER_ID 컬럼을 참조"
+        "description": "PRODUCTS 테이블이 CATEGORIES 테이블의 CATEGORY_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_8",
-      "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.ORDERS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.SUPPLIERS",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "ORDER_ID",
-        "right_column": "ORDER_ID",
-        "column": "ORDER_ID",
-        "references": "ORDERS.ORDER_ID",
+        "left_column": "SUPPLIER_ID",
+        "right_column": "SUPPLIER_ID",
+        "column": "SUPPLIER_ID",
+        "references": "SUPPLIERS.SUPPLIER_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "ORDER_ITEMS.ORDER_ID = ORDERS.ORDER_ID",
-        "source_table": "ORDER_ITEMS",
-        "target_table": "ORDERS",
+        "join_condition": "PRODUCTS.SUPPLIER_ID = SUPPLIERS.SUPPLIER_ID",
+        "source_table": "PRODUCTS",
+        "target_table": "SUPPLIERS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "ORDER_ITEMS 테이블이 ORDERS 테이블의 ORDER_ID 컬럼을 참조"
+        "description": "PRODUCTS 테이블이 SUPPLIERS 테이블의 SUPPLIER_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_9",
-      "source": "table:SAMPLE.ORDER_ITEMS",
-      "target": "table:SAMPLE.PRODUCTS",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.WAREHOUSES",
       "kind": "foreign_key",
       "confidence": 0.6,
       "meta": {
-        "left_column": "PRODUCT_ID",
-        "right_column": "PRODUCT_ID",
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
+        "left_column": "WAREHOUSE_ID",
+        "right_column": "WAREHOUSE_ID",
+        "column": "WAREHOUSE_ID",
+        "references": "WAREHOUSES.WAREHOUSE_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "ORDER_ITEMS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "ORDER_ITEMS",
-        "target_table": "PRODUCTS",
+        "join_condition": "PRODUCTS.WAREHOUSE_ID = WAREHOUSES.WAREHOUSE_ID",
+        "source_table": "PRODUCTS",
+        "target_table": "WAREHOUSES",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "ORDER_ITEMS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "PRODUCTS 테이블이 WAREHOUSES 테이블의 WAREHOUSE_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_10",
-      "source": "table:SAMPLE.ORDER_ITEMS",
+      "source": "table:SAMPLE.PRODUCT_REVIEWS",
       "target": "table:SAMPLE.PRODUCTS",
       "kind": "foreign_key",
       "confidence": 0.6,
@@ -2835,281 +2835,17 @@
         "references": "PRODUCTS.PRODUCT_ID",
         "inferred": true,
         "pattern": "pk_match",
-        "join_condition": "ORDER_ITEMS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "ORDER_ITEMS",
+        "join_condition": "PRODUCT_REVIEWS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
+        "source_table": "PRODUCT_REVIEWS",
         "target_table": "PRODUCTS",
         "join_type": "INNER JOIN",
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
-        "description": "ORDER_ITEMS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
+        "description": "PRODUCT_REVIEWS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
       }
     },
     {
       "id": "fk_11",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.BRANDS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "BRAND_ID",
-        "right_column": "BRAND_ID",
-        "column": "BRAND_ID",
-        "references": "BRANDS.BRAND_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.BRAND_ID = BRANDS.BRAND_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "BRANDS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 BRANDS 테이블의 BRAND_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_12",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.BRANDS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "BRAND_ID",
-        "right_column": "BRAND_ID",
-        "column": "BRAND_ID",
-        "references": "BRANDS.BRAND_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.BRAND_ID = BRANDS.BRAND_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "BRANDS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 BRANDS 테이블의 BRAND_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_13",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.CATEGORIES",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "CATEGORY_ID",
-        "right_column": "CATEGORY_ID",
-        "column": "CATEGORY_ID",
-        "references": "CATEGORIES.CATEGORY_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.CATEGORY_ID = CATEGORIES.CATEGORY_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "CATEGORIES",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 CATEGORIES 테이블의 CATEGORY_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_14",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.CATEGORIES",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "CATEGORY_ID",
-        "right_column": "CATEGORY_ID",
-        "column": "CATEGORY_ID",
-        "references": "CATEGORIES.CATEGORY_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.CATEGORY_ID = CATEGORIES.CATEGORY_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "CATEGORIES",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 CATEGORIES 테이블의 CATEGORY_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_15",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.SUPPLIERS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "SUPPLIER_ID",
-        "right_column": "SUPPLIER_ID",
-        "column": "SUPPLIER_ID",
-        "references": "SUPPLIERS.SUPPLIER_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.SUPPLIER_ID = SUPPLIERS.SUPPLIER_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "SUPPLIERS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 SUPPLIERS 테이블의 SUPPLIER_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_16",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.SUPPLIERS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "SUPPLIER_ID",
-        "right_column": "SUPPLIER_ID",
-        "column": "SUPPLIER_ID",
-        "references": "SUPPLIERS.SUPPLIER_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.SUPPLIER_ID = SUPPLIERS.SUPPLIER_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "SUPPLIERS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 SUPPLIERS 테이블의 SUPPLIER_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_17",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.WAREHOUSES",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "WAREHOUSE_ID",
-        "right_column": "WAREHOUSE_ID",
-        "column": "WAREHOUSE_ID",
-        "references": "WAREHOUSES.WAREHOUSE_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.WAREHOUSE_ID = WAREHOUSES.WAREHOUSE_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "WAREHOUSES",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 WAREHOUSES 테이블의 WAREHOUSE_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_18",
-      "source": "table:SAMPLE.PRODUCTS",
-      "target": "table:SAMPLE.WAREHOUSES",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "WAREHOUSE_ID",
-        "right_column": "WAREHOUSE_ID",
-        "column": "WAREHOUSE_ID",
-        "references": "WAREHOUSES.WAREHOUSE_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCTS.WAREHOUSE_ID = WAREHOUSES.WAREHOUSE_ID",
-        "source_table": "PRODUCTS",
-        "target_table": "WAREHOUSES",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCTS 테이블이 WAREHOUSES 테이블의 WAREHOUSE_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_19",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.PRODUCTS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "PRODUCT_ID",
-        "right_column": "PRODUCT_ID",
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCT_REVIEWS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "PRODUCT_REVIEWS",
-        "target_table": "PRODUCTS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCT_REVIEWS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_20",
-      "source": "table:SAMPLE.PRODUCT_REVIEWS",
-      "target": "table:SAMPLE.PRODUCTS",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "PRODUCT_ID",
-        "right_column": "PRODUCT_ID",
-        "column": "PRODUCT_ID",
-        "references": "PRODUCTS.PRODUCT_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "PRODUCT_REVIEWS.PRODUCT_ID = PRODUCTS.PRODUCT_ID",
-        "source_table": "PRODUCT_REVIEWS",
-        "target_table": "PRODUCTS",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "PRODUCT_REVIEWS 테이블이 PRODUCTS 테이블의 PRODUCT_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_21",
-      "source": "table:SAMPLE.USERS",
-      "target": "table:PUBLIC.USER_ROLE",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "USER_ID",
-        "right_column": "USER_ID",
-        "column": "USER_ID",
-        "references": "USER_ROLE.USER_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "USERS.USER_ID = USER_ROLE.USER_ID",
-        "source_table": "USERS",
-        "target_table": "USER_ROLE",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "USERS 테이블이 USER_ROLE 테이블의 USER_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_22",
-      "source": "table:SAMPLE.USERS",
-      "target": "table:PUBLIC.USER_ROLE",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "USER_ID",
-        "right_column": "USER_ID",
-        "column": "USER_ID",
-        "references": "USER_ROLE.USER_ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "USERS.USER_ID = USER_ROLE.USER_ID",
-        "source_table": "USERS",
-        "target_table": "USER_ROLE",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "USERS 테이블이 USER_ROLE 테이블의 USER_ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_23",
       "source": "table:SCOTT.DYNAMIC_DATA",
       "target": "table:SCOTT.RELATED_DATA",
       "kind": "foreign_key",
@@ -3128,78 +2864,12 @@
         "relationship_type": "many_to_one",
         "cardinality": "N:1",
         "description": "DYNAMIC_DATA 테이블이 RELATED_DATA 테이블의 ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_24",
-      "source": "table:SCOTT.DYNAMIC_DATA",
-      "target": "table:SCOTT.RELATED_DATA",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "ID",
-        "right_column": "ID",
-        "column": "ID",
-        "references": "RELATED_DATA.ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "DYNAMIC_DATA.ID = RELATED_DATA.ID",
-        "source_table": "DYNAMIC_DATA",
-        "target_table": "RELATED_DATA",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "DYNAMIC_DATA 테이블이 RELATED_DATA 테이블의 ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_25",
-      "source": "table:SCOTT.RELATED_DATA",
-      "target": "table:SCOTT.DYNAMIC_DATA",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "ID",
-        "right_column": "ID",
-        "column": "ID",
-        "references": "DYNAMIC_DATA.ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "RELATED_DATA.ID = DYNAMIC_DATA.ID",
-        "source_table": "RELATED_DATA",
-        "target_table": "DYNAMIC_DATA",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "RELATED_DATA 테이블이 DYNAMIC_DATA 테이블의 ID 컬럼을 참조"
-      }
-    },
-    {
-      "id": "fk_26",
-      "source": "table:SCOTT.RELATED_DATA",
-      "target": "table:SCOTT.DYNAMIC_DATA",
-      "kind": "foreign_key",
-      "confidence": 0.6,
-      "meta": {
-        "left_column": "ID",
-        "right_column": "ID",
-        "column": "ID",
-        "references": "DYNAMIC_DATA.ID",
-        "inferred": true,
-        "pattern": "pk_match",
-        "join_condition": "RELATED_DATA.ID = DYNAMIC_DATA.ID",
-        "source_table": "RELATED_DATA",
-        "target_table": "DYNAMIC_DATA",
-        "join_type": "INNER JOIN",
-        "relationship_type": "many_to_one",
-        "cardinality": "N:1",
-        "description": "RELATED_DATA 테이블이 DYNAMIC_DATA 테이블의 ID 컬럼을 참조"
       }
     }
   ],
   "metadata": {
     "total_tables": 14,
-    "total_relationships": 26,
+    "total_relationships": 11,
     "tables_with_comments": 5,
     "total_columns": 154,
     "filters_applied": {
@@ -3366,7 +3036,7 @@
             });
         }
 
-        let currentLayout = 'fcose';
+        let currentLayout = 'dagre';
         let layoutOptions = {
             'fcose': {
                 name: 'fcose',
@@ -3476,15 +3146,31 @@
                             const kind = data.kind;
                             if (kind === 'foreign_key') return '#dc3545';
                             if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
                             return '#6c757d';
                         },
                         'target-arrow-color': data => {
                             const kind = data.kind;
                             if (kind === 'foreign_key') return '#dc3545';
                             if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
                             return '#6c757d';
                         },
-                        'target-arrow-shape': 'triangle',
+                        'target-arrow-shape': data => {
+                            const kind = data.kind;
+                            const meta = data.meta || {};
+                            
+                            // arrow 메타데이터가 false이거나 relationship 타입이면 화살표 없음
+                            if (meta.arrow === false || kind === 'relationship') {
+                                return 'none';
+                            }
+                            // PK가 아닌 관계는 화살표 없음 (기존 로직 유지)
+                            if (kind === 'non_pk_relation') return 'none';
+                            
+                            return 'triangle';
+                        },
                         'target-arrow-size': '10px',
                         'curve-style': 'bezier',
                         'source-endpoint': 'outside-to-node',

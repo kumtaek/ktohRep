@@ -1,10 +1,10 @@
 @echo off
-REM SourceAnalyzer ì™„ì „ ë¶„ì„ ë° ì‹œê°í™” ìƒì„± ìŠ¤í¬ë¦½íŠ¸
-REM ì‚¬ìš©ë²•: run_complete_analysis.bat [í”„ë¡œì íŠ¸ëª…] [ì†ŒìŠ¤ê²½ë¡œ]
+REM SourceAnalyzer ¿ÏÀü ºÐ¼® ¹× ½Ã°¢È­ »ý¼º ½ºÅ©¸³Æ®
+REM »ç¿ë¹ý: run_complete_analysis.bat [ÇÁ·ÎÁ§Æ®¸í] [¼Ò½º°æ·Î]
 
 setlocal enabledelayedexpansion
 
-REM ê¸°ë³¸ê°’ ì„¤ì •
+REM ±âº»°ª ¼³Á¤
 set PROJECT_NAME=%1
 set SOURCE_PATH=%2
 
@@ -12,69 +12,80 @@ if "%PROJECT_NAME%"=="" set PROJECT_NAME=sampleSrc
 if "%SOURCE_PATH%"=="" set SOURCE_PATH=testcase\sampleSrc
 
 echo ========================================
-echo SourceAnalyzer ì™„ì „ ë¶„ì„ ë° ì‹œê°í™” ìƒì„±
+echo SourceAnalyzer ¿ÏÀü ºÐ¼® ¹× ½Ã°¢È­ »ý¼º
 echo ========================================
-echo í”„ë¡œì íŠ¸ëª…: %PROJECT_NAME%
-echo ì†ŒìŠ¤ê²½ë¡œ: %SOURCE_PATH%
-echo ì‹œìž‘ì‹œê°„: %date% %time%
+echo ÇÁ·ÎÁ§Æ®¸í: %PROJECT_NAME%
+echo ¼Ò½º°æ·Î: %SOURCE_PATH%
+echo ½ÃÀÛ½Ã°£: %date% %time%
 echo ========================================
 
-REM 1. ê¸°ë³¸ ë¶„ì„ ì‹¤í–‰
+REM 1. ±âº» ºÐ¼® ½ÇÇà
 echo.
-echo [1/7] ê¸°ë³¸ ì†ŒìŠ¤ ë¶„ì„ ì‹œìž‘...
-call run_analyzer.bat %PROJECT_NAME%
+echo [1/7] ±âº» ¼Ò½º ºÐ¼® ½ÃÀÛ...
+call run_analyzer.bat --project-name %PROJECT_NAME%
 if !errorlevel! neq 0 (
-    echo ERROR: ê¸°ë³¸ ë¶„ì„ ì‹¤íŒ¨
+    echo ERROR: ±âº» ºÐ¼® ½ÇÆÐ
     goto :error
 )
-echo âœ… ê¸°ë³¸ ë¶„ì„ ì™„ë£Œ
+echo  ±âº» ºÐ¼® ¿Ï·á
 
-REM 2. ê´€ê³„ì„± ê³„ì‚°
+REM 2. °ü°è¼º °è»ê
 echo.
-echo [2/7] ê´€ê³„ì„± ì ìˆ˜ ê³„ì‚° ì¤‘...
-call venvSrcAnalyzer\Scripts\python.exe phase1\scripts\calculate_relatedness.py --project-name %PROJECT_NAME%
+echo [2/7] °ü°è¼º Á¡¼ö °è»ê Áß...
+call venvSrcAnalyzer\Scripts\python.exe phase1\scripts\calculate_relatedness.py %PROJECT_NAME%
 if !errorlevel! neq 0 (
-    echo ERROR: ê´€ê³„ì„± ê³„ì‚° ì‹¤íŒ¨
+    echo ERROR: °ü°è¼º °è»ê ½ÇÆÐ
     goto :error
 )
-echo âœ… ê´€ê³„ì„± ê³„ì‚° ì™„ë£Œ
+echo  °ü°è¼º °è»ê ¿Ï·á
 
-REM 3. LLM ìš”ì•½ ë° ê°•í™”
+rem    echo.REM 3. LLM ¿ä¾à ¹× °­È­
+rem    echo.
+rem    echo [3/7] LLM ¿ä¾à ¹× ¸ÞÅ¸µ¥ÀÌÅÍ °­È­ Áß... summarize
+rem    call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py summarize --project-name %PROJECT_NAME% --batch-size 3
+rem    if !errorlevel! neq 0 (
+rem        echo WARNING: LLM ¿ä¾à ½ÇÆÐ (¼±ÅÃ»çÇ×)
+rem    )
+rem    
+rem    echo.
+rem    echo. ¸ÞÅ¸µ¥ÀÌÅÍ °­È­ - enhance-db
+rem    call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py enhance-db --project-name %PROJECT_NAME% --batch-size 3
+rem    if !errorlevel! neq 0 (
+rem        echo WARNING: ¸ÞÅ¸µ¥ÀÌÅÍ °­È­ ½ÇÆÐ (¼±ÅÃ»çÇ×)
+rem    )
+rem    echo  LLM Ã³¸® ¿Ï·á
+rem    
+rem    echo.
+rem    echo.
+rem    echo.REM 4. Á¶ÀÎ ºÐ¼®
+rem    echo.
+rem    echo [4/7] SQL Á¶ÀÎ °ü°è ºÐ¼® Áß...
+rem    call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py analyze-joins --project-name %PROJECT_NAME% --batch-size 2
+rem    if !errorlevel! neq 0 (
+rem        echo WARNING: Á¶ÀÎ ºÐ¼® ½ÇÆÐ (¼±ÅÃ»çÇ×)
+rem    )
+rem    echo  Á¶ÀÎ ºÐ¼® ¿Ï·á
+
+call run_llm_analysis.bat sampleSrc
+
+REM 5. ±âº» ½Ã°¢È­ »ý¼º (ERD, ÀÇÁ¸¼º ±×·¡ÇÁ, ÄÄÆ÷³ÍÆ®)
 echo.
-echo [3/7] LLM ìš”ì•½ ë° ë©”íƒ€ë°ì´í„° ê°•í™” ì¤‘...
-call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py summarize --project-name %PROJECT_NAME% --batch-size 3
-if !errorlevel! neq 0 (
-    echo WARNING: LLM ìš”ì•½ ì‹¤íŒ¨ (ì„ íƒì‚¬í•­)
-)
-
-call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py enhance-db --project-name %PROJECT_NAME% --batch-size 3
-if !errorlevel! neq 0 (
-    echo WARNING: ë©”íƒ€ë°ì´í„° ê°•í™” ì‹¤íŒ¨ (ì„ íƒì‚¬í•­)
-)
-echo âœ… LLM ì²˜ë¦¬ ì™„ë£Œ
-
-REM 4. ì¡°ì¸ ë¶„ì„
-echo.
-echo [4/7] SQL ì¡°ì¸ ê´€ê³„ ë¶„ì„ ì¤‘...
-call "venvSrcAnalyzer\Scripts\python.exe" phase1/tools/llm_analyzer.py analyze-joins --project-name %PROJECT_NAME% --batch-size 2
-if !errorlevel! neq 0 (
-    echo WARNING: ì¡°ì¸ ë¶„ì„ ì‹¤íŒ¨ (ì„ íƒì‚¬í•­)
-)
-echo âœ… ì¡°ì¸ ë¶„ì„ ì™„ë£Œ
-
-REM 5. ê¸°ë³¸ ì‹œê°í™” ìƒì„± (ERD, ì˜ì¡´ì„± ê·¸ëž˜í”„, ì»´í¬ë„ŒíŠ¸)
-echo.
-echo [5/7] ê¸°ë³¸ ì‹œê°í™” ìƒì„± ì¤‘...
+echo [5/7] ±âº» ½Ã°¢È­ »ý¼º Áß...
 call venvSrcAnalyzer\Scripts\python.exe -m visualize all --project-name %PROJECT_NAME% --export-html "" --export-mermaid ""
 if !errorlevel! neq 0 (
-    echo ERROR: ê¸°ë³¸ ì‹œê°í™” ìƒì„± ì‹¤íŒ¨
+    echo ERROR: ±âº» ½Ã°¢È­ »ý¼º ½ÇÆÐ
     goto :error
 )
-echo âœ… ê¸°ë³¸ ì‹œê°í™” ì™„ë£Œ
+echo  ±âº» ½Ã°¢È­ ¿Ï·á
 
-REM 6. í–¥ìƒëœ ERD ìƒì„± (ìƒˆë¡œìš´ ê¸°ëŠ¥)
+goto end
+
+
+
+
+REM 6. Çâ»óµÈ ERD »ý¼º (»õ·Î¿î ±â´É)
 echo.
-echo [6/7] í–¥ìƒëœ ERD ìƒì„± ì¤‘...
+echo [6/7] Çâ»óµÈ ERD »ý¼º Áß...
 call venvSrcAnalyzer\Scripts\python.exe -c "
 from visualize.builders.erd_enhanced import build_enhanced_erd_json
 from visualize.renderers.enhanced_renderer_factory import EnhancedVisualizationFactory
@@ -82,7 +93,7 @@ import yaml
 import json
 from pathlib import Path
 
-# ì„¤ì • ë¡œë“œ
+# ¼³Á¤ ·Îµå
 config_path = Path('config/config.yaml')
 config = {}
 if config_path.exists():
@@ -90,68 +101,66 @@ if config_path.exists():
         raw = f.read().replace('{project_name}', '%PROJECT_NAME%')
         config = yaml.safe_load(raw) or {}
 
-# ERD ë°ì´í„° ìƒì„±
+# ERD µ¥ÀÌÅÍ »ý¼º
 data = build_enhanced_erd_json(config, 1, '%PROJECT_NAME%')
 
-# í–¥ìƒëœ ë Œë”ëŸ¬ë¡œ HTML ìƒì„±
+# Çâ»óµÈ ·»´õ·¯·Î HTML »ý¼º
 factory = EnhancedVisualizationFactory()
 html = factory.create_enhanced_erd(data)
 
-# ì¶œë ¥ ë””ë ‰í† ë¦¬ ìƒì„± ë° íŒŒì¼ ì €ìž¥
+# Ãâ·Â µð·ºÅä¸® »ý¼º ¹× ÆÄÀÏ ÀúÀå
 output_dir = Path('output/%PROJECT_NAME%/visualize')
 output_dir.mkdir(parents=True, exist_ok=True)
 
 with open(output_dir / 'erd_enhanced.html', 'w', encoding='utf-8') as f:
     f.write(html)
 
-print('âœ… í–¥ìƒëœ ERD ì €ìž¥ ì™„ë£Œ: ' + str(output_dir / 'erd_enhanced.html'))
+print(' Çâ»óµÈ ERD ÀúÀå ¿Ï·á: ' + str(output_dir / 'erd_enhanced.html'))
 "
 if !errorlevel! neq 0 (
-    echo WARNING: í–¥ìƒëœ ERD ìƒì„± ì‹¤íŒ¨, ê¸°ë³¸ ERD ì‚¬ìš©
+    echo WARNING: Çâ»óµÈ ERD »ý¼º ½ÇÆÐ, ±âº» ERD »ç¿ë
 )
 
-REM 7. ì‹œí€€ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨ ìƒì„± (ì£¼ìš” ë©”ì„œë“œë“¤)
+REM 7. ½ÃÄö½º ´ÙÀÌ¾î±×·¥ »ý¼º (ÁÖ¿ä ¸Þ¼­µåµé)
 echo.
-echo [7/7] ì‹œí€€ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨ ìƒì„± ì¤‘...
+echo [7/7] ½ÃÄö½º ´ÙÀÌ¾î±×·¥ »ý¼º Áß...
 call venvSrcAnalyzer\Scripts\python.exe -m visualize sequence --project-name %PROJECT_NAME% --depth 3
 if !errorlevel! neq 0 (
-    echo WARNING: ì‹œí€€ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨ ìƒì„± ì‹¤íŒ¨
+    echo WARNING: ½ÃÄö½º ´ÙÀÌ¾î±×·¥ »ý¼º ½ÇÆÐ
 )
-echo âœ… ì‹œí€€ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨ ì™„ë£Œ
+echo  ½ÃÄö½º ´ÙÀÌ¾î±×·¥ ¿Ï·á
 
-REM ì™„ë£Œ ë³´ê³ ì„œ ìƒì„±
+REM ¿Ï·á º¸°í¼­ »ý¼º
 echo.
 echo ========================================
-echo ðŸŽ‰ ëª¨ë“  ë¶„ì„ ë° ì‹œê°í™” ì™„ë£Œ!
+echo  ¸ðµç ºÐ¼® ¹× ½Ã°¢È­ ¿Ï·á!
 echo ========================================
-echo ì™„ë£Œì‹œê°„: %date% %time%
+echo ¿Ï·á½Ã°£: %date% %time%
 echo.
-echo ðŸ“ ìƒì„±ëœ íŒŒì¼ë“¤:
+echo  »ý¼ºµÈ ÆÄÀÏµé:
 echo    output\%PROJECT_NAME%\visualize\
-echo    â”œâ”€â”€ graph.html              (ì˜ì¡´ì„± ê·¸ëž˜í”„)
-echo    â”œâ”€â”€ erd.html               (ê¸°ë³¸ ERD)
-echo    â”œâ”€â”€ erd_enhanced.html      (í–¥ìƒëœ ERD - ìƒˆë¡œìš´!)
-echo    â”œâ”€â”€ components.html        (ì»´í¬ë„ŒíŠ¸ ë‹¤ì´ì–´ê·¸ëž¨)
-echo    â”œâ”€â”€ class.html            (í´ëž˜ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨)
-echo    â”œâ”€â”€ relatedness.html      (ê´€ê³„ì„± ê·¸ëž˜í”„)
-echo    â””â”€â”€ *_sequence.html       (ì‹œí€€ìŠ¤ ë‹¤ì´ì–´ê·¸ëž¨ë“¤)
+echo    ¦§¦¡¦¡ graph.html              (ÀÇÁ¸¼º ±×·¡ÇÁ)
+echo    ¦§¦¡¦¡ erd.html               (±âº» ERD)
+echo    ¦§¦¡¦¡ erd_enhanced.html      (Çâ»óµÈ ERD - »õ·Î¿î!)
+echo    ¦§¦¡¦¡ components.html        (ÄÄÆ÷³ÍÆ® ´ÙÀÌ¾î±×·¥)
+echo    ¦§¦¡¦¡ class.html            (Å¬·¡½º ´ÙÀÌ¾î±×·¥)
+echo    ¦§¦¡¦¡ relatedness.html      (°ü°è¼º ±×·¡ÇÁ)
+echo    ¦¦¦¡¦¡ *_sequence.html       (½ÃÄö½º ´ÙÀÌ¾î±×·¥µé)
 echo.
-echo ðŸ“Š ì¶”ì²œ í™•ì¸ ìˆœì„œ:
-echo    1. erd_enhanced.html      (ì»¬ëŸ¼ íˆ´íŒ, ê²¹ì¹¨ ë°©ì§€)
-echo    2. graph.html            (ì „ì²´ ì˜ì¡´ì„± êµ¬ì¡°)
-echo    3. components.html       (ì»´í¬ë„ŒíŠ¸ë³„ êµ¬ì¡°)
-echo    4. relatedness.html      (ê´€ê³„ì„± ë¶„ì„)
+echo  ÃßÃµ È®ÀÎ ¼ø¼­:
+echo    1. erd_enhanced.html      (ÄÃ·³ ÅøÆÁ, °ãÄ§ ¹æÁö)
+echo    2. graph.html            (ÀüÃ¼ ÀÇÁ¸¼º ±¸Á¶)
+echo    3. components.html       (ÄÄÆ÷³ÍÆ®º° ±¸Á¶)
+echo    4. relatedness.html      (°ü°è¼º ºÐ¼®)
 echo.
-echo ðŸš€ ë¸Œë¼ìš°ì €ì—ì„œ íŒŒì¼ë“¤ì„ ì—´ì–´ í™•ì¸í•´ë³´ì„¸ìš”!
+echo  ºê¶ó¿ìÀú¿¡¼­ ÆÄÀÏµéÀ» ¿­¾î È®ÀÎÇØº¸¼¼¿ä!
 goto :end
 
 :error
 echo.
-echo âŒ ì˜¤ë¥˜ ë°œìƒìœ¼ë¡œ ìŠ¤í¬ë¦½íŠ¸ê°€ ì¤‘ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤.
-echo ë¡œê·¸ë¥¼ í™•ì¸í•˜ê³  ë¬¸ì œë¥¼ í•´ê²°í•œ í›„ ë‹¤ì‹œ ì‹¤í–‰í•´ì£¼ì„¸ìš”.
+echo  ¿À·ù ¹ß»ýÀ¸·Î ½ºÅ©¸³Æ®°¡ Áß´ÜµÇ¾ú½À´Ï´Ù.
+echo ·Î±×¸¦ È®ÀÎÇÏ°í ¹®Á¦¸¦ ÇØ°áÇÑ ÈÄ ´Ù½Ã ½ÇÇàÇØÁÖ¼¼¿ä.
 exit /b 1
 
 :end
 echo.
-echo Press any key to exit...
-pause >nul

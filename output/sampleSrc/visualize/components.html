@@ -337,16 +337,99 @@
         ],
         "total_entities": 6
       }
+    },
+    {
+      "id": "component:DB",
+      "type": "component",
+      "label": "DB (5)",
+      "group": "DB",
+      "meta": {
+        "entity_count": 5,
+        "entities": [
+          {
+            "id": "table:ORDERS",
+            "type": "table",
+            "label": "ORDERS"
+          },
+          {
+            "id": "table:PRODUCTS",
+            "type": "table",
+            "label": "PRODUCTS"
+          },
+          {
+            "id": "table:USERS",
+            "type": "table",
+            "label": "USERS"
+          },
+          {
+            "id": "table:CATEGORIES",
+            "type": "table",
+            "label": "CATEGORIES"
+          },
+          {
+            "id": "table:INVENTORIES",
+            "type": "table",
+            "label": "INVENTORIES"
+          }
+        ],
+        "total_entities": 5
+      }
     }
   ],
-  "edges": [],
+  "edges": [
+    {
+      "id": "comp_edge:Service-Mapper",
+      "source": "component:Service",
+      "target": "component:Mapper",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "count": 15,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.8
+      }
+    },
+    {
+      "id": "comp_edge:Service-Util",
+      "source": "component:Service",
+      "target": "component:Util",
+      "kind": "call",
+      "confidence": 0.7,
+      "meta": {
+        "count": 8,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.7
+      }
+    },
+    {
+      "id": "comp_edge:Mapper-DB",
+      "source": "component:Mapper",
+      "target": "component:DB",
+      "kind": "use_table",
+      "confidence": 0.9,
+      "meta": {
+        "count": 12,
+        "kinds": [
+          "use_table"
+        ],
+        "avg_confidence": 0.9
+      }
+    }
+  ],
   "metadata": {
-    "node_count": 3,
-    "edge_count": 0,
+    "node_count": 4,
+    "edge_count": 3,
     "node_types": [
       "component"
     ],
-    "edge_kinds": []
+    "edge_kinds": [
+      "call",
+      "use_table"
+    ]
   }
 };
         

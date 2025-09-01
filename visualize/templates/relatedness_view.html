@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연관성 분석</title>
     <style>
-        /* 우리금융지주 브랜드 스타일 */
+        /* 브랜드 스타일 */
         :root {
             --woori-primary: #1976d2;
             --woori-primary-dark: #0d47a1;
@@ -401,8 +401,8 @@
             <div class="control-group">
                 <label>레이아웃 방식</label>
                 <select id="layoutType" class="woori-select" onchange="changeLayout(this.value)">
-                    <option value="fcose">물리 기반 (fcose)</option>
                     <option value="dagre">계층형 (dagre)</option>
+                    <option value="fcose">물리 기반 (fcose)</option>
                     <option value="circle">원형 (circle)</option>
                 </select>
             </div>
@@ -482,7 +482,7 @@
     <script>
         // 전역 변수
         let cy = null;
-        let currentLayout = 'fcose';
+        let currentLayout = 'dagre';
         let usePhysics = true;
 
         // 우리금융지주 브랜드 색상
@@ -517,7 +517,7 @@
                 container: document.getElementById('cy'),
                 elements: elements,
                 style: styles,
-                layout: getLayoutConfig('fcose'),
+                layout: getLayoutConfig('dagre'),
                 wheelSensitivity: 0.05
             });
 

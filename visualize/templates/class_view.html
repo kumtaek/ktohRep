@@ -1,110 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <meta charset="utf-8" />
-    <title>Source Analyzer - 클래스 다이어그램</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 다이어그램 분석</title>
     <style>
-        body, html { 
-            margin: 0; 
-            height: 100%; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* 브랜드 스타일 */
+        :root {
+            --woori-primary: #1976d2;
+            --woori-primary-dark: #0d47a1;
+            --woori-primary-light: #42a5f5;
+            --woori-accent: #2196f3;
+            --woori-pale: #e3f2fd;
+            --woori-ice: #f1f8ff;
+            --woori-gradient: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
         }
-        #toolbar { 
-            padding: 12px; 
-            border-bottom: 1px solid #ddd; 
-            background: #f8f9fa;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
+            color: #212121;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            justify-content: space-between;
         }
-        #cy { 
-            width: 100%; 
-            height: calc(100% - 60px); 
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        button {
-            background: #007bff;
-            border: none;
+
+        .woori-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--woori-primary);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* 컨트롤 패널 */
+        .controls {
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--woori-primary);
+            font-size: 14px;
+        }
+
+        .woori-input, .woori-select {
+            padding: 10px 12px;
+            border: 2px solid rgba(25, 118, 210, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .woori-input:focus, .woori-select:focus {
+            outline: none;
+            border-color: var(--woori-primary);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .woori-btn {
+            background: var(--woori-gradient);
             color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .woori-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        /* 시각화 컨테이너 */
+        .visualization-container {
+            background: white;
+            margin: 0 auto;
+            max-width: 1200px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.12);
+            overflow: hidden;
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .viz-header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viz-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .viz-toolbar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
             padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            transition: all 0.2s ease;
         }
-        button:hover {
-            background: #0056b3;
+
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
-        
-        #search {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-            min-width: 200px;
+
+        #cy {
+            width: 100%;
+            height: 600px;
+            background: #fafafa;
         }
-        
+
+        /* 정보 패널 */
         .info-panel {
-            position: absolute;
-            top: 80px;
-            right: 20px;
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+            border: 1px solid rgba(25, 118, 210, 0.12);
             max-width: 400px;
             max-height: 70vh;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
             z-index: 1000;
             overflow-y: auto;
         }
-        
-        .stats {
-            background: rgba(156, 39, 176, 0.1);
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+
+        .info-panel.active {
+            display: block;
         }
-        
+
+        .info-title {
+            color: var(--woori-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .info-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 범례 */
         .legend {
-            display: flex;
-            gap: 15px;
-            font-size: 12px;
-            flex-wrap: wrap;
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
         }
-        
+
+        .legend h3 {
+            color: var(--woori-primary);
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--woori-ice);
+            border-radius: 6px;
+            border: 1px solid rgba(25, 118, 210, 0.1);
         }
-        
+
         .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid currentColor;
         }
-        
-        .method-list, .attribute-list {
-            max-height: 150px;
-            overflow-y: auto;
-            margin: 5px 0;
+
+        .legend-label {
+            font-size: 14px;
+            font-weight: 500;
         }
-        
-        .method-item, .attribute-item {
-            font-family: monospace;
-            font-size: 12px;
-            padding: 2px 0;
-            border-bottom: 1px solid #eee;
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                padding: 0 16px;
+            }
+            
+            .controls, .visualization-container, .legend {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+            
+            .info-panel {
+                position: static;
+                transform: none;
+                margin: 16px;
+                max-width: none;
+            }
         }
-        
-        .private { color: #888; }
-        .special { color: #d32f2f; font-weight: bold; }
-        .property { color: #1976d2; }
-        .static { color: #388e3c; }
     </style>
-    <!-- Offline assets -->
+    
+    <!-- Cytoscape.js and extensions -->
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
@@ -120,502 +300,453 @@
             cytoscape.use(cytoscapeFcose);
         }
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const btns = [
-                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
-                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
-                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
-                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
-                { sel: 'button[onclick="toggleLayout()"]', text: '레이아웃', title: '레이아웃 전환' }
-            ];
-            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text + (b.sel.includes('toggleLayout') ? ' (' + (document.getElementById('current-layout')?.textContent || 'dagre') + ')' : ''); el.title = b.title; } });
-            const search = document.getElementById('search'); if (search) search.placeholder = '클래스 검색...';
-            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '클래스: <span id="node-count">0</span> | 관계: <span id="edge-count">0</span>';
-            const h = document.getElementById('info-title'); if (h) h.textContent = '클래스 정보';
-            document.title = 'Source Analyzer - 클래스 다이어그램';
-        });
-    </script>
 </head>
 <body>
-    <div id="toolbar">
-        <button onclick="cy.fit()" title="Fit to view">🔍 Fit</button>
-        <button onclick="cy.center()" title="Center view">🎯 Center</button>
-        <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
-        <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
-        <button onclick="toggleLayout()" title="Toggle layout">📐 Layout (<span id="current-layout">dagre</span>)</button>
-        <input id="search" placeholder="Search classes..." oninput="searchNode(this.value)" />
-        <div class="stats" id="stats">
-            Classes: <span id="node-count">0</span> | 
-            Relations: <span id="edge-count">0</span>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <div class="woori-logo">우</div>
+                클래스 다이어그램 분석
+            </h1>
+            <div style="font-size: 14px; opacity: 0.9;">
+                Source Analyzer - 우리금융지주 스타일
+            </div>
         </div>
-        <div class="legend" id="legend"></div>
+    </header>
+
+    <!-- 컨트롤 패널 -->
+    <div class="controls">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>레이아웃 방식</label>
+                <select id="layoutType" class="woori-select" onchange="changeLayout(this.value)">
+                    <option value="dagre">계층형 (dagre)</option>
+                    <option value="fcose">물리 기반 (fcose)</option>
+                    <option value="circle">원형 (circle)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>검색</label>
+                <input type="text" id="searchInput" class="woori-input" 
+                       placeholder="클래스명으로 검색..." 
+                       oninput="searchNodes(this.value)">
+            </div>
+            
+            <div class="control-group">
+                <button class="woori-btn" onclick="exportToPng()">
+                    📷 PNG 내보내기
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <button class="woori-btn" onclick="fitToScreen()">
+                    🔍 화면 맞춤
+                </button>
+            </div>
+        </div>
     </div>
-    
-    <div id="cy"></div>
-    
-    <div id="info-panel" class="info-panel">
-        <h4 id="info-title">Class Info</h4>
-        <div id="info-content"></div>
+
+    <!-- 시각화 컨테이너 -->
+    <div class="visualization-container">
+        <div class="viz-header">
+            <div class="viz-title">클래스 관계 네트워크</div>
+            <div class="viz-toolbar">
+                <button class="toolbar-btn" onclick="cy.fit()" title="화면에 맞춤">🔍</button>
+                <button class="toolbar-btn" onclick="cy.center()" title="중앙 정렬">🎯</button>
+                <button class="toolbar-btn" onclick="resetLayout()" title="레이아웃 재설정">🔄</button>
+                <button class="toolbar-btn" onclick="toggleEdges()" title="엣지 표시/숨김">🔗</button>
+            </div>
+        </div>
+        <div id="cy"></div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend">
+        <h3>클래스 관계 범례</h3>
+        <div class="legend-grid">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #1976d2; border-color: #0d47a1;"></div>
+                <span class="legend-label">일반 클래스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2196f3; border-color: #1565c0;"></div>
+                <span class="legend-label">인터페이스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #42a5f5; border-color: #1976d2;"></div>
+                <span class="legend-label">추상 클래스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #81d4fa; border-color: #42a5f5;"></div>
+                <span class="legend-label">상속 관계</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 정보 패널 -->
+    <div class="info-panel" id="infoPanel">
+        <div class="info-title" id="infoTitle">클래스 정보</div>
+        <div class="info-content" id="infoContent">
+            클래스를 클릭하면 상세 정보가 표시됩니다.
+        </div>
     </div>
 
     <script>
-        // Build Cytoscape elements
-        const elements = [];
-        
-        // Add nodes (classes)
-        for (const node of DATA.nodes || []) {
-            elements.push({
-                data: {
-                    id: node.id,
-                    label: node.label,
-                    type: node.type,
-                    group: node.group,
-                    meta: node.meta
-                }
-            });
-        }
-        
-        // Add edges (relationships)
-        for (const edge of DATA.edges || []) {
-            elements.push({
-                data: {
-                    id: edge.id,
-                    source: edge.source,
-                    target: edge.target,
-                    kind: edge.kind,
-                    confidence: edge.confidence,
-                    meta: edge.meta
-                }
-            });
-        }
+        // 전역 변수
+        let cy = null;
+        let currentLayout = 'dagre';
+        let edgesVisible = true;
 
-        let currentLayout = 'fcose';
-        let layoutOptions = {
-            'fcose': {
-                name: 'fcose',
-                quality: 'proof',
-                randomize: true,
-                animate: true,
-                animationDuration: 2000,
-                fit: true,
-                padding: 200,
-                nodeSeparation: 500,
-                idealEdgeLength: edge => {
-                    const kind = edge.data('kind') || '';
-                    const confidence = edge.data('confidence') || 0.7;
-                    if (kind === 'inherits') {
-                        return Math.max(300, 600 - (confidence * 150));
-                    }
-                    return Math.max(250, 500 - (confidence * 100));
-                },
-                nodeRepulsion: 25000,
-                edgeElasticity: edge => {
-                    const kind = edge.data('kind') || '';
-                    if (kind === 'inherits') {
-                        return 0.3;
-                    }
-                    return 0.2;
-                },
-                gravityRange: 8.0,
-                gravity: 0.15,
-                numIter: 2000,
-                initialTemp: 500,
-                coolingFactor: 0.97,
-                minTemp: 2.0
-            },
-            'cose': {
-                name: 'cose',
-                animate: true,
-                animationDuration: 1500,
-                fit: true,
-                padding: 70,
-                nodeRepulsion: 5000,
-                idealEdgeLength: 140,
-                edgeElasticity: 0.5,
-                gravity: 0.35
-            },
-            'circle': {
-                name: 'circle',
-                animate: true,
-                radius: Math.max(300, Math.sqrt(elements.filter(e => e.data.type === 'class').length) * 80)
-            },
-            'grid': {
-                name: 'grid',
-                animate: true,
-                padding: 100,
-                rows: Math.ceil(Math.sqrt(elements.filter(e => e.data.type === 'class').length))
-            }
+        // 우리금융지주 브랜드 색상
+        const WOORI_COLORS = {
+            primary: '#1976d2',
+            primaryDark: '#0d47a1', 
+            primaryLight: '#42a5f5',
+            accent: '#2196f3'
         };
 
-        // Initialize Cytoscape
-        const cy = cytoscape({
-            container: document.getElementById('cy'),
-            elements: elements,
-            style: [
-                // Class node styles
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            if (DATA && DATA.nodes && DATA.nodes.length > 0) {
+                initializeVisualization();
+            } else {
+                showNoDataMessage();
+            }
+        });
+
+        function initializeVisualization() {
+            const elements = buildCytoscapeElements();
+            const styles = buildWooriStyles();
+            
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: styles,
+                layout: getLayoutConfig('dagre'),
+                wheelSensitivity: 0.05
+            });
+
+            setupEventHandlers();
+        }
+
+        function buildCytoscapeElements() {
+            const elements = [];
+
+            // 노드 추가
+            if (DATA.nodes) {
+                DATA.nodes.forEach(node => {
+                    elements.push({
+                        data: {
+                            id: node.id,
+                            label: node.label,
+                            type: node.type,
+                            group: node.group || 'default',
+                            meta: node.meta || {}
+                        }
+                    });
+                });
+            }
+
+            // 엣지 추가
+            if (DATA.edges) {
+                DATA.edges.forEach(edge => {
+                    elements.push({
+                        data: {
+                            id: edge.id,
+                            source: edge.source,
+                            target: edge.target,
+                            kind: edge.kind,
+                            meta: edge.meta || {}
+                        }
+                    });
+                });
+            }
+
+            return elements;
+        }
+
+        function buildWooriStyles() {
+            return [
+                // 기본 노드 스타일
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '12px',
+                        'font-weight': '600',
+                        'font-family': 'Malgun Gothic, sans-serif',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '120px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'color': '#ffffff',
+                        'text-outline-width': '1px',
+                        'text-outline-color': '#000000',
+                        'text-outline-opacity': 0.3,
+                        'background-color': WOORI_COLORS.primary,
+                        'border-width': '2px',
+                        'border-color': WOORI_COLORS.primaryDark,
+                        'width': '60px',
+                        'height': '60px',
+                        'shape': 'round-rectangle',
+                        'overlay-opacity': 0
+                    }
+                },
+
+                // 클래스 타입별 색상
                 {
                     selector: 'node[type = "class"]',
                     style: {
-                        'label': 'data(label)',
-                        'font-size': '14px',
-                        'text-wrap': 'wrap',
-                        'text-max-width': '200px',
-                        'text-valign': 'center',
-                        'text-halign': 'center',
-                        'background-color': '#e3f2fd',
-                        'border-width': 2,
-                        'border-color': '#2196f3',
-                        'width': 'mapData(label.length, 3, 20, 100, 220)',
-                        'height': 80,
-                        'shape': 'round-rectangle',
-                        'font-family': 'monospace',
-                        'font-weight': 'bold'
+                        'background-color': WOORI_COLORS.primary,
+                        'border-color': WOORI_COLORS.primaryDark
                     }
                 },
-                
-                // Abstract classes
                 {
-                    selector: 'node[meta.is_abstract = true]',
+                    selector: 'node[type = "interface"]',
                     style: {
-                        'background-color': '#fff3e0',
-                        'border-color': '#ff9800',
-                        'font-style': 'italic',
-                        'border-style': 'dashed'
+                        'background-color': WOORI_COLORS.accent,
+                        'border-color': '#1565c0'
                     }
                 },
-                
-                // Inheritance relationship edges
                 {
-                    selector: 'edge[kind = "inherits"]',
+                    selector: 'node[type = "abstract"]',
+                    style: {
+                        'background-color': WOORI_COLORS.primaryLight,
+                        'border-color': WOORI_COLORS.primary
+                    }
+                },
+
+                // 엣지 스타일
+                {
+                    selector: 'edge',
                     style: {
                         'curve-style': 'bezier',
                         'width': 2,
-                        'line-color': '#4caf50',
+                        'line-color': WOORI_COLORS.primary,
                         'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#4caf50',
-                        'arrow-scale': 1.5,
-                        'line-style': 'solid'
+                        'target-arrow-color': WOORI_COLORS.primary,
+                        'arrow-scale': 1.2,
+                        'opacity': 0.8
                     }
                 },
-                
-                // Association relationship edges
+
+                // 상속 관계
                 {
-                    selector: 'edge[kind = "association"]',
+                    selector: 'edge[kind = "inheritance"]',
                     style: {
-                        'curve-style': 'bezier',
-                        'width': 1,
-                        'line-color': '#9e9e9e',
-                        'target-arrow-shape': 'triangle-backcurve',
-                        'target-arrow-color': '#9e9e9e',
+                        'line-color': '#81d4fa',
+                        'target-arrow-color': '#81d4fa',
+                        'width': 3,
                         'line-style': 'solid'
                     }
                 },
-                
-                // Selected/highlighted styles
+
+                // 구현 관계
+                {
+                    selector: 'edge[kind = "implementation"]',
+                    style: {
+                        'line-color': WOORI_COLORS.accent,
+                        'target-arrow-color': WOORI_COLORS.accent,
+                        'width': 2,
+                        'line-style': 'dashed'
+                    }
+                },
+
+                // 선택 상태
                 {
                     selector: 'node:selected',
                     style: {
-                        'border-width': 4,
-                        'border-color': '#ff6b6b',
-                        'background-color': '#ffebee'
+                        'border-width': '4px',
+                        'border-color': '#ff6b35'
                     }
                 },
                 {
                     selector: 'edge:selected',
                     style: {
-                        'line-color': '#ff6b6b',
-                        'target-arrow-color': '#ff6b6b',
+                        'line-color': '#ff6b35',
+                        'target-arrow-color': '#ff6b35',
                         'width': 4
                     }
                 },
-                
-                // Search result highlighting
+
+                // 하이라이트 상태
                 {
-                    selector: 'node.search-selected',
+                    selector: '.highlighted',
                     style: {
-                        'border-width': 6,
-                        'border-color': '#00c851',
-                        'background-color': '#e8f5e8'
+                        'border-width': '3px',
+                        'border-color': '#ffd700',
+                        'z-index': 10
                     }
                 }
-            ],
-            layout: {
-                name: 'fcose',
-                quality: 'proof',
-                randomize: true,
-                animate: true,
-                animationDuration: 2000,
-                fit: true,
-                padding: 200,
-                nodeSeparation: 500,
-                idealEdgeLength: edge => {
-                    const kind = edge.data('kind') || '';
-                    const confidence = edge.data('confidence') || 0.7;
-                    if (kind === 'inherits') {
-                        return Math.max(300, 600 - (confidence * 150));
-                    }
-                    return Math.max(250, 500 - (confidence * 100));
-                },
-                nodeRepulsion: 25000,
-                edgeElasticity: edge => {
-                    const kind = edge.data('kind') || '';
-                    if (kind === 'inherits') {
-                        return 0.3;
-                    }
-                    return 0.2;
-                },
-                gravityRange: 8.0,
-                gravity: 0.15,
-                numIter: 2000,
-                initialTemp: 500,
-                coolingFactor: 0.97,
-                minTemp: 2.0
-            },
-            wheelSensitivity: 0.1
-        });
-
-        // Update stats
-        document.getElementById('node-count').textContent = DATA.nodes ? DATA.nodes.length : 0;
-        document.getElementById('edge-count').textContent = DATA.edges ? DATA.edges.length : 0;
-
-        // Create legend
-        function createLegend() {
-            const legend = document.getElementById('legend');
-            
-            const relationshipTypes = [
-                { name: 'Inheritance', color: '#4caf50', style: 'solid' },
-                { name: 'Association', color: '#9e9e9e', style: 'solid' }
             ];
+        }
+
+        function getLayoutConfig(layoutType) {
+            const configs = {
+                dagre: {
+                    name: 'dagre',
+                    rankDir: 'TB',
+                    nodeSep: 120,
+                    rankSep: 160,
+                    animate: true,
+                    animationDuration: 1000
+                },
+                fcose: {
+                    name: 'fcose',
+                    quality: 'proof',
+                    randomize: true,
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 200,
+                    nodeSeparation: 600,
+                    idealEdgeLength: 400
+                },
+                circle: {
+                    name: 'circle',
+                    animate: true,
+                    animationDuration: 1500,
+                    radius: Math.max(200, Math.sqrt((DATA.nodes || []).length) * 80)
+                }
+            };
+            return configs[layoutType] || configs.dagre;
+        }
+
+        function setupEventHandlers() {
+            // 노드 클릭 이벤트
+            cy.on('tap', 'node', function(evt) {
+                const node = evt.target;
+                showNodeInfo(node);
+                highlightConnectedNodes(node);
+            });
+
+            // 배경 클릭 시 정보 패널 숨기기
+            cy.on('tap', function(evt) {
+                if (evt.target === cy) {
+                    hideNodeInfo();
+                    clearHighlights();
+                }
+            });
+
+            // 노드 호버 효과
+            cy.on('mouseover', 'node', function(evt) {
+                this.style('cursor', 'pointer');
+            });
+        }
+
+        function showNodeInfo(node) {
+            const data = node.data();
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+
+            title.textContent = data.label || data.id;
             
-            relationshipTypes.forEach(rel => {
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-                
-                const color = document.createElement('div');
-                color.className = 'legend-color';
-                color.style.backgroundColor = rel.color;
-                
-                const label = document.createElement('span');
-                label.textContent = rel.name;
-                
-                item.appendChild(color);
-                item.appendChild(label);
-                legend.appendChild(item);
-            });
-        }
-        
-        createLegend();
+            let info = `<div style="margin-bottom: 12px;"><strong>타입:</strong> ${data.type}</div>`;
+            
+            const degree = node.degree();
+            info += `<div style="margin-bottom: 12px;"><strong>연결 수:</strong> ${degree}</div>`;
+            
+            if (data.meta && Object.keys(data.meta).length > 0) {
+                info += '<div style="margin-bottom: 8px;"><strong>상세 정보:</strong></div>';
+                info += '<div style="font-size: 12px; color: #616161;">';
+                Object.entries(data.meta).forEach(([key, value]) => {
+                    if (value) {
+                        info += `<div>${key}: ${value}</div>`;
+                    }
+                });
+                info += '</div>';
+            }
 
-        // Event handlers
-        function exportPng() {
-            const png64 = cy.png({ 
-                full: true, 
-                scale: 2,
-                bg: 'white'
-            });
-            const link = document.createElement('a');
-            link.href = png64;
-            link.download = 'class-diagram.png';
-            link.click();
+            content.innerHTML = info;
+            panel.classList.add('active');
         }
 
-        function resetView() {
-            try {
-                cy.layout(layoutOptions[currentLayout]).run();
-            } catch (e) {
-                console.warn(`Layout ${currentLayout} failed, falling back to cose:`, e.message);
-                cy.layout(layoutOptions['cose']).run();
+        function hideNodeInfo() {
+            document.getElementById('infoPanel').classList.remove('active');
+        }
+
+        function highlightConnectedNodes(node) {
+            clearHighlights();
+            
+            const connectedEdges = node.connectedEdges();
+            const connectedNodes = connectedEdges.connectedNodes();
+            
+            node.addClass('highlighted');
+            connectedNodes.addClass('highlighted');
+            connectedEdges.addClass('highlighted');
+        }
+
+        function clearHighlights() {
+            cy.elements().removeClass('highlighted');
+        }
+
+        function changeLayout(layoutType) {
+            currentLayout = layoutType;
+            cy.layout(getLayoutConfig(layoutType)).run();
+        }
+
+        function resetLayout() {
+            cy.layout(getLayoutConfig(currentLayout)).run();
+        }
+
+        function toggleEdges() {
+            edgesVisible = !edgesVisible;
+            if (edgesVisible) {
+                cy.edges().style('display', 'element');
+            } else {
+                cy.edges().style('display', 'none');
             }
         }
 
-        function toggleLayout() {
-            const layouts = ['fcose', 'cose', 'circle', 'grid'];
-            const currentIndex = layouts.indexOf(currentLayout);
-            const nextIndex = (currentIndex + 1) % layouts.length;
-            currentLayout = layouts[nextIndex];
-            
-            // Update UI
-            document.getElementById('current-layout').textContent = currentLayout;
-            
-            resetView();
-        }
-
-        function searchNode(query) {
-            cy.nodes().removeClass('search-selected');
+        function searchNodes(query) {
+            clearHighlights();
             
             if (!query.trim()) {
-                cy.nodes().unselect();
                 return;
             }
             
             const matchedNodes = cy.nodes().filter(node => {
                 const label = node.data('label') || '';
-                const meta = node.data('meta') || {};
-                
+                const type = node.data('type') || '';
                 return label.toLowerCase().includes(query.toLowerCase()) ||
-                       (meta.module_name && meta.module_name.toLowerCase().includes(query.toLowerCase())) ||
-                       (meta.file_path && meta.file_path.toLowerCase().includes(query.toLowerCase()));
+                       type.toLowerCase().includes(query.toLowerCase());
             });
             
             if (matchedNodes.length > 0) {
-                matchedNodes.addClass('search-selected');
+                matchedNodes.addClass('highlighted');
                 cy.fit(matchedNodes, 50);
             }
         }
 
-        // Class click handler
-        cy.on('tap', 'node', function(evt) {
-            const node = evt.target;
-            const data = node.data();
-            
-            const panel = document.getElementById('info-panel');
-            const title = document.getElementById('info-title');
-            const content = document.getElementById('info-content');
-            
-            title.textContent = data.label || data.id;
-            
-            let html = `<p><strong>타입:</strong> ${data.type}</p>`;
-            
-            if (data.meta) {
-                if (data.meta.module_name) {
-                    html += `<p><strong>모듈:</strong> ${data.meta.module_name}</p>`;
-                }
-                if (data.meta.file_path) {
-                    html += `<p><strong>파일:</strong> ${data.meta.file_path}</p>`;
-                }
-                if (data.meta.line_number) {
-                    html += `<p><strong>라인:</strong> ${data.meta.line_number}</p>`;
-                }
-                if (data.meta.docstring) {
-                    html += `<p><strong>설명:</strong> ${data.meta.docstring}</p>`;
-                }
-                if (data.meta.base_classes && data.meta.base_classes.length > 0) {
-                    html += `<p><strong>상속:</strong> ${data.meta.base_classes.join(', ')}</p>`;
-                }
-                if (data.meta.is_abstract) {
-                    html += `<p><strong>추상 클래스</strong></p>`;
-                }
-                
-                // Attributes
-                if (data.meta.attributes && data.meta.attributes.length > 0) {
-                    html += `<p><strong>속성 (${data.meta.total_attributes || data.meta.attributes.length}):</strong></p>`;
-                    html += `<div class="attribute-list">`;
-                    data.meta.attributes.forEach(attr => {
-                        const privateClass = attr.is_private ? 'private' : '';
-                        const typeInfo = attr.type === 'class_variable' ? '[클래스]' : '[인스턴스]';
-                        html += `<div class="attribute-item ${privateClass}">${typeInfo} ${attr.name}</div>`;
-                    });
-                    html += '</div>';
-                }
-                
-                // Methods
-                if (data.meta.methods && data.meta.methods.length > 0) {
-                    html += `<p><strong>메서드 (${data.meta.total_methods || data.meta.methods.length}개 중 ${data.meta.methods.length}개 표시):</strong></p>`;
-                    html += `<div class="method-list">`;
-                    data.meta.methods.forEach(method => {
-                        let methodClass = '';
-                        let methodPrefix = '';
-                        
-                        if (method.is_special) {
-                            methodClass = 'special';
-                        } else if (method.is_private) {
-                            methodClass = 'private';
-                        }
-                        
-                        if (method.is_property) {
-                            methodClass = 'property';
-                            methodPrefix = '@property ';
-                        } else if (method.is_static) {
-                            methodClass = 'static';
-                            methodPrefix = '@staticmethod ';
-                        } else if (method.is_class) {
-                            methodClass = 'static';
-                            methodPrefix = '@classmethod ';
-                        }
-                        
-                        const args = method.args.join(', ');
-                        html += `<div class="method-item ${methodClass}">${methodPrefix}${method.name}(${args})</div>`;
-                    });
-                    html += '</div>';
-                }
-            }
-            
-            // Show relationships
-            const connectedEdges = cy.edges().filter(edge => 
-                edge.data('source') === data.id || edge.data('target') === data.id
-            );
-            
-            if (connectedEdges.length > 0) {
-                html += `<p><strong>관계 (${connectedEdges.length}):</strong></p><ul>`;
-                connectedEdges.forEach(edge => {
-                    const edgeData = edge.data();
-                    const isSource = edgeData.source === data.id;
-                    const otherNodeId = isSource ? edgeData.target : edgeData.source;
-                    const otherNode = cy.getElementById(otherNodeId);
-                    const otherLabel = otherNode.data('label') || otherNodeId.split('::')[1];
-                    
-                    if (edgeData.kind === 'inherits') {
-                        if (isSource) {
-                            html += `<li>상속받음: ${otherLabel}</li>`;
-                        } else {
-                            html += `<li>상속함: ${otherLabel}</li>`;
-                        }
-                    } else {
-                        const direction = isSource ? '→' : '←';
-                        html += `<li>${direction} ${otherLabel} (${edgeData.kind})</li>`;
-                    }
-                });
-                html += '</ul>';
-            }
-            
-            content.innerHTML = html;
-            panel.style.display = 'block';
-        });
+        function fitToScreen() {
+            cy.fit();
+        }
 
-        // Edge click handler
-        cy.on('tap', 'edge', function(evt) {
-            const edge = evt.target;
-            const data = edge.data();
+        function exportToPng() {
+            const png64 = cy.png({
+                full: true,
+                scale: 2,
+                bg: 'white'
+            });
             
-            const panel = document.getElementById('info-panel');
-            const title = document.getElementById('info-title');
-            const content = document.getElementById('info-content');
-            
-            const sourceLabel = cy.getElementById(data.source).data('label');
-            const targetLabel = cy.getElementById(data.target).data('label');
-            
-            title.textContent = `${sourceLabel} → ${targetLabel}`;
-            
-            let html = `<p><strong>관계 유형:</strong> ${data.kind}</p>`;
-            
-            if (data.kind === 'inherits') {
-                html += `<p><strong>설명:</strong> ${sourceLabel} 클래스가 ${targetLabel} 클래스를 상속받습니다.</p>`;
-            }
-            
-            if (data.meta && data.meta.base_class) {
-                html += `<p><strong>베이스 클래스:</strong> ${data.meta.base_class}</p>`;
-            }
-            
-            content.innerHTML = html;
-            panel.style.display = 'block';
-        });
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = '클래스_다이어그램.png';
+            link.click();
+        }
 
-        // Click outside to hide panel
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#info-panel') && !e.target.closest('#cy')) {
-                document.getElementById('info-panel').style.display = 'none';
-            }
-        });
-
-        // Double-click to focus on class
-        cy.on('dblclick', 'node', function(evt) {
-            const node = evt.target;
-            const connectedNodes = node.neighborhood().union(node);
-            cy.fit(connectedNodes, 50);
-        });
-
-        console.log('클래스 다이어그램 로드 완료:', DATA.nodes?.length || 0, '클래스,', DATA.edges?.length || 0, '관계');
+        function showNoDataMessage() {
+            document.getElementById('cy').innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #616161;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div style="font-size: 18px; margin-bottom: 8px;">클래스 다이어그램 데이터가 없습니다</div>
+                    <div style="font-size: 14px;">먼저 클래스 분석을 실행해주세요.</div>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>

@@ -1,2 +1,0 @@
-2025-08-31 23:39:50,538 - db_comment_enhancer - ERROR - Error during comment enhancement: type object 'DbTable' has no attribute 'llm_comment'
-2025-08-31 23:44:14,732 - db_comment_enhancer - ERROR - Error during comment enhancement: 'DbTable' object has no attribute 'name'

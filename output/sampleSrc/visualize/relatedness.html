@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연관성 분석</title>
     <style>
-        /* 우리금융지주 브랜드 스타일 */
+        /* 브랜드 스타일 */
         :root {
             --woori-primary: #1976d2;
             --woori-primary-dark: #0d47a1;
@@ -365,20 +365,6 @@
         const DATA = {
   "nodes": [
     {
-      "id": "class:1",
-      "type": "class",
-      "label": "IntegratedMapper",
-      "group": "cluster_0",
-      "meta": {
-        "name": "IntegratedMapper",
-        "fqn": "com.example.integrated.IntegratedMapper",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
-        "line": 6,
-        "llm_summary": null
-      },
-      "cluster_id": 0
-    },
-    {
       "id": "file:1",
       "type": "file",
       "label": "IntegratedMapper",
@@ -392,20 +378,6 @@
       "cluster_id": 0
     },
     {
-      "id": "class:2",
-      "type": "class",
-      "label": "IntegratedService",
-      "group": "cluster_0",
-      "meta": {
-        "name": "IntegratedService",
-        "fqn": "com.example.integrated.IntegratedService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
-        "line": 7,
-        "llm_summary": null
-      },
-      "cluster_id": 0
-    },
-    {
       "id": "file:2",
       "type": "file",
       "label": "IntegratedService",
@@ -414,21 +386,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
         "language": "java",
         "loc": 35,
-        "llm_summary": null
-      },
-      "cluster_id": 0
-    },
-    {
-      "id": "class:3",
-      "type": "class",
-      "label": "VulnerabilityTestService",
-      "group": "cluster_0",
-      "meta": {
-        "name": "VulnerabilityTestService",
-        "fqn": "com.example.integrated.VulnerabilityTestService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
-        "line": 13,
-        "llm_summary": null
+        "llm_summary": "## Java 코드 분석 요약\n\n1.  **이 Java 클래스/파일은 'IntegratedService'라는 이름의 서비스 클래스를 정의합니다. 이 서비스는 특정 작업을 수행하고, 사용자 데이터를 처리하며, 로그를 기록합니다.**\n\n2.  **주요 책임:**\n    *   `startProcess()` 메서드를 통해 프로세스를 시작합니다.\n    *   `doWork()` 메서드를 통해 주문 처리 작업을 수행합니다.\n    *   `calculateOrderTotal()` 메서드를 통해 주문 총액을 계산합니다.\n    *   `getStaticUserData()` 메서드를 통해 사용자 ID를 가져옵니다.\n    *   `log()` 메서드를 통해 로그를 기록합니다.\n\n3.  **핵심 기능:**\n    *   주문 처리 및 총액 계산\n    *   사용자 ID 가져오기\n    *   로그 기록"
       },
       "cluster_id": 0
     },
@@ -441,23 +399,9 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
         "language": "java",
         "loc": 181,
-        "llm_summary": null
+        "llm_summary": "다음은 주어진 Java 파일을 분석한 간결한 요약입니다.\n\n1.  **이 Java 클래스/파일은 `VulnerabilityTestService`라는 서비스 클래스를 정의합니다.** 이 클래스는 SQL Injection, XSS, Path Traversal 등 다양한 보안 취약점을 테스트하는 기능을 제공합니다.\n2.  **주요 책임:** SQL Injection, XSS, Path Traversal 등 다양한 공격 시나리오를 테스트하여 시스템의 보안을 평가하고, 취약점을 발견하여 개선합니다.\n3.  **핵심 기능:** `getUsersByName_VULNERABLE`, `getUsersByName_SAFE`, `searchUsers_VULNERABLE`, `displayUserInfo_VULNERABLE`, `readFile_VULNERABLE`, `hashPassword_WEAK` 등 다양한 테스트 기능을 제공합니다."
       },
       "cluster_id": 0
-    },
-    {
-      "id": "class:4",
-      "type": "class",
-      "label": "OrderMapper",
-      "group": "cluster_1",
-      "meta": {
-        "name": "OrderMapper",
-        "fqn": "com.example.mapper.OrderMapper",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
-        "line": 10,
-        "llm_summary": null
-      },
-      "cluster_id": 1
     },
     {
       "id": "file:4",
@@ -468,21 +412,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
         "language": "java",
         "loc": 17,
-        "llm_summary": null
-      },
-      "cluster_id": 1
-    },
-    {
-      "id": "class:5",
-      "type": "class",
-      "label": "ProductMapper",
-      "group": "cluster_1",
-      "meta": {
-        "name": "ProductMapper",
-        "fqn": "com.example.mapper.ProductMapper",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
-        "line": 9,
-        "llm_summary": null
+        "llm_summary": "**요약:**\n\n이 Java 클래스 `OrderMapper`는 `org.apache.ibatis` 라이브러리를 사용하여 데이터베이스에서 주문을 선택하고, 계산하고, 보고서를 생성하는 역할을 합니다.  `orderId`를 기반으로 주문을 선택하고, `orderId`를 기반으로 주문 금액을 계산하며, `status`를 기반으로 주문 목록을 필터링합니다. 또한, `sql`를 기반으로 동적 SQL 쿼리를 실행하여 데이터베이스에서 필요한 정보를 추출합니다.\n\n**1. 이 Java 클래스/파일이 하는 일:**\n\n*   데이터베이스에서 주문을 선택하고, 계산하고, 보고서를 생성합니다.\n*   주문 정보를 검색하고, 특정 조건에 따라 필터링합니다.\n\n**2. 주요 책임:**\n\n*   주문 데이터베이스에서 `orderId`를 기반으로 주문을 선택합니다.\n*   주문 ID를 기반으로 주문 금액을 계산"
       },
       "cluster_id": 1
     },
@@ -495,21 +425,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
         "language": "java",
         "loc": 14,
-        "llm_summary": null
-      },
-      "cluster_id": 1
-    },
-    {
-      "id": "class:6",
-      "type": "class",
-      "label": "UserMapper",
-      "group": "cluster_1",
-      "meta": {
-        "name": "UserMapper",
-        "fqn": "com.example.mapper.UserMapper",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java",
-        "line": 9,
-        "llm_summary": null
+        "llm_summary": "안녕하세요. 다음 Java 파일을 분석하여 간결하게 요약해 드리겠습니다.\n\n**요약:**\n\n이 Java 클래스는 `ProductMapper` 인터페이스를 구현하는 클래스입니다. 이 클래스는 `selectAllProducts()`, `selectProductById()`, `searchProductsWithCriteria()`, `getComplexProductAnalysis()` 등의 메서드를 통해 제품 목록을 선택, 검색, 분석하는 기능을 수행합니다. 또한, `executeDynamicQuery()` 메서드를 통해 동적 SQL 쿼리를 실행할 수 있습니다.\n\n**1. 이 Java 클래스/파일이 하는 일:**\n\n*   제품 목록을 선택, 검색, 분석하는 기능을 제공합니다.\n*   사용자로부터 제품 ID를 입력받아 검색하거나, 제품 목록을 생성하는 기능을 수행합니다.\n\n**2. 주요 책임:**\n\n*   제품 목록을 관리하고, 사용자의 요청에 따라 제품을 선택, 검색, 분석합니다.\n*   데이터베이스 쿼리를 동적으로 실행"
       },
       "cluster_id": 1
     },
@@ -522,23 +438,9 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java",
         "language": "java",
         "loc": 15,
-        "llm_summary": null
+        "llm_summary": "## Java 코드 분석 요약\n\n**1. 이 Java 클래스/파일이 하는 일:**\n\n이 Java 클래스는 `UserMapper` 인터페이스를 구현하여 사용자 데이터를 선택, 검색, 검색 조건에 따라 필터링, 사용자 생성 등의 기능을 수행합니다.\n\n**2. 주요 책임:**\n\n*   **데이터 선택:** `selectUserById`를 통해 특정 ID를 가진 사용자 데이터를 선택합니다.\n*   **데이터 검색:** `selectActiveUsers()`를 통해 활성 사용자 데이터를 검색합니다.\n*   **조건 기반 검색:** `searchUsersByCondition()`를 통해 조건에 맞는 사용자 데이터를 검색합니다.\n*   **동적 SQL 실행:** `executeDynamicQuery()`를 통해 SQL 쿼리를 실행합니다.\n*   **사용자 생성:** `insertUser()`를 통해 새로운 사용자 데이터를 생성합니다.\n\n**3. 핵심 메서드 또는 기능:**\n\n*   **`selectUserById(@Param(\"userId\") String userId)`:**"
       },
       "cluster_id": 1
-    },
-    {
-      "id": "class:7",
-      "type": "class",
-      "label": "ListService",
-      "group": "cluster_2",
-      "meta": {
-        "name": "ListService",
-        "fqn": "com.example.service.ListService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\ListService.java",
-        "line": 3,
-        "llm_summary": null
-      },
-      "cluster_id": 2
     },
     {
       "id": "file:7",
@@ -549,21 +451,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\ListService.java",
         "language": "java",
         "loc": 4,
-        "llm_summary": null
-      },
-      "cluster_id": 2
-    },
-    {
-      "id": "class:8",
-      "type": "class",
-      "label": "OrderService",
-      "group": "cluster_2",
-      "meta": {
-        "name": "OrderService",
-        "fqn": "com.example.service.OrderService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
-        "line": 11,
-        "llm_summary": null
+        "llm_summary": "알겠습니다. 분석 결과 다음과 같습니다.\n\n**요약:**\n\n이 Java 클래스는 `ListService` 인터페이스를 구현하는 클래스입니다. 이 클래스는 `list()` 메서드를 통해 리스트를 생성하고 관리하는 역할을 수행하며, 이는 서비스의 핵심 기능입니다.\n\n**1. 이 Java 클래스/파일이 하는 일:**\n\n*   리스트를 생성하고 관리하는 기능을 제공합니다.\n*   사용자가 요청한 리스트를 생성하고, 필요한 경우 데이터를 저장하고 관리합니다.\n\n**2. 주요 책임:**\n\n*   리스트 생성 및 관리\n*   데이터 저장 및 관리 (필요에 따라)\n*   사용자 요청에 따른 리스트 생성 및 관리\n\n**3. 핵심 메서드 또는 기능:**\n\n*   `list()`:  리스트를 생성하고, 리스트의 내용을 표시합니다. (이 기능은 실제 구현에 따라 달라질 수 있습니다.)"
       },
       "cluster_id": 2
     },
@@ -576,21 +464,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
         "language": "java",
         "loc": 58,
-        "llm_summary": null
-      },
-      "cluster_id": 2
-    },
-    {
-      "id": "class:9",
-      "type": "class",
-      "label": "OverloadService",
-      "group": "cluster_2",
-      "meta": {
-        "name": "OverloadService",
-        "fqn": "com.example.service.OverloadService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\OverloadService.java",
-        "line": 6,
-        "llm_summary": null
+        "llm_summary": "1.  **이 Java 클래스/파일은 OrderService라는 서비스 클래스를 정의합니다.** 이 클래스는 주문 총액을 계산하는 기능을 제공합니다.\n2.  **주요 책임:** 주문 ID를 기반으로 주문 총액을 계산하고, 할인 및 세금을 포함한 최종 금액을 반환합니다.\n3.  **핵심 기능:** 주문 ID를 기반으로 주문을 검색하고, 주문 상태별 조회, 복합 조건 사용, 보고서 생성, 대용량 데이터 처리 시뮬레이션 등 다양한 기능을 수행합니다."
       },
       "cluster_id": 2
     },
@@ -603,21 +477,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\OverloadService.java",
         "language": "java",
         "loc": 19,
-        "llm_summary": null
-      },
-      "cluster_id": 2
-    },
-    {
-      "id": "class:10",
-      "type": "class",
-      "label": "ProductService",
-      "group": "cluster_2",
-      "meta": {
-        "name": "ProductService",
-        "fqn": "com.example.service.ProductService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\ProductService.java",
-        "line": 9,
-        "llm_summary": null
+        "llm_summary": "## Java 파일 분석 요약\n\n1.  **이 Java 클래스/파일은 `OverloadService`라는 서비스 클래스를 정의합니다. 이 클래스는 `find` 메서드를 통해 사용자 ID를 기반으로 데이터를 검색하는 역할을 합니다.**\n\n2.  **주요 책임:**\n    *   `find` 메서드를 통해 사용자 ID를 기반으로 데이터를 검색합니다.\n    *   `find` 메서드에서 `ListServiceImpl1` 객체를 생성하여 데이터를 처리합니다.\n    *   `process` 메서드를 통해 데이터 검색 및 처리 과정을 수행합니다.\n\n3.  **핵심 기능:**\n    *   `find` 메서드를 통해 사용자 ID를 검색합니다.\n    *   `ListServiceImpl1` 객체를 사용하여 데이터를 처리합니다.\n    *   `process` 메서드를 통해 데이터 검색 및 처리를 수행합니다.\n\n---\n\n**요약:**  `OverloadService`는 사용자 ID를 기반으로 데이터를 검색하고"
       },
       "cluster_id": 2
     },
@@ -630,21 +490,7 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\ProductService.java",
         "language": "java",
         "loc": 52,
-        "llm_summary": null
-      },
-      "cluster_id": 2
-    },
-    {
-      "id": "class:11",
-      "type": "class",
-      "label": "UserService",
-      "group": "cluster_2",
-      "meta": {
-        "name": "UserService",
-        "fqn": "com.example.service.UserService",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
-        "line": 9,
-        "llm_summary": null
+        "llm_summary": "1.  **이 Java 클래스/파일은 `ProductService`라는 이름의 클래스를 정의합니다. 이 클래스는 상품 목록을 조회하고 검색하는 기능을 제공합니다.**\n2.  **주요 책임:**\n    *   `ProductService`는 `ProductMapper`를 사용하여 상품 정보를 가져오고, `getProductList()`를 통해 상품 목록을 반환합니다.\n    *   `getProductDetails()`는 특정 `productId`에 해당하는 상품 정보를 가져옵니다.\n    *   `searchProducts()`는 `criteria`를 기반으로 상품을 검색합니다.\n    *   `processComplexBusiness()`는 복잡한 조건에 따른 상품 검색을 수행합니다.\n    *   `unsafeProductSearch()`는 SQL Injection 공격에 취약할 수 있습니다.\n3.  **핵심 기능:** 상품 목록 조회, 검색, 데이터 가져오기, 복잡한 조건 검색, SQL Injection 공격 방지."
       },
       "cluster_id": 2
     },
@@ -657,23 +503,9 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
         "language": "java",
         "loc": 63,
-        "llm_summary": null
+        "llm_summary": "1.  **이 Java 클래스/파일은 `UserService`라는 사용자 관리 서비스 클래스를 정의합니다.**\n2.  **주요 책임:** 사용자 데이터 조회, 사용자 목록 생성, 사용자 데이터 생성, 사용자 상태 업데이트 등 사용자 관련 기능을 수행합니다.\n3.  **핵심 기능:** `getUserById`, `getActiveUsers`, `createUser`, `updateUserStatus` 메서드를 통해 사용자 정보를 조회하고, 사용자 데이터를 생성하고 업데이트합니다."
       },
       "cluster_id": 2
-    },
-    {
-      "id": "class:12",
-      "type": "class",
-      "label": "DateUtil",
-      "group": "cluster_3",
-      "meta": {
-        "name": "DateUtil",
-        "fqn": "com.example.util.DateUtil",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\util\\DateUtil.java",
-        "line": 7,
-        "llm_summary": null
-      },
-      "cluster_id": 3
     },
     {
       "id": "file:12",
@@ -684,20 +516,6 @@
         "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\util\\DateUtil.java",
         "language": "java",
         "loc": 46,
-        "llm_summary": null
-      },
-      "cluster_id": 3
-    },
-    {
-      "id": "class:13",
-      "type": "class",
-      "label": "Texts",
-      "group": "cluster_3",
-      "meta": {
-        "name": "Texts",
-        "fqn": "com.example.util.Texts",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java",
-        "line": 3,
         "llm_summary": null
       },
       "cluster_id": 3
@@ -714,204 +532,9 @@
         "llm_summary": null
       },
       "cluster_id": 3
-    },
-    {
-      "id": "class:14",
-      "type": "class",
-      "label": "ListServiceImpl1",
-      "group": "cluster_4",
-      "meta": {
-        "name": "ListServiceImpl1",
-        "fqn": "com.example.service.impl.ListServiceImpl1",
-        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\impl\\ListServiceImpl1.java",
-        "line": 5,
-        "llm_summary": null
-      },
-      "cluster_id": 4
-    },
-    {
-      "id": "file:14",
-      "type": "file",
-      "label": "ListServiceImpl1",
-      "group": "cluster_4",
-      "meta": {
-        "path": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\impl\\ListServiceImpl1.java",
-        "language": "java",
-        "loc": 11,
-        "llm_summary": null
-      },
-      "cluster_id": 4
     }
   ],
   "edges": [
-    {
-      "id": "rel_18",
-      "source": "class:1",
-      "target": "file:1",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 18
-      }
-    },
-    {
-      "id": "rel_19",
-      "source": "class:2",
-      "target": "file:2",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 19
-      }
-    },
-    {
-      "id": "rel_20",
-      "source": "class:3",
-      "target": "file:3",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 20
-      }
-    },
-    {
-      "id": "rel_21",
-      "source": "class:4",
-      "target": "file:4",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 21
-      }
-    },
-    {
-      "id": "rel_22",
-      "source": "class:5",
-      "target": "file:5",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 22
-      }
-    },
-    {
-      "id": "rel_23",
-      "source": "class:6",
-      "target": "file:6",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 23
-      }
-    },
-    {
-      "id": "rel_24",
-      "source": "class:7",
-      "target": "file:7",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 24
-      }
-    },
-    {
-      "id": "rel_25",
-      "source": "class:8",
-      "target": "file:8",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 25
-      }
-    },
-    {
-      "id": "rel_26",
-      "source": "class:9",
-      "target": "file:9",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 26
-      }
-    },
-    {
-      "id": "rel_27",
-      "source": "class:10",
-      "target": "file:10",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 27
-      }
-    },
-    {
-      "id": "rel_28",
-      "source": "class:11",
-      "target": "file:11",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 28
-      }
-    },
-    {
-      "id": "rel_29",
-      "source": "class:12",
-      "target": "file:12",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 29
-      }
-    },
-    {
-      "id": "rel_30",
-      "source": "class:13",
-      "target": "file:13",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 30
-      }
-    },
-    {
-      "id": "rel_31",
-      "source": "class:14",
-      "target": "file:14",
-      "kind": "related",
-      "confidence": 0.8,
-      "meta": {
-        "reason": "naming_convention",
-        "strength": "strong",
-        "relatedness_id": 31
-      }
-    },
     {
       "id": "rel_1",
       "source": "file:1",
@@ -1119,8 +742,8 @@
   ],
   "metadata": {
     "cluster_method": "louvain",
-    "total_nodes": 28,
-    "total_edges": 31,
+    "total_nodes": 13,
+    "total_edges": 17,
     "total_relations": 31,
     "min_score_threshold": 0.5,
     "style_theme": "professional_blue",
@@ -1128,8 +751,7 @@
       "cluster_0": "fill:#1976d2,stroke:#0d47a1",
       "cluster_1": "fill:#2196f3,stroke:#1565c0",
       "cluster_2": "fill:#42a5f5,stroke:#1976d2",
-      "cluster_3": "fill:#81d4fa,stroke:#42a5f5",
-      "cluster_4": "fill:#7986cb,stroke:#5c6bc0"
+      "cluster_3": "fill:#81d4fa,stroke:#42a5f5"
     },
     "color_scheme": "blue_theme",
     "layout_hint": "fcose_physics"
@@ -1173,8 +795,8 @@
             <div class="control-group">
                 <label>레이아웃 방식</label>
                 <select id="layoutType" class="woori-select" onchange="changeLayout(this.value)">
-                    <option value="fcose">물리 기반 (fcose)</option>
                     <option value="dagre">계층형 (dagre)</option>
+                    <option value="fcose">물리 기반 (fcose)</option>
                     <option value="circle">원형 (circle)</option>
                 </select>
             </div>
@@ -1254,7 +876,7 @@
     <script>
         // 전역 변수
         let cy = null;
-        let currentLayout = 'fcose';
+        let currentLayout = 'dagre';
         let usePhysics = true;
 
         // 우리금융지주 브랜드 색상
@@ -1289,7 +911,7 @@
                 container: document.getElementById('cy'),
                 elements: elements,
                 style: styles,
-                layout: getLayoutConfig('fcose'),
+                layout: getLayoutConfig('dagre'),
                 wheelSensitivity: 0.05
             });
 

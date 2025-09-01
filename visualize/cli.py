@@ -5,6 +5,7 @@ import logging
 import sys
 import csv
 import shutil
+import re
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -206,7 +207,7 @@ def main():
     p.add_argument('--export-mermaid', nargs='?', const='', default=None, help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
 
     # 각 시각화별 특수 인자를 추가합니다.
-    p.add_argument('--kinds', default='use_table,include,extends,implements', help='[graph] 포함할 엣지 종류(콤마 구분)')
+    p.add_argument('--kinds', default='call', help='[graph] 포함할 엣지 종류(콤마 구분)')
     p.add_argument('--focus', help='[graph] 시작 노드(이름/경로/테이블)')
     p.add_argument('--depth', type=int, default=2, help='[graph/sequence] 중심 기준 최대 깊이')
     p.add_argument('--tables', help='[erd] 포함할 테이블명 목록(콤마 구분)')
@@ -330,7 +331,13 @@ def main():
                             # 각 파일/메서드 쌍에 대해 시퀀스 그래프 데이터를 구축합니다.
                             data = build_sequence_graph_json(config, project_id, args.project_name,
                                                              start_file, start_method,
-                                                             args.depth, args.max_nodes)
+                                                             args.depth, args.max_nodes, hide_unresolved=True)
+                            
+                            # 참여자가 1개 이하인 경우 파일 생성하지 않음
+                            if not data or len(data.get('participants', [])) <= 1:
+                                logger.info(f"시퀀스 다이어그램 건너뛰기 (참여자 부족): {start_file}:{start_method}")
+                                continue
+                            
                             html = render_html('sequence_view.html', data)
 
                             base = sanitize_filename(f"{Path(start_file).stem}_{start_method}")
@@ -350,7 +357,7 @@ def main():
                 # 지정된 시작 파일 및 메서드에 대해 시퀀스 그래프 데이터를 구축합니다.
                 data = build_sequence_graph_json(config, project_id, args.project_name,
                                                  args.start_file, args.start_method,
-                                                 args.depth, args.max_nodes)
+                                                 args.depth, args.max_nodes, hide_unresolved=True)
                 # 호출 엣지가 없는 경우 경고를 기록합니다.
                 if not data.get('edges'):
                     logger.warning("시퀀스 다이어그램 결과에 호출 엣지가 없습니다. 최소 참여자만 표시됩니다.")

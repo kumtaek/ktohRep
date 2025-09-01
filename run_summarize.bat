@@ -4,7 +4,7 @@ setlocal
 
 REM Check if virtual environment exists
 if not exist "venvSrcAnalyzer" (
-    echo ❌ Virtual environment 'venvSrcAnalyzer' not found.
+    echo Virtual environment 'venvSrcAnalyzer' not found.
     echo Please run setup first.
     pause
     exit /b 1
@@ -18,5 +18,3 @@ if "%2"=="--debug" (
 ) else (
     python.exe phase1/tools/llm_analyzer.py summarize --project-name %1 --batch-size 1
 )
-
-pause

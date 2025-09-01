@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Source Analyzer - 엔터티 관계도(ERD)</title>
+    <title>Source Analyzer - 고도화 ERD</title>
     <style>
         body, html { 
             margin: 0; 
@@ -44,6 +44,120 @@
             min-width: 200px;
         }
         
+        /* 향상된 툴팁 스타일 */
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 2000;
+            font-size: 12px;
+        }
+        
+        .tooltip-header {
+            background: #f8f9fa;
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+        
+        .tooltip-subtitle {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        
+        .tooltip-content {
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .columns-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .column-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .column-item:last-child {
+            border-bottom: none;
+        }
+        
+        .column-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .column-name {
+            font-weight: 500;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .column-type {
+            font-size: 11px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .pk-icon {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .fk-icon {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .nullable {
+            color: #28a745;
+            font-size: 10px;
+        }
+        
+        .sample-joins {
+            background: #f8f9fa;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .sample-joins-title {
+            font-weight: 500;
+            font-size: 11px;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        
+        .join-item {
+            font-size: 10px;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        
         .info-panel {
             position: absolute;
             top: 80px;
@@ -83,6 +197,139 @@
             height: 2px;
             border-radius: 1px;
         }
+
+        /* 겹침 방지를 위한 노드 스타일 개선 */
+        .cy-node-selected {
+            z-index: 999;
+        }
+
+        /* 컬럼 상세 정보 패널 */
+        .column-details {
+            padding: 4px 0;
+        }
+        
+        .column-comment {
+            font-size: 10px;
+            color: #28a745;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        
+        /* 관계선 툴팁 스타일 */
+        .edge-tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 380px;
+            min-width: 200px;
+            box-shadow: 0 8px 25px rgba(0,123,255,0.15), 0 3px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 2100;
+            font-size: 12px;
+            pointer-events: none;
+            animation: fadeInTooltip 0.2s ease-out;
+        }
+        
+        @keyframes fadeInTooltip {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .edge-tooltip-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 10px 12px;
+            margin: 0;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .edge-tooltip-type {
+            font-size: 10px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .edge-tooltip-content {
+            color: #495057;
+            padding: 12px;
+        }
+        
+        .join-condition {
+            background: linear-gradient(135deg, #e8f4fd 0%, #f1f8ff 100%);
+            border: 1px solid #b3d9ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: #0056b3;
+            position: relative;
+        }
+        
+        .join-condition::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #007bff;
+            border-radius: 50%;
+        }
+        
+        .edge-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 8px 0;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .confidence-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(40,167,69,0.3);
+        }
+        
+        .frequency-info {
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        .relation-detail {
+            margin: 4px 0;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+            border-radius: 0 4px 4px 0;
+            font-size: 11px;
+        }
+        
+        .relation-detail strong {
+            color: #495057;
+        }
     </style>
     <!-- Offline assets -->
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
@@ -100,42 +347,44 @@
             cytoscape.use(cytoscapeFcose);
         }
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const btns = [
-                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
-                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
-                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
-                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
-                { sel: 'button[onclick="toggleLayout()"]', text: '레이아웃', title: '레이아웃 전환' }
-            ];
-            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text + (b.sel.includes('toggleLayout') ? ' (' + (document.getElementById('current-layout')?.textContent || 'dagre') + ')' : ''); el.title = b.title; } });
-            const search = document.getElementById('search'); if (search) search.placeholder = '테이블 검색...';
-            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '테이블: <span id="node-count">0</span> | 관계: <span id="edge-count">0</span>';
-            const h = document.getElementById('info-title'); if (h) h.textContent = '테이블 정보';
-            document.title = 'Source Analyzer - 엔터티 관계도(ERD)';
-        });
-    </script>
 </head>
 <body>
     <div id="toolbar">
-        <button onclick="cy.fit()" title="Fit to view">🔍 Fit</button>
-        <button onclick="cy.center()" title="Center view">🎯 Center</button>
-        <button onclick="exportPng()" title="Export as PNG">📷 Export PNG</button>
-        <button onclick="resetView()" title="Reset layout">🔄 Reset</button>
-        <button onclick="toggleLayout()" title="Toggle layout">📐 Layout (<span id="current-layout">dagre</span>)</button>
-        <input id="search" placeholder="Search tables..." oninput="searchNode(this.value)" />
+        <button onclick="cy.fit()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="cy.center()" title="중앙 정렬">🎯 중앙정렬</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG저장</button>
+        <button onclick="resetView()" title="레이아웃 초기화">🔄 레이아웃초기화</button>
+        <button onclick="toggleLayout()" title="레이아웃 전환">📐 레이아웃 (<span id="current-layout">fcose</span>)</button>
+        <input id="search" placeholder="테이블 검색..." oninput="searchNode(this.value)" />
         <div class="stats" id="stats">
-            Tables: <span id="node-count">0</span> | 
-            Relations: <span id="edge-count">0</span>
+            테이블: <span id="node-count">0</span> | 
+            관계: <span id="edge-count">0</span>
         </div>
         <div class="legend" id="legend"></div>
     </div>
     
     <div id="cy"></div>
     
+    <!-- 향상된 툴팁 -->
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-header">
+            <div class="tooltip-title" id="tooltip-title"></div>
+            <div class="tooltip-subtitle" id="tooltip-subtitle"></div>
+        </div>
+        <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+    
+    <!-- 관계선 툴팁 -->
+    <div id="edge-tooltip" class="edge-tooltip">
+        <div class="edge-tooltip-header" id="edge-tooltip-header">
+            <span id="edge-tooltip-title"></span>
+            <span class="edge-tooltip-type" id="edge-tooltip-type"></span>
+        </div>
+        <div class="edge-tooltip-content" id="edge-tooltip-content"></div>
+    </div>
+    
     <div id="info-panel" class="info-panel">
-        <h4 id="info-title">Table Info</h4>
+        <h4 id="info-title">테이블 정보</h4>
         <div id="info-content"></div>
     </div>
 
@@ -171,7 +420,7 @@
             });
         }
 
-        let currentLayout = 'fcose';
+        let currentLayout = 'dagre';
         let layoutOptions = {
             'fcose': {
                 name: 'fcose',
@@ -180,582 +429,506 @@
                 animate: true,
                 animationDuration: 2000,
                 fit: true,
-                padding: 180,
-                nodeSeparation: 400,
+                padding: 200,
+                nodeSeparation: 500, // 겹침 방지를 위해 노드 간격 증가
                 idealEdgeLength: edge => {
                     const confidence = edge.data('confidence') || 0.5;
                     const kind = edge.data('kind') || '';
                     if (kind === 'foreign_key' || kind === 'fk_inferred') {
-                        return Math.max(250, 550 - (confidence * 150));
+                        return Math.max(300, 600 - (confidence * 150)); // 관계선 길이 증가
                     }
-                    return Math.max(220, 480 - (confidence * 120));
+                    return Math.max(250, 500 - (confidence * 120));
                 },
-                nodeRepulsion: 20000,
+                nodeRepulsion: 25000, // 노드 반발력 증가
                 edgeElasticity: edge => {
                     const confidence = edge.data('confidence') || 0.5;
                     const kind = edge.data('kind') || '';
                     if (kind === 'foreign_key' || kind === 'fk_inferred') {
                         return confidence * 0.25;
                     }
-                    return confidence * 0.15;
+                    return confidence * 0.2;
                 },
-                gravityRange: 7.0,
-                gravity: 0.12,
-                numIter: 2000,
-                initialTemp: 450,
-                coolingFactor: 0.97,
-                minTemp: 1.8
+                gravity: 0.1,
+                gravityRange: 3.8,
+                gravityCompound: 0.3,
+                initialTemp: 200,
+                coolingFactor: 0.95,
+                minTemp: 1.0,
+                numIter: 2500
             },
-            'cose': {
-                name: 'cose',
+            'dagre': {
+                name: 'dagre',
+                nodeSep: 150, // 노드 간격 증가
+                edgeSep: 50,
+                rankSep: 200, // 레벨 간격 증가
+                rankDir: 'TB',
+                ranker: 'longest-path',
                 animate: true,
-                animationDuration: 1500,
                 fit: true,
-                padding: 60,
-                nodeRepulsion: 4500,
-                idealEdgeLength: 150,
-                edgeElasticity: 0.5,
-                gravity: 0.3
-            },
-            'circle': {
-                name: 'circle',
-                animate: true,
-                radius: Math.max(250, Math.sqrt(elements.filter(e => e.data.id.startsWith('table')).length) * 60)
-            },
-            'grid': {
-                name: 'grid',
-                animate: true,
-                padding: 80,
-                rows: Math.ceil(Math.sqrt(elements.filter(e => e.data.id.startsWith('table')).length))
+                padding: 100
             }
         };
-        let searchResults = [];
-        let currentSearchIndex = -1;
 
         // Initialize Cytoscape
-        console.log('ERD initializing with', DATA.nodes?.length || 0, 'tables and', DATA.edges?.length || 0, 'relationships');
-        console.log('Elements created:', elements.length);
-        
-        try {
-            const cy = cytoscape({
+        const cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
             elements: elements,
+            layout: layoutOptions[currentLayout],
+            
             style: [
-                // Table node styles
                 {
-                    selector: 'node[type = "table"]',
+                    selector: 'node',
                     style: {
+                        'background-color': '#ffffff',
+                        'border-color': data => {
+                            const group = data.group;
+                            if (group === 'DB') return '#007bff';
+                            return '#6c757d';
+                        },
+                        'border-width': 2,
                         'label': 'data(label)',
-                        'font-size': '12px',
                         'text-wrap': 'wrap',
-                        'text-max-width': '200px',
+                        'text-max-width': '180px',
                         'text-valign': 'center',
                         'text-halign': 'center',
-                        'background-color': '#fff3e0',
-                        'border-width': 2,
-                        'border-color': '#ff9800',
-                        'width': 'mapData(label.length, 5, 30, 80, 200)',
-                        'height': 60,
+                        'font-size': '14px',
+                        'font-weight': 'bold',
+                        'width': 'mapData(label.length, 5, 50, 100, 200)', // 레이블 길이에 따른 동적 크기 조정
+                        'height': data => {
+                            const columns = data.meta?.columns || [];
+                            const baseHeight = 60;
+                            const columnHeight = Math.min(columns.length * 8, 100); // 최대 높이 제한
+                            return baseHeight + columnHeight;
+                        },
                         'shape': 'round-rectangle',
-                        'font-family': 'monospace',
-                        'font-weight': 'bold'
+                        'z-index': 1
                     }
                 },
-                // Tables with comments highlighted subtly
                 {
-                    selector: 'node[type = "table"][hasComment = 1]',
+                    selector: 'node[type="table"]',
                     style: {
-                        'background-color': '#e8f5e9',
-                        'border-color': '#2e7d32'
+                        'background-color': '#e3f2fd',
+                        'border-color': '#1976d2'
                     }
                 },
-                
-                // FK relationship edges
-                {
-                    selector: 'edge[kind = "fk_inferred"]',
-                    style: {
-                        'curve-style': 'bezier',
-                        'width': 'mapData(confidence, 0, 1, 1, 4)',
-                        'line-color': '#d32f2f',
-                        'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#d32f2f',
-                        'arrow-scale': 1.5,
-                        'line-style': 'solid'
-                    }
-                },
-                
-                // High confidence FK
-                {
-                    selector: 'edge[kind = "fk_inferred"][confidence > 0.8]',
-                    style: {
-                        'line-color': '#2e7d32',
-                        'target-arrow-color': '#2e7d32',
-                        'width': 3
-                    }
-                },
-                
-                // Medium confidence FK
-                {
-                    selector: 'edge[kind = "fk_inferred"][confidence <= 0.8][confidence > 0.5]',
-                    style: {
-                        'line-color': '#ff9800',
-                        'target-arrow-color': '#ff9800',
-                        'width': 2
-                    }
-                },
-                
-                // Low confidence FK
-                {
-                    selector: 'edge[kind = "fk_inferred"][confidence <= 0.5]',
-                    style: {
-                        'line-color': '#9e9e9e',
-                        'target-arrow-color': '#9e9e9e',
-                        'width': 1,
-                        'line-style': 'dashed'
-                    }
-                },
-                
-                // Join inferred relationships
-                {
-                    selector: 'edge[kind = "join_inferred"]',
-                    style: {
-                        'curve-style': 'bezier',
-                        'width': 2,
-                        'line-color': '#673ab7',
-                        'target-arrow-shape': 'triangle',
-                        'target-arrow-color': '#673ab7',
-                        'line-style': 'dotted'
-                    }
-                },
-                
-                // Selected/highlighted styles
                 {
                     selector: 'node:selected',
                     style: {
                         'border-width': 4,
-                        'border-color': '#ff6b6b',
-                        'background-color': '#ffebee'
+                        'border-color': '#ff5722',
+                        'z-index': 999
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': data => {
+                            const confidence = data.confidence || 0.5;
+                            return Math.max(1, confidence * 4);
+                        },
+                        'line-color': data => {
+                            const kind = data.kind;
+                            if (kind === 'foreign_key') return '#dc3545';
+                            if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
+                            return '#6c757d';
+                        },
+                        'target-arrow-color': data => {
+                            const kind = data.kind;
+                            if (kind === 'foreign_key') return '#dc3545';
+                            if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
+                            return '#6c757d';
+                        },
+                        'target-arrow-shape': data => {
+                            const kind = data.kind;
+                            const meta = data.meta || {};
+                            
+                            // arrow 메타데이터가 false이거나 relationship 타입이면 화살표 없음
+                            if (meta.arrow === false || kind === 'relationship') {
+                                return 'none';
+                            }
+                            // PK가 아닌 관계는 화살표 없음 (기존 로직 유지)
+                            if (kind === 'non_pk_relation') return 'none';
+                            
+                            return 'triangle';
+                        },
+                        'target-arrow-size': '10px',
+                        'curve-style': 'bezier',
+                        'source-endpoint': 'outside-to-node',
+                        'target-endpoint': 'outside-to-node',
+                        'opacity': data => {
+                            const confidence = data.confidence || 0.5;
+                            return Math.max(0.3, confidence);
+                        }
                     }
                 },
                 {
                     selector: 'edge:selected',
                     style: {
-                        'line-color': '#ff6b6b',
-                        'target-arrow-color': '#ff6b6b',
-                        'width': 5
-                    }
-                },
-                
-                // Search result highlighting
-                {
-                    selector: 'node.search-selected',
-                    style: {
-                        'border-width': 6,
-                        'border-color': '#00c851',
-                        'background-color': '#e8f5e8'
+                        'line-color': '#ff5722',
+                        'target-arrow-color': '#ff5722',
+                        'width': 4,
+                        'opacity': 1
                     }
                 }
             ],
-            layout: {
-                name: 'fcose',
-                quality: 'proof',
-                randomize: true,
-                animate: true,
-                animationDuration: 2000,
-                fit: true,
-                padding: 180,
-                nodeSeparation: 400,
-                idealEdgeLength: edge => {
-                    const confidence = edge.data('confidence') || 0.5;
-                    const kind = edge.data('kind') || '';
-                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
-                        return Math.max(250, 550 - (confidence * 150));
-                    }
-                    return Math.max(220, 480 - (confidence * 120));
-                },
-                nodeRepulsion: 20000,
-                edgeElasticity: edge => {
-                    const confidence = edge.data('confidence') || 0.5;
-                    const kind = edge.data('kind') || '';
-                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
-                        return confidence * 0.25;
-                    }
-                    return confidence * 0.15;
-                },
-                gravityRange: 7.0,
-                gravity: 0.12,
-                numIter: 2000,
-                initialTemp: 450,
-                coolingFactor: 0.97,
-                minTemp: 1.8
-            },
-            wheelSensitivity: 0.1
+
+            minZoom: 0.1,
+            maxZoom: 5,
+            wheelSensitivity: 0.2
         });
 
-        // Toolbar enhancements: add confidence filter and join toggle
-        (function initToolbar(){
-            const tb = document.getElementById('toolbar');
-            if (!tb) return;
-            const wrap = document.createElement('div');
-            wrap.style.display = 'flex';
-            wrap.style.alignItems = 'center';
-            wrap.style.gap = '10px';
-            wrap.innerHTML = `
-                <label style="font-size:12px;">Min Confidence
-                    <input id="conf-range" type="range" min="0" max="100" value="0" style="vertical-align:middle;">
-                    <span id="conf-value">0%</span>
-                </label>
-                <label style="font-size:12px;">
-                    <input id="toggle-joins" type="checkbox" checked /> Show generic joins
-                </label>
-            `;
-            tb.appendChild(wrap);
-        })();
+        // 툴팁 관련 변수
+        let tooltip = document.getElementById('tooltip');
+        let edgeTooltip = document.getElementById('edge-tooltip');
+        let tooltipTimeout;
+        let edgeTooltipTimeout;
+        let isTooltipVisible = false;
+        let isEdgeTooltipVisible = false;
 
-        // Update stats
-        document.getElementById('node-count').textContent = DATA.nodes ? DATA.nodes.length : 0;
-        document.getElementById('edge-count').textContent = DATA.edges ? DATA.edges.length : 0;
-
-        // Create legend for relationship types
-        function createLegend() {
-            const legend = document.getElementById('legend');
+        // 향상된 툴팁 표시 함수
+        function showTooltip(node, x, y) {
+            const data = node.data();
+            const meta = data.meta || {};
             
-            const relationshipTypes = [
-                { name: 'High Confidence FK', color: '#2e7d32', style: 'solid' },
-                { name: 'Medium Confidence FK', color: '#ff9800', style: 'solid' },
-                { name: 'Low Confidence FK', color: '#9e9e9e', style: 'dashed' },
-                { name: 'Join Relationship', color: '#673ab7', style: 'dotted' }
-            ];
+            // 툴팁 제목 설정
+            document.getElementById('tooltip-title').textContent = data.label || 'Unknown Table';
+            document.getElementById('tooltip-subtitle').textContent = meta.owner ? `Owner: ${meta.owner}` : '';
             
-            relationshipTypes.forEach(rel => {
-                const item = document.createElement('div');
-                item.className = 'legend-item';
+            // 컬럼 정보 생성
+            const columns = meta.columns || [];
+            const pkColumns = meta.pk_columns || [];
+            const sampleJoins = meta.sample_joins || [];
+            
+            let contentHtml = '';
+            
+            if (columns.length > 0) {
+                contentHtml += '<ul class="columns-list">';
                 
-                const line = document.createElement('div');
-                line.className = 'legend-line';
-                line.style.backgroundColor = rel.color;
-                if (rel.style === 'dashed') {
-                    line.style.backgroundImage = `repeating-linear-gradient(90deg, ${rel.color}, ${rel.color} 4px, transparent 4px, transparent 8px)`;
-                    line.style.backgroundColor = 'transparent';
-                } else if (rel.style === 'dotted') {
-                    line.style.backgroundImage = `repeating-linear-gradient(90deg, ${rel.color}, ${rel.color} 2px, transparent 2px, transparent 6px)`;
-                    line.style.backgroundColor = 'transparent';
+                columns.forEach(col => {
+                    const isPk = col.is_pk || pkColumns.includes(col.name);
+                    const isFk = col.is_foreign_key || false;
+                    
+                    let columnHtml = '<li class="column-item">';
+                    columnHtml += '<div>';
+                    columnHtml += '<div class="column-name">';
+                    
+                    if (isPk) {
+                        columnHtml += '<span class="pk-icon">🔑</span>';
+                    } else if (isFk) {
+                        columnHtml += '<span class="fk-icon">🔗</span>';
+                    }
+                    
+                    columnHtml += col.name;
+                    
+                    if (!col.nullable) {
+                        columnHtml += ' <span class="nullable">NOT NULL</span>';
+                    }
+                    
+                    columnHtml += '</div>';
+                    
+                    if (col.comment) {
+                        columnHtml += '<div class="column-comment">' + col.comment + '</div>';
+                    }
+                    
+                    columnHtml += '</div>';
+                    columnHtml += '<span class="column-type">' + (col.data_type || 'Unknown') + '</span>';
+                    columnHtml += '</li>';
+                    
+                    contentHtml += columnHtml;
+                });
+                
+                contentHtml += '</ul>';
+            } else {
+                contentHtml = '<div style="padding: 12px; color: #6c757d;">컬럼 정보가 없습니다.</div>';
+            }
+            
+            // 샘플 조인 정보 추가
+            if (sampleJoins.length > 0) {
+                contentHtml += '<div class="sample-joins">';
+                contentHtml += '<div class="sample-joins-title">샘플 조인 관계</div>';
+                
+                sampleJoins.slice(0, 5).forEach(join => {
+                    contentHtml += '<div class="join-item">';
+                    contentHtml += `${join.l_table}.${join.l_col} → ${join.r_table}.${join.r_col}`;
+                    contentHtml += '</div>';
+                });
+                
+                if (sampleJoins.length > 5) {
+                    contentHtml += '<div class="join-item">... 및 ' + (sampleJoins.length - 5) + '개 더</div>';
                 }
                 
-                const label = document.createElement('span');
-                label.textContent = rel.name;
-                
-                item.appendChild(line);
-                item.appendChild(label);
-                legend.appendChild(item);
-            });
+                contentHtml += '</div>';
+            }
+            
+            document.getElementById('tooltip-content').innerHTML = contentHtml;
+            
+            // 툴팁 위치 조정
+            tooltip.style.left = Math.min(x + 10, window.innerWidth - tooltip.offsetWidth - 20) + 'px';
+            tooltip.style.top = Math.min(y - 10, window.innerHeight - tooltip.offsetHeight - 20) + 'px';
+            
+            tooltip.style.display = 'block';
+            isTooltipVisible = true;
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+            isTooltipVisible = false;
         }
         
-        createLegend();
-
-        // Event handlers
-        function exportPng() {
-            const png64 = cy.png({ 
-                full: true, 
-                scale: 2,
-                bg: 'white'
-            });
-            const link = document.createElement('a');
-            link.href = png64;
-            link.download = 'erd-diagram.png';
-            link.click();
+        // 관계선 툴팁 표시 함수
+        function showEdgeTooltip(edge, x, y) {
+            const data = edge.data();
+            const meta = data.meta || {};
+            const kind = data.kind || 'unknown';
+            const confidence = data.confidence || 0;
+            
+            // 툴팁 제목 설정
+            const sourceNode = cy.getElementById(data.source);
+            const targetNode = cy.getElementById(data.target);
+            const sourceName = sourceNode.data('label') || data.source;
+            const targetName = targetNode.data('label') || data.target;
+            
+            document.getElementById('edge-tooltip-title').textContent = `${sourceName} → ${targetName}`;
+            
+            // 관계 타입 표시
+            let typeText = '관계';
+            if (kind === 'foreign_key') typeText = '외래키';
+            else if (kind === 'fk_inferred') typeText = '추론된 FK';
+            document.getElementById('edge-tooltip-type').textContent = typeText;
+            
+            // 조인 조건 정보 생성
+            let contentHtml = '';
+            
+            // 조인 조건 표시
+            if (meta.join_condition) {
+                // 백엔드에서 제공된 조인 조건 사용
+                contentHtml += '<div class="join-condition">';
+                contentHtml += meta.join_condition;
+                contentHtml += '</div>';
+            } else if (meta.left_column && meta.right_column) {
+                // 컬럼 정보로 조인 조건 생성
+                contentHtml += '<div class="join-condition">';
+                contentHtml += `${sourceName}.${meta.left_column} = ${targetName}.${meta.right_column}`;
+                contentHtml += '</div>';
+            } else if (meta.column) {
+                // 단일 컬럼 정보로 조인 조건 생성
+                const targetCol = meta.references ? meta.references.split('.').pop() : meta.column;
+                contentHtml += '<div class="join-condition">';
+                contentHtml += `${sourceName}.${meta.column} = ${targetName}.${targetCol}`;
+                contentHtml += '</div>';
+            } else {
+                // 기본키로 대체 조인 조건 생성
+                const sourceColumns = sourceNode.data('meta')?.pk_columns || [];
+                const targetColumns = targetNode.data('meta')?.pk_columns || [];
+                
+                if (sourceColumns.length > 0 && targetColumns.length > 0) {
+                    contentHtml += '<div class="join-condition">';
+                    contentHtml += `${sourceName}.${sourceColumns[0]} = ${targetName}.${targetColumns[0]}`;
+                    contentHtml += '</div>';
+                }
+            }
+            
+            // 추가 정보 섹션
+            let additionalInfo = '';
+            
+            if (meta.description) {
+                additionalInfo += `<div style="margin: 8px 0; color: #495057;">${meta.description}</div>`;
+            }
+            
+            if (meta.join_type) {
+                additionalInfo += `<div><strong>조인 타입:</strong> ${meta.join_type}</div>`;
+            }
+            
+            if (meta.relationship_type) {
+                additionalInfo += `<div><strong>관계 유형:</strong> ${meta.relationship_type}</div>`;
+            }
+            
+            if (meta.cardinality) {
+                additionalInfo += `<div><strong>카디널리티:</strong> ${meta.cardinality}</div>`;
+            }
+            
+            if (meta.constraint_name) {
+                additionalInfo += `<div><strong>제약명:</strong> ${meta.constraint_name}</div>`;
+            }
+            
+            if (additionalInfo) {
+                const additionalLines = additionalInfo.split('<div>').filter(line => line.trim());
+                additionalLines.forEach(line => {
+                    const cleanLine = line.replace('</div>', '');
+                    if (cleanLine.trim()) {
+                        contentHtml += '<div class="relation-detail">' + cleanLine + '</div>';
+                    }
+                });
+            }
+            
+            // 메타데이터 표시
+            contentHtml += '<div class="edge-metadata">';
+            contentHtml += '<span class="frequency-info">';
+            
+            if (meta.frequency) {
+                contentHtml += `빈도: ${meta.frequency}회`;
+            }
+            
+            if (meta.pattern) {
+                contentHtml += ` (패턴: ${meta.pattern})`;
+            }
+            
+            contentHtml += '</span>';
+            contentHtml += `<span class="confidence-badge">신뢰도: ${Math.round(confidence * 100)}%</span>`;
+            contentHtml += '</div>';
+            
+            document.getElementById('edge-tooltip-content').innerHTML = contentHtml;
+            
+            // 툴팁 위치 조정
+            edgeTooltip.style.left = Math.min(x + 10, window.innerWidth - 370) + 'px';
+            edgeTooltip.style.top = Math.max(y - 10, 10) + 'px';
+            
+            edgeTooltip.style.display = 'block';
+            isEdgeTooltipVisible = true;
+        }
+        
+        function hideEdgeTooltip() {
+            edgeTooltip.style.display = 'none';
+            isEdgeTooltipVisible = false;
         }
 
-        function resetView() {
-            try {
-                cy.layout(layoutOptions[currentLayout]).run();
-            } catch (e) {
-                console.warn(`Layout ${currentLayout} failed, falling back to cose:`, e.message);
-                cy.layout(layoutOptions['cose']).run();
+        // 마우스 이벤트 핸들러 - 노드
+        cy.on('mouseover', 'node', function(event) {
+            const node = event.target;
+            clearTimeout(tooltipTimeout);
+            hideEdgeTooltip(); // 관계선 툴팁 숨김
+            
+            tooltipTimeout = setTimeout(() => {
+                const renderedPosition = event.renderedPosition;
+                showTooltip(node, renderedPosition.x, renderedPosition.y);
+            }, 500); // 0.5초 지연
+        });
+
+        cy.on('mouseout', 'node', function(event) {
+            clearTimeout(tooltipTimeout);
+            setTimeout(() => {
+                if (!isTooltipVisible) return;
+                hideTooltip();
+            }, 100);
+        });
+        
+        // 마우스 이벤트 핸들러 - 관계선
+        cy.on('mouseover', 'edge', function(event) {
+            const edge = event.target;
+            clearTimeout(edgeTooltipTimeout);
+            hideTooltip(); // 노드 툴팁 숨김
+            
+            edgeTooltipTimeout = setTimeout(() => {
+                const renderedPosition = event.renderedPosition;
+                showEdgeTooltip(edge, renderedPosition.x, renderedPosition.y);
+            }, 300); // 0.3초 지연
+        });
+        
+        cy.on('mouseout', 'edge', function(event) {
+            clearTimeout(edgeTooltipTimeout);
+            setTimeout(() => {
+                if (!isEdgeTooltipVisible) return;
+                hideEdgeTooltip();
+            }, 100);
+        });
+
+        // 툴팁이 마우스 오버될 때 숨기지 않음
+        tooltip.addEventListener('mouseenter', function() {
+            clearTimeout(tooltipTimeout);
+        });
+
+        tooltip.addEventListener('mouseleave', function() {
+            hideTooltip();
+        });
+
+        // 캔버스 클릭 시 툴팁 숨김
+        cy.on('tap', function(event) {
+            if (event.target === cy) {
+                hideTooltip();
+                hideEdgeTooltip();
             }
+        });
+        
+        // 관계선 툴팁 마우스 이벤트
+        edgeTooltip.addEventListener('mouseenter', function() {
+            clearTimeout(edgeTooltipTimeout);
+        });
+        
+        edgeTooltip.addEventListener('mouseleave', function() {
+            hideEdgeTooltip();
+        });
+
+        // Functions for toolbar buttons
+        function resetView() {
+            cy.layout(layoutOptions[currentLayout]).run();
+            cy.fit();
         }
 
         function toggleLayout() {
-            const layouts = ['fcose', 'cose', 'circle', 'grid'];
-            const currentIndex = layouts.indexOf(currentLayout);
-            const nextIndex = (currentIndex + 1) % layouts.length;
-            currentLayout = layouts[nextIndex];
-            
-            // Update UI
+            currentLayout = currentLayout === 'fcose' ? 'dagre' : 'fcose';
             document.getElementById('current-layout').textContent = currentLayout;
-            
             resetView();
         }
 
+        function exportPng() {
+            const png = cy.png({
+                scale: 2,
+                full: true,
+                bg: 'white'
+            });
+            
+            const link = document.createElement('a');
+            link.download = 'erd-enhanced.png';
+            link.href = png;
+            link.click();
+        }
+
         function searchNode(query) {
-            cy.nodes().removeClass('highlighted');
-            currentSearchIndex = -1;
-            searchResults = [];
+            cy.elements().removeClass('highlighted');
             
             if (!query.trim()) {
-                cy.nodes().unselect();
+                cy.elements().style('opacity', 1);
                 return;
             }
             
-            searchResults = cy.nodes().filter(node => {
-                const label = node.data('label') || '';
-                const meta = node.data('meta') || {};
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label').toLowerCase();
+                const tableName = node.data('meta')?.table_name?.toLowerCase() || '';
+                const owner = node.data('meta')?.owner?.toLowerCase() || '';
                 
-                return label.toLowerCase().includes(query.toLowerCase()) ||
-                       (meta.table_name && meta.table_name.toLowerCase().includes(query.toLowerCase())) ||
-                       (meta.owner && meta.owner.toLowerCase().includes(query.toLowerCase()));
+                return label.includes(query.toLowerCase()) || 
+                       tableName.includes(query.toLowerCase()) || 
+                       owner.includes(query.toLowerCase());
             });
             
-            if (searchResults.length > 0) {
-                searchResults.select();
-                cy.fit(searchResults, 50);
+            if (matchedNodes.length > 0) {
+                cy.elements().style('opacity', 0.3);
+                matchedNodes.style('opacity', 1);
+                matchedNodes.connectedEdges().style('opacity', 0.8);
+                cy.fit(matchedNodes, 100);
+            } else {
+                cy.elements().style('opacity', 1);
             }
         }
 
-        // Table click handler
-        cy.on('tap', 'node', function(evt) {
-            const node = evt.target;
-            const data = node.data();
-            
-            const panel = document.getElementById('info-panel');
-            const title = document.getElementById('info-title');
-            const content = document.getElementById('info-content');
-            
-            title.textContent = data.label || data.id;
-            
-            let html = `<p><strong>유형:</strong> ${data.type}</p>`;
-            
-            if (data.meta) {
-                if (data.meta.owner) {
-                    html += `<p><strong>소유자:</strong> ${data.meta.owner}</p>`;
-                }
-                if (data.meta.table_name) {
-                    html += `<p><strong>테이블명:</strong> ${data.meta.table_name}</p>`;
-                }
-                if (data.meta.status) {
-                    html += `<p><strong>상태:</strong> ${data.meta.status}</p>`;
-                }
-                if (data.meta.comment) {
-                    html += `<p><strong>설명:</strong> ${data.meta.comment}</p>`;
-                }
-                if (data.meta.pk_columns && data.meta.pk_columns.length > 0) {
-                    html += `<p><strong>기본키(PK):</strong></p><ul>`;
-                    data.meta.pk_columns.forEach(col => {
-                        html += `<li>${col}</li>`;
-                    });
-                    html += '</ul>';
-                }
-                if (data.meta.columns && data.meta.columns.length > 0) {
-                    html += `<p><strong>컬럼:</strong></p>`;
-                    html += `<div style="max-height: 200px; overflow-y: auto;">`;
-                    html += `<table style="width: 100%; border-collapse: collapse;">`;
-                    html += `<tr style="background: #f5f5f5;"><th>컬럼명</th><th>타입</th><th>PK</th><th>Null</th><th>설명</th></tr>`;
-                    data.meta.columns.slice(0, 50).forEach(col => {
-                        const pkMark = col.is_pk ? '✓' : '';
-                        const nullMark = col.nullable === 'Y' ? 'Y' : 'N';
-                        const comment = col.comment || '';
-                        const isFiltered = col.is_filtered || false;
-                        const rowStyle = isFiltered ? 'border-bottom: 1px solid #ddd; background-color: #fff3e0;' : 'border-bottom: 1px solid #ddd;';
-                        const nameStyle = `padding: 2px 4px; font-weight: ${col.is_pk ? 'bold' : 'normal'}; ${isFiltered ? 'color: #ff6900; font-weight: bold;' : ''}`;
-                        
-                        html += `<tr style="${rowStyle}">`;
-                        html += `<td style="${nameStyle}">${col.name}${isFiltered ? ' 🔍' : ''}</td>`;
-                        html += `<td style="padding: 2px 4px;">${col.data_type || ''}</td>`;
-                        html += `<td style="padding: 2px 4px; text-align: center;">${pkMark}</td>`;
-                        html += `<td style="padding: 2px 4px; text-align: center;">${nullMark}</td>`;
-                        html += `<td style="padding: 2px 4px; font-size: 0.9em;">${comment}</td>`;
-                        html += `</tr>`;
-                    });
-                    html += `</table></div>`;
-                }
-                if (data.meta.sample_joins && data.meta.sample_joins.length > 0) {
-                    html += `<p><strong>Sample Joins:</strong></p><ul>`;
-                    data.meta.sample_joins.forEach(j => {
-                        const confidence = Math.round(j.confidence * 100);
-                        html += `<li>${j.left_table}.${j.left_column} = ${j.right_table}.${j.right_column}`;
-                        html += ` <small>(freq: ${j.frequency}, conf: ${confidence}%)</small></li>`;
-                    });
-                    html += '</ul>';
-                }
-                if (data.meta.required_filters && data.meta.required_filters.length > 0) {
-                    html += `<p><strong>Required Filters:</strong></p><ul>`;
-                    data.meta.required_filters.forEach(f => {
-                        const alwaysMark = f.always ? ' (ALWAYS)' : '';
-                        html += `<li><strong>${f.column}</strong> ${f.op} <code>${f.value}</code>${alwaysMark}</li>`;
-                    });
-                    html += '</ul>';
-                }
-                if (data.meta.sql_context) {
-                    html += `<p><strong>SQL Context:</strong> <code>${data.meta.sql_context}</code></p>`;
-                }
-            }
-            
-            // Show relationships
-            const connectedEdges = cy.edges().filter(edge => 
-                edge.data('source') === data.id || edge.data('target') === data.id
-            );
-            
-            if (connectedEdges.length > 0) {
-                html += `<p><strong>Relationships (${connectedEdges.length}):</strong></p><ul>`;
-                connectedEdges.forEach(edge => {
-                    const edgeData = edge.data();
-                    const isSource = edgeData.source === data.id;
-                    const otherNodeId = isSource ? edgeData.target : edgeData.source;
-                    const otherNode = cy.getElementById(otherNodeId);
-                    const otherLabel = otherNode.data('label') || otherNodeId;
-                    
-                    const direction = isSource ? '→' : '←';
-                    const confidence = Math.round(edgeData.confidence * 100);
-                    html += `<li>${direction} ${otherLabel} (${edgeData.kind}, ${confidence}%)</li>`;
-                });
-                html += '</ul>';
-            }
-            
-            content.innerHTML = html;
-            panel.style.display = 'block';
+        // Update stats
+        document.getElementById('node-count').textContent = (DATA.nodes || []).length;
+        document.getElementById('edge-count').textContent = (DATA.edges || []).length;
+
+        // Initial fit
+        cy.ready(function() {
+            cy.fit();
         });
-
-        // Confidence filter & join toggle behavior
-        const confRange = document.getElementById('conf-range');
-        const confValue = document.getElementById('conf-value');
-        const toggleJoins = document.getElementById('toggle-joins');
-        function applyFilters() {
-            const thr = (parseInt(confRange?.value || '0', 10) || 0) / 100.0;
-            const showJoins = toggleJoins ? toggleJoins.checked : true;
-            cy.edges().forEach(e => {
-                const conf = e.data('confidence') || 0;
-                const kind = e.data('kind') || '';
-                let visible = conf >= thr && (showJoins || kind !== 'join_inferred');
-                e.style('display', visible ? 'element' : 'none');
-            });
-            const ec = document.getElementById('edge-count'); if (ec) ec.textContent = cy.edges(':visible').length;
-            if (confValue && confRange) confValue.textContent = confRange.value + '%';
-        }
-        confRange?.addEventListener('input', applyFilters);
-        toggleJoins?.addEventListener('change', applyFilters);
-        applyFilters();
-
-        // Edge click handler
-        cy.on('tap', 'edge', function(evt) {
-            const edge = evt.target;
-            const data = edge.data();
-            
-            const panel = document.getElementById('info-panel');
-            const title = document.getElementById('info-title');
-            const content = document.getElementById('info-content');
-            
-            const sourceLabel = cy.getElementById(data.source).data('label');
-            const targetLabel = cy.getElementById(data.target).data('label');
-            
-            title.textContent = `${sourceLabel} → ${targetLabel}`;
-            
-            let html = `<p><strong>관계 유형:</strong> ${data.kind}</p>`;
-            html += `<p><strong>신뢰도:</strong> ${Math.round(data.confidence * 100)}%</p>`;
-            
-            if (data.meta) {
-                if (data.meta.left_column && data.meta.right_column) {
-                    html += `<p><strong>조인 조건:</strong><br/>`;
-                    html += `${data.meta.left_table}.${data.meta.left_column} = ${data.meta.right_table}.${data.meta.right_column}</p>`;
-                }
-                if (data.meta.frequency) {
-                    html += `<p><strong>조인 빈도:</strong> ${data.meta.frequency}</p>`;
-                }
-            }
-            
-            content.innerHTML = html;
-            panel.style.display = 'block';
-        });
-
-        // Click outside to hide panel
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#info-panel') && !e.target.closest('#cy')) {
-                document.getElementById('info-panel').style.display = 'none';
-            }
-        });
-
-        // Double-click to focus on table
-        cy.on('dblclick', 'node', function(evt) {
-            const node = evt.target;
-            const connectedNodes = node.neighborhood().union(node);
-            cy.fit(connectedNodes, 50);
-        });
-
-        // Keyboard navigation
-        function navigateSearchResults(direction) {
-            if (searchResults.length === 0) return;
-            
-            // Remove previous selection
-            if (currentSearchIndex >= 0 && currentSearchIndex < searchResults.length) {
-                searchResults[currentSearchIndex].removeClass('search-selected');
-            }
-            
-            // Move to next/previous
-            if (direction === 'next') {
-                currentSearchIndex = (currentSearchIndex + 1) % searchResults.length;
-            } else if (direction === 'prev') {
-                currentSearchIndex = currentSearchIndex <= 0 ? searchResults.length - 1 : currentSearchIndex - 1;
-            }
-            
-            // Highlight and focus on current result
-            const selectedNode = searchResults[currentSearchIndex];
-            selectedNode.addClass('search-selected');
-            cy.center(selectedNode);
-            
-            // Update search info
-            document.getElementById('search').placeholder = 
-                `Result ${currentSearchIndex + 1} of ${searchResults.length}`;
-        }
         
-        // Global keyboard event handler
-        document.addEventListener('keydown', function(event) {
-            // Only handle if search has focus or results exist
-            const searchInput = document.getElementById('search');
-            const isSearchFocused = document.activeElement === searchInput;
-            
-            if (isSearchFocused && searchResults.length > 0) {
-                if (event.key === 'ArrowDown') {
-                    event.preventDefault();
-                    navigateSearchResults('next');
-                } else if (event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    navigateSearchResults('prev');
-                } else if (event.key === 'Enter' && currentSearchIndex >= 0) {
-                    event.preventDefault();
-                    // Select the current search result
-                    const selectedNode = searchResults[currentSearchIndex];
-                    selectedNode.select();
-                    searchInput.blur(); // Remove focus from search
-                }
-            }
-            
-            // Global shortcuts (work anywhere)
-            if (!isSearchFocused) {
-                if (event.key === '/') {
-                    event.preventDefault();
-                    searchInput.focus();
-                } else if (event.key === 'f' && event.ctrlKey) {
-                    event.preventDefault();
-                    searchInput.focus();
-                } else if (event.key === 'l') {
-                    event.preventDefault();
-                    toggleLayout();
-                } else if (event.key === 'r') {
-                    event.preventDefault();
-                    resetView();
-                }
-            }
+        console.log('고도화 ERD 초기화 완료:', {
+            nodes: (DATA.nodes || []).length,
+            edges: (DATA.edges || []).length,
+            layout: currentLayout
         });
-
-        console.log('ERD loaded with', DATA.nodes?.length || 0, 'tables and', DATA.edges?.length || 0, 'relationships');
-        
-        } catch (error) {
-            console.error('Cytoscape initialization failed:', error);
-            document.getElementById('cy').innerHTML = '<div style="padding: 20px; color: red; text-align: center;">' +
-                '<h3>ERD 로딩 실패</h3>' +
-                '<p>오류: ' + error.message + '</p>' +
-                '<p>브라우저 개발자 도구(F12)의 Console 탭을 확인하세요.</p>' +
-                '</div>';
-        }
     </script>
 </body>
 </html>

@@ -21,4 +21,3 @@ if errorlevel 1 (
 
 echo.
 echo Sequence diagram generation completed successfully!
-pause

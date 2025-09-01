@@ -8,7 +8,7 @@ from difflib import get_close_matches
 
 
 def build_sequence_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], start_file: str = None, start_method: str = None, 
-                             depth: int = 3, max_nodes: int = 2000) -> Dict[str, Any]:
+                             depth: int = 3, max_nodes: int = 2000, hide_unresolved: bool = True) -> Dict[str, Any]:
     """Build UML sequence diagram JSON for visualization"""
     print(f"Building sequence diagram for project {project_id}")
     print(f"  Start file: {start_file}")
@@ -64,7 +64,7 @@ def build_sequence_graph_json(config: Dict[str, Any], project_id: int, project_n
     print(f"  Found {len(start_nodes)} start nodes")
     
     # Build UML sequence diagram 
-    sequence_data = _build_uml_sequence_diagram(config, db, edges, start_nodes, depth, max_nodes)
+    sequence_data = _build_uml_sequence_diagram(config, db, edges, start_nodes, depth, max_nodes, hide_unresolved, project_id)
     
     print(f"  Generated UML sequence diagram with {len(sequence_data['participants'])} participants and {len(sequence_data['interactions'])} interactions")
     
@@ -127,7 +127,7 @@ def _find_start_nodes(config: Dict[str, Any], db: VizDB, project_id: int, start_
 
 
 def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, start_nodes: List[Dict[str, Any]], 
-                               max_depth: int, max_nodes: int) -> Dict[str, Any]:
+                               max_depth: int, max_nodes: int, hide_unresolved: bool = True, project_id: int = None) -> Dict[str, Any]:
     """Build proper UML sequence diagram data structure"""
     
     # Build adjacency map
@@ -138,13 +138,61 @@ def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, 
         src_id = f"{edge.src_type}:{edge.src_id}"
         if edge.dst_id:
             dst_id = f"{edge.dst_type}:{edge.dst_id}"
-        elif edge.edge_kind == 'call_unresolved':
-            dst_id = f"unknown:{unknown_counter}"
-            unknown_counter += 1
         else:
-            dst_id = None
+            # dst_id가 null인 경우 실제 메소드를 찾아서 연결 시도
+            if hasattr(edge, 'meta') and edge.meta:
+                import json
+                try:
+                    # meta가 JSON 문자열인 경우 파싱
+                    if isinstance(edge.meta, str):
+                        meta_data = json.loads(edge.meta)
+                    else:
+                        meta_data = edge.meta
+                    
+                    called_name = meta_data.get('called_name', f'unknown_{unknown_counter}')
+                    src_method_fqn = meta_data.get('src_method_fqn', '')
+                    qualifier_type = meta_data.get('callee_qualifier_type', '')
+                    
+                    # 같은 클래스 내 메소드 호출인지 확인
+                    if not qualifier_type and src_method_fqn:
+                        # 같은 클래스에서 메소드 찾기
+                        class_fqn = ".".join(src_method_fqn.split(".")[:-1])
+                        methods = db.fetch_methods_by_project(project_id)
+                        for method in methods:
+                            method_details = db.get_node_details('method', method.method_id)
+                            if (method_details and 
+                                method_details.get('name') == called_name and
+                                method_details.get('class', '').startswith(class_fqn)):
+                                dst_id = f"method:{method.method_id}"
+                                break
+                        else:
+                            # 찾지 못한 경우 unresolved로 처리
+                            dst_id = f"unresolved:{called_name}"
+                    else:
+                        # 외부 라이브러리 호출인 경우
+                        if qualifier_type:
+                            dst_id = f"unresolved:{qualifier_type}.{called_name}"
+                        else:
+                            dst_id = f"unresolved:{called_name}"
+                    
+                except (json.JSONDecodeError, TypeError):
+                    dst_id = f"unresolved:unknown_{unknown_counter}"
+                    unknown_counter += 1
+            else:
+                dst_id = f"unresolved:unknown_{unknown_counter}"
+                unknown_counter += 1
 
-        if dst_id:
+        # unresolved 노드 필터링 옵션 적용
+        if dst_id is not None and 'unresolved' in dst_id :
+            # 외부 라이브러리 호출(List, BigDecimal 등)은 제외하고 내부 메소드만 포함
+            if not any(lib in dst_id for lib in ['List.', 'BigDecimal.', 'String.', 'System.']):
+                adjacency[src_id].append({
+                    'target': ':',
+                    'kind': edge.edge_kind,
+                    'confidence': edge.confidence,
+                    'edge': edge
+                })
+        else:
             adjacency[src_id].append({
                 'target': dst_id,
                 'kind': edge.edge_kind,
@@ -218,7 +266,26 @@ def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, 
                 node_id = int(raw_id) if node_type in ('file', 'class', 'method', 'sql_unit') and raw_id.isdigit() else raw_id
             except ValueError:
                 node_id = raw_id
-            target_details = db.get_node_details(node_type, node_id)
+            # unresolved 노드인 경우 가상의 details 생성
+            if node_type == "unresolved":
+                # 더 의미있는 라벨 생성
+                if "." in raw_id:
+                    # Class.method 형태인 경우
+                    parts = raw_id.split(".")
+                    class_name = parts[0]
+                    method_name = parts[1] if len(parts) > 1 else raw_id
+                    label = f"{class_name}.{method_name}()"
+                else:
+                    # 단순 메소드명인 경우
+                    label = f"{raw_id}()"
+                    
+                target_details = {
+                    'name': raw_id,
+                    'type': 'unresolved_method',
+                    'label': label
+                }
+            else:
+                target_details = db.get_node_details(node_type, node_id)
             
             if target_details:
                 # Add participant if not exists
@@ -261,6 +328,22 @@ def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, 
                     queue.append((target_id, current_depth + 1, current_id))
                     visited.add(target_id)
 
+    # 단일 노드인 경우 시퀀스다이어그램 생성하지 않음
+    if len(participants) <= 1:
+        print(f"  Warning: Only {len(participants)} participants found. Skipping sequence diagram generation.")
+        return {
+            'nodes': [],
+            'edges': [],
+            'participants': [],
+            'interactions': [],
+            'metadata': {
+                'node_count': 0,
+                'edge_count': 0,
+                'type': 'sequence_diagram',
+                'message': 'Not enough participants for sequence diagram'
+            }
+        }
+    
     # Fallback: If no interactions were found, create a simplified sequence.
     if not interactions and len(participants) > 1:
         print("  No method calls found. Creating a simplified sequence flow based on participant order.")
@@ -308,7 +391,7 @@ def _build_uml_sequence_diagram(config: Dict[str, Any], db: VizDB, edges: List, 
             target=interaction['to_participant'],
             kind=interaction['meta']['edge_kind'],
             confidence=interaction.get('confidence', 1.0),
-            details={
+            meta={
                 'sequence_order': interaction['sequence_order'],
                 'message': interaction['message'],
                 'unresolved': interaction.get('unresolved', False)
@@ -432,7 +515,22 @@ def _build_jsp_sql_sequence(config: Dict[str, Any], db: VizDB, project_id: int, 
     
     print(f"  Generated basic sequence: {len(sequence_nodes)} nodes, {len(sequence_edges)} edges")
     
-    return create_graph(sequence_nodes, sequence_edges)
+    # participants 정보 생성
+    participants = []
+    for node in sequence_nodes:
+        participants.append({
+            'id': node['id'],
+            'label': node['label'],
+            'type': node['type'],
+            'actor_type': _get_actor_type(node['type']),
+            'order': node.get('layer', 0)
+        })
+    
+    graph_data = create_graph(sequence_nodes, sequence_edges)
+    graph_data['participants'] = participants
+    graph_data['type'] = 'sequence_diagram'
+    
+    return graph_data
 
 
 def _get_sequence_label(node_type: str, details: Dict[str, Any]) -> str:

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Source Analyzer - 시퀀스 다이어그램</title>
+    <link rel="stylesheet" href="./static/css/woori-brand-theme.css">
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
+        }
+        
+        .woori-header {
+            background: var(--woori-gradient-header);
+            color: var(--woori-text-on-primary);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--woori-shadow-medium);
+        }
+        
+        .woori-logo {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        #toolbar { 
+            padding: 16px 24px; 
+            background: white;
+            border-bottom: var(--woori-border-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(25,118,210,0.08);
+        }
+        
+        button {
+            background: var(--woori-gradient-main);
+            border: none;
+            color: var(--woori-text-on-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: var(--woori-shadow-light);
+        }
+        button:hover {
+            background: var(--woori-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--woori-shadow-medium);
+        }
+        
+        #diagram-container { 
+            width: 100%; 
+            height: calc(100% - 120px);
+            overflow: hidden;
+            position: relative;
+            background: white;
+            border: 1px solid #e0e0e0;
+            margin: 16px;
+            border-radius: 8px;
+        }
+        
+        #diagram {
+            width: 100%;
+            height: 100%;
+            transform-origin: 0 0;
+            transition: transform 0.3s ease;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 100;
+        }
+        
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--woori-primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .zoom-btn:hover {
+            background: var(--woori-primary-dark);
+        }
+        
+        .stats {
+            background: var(--woori-primary-pale);
+            color: var(--woori-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(25,118,210,0.15);
+        }
+    </style>
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="woori-header">
+        <div class="header-title">
+            <div class="woori-logo">우</div>
+            <span>Source Analyzer - 시퀀스 다이어그램</span>
+        </div>
+        <div style="font-size: 14px; opacity: 0.9;">Enterprise Solution</div>
+    </header>
+    
+    <div id="toolbar">
+        <button onclick="resetZoom()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG 저장</button>
+        <button onclick="switchLayout()" title="레이아웃 변경">🔄 레이아웃</button>
+        <div class="stats" id="stats">
+            노드: <span id="node-count">0</span> | 
+            메시지: <span id="edge-count">0</span>
+        </div>
+    </div>
+    
+    <div id="diagram-container">
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomIn()" title="확대">+</button>
+            <button class="zoom-btn" onclick="zoomOut()" title="축소">−</button>
+        </div>
+        <div id="diagram"></div>
+    </div>
+
+    <script>
+        const DATA = {
+  "nodes": [
+    {
+      "id": "method:59",
+      "type": "method",
+      "label": "processWithReflection()",
+      "group": "control",
+      "meta": {
+        "name": "processWithReflection",
+        "signature": "processWithReflection(String className)",
+        "class": "com.example.service.UserService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+        "line": 43,
+        "llm_summary": null
+      }
+    },
+    {
+      "id": "unresolved:Class.forName",
+      "type": "unresolved",
+      "label": "unresolved: Class.forName",
+      "group": "control",
+      "meta": {
+        "name": "Class.forName",
+        "type": "unresolved_method",
+        "label": "Class.forName()"
+      }
+    },
+    {
+      "id": "unresolved:Class.getDeclaredConstructor",
+      "type": "unresolved",
+      "label": "unresolved: Class.getDeclaredConstructor",
+      "group": "control",
+      "meta": {
+        "name": "Class.getDeclaredConstructor",
+        "type": "unresolved_method",
+        "label": "Class.getDeclaredConstructor()"
+      }
+    },
+    {
+      "id": "unresolved:com.example.service.UserService.newInstance",
+      "type": "unresolved",
+      "label": "unresolved: com.example.service.UserService.newInstance",
+      "group": "control",
+      "meta": {
+        "name": "com.example.service.UserService.newInstance",
+        "type": "unresolved_method",
+        "label": "com.example()"
+      }
+    },
+    {
+      "id": "unresolved:Object.toString",
+      "type": "unresolved",
+      "label": "unresolved: Object.toString",
+      "group": "control",
+      "meta": {
+        "name": "Object.toString",
+        "type": "unresolved_method",
+        "label": "Object.toString()"
+      }
+    },
+    {
+      "id": "unresolved:e.getMessage",
+      "type": "unresolved",
+      "label": "unresolved: e.getMessage",
+      "group": "control",
+      "meta": {
+        "name": "e.getMessage",
+        "type": "unresolved_method",
+        "label": "e.getMessage()"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "seq_edge_0",
+      "source": "method:59",
+      "target": "unresolved:Class.forName",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 0,
+        "message": "call unresolved: Class.forName",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_1",
+      "source": "method:59",
+      "target": "unresolved:Class.getDeclaredConstructor",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 1,
+        "message": "call unresolved: Class.getDeclaredConstructor",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_2",
+      "source": "method:59",
+      "target": "unresolved:com.example.service.UserService.newInstance",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 2,
+        "message": "call unresolved: com.example.service.UserService.newInstance",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_3",
+      "source": "method:59",
+      "target": "unresolved:Object.toString",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 3,
+        "message": "call unresolved: Object.toString",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_4",
+      "source": "method:59",
+      "target": "unresolved:e.getMessage",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 4,
+        "message": "call unresolved: e.getMessage",
+        "unresolved": false
+      }
+    }
+  ],
+  "metadata": {
+    "node_count": 6,
+    "edge_count": 5,
+    "node_types": [
+      "method",
+      "unresolved"
+    ],
+    "edge_kinds": [
+      "call"
+    ]
+  },
+  "mermaid": "sequenceDiagram\n    participant method_59 as processWithReflection()\n    participant unresolved_Class.forName as unresolved: Class.forName\n    participant unresolved_Class.getDeclaredConstructor as unresolved: Class.getDeclaredConstructor\n    participant unresolved_com.example.service.UserService.newInstance as unresolved: com.example.service.UserService.newInstance\n    participant unresolved_Object.toString as unresolved: Object.toString\n    participant unresolved_e.getMessage as unresolved: e.getMessage\n\n    method_59->>unresolved_Class.forName: call unresolved: Class.forName\n    method_59->>unresolved_Class.getDeclaredConstructor: call unresolved: Class.getDeclaredConstructor\n    method_59->>unresolved_com.example.service.UserService.newInstance: call unresolved: com.example.service.UserService.newInstance\n    method_59->>unresolved_Object.toString: call unresolved: Object.toString\n    method_59->>unresolved_e.getMessage: call unresolved: e.getMessage",
+  "type": "sequence_diagram",
+  "participants": [
+    {
+      "id": "method:59",
+      "type": "method",
+      "label": "processWithReflection()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "processWithReflection",
+        "signature": "processWithReflection(String className)",
+        "class": "com.example.service.UserService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+        "line": 43,
+        "llm_summary": null
+      }
+    },
+    {
+      "id": "unresolved:Class.forName",
+      "type": "unresolved",
+      "label": "unresolved: Class.forName",
+      "actor_type": "control",
+      "order": 1,
+      "details": {
+        "name": "Class.forName",
+        "type": "unresolved_method",
+        "label": "Class.forName()"
+      }
+    },
+    {
+      "id": "unresolved:Class.getDeclaredConstructor",
+      "type": "unresolved",
+      "label": "unresolved: Class.getDeclaredConstructor",
+      "actor_type": "control",
+      "order": 2,
+      "details": {
+        "name": "Class.getDeclaredConstructor",
+        "type": "unresolved_method",
+        "label": "Class.getDeclaredConstructor()"
+      }
+    },
+    {
+      "id": "unresolved:com.example.service.UserService.newInstance",
+      "type": "unresolved",
+      "label": "unresolved: com.example.service.UserService.newInstance",
+      "actor_type": "control",
+      "order": 3,
+      "details": {
+        "name": "com.example.service.UserService.newInstance",
+        "type": "unresolved_method",
+        "label": "com.example()"
+      }
+    },
+    {
+      "id": "unresolved:Object.toString",
+      "type": "unresolved",
+      "label": "unresolved: Object.toString",
+      "actor_type": "control",
+      "order": 4,
+      "details": {
+        "name": "Object.toString",
+        "type": "unresolved_method",
+        "label": "Object.toString()"
+      }
+    },
+    {
+      "id": "unresolved:e.getMessage",
+      "type": "unresolved",
+      "label": "unresolved: e.getMessage",
+      "actor_type": "control",
+      "order": 5,
+      "details": {
+        "name": "e.getMessage",
+        "type": "unresolved_method",
+        "label": "e.getMessage()"
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction_0",
+      "sequence_order": 0,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "unresolved:Class.forName",
+      "message": "call unresolved: Class.forName",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "processWithReflection",
+          "signature": "processWithReflection(String className)",
+          "class": "com.example.service.UserService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+          "line": 43,
+          "llm_summary": null
+        },
+        "target_details": {
+          "name": "Class.forName",
+          "type": "unresolved_method",
+          "label": "Class.forName()"
+        }
+      }
+    },
+    {
+      "id": "interaction_1",
+      "sequence_order": 1,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "unresolved:Class.getDeclaredConstructor",
+      "message": "call unresolved: Class.getDeclaredConstructor",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "processWithReflection",
+          "signature": "processWithReflection(String className)",
+          "class": "com.example.service.UserService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+          "line": 43,
+          "llm_summary": null
+        },
+        "target_details": {
+          "name": "Class.getDeclaredConstructor",
+          "type": "unresolved_method",
+          "label": "Class.getDeclaredConstructor()"
+        }
+      }
+    },
+    {
+      "id": "interaction_2",
+      "sequence_order": 2,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "unresolved:com.example.service.UserService.newInstance",
+      "message": "call unresolved: com.example.service.UserService.newInstance",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "processWithReflection",
+          "signature": "processWithReflection(String className)",
+          "class": "com.example.service.UserService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+          "line": 43,
+          "llm_summary": null
+        },
+        "target_details": {
+          "name": "com.example.service.UserService.newInstance",
+          "type": "unresolved_method",
+          "label": "com.example()"
+        }
+      }
+    },
+    {
+      "id": "interaction_3",
+      "sequence_order": 3,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "unresolved:Object.toString",
+      "message": "call unresolved: Object.toString",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "processWithReflection",
+          "signature": "processWithReflection(String className)",
+          "class": "com.example.service.UserService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+          "line": 43,
+          "llm_summary": null
+        },
+        "target_details": {
+          "name": "Object.toString",
+          "type": "unresolved_method",
+          "label": "Object.toString()"
+        }
+      }
+    },
+    {
+      "id": "interaction_4",
+      "sequence_order": 4,
+      "type": "synchronous",
+      "from_participant": "method:59",
+      "to_participant": "unresolved:e.getMessage",
+      "message": "call unresolved: e.getMessage",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "processWithReflection",
+          "signature": "processWithReflection(String className)",
+          "class": "com.example.service.UserService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+          "line": 43,
+          "llm_summary": null
+        },
+        "target_details": {
+          "name": "e.getMessage",
+          "type": "unresolved_method",
+          "label": "e.getMessage()"
+        }
+      }
+    }
+  ]
+};
+        let currentZoom = 1;
+        let currentLayout = 'dagre';
+        let cy;
+
+        // Cytoscape 스타일과 레이아웃 초기화
+        function initCytoscape() {
+            if (!DATA.nodes || !DATA.edges) {
+                // Fallback to Mermaid if no graph data
+                initMermaid();
+                return;
+            }
+
+            const elements = [];
+            
+            // 노드 추가
+            for (const node of DATA.nodes || []) {
+                elements.push({
+                    data: {
+                        id: node.id,
+                        label: node.label,
+                        type: node.type
+                    }
+                });
+            }
+            
+            // 엣지 추가
+            for (const edge of DATA.edges || []) {
+                elements.push({
+                    data: {
+                        id: edge.id,
+                        source: edge.source,
+                        target: edge.target,
+                        label: edge.meta?.message || ''
+                    }
+                });
+            }
+
+            cy = cytoscape({
+                container: document.getElementById('diagram'),
+                elements: elements,
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'label': 'data(label)',
+                            'font-size': '12px',
+                            'text-wrap': 'wrap',
+                            'text-max-width': '120px',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'background-color': '#e3f2fd',
+                            'border-width': 2,
+                            'border-color': '#1976d2',
+                            'width': 'mapData(label.length, 10, 50, 80, 200)',
+                            'height': '60px',
+                            'shape': 'round-rectangle'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'curve-style': 'bezier',
+                            'width': 2,
+                            'line-color': '#1976d2',
+                            'target-arrow-shape': 'triangle',
+                            'target-arrow-color': '#1976d2',
+                            'label': 'data(label)',
+                            'font-size': '10px',
+                            'text-rotation': 'autorotate',
+                            'color': '#333'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'dagre',
+                    rankDir: 'TB',
+                    animate: true,
+                    animationDuration: 500
+                }
+            });
+
+            // 통계 업데이트
+            document.getElementById('node-count').textContent = DATA.nodes?.length || 0;
+            document.getElementById('edge-count').textContent = DATA.edges?.length || 0;
+        }
+
+        // Mermaid 초기화 (백업용)
+        function initMermaid() {
+            const diagramElement = document.getElementById('diagram');
+            if (DATA.mermaid) {
+                diagramElement.innerHTML = '<div class="mermaid">' + DATA.mermaid + '</div>';
+                mermaid.initialize({ 
+                    startOnLoad: true,
+                    theme: 'default',
+                    sequence: {
+                        diagramMarginX: 50,
+                        diagramMarginY: 50,
+                        actorMargin: 50,
+                        width: 150,
+                        height: 65,
+                        boxMargin: 10,
+                        boxTextMargin: 5,
+                        noteMargin: 10,
+                        messageMargin: 35,
+                        mirrorActors: false,
+                        bottomMarginAdj: 1,
+                        useMaxWidth: true
+                    }
+                });
+                mermaid.run();
+            }
+        }
+
+        function zoomIn() {
+            if (cy) {
+                cy.zoom(cy.zoom() * 1.2);
+                cy.center();
+            } else {
+                currentZoom *= 1.2;
+                const diagram = document.getElementById('diagram');
+                diagram.style.transform = `scale(${currentZoom})`;
+            }
+        }
+
+        function zoomOut() {
+            if (cy) {
+                cy.zoom(cy.zoom() * 0.8);
+                cy.center();
+            } else {
+                currentZoom *= 0.8;
+                const diagram = document.getElementById('diagram');
+                diagram.style.transform = `scale(${currentZoom})`;
+            }
+        }
+
+        function resetZoom() {
+            if (cy) {
+                cy.fit();
+            } else {
+                currentZoom = 1;
+                const diagram = document.getElementById('diagram');
+                diagram.style.transform = `scale(${currentZoom})`;
+            }
+        }
+
+        function switchLayout() {
+            if (!cy) return;
+            
+            currentLayout = currentLayout === 'dagre' ? 'breadthfirst' : 'dagre';
+            const layoutConfig = currentLayout === 'dagre' ? 
+                { name: 'dagre', rankDir: 'TB', animate: true, animationDuration: 500 } :
+                { name: 'breadthfirst', directed: true, animate: true, animationDuration: 500 };
+                
+            cy.layout(layoutConfig).run();
+        }
+
+        function exportPng() {
+            if (cy) {
+                const png64 = cy.png({ 
+                    full: true, 
+                    scale: 2,
+                    bg: 'white'
+                });
+                const link = document.createElement('a');
+                link.href = png64;
+                link.download = 'sequence-diagram.png';
+                link.click();
+            } else {
+                // Mermaid PNG export fallback
+                const diagram = document.getElementById('diagram');
+                html2canvas(diagram).then(canvas => {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL();
+                    link.download = 'sequence-diagram.png';
+                    link.click();
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCytoscape();
+        });
+    </script>
+</body>
+</html>

@@ -3,9 +3,9 @@
 ## 개요
 - 프로젝트 ID: 1
 - 다이어그램 유형: ERD
-- 생성 시각: 2025-09-01 09:47:11
+- 생성 시각: 2025-09-01 20:42:28
 - 노드 수: 14
-- 엣지 수: 26
+- 엣지 수: 11
 
 ## 다이어그램
 
@@ -153,32 +153,17 @@ erDiagram
     NUMBER RELATED_ID
     VARCHAR2 VALUE
   }
-  n1_table_PUBL ||--|| n11_table_SAMP : "foreign_key"
-  n1_table_PUBL ||--|| n11_table_SAMP : "foreign_key"
-  n4_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n1_table_PUBL ||--|| n11_table_SAMP : "relationship"
   n4_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
   n5_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n5_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n7_table_SAMP ||--|| n6_table_SAMP : "foreign_key"
   n7_table_SAMP ||--|| n6_table_SAMP : "foreign_key"
   n7_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n7_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
   n8_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
   n8_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n10_table_SAMP : "foreign_key"
   n8_table_SAMP ||--|| n10_table_SAMP : "foreign_key"
   n8_table_SAMP ||--|| n12_table_SAMP : "foreign_key"
-  n8_table_SAMP ||--|| n12_table_SAMP : "foreign_key"
   n9_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n9_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
-  n11_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
-  n11_table_SAMP ||--|| n1_table_PUBL : "foreign_key"
-  n13_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
-  n13_table_SCOT ||--|| n14_table_SCOT : "foreign_key"
-  n14_table_SCOT ||--|| n13_table_SCOT : "foreign_key"
-  n14_table_SCOT ||--|| n13_table_SCOT : "foreign_key"
+  n13_table_SCOT ||--|| n14_table_SCOT : "relationship"
 ```
 
 ## 범례
@@ -212,31 +197,22 @@ erDiagram
   table:SCOTT.RELATED_DATA: SCOTT.RELATED_DATA (table)
 ```
 
-엣지 목록 (26)
+엣지 목록 (11)
 ```json
-  table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (foreign_key)
-  table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (foreign_key)
-  table:SAMPLE.DISCOUNTS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (relationship)
   table:SAMPLE.DISCOUNTS -> table:SAMPLE.PRODUCTS (foreign_key)
   table:SAMPLE.INVENTORIES -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.INVENTORIES -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.ORDERS (foreign_key)
   table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.ORDERS (foreign_key)
   table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.PRODUCTS -> table:SAMPLE.BRANDS (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.BRANDS (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.CATEGORIES (foreign_key)
-  table:SAMPLE.PRODUCTS -> table:SAMPLE.CATEGORIES (foreign_key)
-  table:SAMPLE.PRODUCTS -> table:SAMPLE.SUPPLIERS (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.SUPPLIERS (foreign_key)
   table:SAMPLE.PRODUCTS -> table:SAMPLE.WAREHOUSES (foreign_key)
-  table:SAMPLE.PRODUCTS -> table:SAMPLE.WAREHOUSES (foreign_key)
   table:SAMPLE.PRODUCT_REVIEWS -> table:SAMPLE.PRODUCTS (foreign_key)
-  table:SAMPLE.PRODUCT_REVIEWS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SCOTT.DYNAMIC_DATA -> table:SCOTT.RELATED_DATA (relationship)
 ```
 
 </details>
 
 ---
-*Source Analyzer v1.1 — 생성 시각: 2025-09-01 09:47:11*
+*Source Analyzer v1.1 — 생성 시각: 2025-09-01 20:42:28*

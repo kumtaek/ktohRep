@@ -107,7 +107,7 @@ run_visualize.bat graph sampleSrc --focus MyService.java --depth 1
 - **클래스 다이어그램 (`class`)**
   ```bash
   # 특정 모듈에 대한 클래스 다이어그램 생성
-  run_visualize.bat class --project-name sampleSrc --modules "com/example/user"
+  run_visualize.bat class sampleSrc --modules "com/example/user"
   ```
 
 - **시퀀스 다이어그램 (`sequence`)**
@@ -174,4 +174,4 @@ run_download_vulnerability_docs.bat sampleSrc
 3. **소스 파일 없음**: `testcase/sampleSrc/` 디렉토리에 분석할 소스코드 배치
 4. **Python 버전**: Python 3.10 이상 사용
 
-더 자세한 사용법은 `README_detailed.md`를 참조하세요.
+더 자세한 사용법은 `README_detailed.md`를 참조하세요. 참조하세요.

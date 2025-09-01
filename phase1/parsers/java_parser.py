@@ -5,6 +5,7 @@ JavaParser 라이브러리를 사용한 Java 소스 코드 파서
 
 import hashlib
 import os
+import traceback
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from pathlib import Path
@@ -58,14 +59,17 @@ class JavaParser:
         self.tree_sitter_parser = None
         if TREE_SITTER_AVAILABLE:
             try:
-                self.java_language = Language(tree_sitter_java.language(), "java")
+                java_language = Language(tree_sitter_java.language())
                 self.tree_sitter_parser = Parser()
-                self.tree_sitter_parser.set_language(self.java_language)
+                self.tree_sitter_parser.language = java_language
             except Exception as e:
+                error_msg = f"Tree-sitter 초기화 실패: {e}"
+                traceback_str = traceback.format_exc()
                 if self.logger:
-                    self.logger.warning(f"Tree-sitter 초기화 실패: {e}")
+                    self.logger.warning(f"{error_msg}\nTraceback:\n{traceback_str}")
                 else:
-                    print(f"Tree-sitter 초기화 실패: {e}")
+                    print(f"Warning: {error_msg}")
+                    print(f"Traceback:\n{traceback_str}")
                 self.tree_sitter_parser = None
         
     def can_parse(self, file_path: str) -> bool:
@@ -118,7 +122,7 @@ class JavaParser:
                     return 'tree_sitter'
                 if parser_cfg == 'javalang' and javalang is not None:
                     return 'javalang'
-                # 폴백: 사용 가능 항목 우선
+                # 폴백: tree_sitter 우선, javalang 다음
                 if self.tree_sitter_parser:
                     return 'tree_sitter'
                 if javalang is not None:
@@ -134,28 +138,67 @@ class JavaParser:
                     print('No available Java parser (javalang/tree-sitter)')
                 return file_obj, [], [], []
 
-            # Java AST 파싱
-            try:
-                if parser_used == 'javalang':
-                    tree = javalang.parse.parse(content)
-                elif parser_used == 'tree_sitter':
+            # Java AST 파싱 (tree_sitter 우선, 실패시 javalang fallback)
+            tree = None
+            final_parser_used = parser_used
+            
+            # tree_sitter 시도
+            if parser_used == 'tree_sitter' or (parser_used != 'javalang' and self.tree_sitter_parser):
+                try:
                     tree = self._parse_with_tree_sitter(content)
-                else:
-                    tree = None
-            except Exception as e:
-                # 파싱 실패 시 낮은 신뢰도로 파일 생성
-                if self.logger:
-                    self.logger.error(f"파일 파싱 실패: {file_path}", exception=e)
-                else:
-                    print(f"파일 파싱 실패 {file_path}: {e}")
-                return file_obj, [], [], []
+                    final_parser_used = 'tree_sitter'
+                    if self.logger:
+                        self.logger.debug(f"Tree-sitter 파싱 성공: {file_path}")
+                except Exception as e:
+                    if self.logger:
+                        self.logger.warning(f"Tree-sitter 파싱 실패, javalang으로 fallback: {e}")
+                    # javalang fallback 시도
+                    if javalang is not None:
+                        try:
+                            tree = javalang.parse.parse(content)
+                            final_parser_used = 'javalang'
+                            if self.logger:
+                                self.logger.debug(f"Javalang fallback 성공: {file_path}")
+                        except Exception as e2:
+                            error_msg = f"모든 파서 실패 - Tree-sitter: {e}, Javalang: {e2}"
+                            traceback_str = traceback.format_exc()
+                            if self.logger:
+                                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                            else:
+                                print(f"Error: {error_msg}")
+                                print(f"Traceback:\n{traceback_str}")
+                            return file_obj, [], [], []
+                    else:
+                        error_msg = f"Tree-sitter 실패, javalang 미사용 가능: {e}"
+                        traceback_str = traceback.format_exc()
+                        if self.logger:
+                            self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                        else:
+                            print(f"Error: {error_msg}")
+                            print(f"Traceback:\n{traceback_str}")
+                        return file_obj, [], [], []
+            
+            # javalang만 시도
+            elif parser_used == 'javalang':
+                try:
+                    tree = javalang.parse.parse(content)
+                    final_parser_used = 'javalang'
+                except Exception as e:
+                    error_msg = f"Javalang 파싱 실패: {file_path}: {e}"
+                    traceback_str = traceback.format_exc()
+                    if self.logger:
+                        self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                    else:
+                        print(f"Error: {error_msg}")
+                        print(f"Traceback:\n{traceback_str}")
+                    return file_obj, [], [], []
                 
             classes = []
             methods = []
             edges = []
             
             # 파서에 따른 추출 방식 선택
-            if parser_used == 'javalang':
+            if final_parser_used == 'javalang':
                 # Javalang를 사용한 추출
                 for path, node in tree.filter(javalang.tree.ClassDeclaration):
                     class_obj, class_methods, class_edges = self._extract_class(node, file_obj, path)
@@ -175,17 +218,20 @@ class JavaParser:
                     methods.extend(enum_methods)
                     edges.extend(enum_edges)
                     
-            elif parser_used == 'tree_sitter':
+            elif final_parser_used == 'tree_sitter':
                 # Tree-sitter를 사용한 추출
                 classes, methods, edges = self._extract_with_tree_sitter(tree, file_obj, content)
                 
             return file_obj, classes, methods, edges
             
         except Exception as e:
+            error_msg = f"Java 파싱 중 오류: {file_path}: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error(f"Java 파싱 중 오류: {file_path}", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"Error parsing file {file_path}: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return file_obj, [], [], []
             
     def _extract_class(self, node: javalang.tree.ClassDeclaration, file_obj: File, path: List) -> Tuple[Class, List[Method], List[Edge]]:
@@ -761,10 +807,13 @@ class JavaParser:
             tree = self.tree_sitter_parser.parse(bytes(content, 'utf8'))
             return tree
         except Exception as e:
+            error_msg = f"Tree-sitter 파싱 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error("Tree-sitter 파싱 오류", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"Tree-sitter 파싱 오류: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return None
             
     def _extract_with_tree_sitter(self, tree, file_obj: File, content: str) -> Tuple[List[Class], List[Method], List[Edge]]:
@@ -911,7 +960,13 @@ class JavaParser:
             return class_obj, methods, edges
             
         except Exception as e:
-            logger.error(f"Failed to extract class from tree-sitter node: {e}")
+            error_msg = f"Failed to extract class from tree-sitter node: {e}"
+            traceback_str = traceback.format_exc()
+            if hasattr(self, 'logger') and self.logger:
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return None, [], []
 
     def _extract_class_from_tree_sitter_backup(self, class_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
@@ -1028,10 +1083,13 @@ class JavaParser:
             return class_obj, methods, edges
 
         except Exception as e:
+            error_msg = f"Tree-sitter 클래스 추출 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error("Tree-sitter 클래스 추출 오류", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"Tree-sitter 클래스 추출 오류: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return None, [], []
 
     def _extract_interface_from_tree_sitter(self, interface_node, file_obj: File, lines: List[str], package_name: Optional[str] = None) -> Tuple[Optional[Class], List[Method], List[Edge]]:
@@ -1103,10 +1161,13 @@ class JavaParser:
             return method_obj, edges
             
         except Exception as e:
+            error_msg = f"Tree-sitter 메서드 추출 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error("Tree-sitter 메서드 추출 오류", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"Tree-sitter 메서드 추출 오류: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return None, []
 
     def _extract_modifiers(self, node, lines: List[str]) -> List[str]:

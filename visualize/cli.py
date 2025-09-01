@@ -6,6 +6,7 @@ import sys
 import csv
 import shutil
 import re
+import traceback
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -89,7 +90,9 @@ def export_json(data: Dict[str, Any], json_path: str, logger: logging.Logger) ->
         logger.info(f"JSON이 다음 위치로 내보내졌습니다: {json_file.absolute()}")
         
     except Exception as e:
-        logger.error(f"JSON 내보내기 실패: {e}")
+        error_msg = f"JSON 내보내기 실패: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
         raise
 
 
@@ -132,7 +135,9 @@ def export_csv(data: Dict[str, Any], csv_dir: str, logger: logging.Logger) -> No
             logger.info(f"엣지 CSV가 다음 위치로 내보내졌습니다: {edges_file.absolute()}")
         
     except Exception as e:
-        logger.error(f"CSV 내보내기 실패: {e}")
+        error_msg = f"CSV 내보내기 실패: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
         raise
 
 
@@ -176,7 +181,9 @@ def export_mermaid(data: Dict[str, Any], markdown_path: str, diagram_type: str,
         logger.info(f"Mermaid/Markdown 내보내기 완료: {out_path.absolute()}")
         
     except Exception as e:
-        logger.error(f"Mermaid/Markdown 내보내기 실패: {e}")
+        error_msg = f"Mermaid/Markdown 내보내기 실패: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
         raise
 
 def main():
@@ -228,12 +235,12 @@ def main():
 
         commands_to_run = []
         # 명령어가 지정되지 않은 경우 (기본값 'all'), 'sequence'를 제외한 모든 시각화를 생성합니다.
-        if args.cmd == 'all':
+        if args.diagram_type == 'all':
             commands_to_run = ['graph', 'erd', 'component', 'class', 'relatedness']
             logger.info("명령어가 지정되지 않았습니다. 'sequence'를 제외한 모든 시각화를 생성합니다.")
         else:
             # 특정 명령어가 지정된 경우 해당 명령만 실행합니다.
-            commands_to_run.append(args.cmd)
+            commands_to_run.append(args.diagram_type)
 
         # Load config.yaml with project name substitution once
         import yaml
@@ -351,7 +358,9 @@ def main():
 
                             logger.info(f"시퀀스 다이어그램 저장: {html_path}")
                         except Exception as e:
-                            logger.error(f"{start_file}:{start_method} 처리 실패: {e}")
+                            error_msg = f"{start_file}:{start_method} 처리 실패: {e}"
+                            traceback_str = traceback.format_exc()
+                            logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
                     continue
 
                 # 지정된 시작 파일 및 메서드에 대해 시퀀스 그래프 데이터를 구축합니다.
@@ -418,7 +427,9 @@ def main():
     except SystemExit as e:
         return e.code if isinstance(e.code, int) else 2
     except Exception as e:
-        logger.error(f"오류: 실행 중 예기치 못한 오류: {e}", exc_info=True)
+        error_msg = f"실행 중 예기치 못한 오류: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
         return 1
     
     return 0

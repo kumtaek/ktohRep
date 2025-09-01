@@ -57,7 +57,7 @@ rem     echo  관계성 계산 완료
 REM 4. 향상된 시각화 생성
 echo.
 echo [3/4] 향상된 시각화 생성...
-call run_enhanced_visualize_only.bat --project-name sampleSrc
+call run_enhanced_visualize_only.bat sampleSrc
 if !errorlevel! neq 0 (
     echo ERROR: 시각화 생성 실패
     goto :error

@@ -9,6 +9,7 @@ import argparse
 import sys
 import os
 import logging
+import traceback
 from pathlib import Path
 from typing import Dict, Any
 import yaml
@@ -35,7 +36,7 @@ except ImportError:
         logger.setLevel(logging.INFO)
         return logger
 
-def load_config(self, config_path: str = None) -> Dict[str, Any]:
+def load_config(config_path: str = None) -> Dict[str, Any]:
     """Load configuration from config.yaml"""
     if config_path:
         config_file = Path(config_path)
@@ -51,7 +52,7 @@ def load_config(self, config_path: str = None) -> Dict[str, Any]:
     
     return config
 
-def get_project_config(self, global_config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
+def get_project_config(global_config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
     """Get project-specific configuration"""
     project_config = global_config.copy()
     
@@ -69,7 +70,7 @@ def get_project_config(self, global_config: Dict[str, Any], project_name: str) -
     project_config = replace_project_name(project_config)
     return project_config
 
-def summarize_code_elements(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """JSP, Java, Method, Query 요소들에 대한 LLM 요약 생성"""
     print(f"Starting LLM analysis for project: {project_name}")
     
@@ -111,11 +112,14 @@ def summarize_code_elements(self, config: Dict[str, Any], project_name: str, bat
         print("Code element summarization completed!")
         
     except Exception as e:
-        logger.error(f"Error during code summarization: {e}")
-        print(f"Error: Error during code summarization: {e}")
+        error_msg = f"Error during code summarization: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         raise
 
-def enhance_db_comments(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """데이터베이스 테이블/컬럼 코멘트를 LLM으로 보강"""
     print(f"Starting database comment enhancement for project: {project_name}")
     
@@ -138,11 +142,14 @@ def enhance_db_comments(self, config: Dict[str, Any], project_name: str, batch_s
         print("Success: Database comment enhancement completed!")
         
     except Exception as e:
-        logger.error(f"Error during comment enhancement: {e}")
-        print(f"Error: Error during comment enhancement: {e}")
+        error_msg = f"Error during comment enhancement: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         raise
 
-def analyze_joins(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """SQL 조인조건 LLM 분석"""
     print(f"Starting join analysis for project: {project_name}")
     
@@ -184,11 +191,14 @@ def analyze_joins(self, config: Dict[str, Any], project_name: str, batch_size: i
         print("Join analysis completed!")
         
     except Exception as e:
-        logger.error(f"Error during join analysis: {e}")
-        print(f"Error during join analysis: {e}")
+        error_msg = f"Error during join analysis: {e}"
+        traceback_str = traceback.format_exc()
+        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         raise
 
-def generate_source_spec_md(self, config: Dict[str, Any], project_name: str, output_file: str = None):
+def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """소스코드 명세서 마크다운 파일 생성"""
     print(f"Generating source specification markdown for project: {project_name}")
     
@@ -210,10 +220,13 @@ def generate_source_spec_md(self, config: Dict[str, Any], project_name: str, out
         print(f"Source specification generated: {output_file}")
         
     except Exception as e:
-        print(f"Error generating source specification: {e}")
+        error_msg = f"Error generating source specification: {e}"
+        traceback_str = traceback.format_exc()
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         raise
 
-def generate_table_spec_md(self, config: Dict[str, Any], project_name: str, output_file: str = None):
+def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """테이블 명세서 마크다운 파일 생성"""
     print(f"Generating table specification markdown for project: {project_name}")
     
@@ -235,7 +248,10 @@ def generate_table_spec_md(self, config: Dict[str, Any], project_name: str, outp
         print(f"Success: Table specification generated: {output_file}")
         
     except Exception as e:
-        print(f"Error: Error generating table specification: {e}")
+        error_msg = f"Error generating table specification: {e}"
+        traceback_str = traceback.format_exc()
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         raise
 
 def main():
@@ -321,7 +337,10 @@ Examples:
             return
         
     except Exception as e:
-        print(f"Error: Error loading configuration: {e}")
+        error_msg = f"Error loading configuration: {e}"
+        traceback_str = traceback.format_exc()
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         return
     
     try:
@@ -375,7 +394,10 @@ Examples:
         print("\nError: Analysis interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"Error: Unexpected error: {e}")
+        error_msg = f"Unexpected error: {e}"
+        traceback_str = traceback.format_exc()
+        print(f"Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         sys.exit(1)
 
 if __name__ == '__main__':

@@ -132,7 +132,7 @@
     <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
     <script src="./static/vendor/dagre/dagre.min.js"></script>
     <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
-    <script src="./static/vendor/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
 <body>
     <!-- 헤더 -->
@@ -164,16 +164,415 @@
 
     <script>
         const DATA = {
-  "nodes": [],
-  "edges": [],
-  "participants": [],
-  "interactions": [],
+  "nodes": [
+    {
+      "id": "method:5",
+      "type": "method",
+      "label": "startProcess()",
+      "group": "control",
+      "meta": {
+        "name": "startProcess",
+        "signature": "startProcess()",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 9,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 코드와 함께 간결한 요약입니다.\n\n**코드:**\n\n```java\npublic class Unknown {\n    public void startProcess(String input) {\n        System.out.println(\"프로세스 시작: \" + input);\n    }\n}\n```\n\n**요약:**\n\n`startProcess` 메서드는 주어진 입력 문자열을 처리하여 콘솔에 메시지를 출력하는 역할을 합니다."
+      }
+    },
+    {
+      "id": "method:6",
+      "type": "method",
+      "label": "IntegratedService.doWork()",
+      "group": "control",
+      "meta": {
+        "name": "doWork",
+        "signature": "doWork()",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 13,
+        "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+      }
+    },
+    {
+      "id": "method:8",
+      "type": "method",
+      "label": "IntegratedService.calculateOrderTotal()",
+      "group": "control",
+      "meta": {
+        "name": "calculateOrderTotal",
+        "signature": "calculateOrderTotal(List items)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 28,
+        "llm_summary": "알겠습니다. Java 메서드 `calculateOrderTotal`의 기능을 간략하게 요약하면 다음과 같습니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:** 이 메서드는 주어진 주문 항목의 가격을 합산하여 총 결제 금액을 계산합니다."
+      }
+    },
+    {
+      "id": "method:9",
+      "type": "method",
+      "label": "IntegratedService.getFormattedId()",
+      "group": "control",
+      "meta": {
+        "name": "getFormattedId",
+        "signature": "getFormattedId(String id)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 36,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 `getFormattedId`에 대한 간결한 요약입니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:**  `getFormattedId` 메서드는 주어진 입력값을 기반으로 사용자에게 유효하고 보기 좋게 형식이 지정된 고유한 ID를 반환합니다."
+      }
+    },
+    {
+      "id": "method:7",
+      "type": "method",
+      "label": "IntegratedService.getStaticUserData()",
+      "group": "control",
+      "meta": {
+        "name": "getStaticUserData",
+        "signature": "getStaticUserData(String id)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 24,
+        "llm_summary": "알겠습니다. 코드 내용을 알려주시면 분석 및 요약 작업을 진행하겠습니다. 코드 내용을 제공해주세요."
+      }
+    },
+    {
+      "id": "method:10",
+      "type": "method",
+      "label": "IntegratedService.log()",
+      "group": "control",
+      "meta": {
+        "name": "log",
+        "signature": "log(String msg)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 40,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 코드의 내용을 분석하고 간결하게 요약해 드리겠습니다. 코드와 함께 분석 내용을 제공해 드리겠습니다."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "seq_edge_0",
+      "source": "method:5",
+      "target": "method:6",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 0,
+        "message": "call IntegratedService.doWork()",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_1",
+      "source": "method:6",
+      "target": "method:8",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 1,
+        "message": "call IntegratedService.calculateOrderTotal()",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_2",
+      "source": "method:6",
+      "target": "method:9",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 2,
+        "message": "call IntegratedService.getFormattedId()",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_3",
+      "source": "method:6",
+      "target": "method:7",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 3,
+        "message": "call IntegratedService.getStaticUserData()",
+        "unresolved": false
+      }
+    },
+    {
+      "id": "seq_edge_4",
+      "source": "method:6",
+      "target": "method:10",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "sequence_order": 4,
+        "message": "call IntegratedService.log()",
+        "unresolved": false
+      }
+    }
+  ],
   "metadata": {
-    "node_count": 0,
-    "edge_count": 0,
-    "type": "sequence_diagram",
-    "message": "Not enough participants for sequence diagram"
-  }
+    "node_count": 6,
+    "edge_count": 5,
+    "node_types": [
+      "method"
+    ],
+    "edge_kinds": [
+      "call"
+    ]
+  },
+  "mermaid": "sequenceDiagram\n    participant method_5 as startProcess()\n    participant method_6 as IntegratedService.doWork()\n    participant method_8 as IntegratedService.calculateOrderTotal()\n    participant method_9 as IntegratedService.getFormattedId()\n    participant method_7 as IntegratedService.getStaticUserData()\n    participant method_10 as IntegratedService.log()\n\n    method_5->>method_6: call IntegratedService.doWork()\n    method_6->>method_8: call IntegratedService.calculateOrderTotal()\n    method_6->>method_9: call IntegratedService.getFormattedId()\n    method_6->>method_7: call IntegratedService.getStaticUserData()\n    method_6->>method_10: call IntegratedService.log()",
+  "type": "sequence_diagram",
+  "participants": [
+    {
+      "id": "method:5",
+      "type": "method",
+      "label": "startProcess()",
+      "actor_type": "control",
+      "order": 0,
+      "details": {
+        "name": "startProcess",
+        "signature": "startProcess()",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 9,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 코드와 함께 간결한 요약입니다.\n\n**코드:**\n\n```java\npublic class Unknown {\n    public void startProcess(String input) {\n        System.out.println(\"프로세스 시작: \" + input);\n    }\n}\n```\n\n**요약:**\n\n`startProcess` 메서드는 주어진 입력 문자열을 처리하여 콘솔에 메시지를 출력하는 역할을 합니다."
+      }
+    },
+    {
+      "id": "method:6",
+      "type": "method",
+      "label": "IntegratedService.doWork()",
+      "actor_type": "control",
+      "order": 1,
+      "details": {
+        "name": "doWork",
+        "signature": "doWork()",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 13,
+        "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+      }
+    },
+    {
+      "id": "method:8",
+      "type": "method",
+      "label": "IntegratedService.calculateOrderTotal()",
+      "actor_type": "control",
+      "order": 2,
+      "details": {
+        "name": "calculateOrderTotal",
+        "signature": "calculateOrderTotal(List items)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 28,
+        "llm_summary": "알겠습니다. Java 메서드 `calculateOrderTotal`의 기능을 간략하게 요약하면 다음과 같습니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:** 이 메서드는 주어진 주문 항목의 가격을 합산하여 총 결제 금액을 계산합니다."
+      }
+    },
+    {
+      "id": "method:9",
+      "type": "method",
+      "label": "IntegratedService.getFormattedId()",
+      "actor_type": "control",
+      "order": 3,
+      "details": {
+        "name": "getFormattedId",
+        "signature": "getFormattedId(String id)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 36,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 `getFormattedId`에 대한 간결한 요약입니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:**  `getFormattedId` 메서드는 주어진 입력값을 기반으로 사용자에게 유효하고 보기 좋게 형식이 지정된 고유한 ID를 반환합니다."
+      }
+    },
+    {
+      "id": "method:7",
+      "type": "method",
+      "label": "IntegratedService.getStaticUserData()",
+      "actor_type": "control",
+      "order": 4,
+      "details": {
+        "name": "getStaticUserData",
+        "signature": "getStaticUserData(String id)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 24,
+        "llm_summary": "알겠습니다. 코드 내용을 알려주시면 분석 및 요약 작업을 진행하겠습니다. 코드 내용을 제공해주세요."
+      }
+    },
+    {
+      "id": "method:10",
+      "type": "method",
+      "label": "IntegratedService.log()",
+      "actor_type": "control",
+      "order": 5,
+      "details": {
+        "name": "log",
+        "signature": "log(String msg)",
+        "class": "com.example.integrated.IntegratedService",
+        "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line": 40,
+        "llm_summary": "알겠습니다. 제공된 Java 메서드 코드의 내용을 분석하고 간결하게 요약해 드리겠습니다. 코드와 함께 분석 내용을 제공해 드리겠습니다."
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction_0",
+      "sequence_order": 0,
+      "type": "synchronous",
+      "from_participant": "method:5",
+      "to_participant": "method:6",
+      "message": "call IntegratedService.doWork()",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 0,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "startProcess",
+          "signature": "startProcess()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 9,
+          "llm_summary": "알겠습니다. 제공된 Java 메서드 코드와 함께 간결한 요약입니다.\n\n**코드:**\n\n```java\npublic class Unknown {\n    public void startProcess(String input) {\n        System.out.println(\"프로세스 시작: \" + input);\n    }\n}\n```\n\n**요약:**\n\n`startProcess` 메서드는 주어진 입력 문자열을 처리하여 콘솔에 메시지를 출력하는 역할을 합니다."
+        },
+        "target_details": {
+          "name": "doWork",
+          "signature": "doWork()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 13,
+          "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+        }
+      }
+    },
+    {
+      "id": "interaction_1",
+      "sequence_order": 1,
+      "type": "synchronous",
+      "from_participant": "method:6",
+      "to_participant": "method:8",
+      "message": "call IntegratedService.calculateOrderTotal()",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 1,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "doWork",
+          "signature": "doWork()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 13,
+          "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+        },
+        "target_details": {
+          "name": "calculateOrderTotal",
+          "signature": "calculateOrderTotal(List items)",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 28,
+          "llm_summary": "알겠습니다. Java 메서드 `calculateOrderTotal`의 기능을 간략하게 요약하면 다음과 같습니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:** 이 메서드는 주어진 주문 항목의 가격을 합산하여 총 결제 금액을 계산합니다."
+        }
+      }
+    },
+    {
+      "id": "interaction_2",
+      "sequence_order": 2,
+      "type": "synchronous",
+      "from_participant": "method:6",
+      "to_participant": "method:9",
+      "message": "call IntegratedService.getFormattedId()",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 1,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "doWork",
+          "signature": "doWork()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 13,
+          "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+        },
+        "target_details": {
+          "name": "getFormattedId",
+          "signature": "getFormattedId(String id)",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 36,
+          "llm_summary": "알겠습니다. 제공된 Java 메서드 `getFormattedId`에 대한 간결한 요약입니다.\n\n**코드:** (코드 제공 필요)\n\n**요약:**  `getFormattedId` 메서드는 주어진 입력값을 기반으로 사용자에게 유효하고 보기 좋게 형식이 지정된 고유한 ID를 반환합니다."
+        }
+      }
+    },
+    {
+      "id": "interaction_3",
+      "sequence_order": 3,
+      "type": "synchronous",
+      "from_participant": "method:6",
+      "to_participant": "method:7",
+      "message": "call IntegratedService.getStaticUserData()",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 1,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "doWork",
+          "signature": "doWork()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 13,
+          "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+        },
+        "target_details": {
+          "name": "getStaticUserData",
+          "signature": "getStaticUserData(String id)",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 24,
+          "llm_summary": "알겠습니다. 코드 내용을 알려주시면 분석 및 요약 작업을 진행하겠습니다. 코드 내용을 제공해주세요."
+        }
+      }
+    },
+    {
+      "id": "interaction_4",
+      "sequence_order": 4,
+      "type": "synchronous",
+      "from_participant": "method:6",
+      "to_participant": "method:10",
+      "message": "call IntegratedService.log()",
+      "confidence": 0.8,
+      "unresolved": false,
+      "depth": 1,
+      "style": "solid",
+      "meta": {
+        "edge_kind": "call",
+        "caller_details": {
+          "name": "doWork",
+          "signature": "doWork()",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 13,
+          "llm_summary": "알겠습니다. 제공해주신 Java 메서드 코드를 분석하고 간결하게 요약해 드리겠습니다. 코드를 제공해주세요."
+        },
+        "target_details": {
+          "name": "log",
+          "signature": "log(String msg)",
+          "class": "com.example.integrated.IntegratedService",
+          "file": "PROJECT\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+          "line": 40,
+          "llm_summary": "알겠습니다. 제공된 Java 메서드 코드의 내용을 분석하고 간결하게 요약해 드리겠습니다. 코드와 함께 분석 내용을 제공해 드리겠습니다."
+        }
+      }
+    }
+  ]
 };
         let currentZoom = 1;
         let currentLayout = 'dagre';

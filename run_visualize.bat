@@ -45,7 +45,7 @@ setlocal enabledelayedexpansion
 echo =========================================
 echo  SourceAnalyzer 시각화 도구 실행
 echo =========================================
-echo 프로젝트: %2
+echo 프로젝트: %1
 echo 시작시간: %date% %time%
 echo =========================================
 echo.

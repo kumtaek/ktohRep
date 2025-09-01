@@ -11,10 +11,12 @@ import json
 import asyncio
 import hashlib
 import fnmatch
+import logging
 from pathlib import Path
 from typing import Dict, Any, List
 import time
 from datetime import datetime
+import traceback
 
 # 프로젝트 루트를 Python 패스에 추가하여 모듈 임포트를 가능하게 합니다.
 project_root = Path(__file__).resolve().parent.parent
@@ -62,7 +64,13 @@ class SourceAnalyzer:
             # 시작 시 신뢰도 공식을 검증합니다.
             self._validate_confidence_formula_on_startup()
         except Exception as e:
-            self.logger.critical(f"시스템 초기화 실패: {e}", exc_info=True)
+            error_msg = f"시스템 초기화 실패: {e}"
+            traceback_str = traceback.format_exc()
+            if hasattr(self, 'logger') and self.logger:
+                self.logger.critical(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Critical Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             raise
 
     def _load_merged_config(self, global_config_path: str, phase_config_path: str) -> Dict[str, Any]:
@@ -98,7 +106,10 @@ class SourceAnalyzer:
             self._set_default_config(config)
             return config
         except Exception as e:
-            print(f"ERROR: 설정 파일 로드 및 병합 중 오류: {e}")
+            error_msg = f"설정 파일 로드 및 병합 중 오류: {e}"
+            traceback_str = traceback.format_exc()
+            print(f"ERROR: {error_msg}")
+            print(f"Traceback:\n{traceback_str}")
             raise
 
     def _set_default_config(self, config: Dict[str, Any]):
@@ -257,11 +268,15 @@ class SourceAnalyzer:
                     self.logger.debug(f"저장 완료: JAR {jar_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개")
                 except Exception as e:
                     session.rollback()
-                    self.logger.error(f"JAR 저장 오류 {jar_path}: {e}")
+                    error_msg = f"JAR 저장 오류 {jar_path}: {e}"
+                    traceback_str = traceback.format_exc()
+                    self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
                 finally:
                     session.close()
             except Exception as e:
-                self.logger.error(f"JAR 분석 실패 {jar_path}: {e}")
+                error_msg = f"JAR 분석 실패 {jar_path}: {e}"
+                traceback_str = traceback.format_exc()
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
 
     async def _analyze_files(self, source_files: List[str], project_id: int):
         """파일 분석 실행"""
@@ -355,14 +370,18 @@ class SourceAnalyzer:
                             )
                         except Exception as e:
                             session.rollback()
-                            self.logger.error(f"데이터베이스 저장 오류 {file_path}: {e}")
+                            error_msg = f"데이터베이스 저장 오류 {file_path}: {e}"
+                            traceback_str = traceback.format_exc()
+                            self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
                         finally:
                             session.close()
                 else:
                     self.logger.debug(f"지원하지 않는 파일 형식: {file_path}")
                     
             except Exception as e:
-                self.logger.error(f"파일 분석 오류 {file_path}: {e}", exc_info=True)
+                error_msg = f"파일 분석 오류 {file_path}: {e}"
+                traceback_str = traceback.format_exc()
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
 
     def _validate_confidence_formula_on_startup(self):
         # ... (Implementation from previous version) ...
@@ -419,7 +438,10 @@ def main():
                     os.remove(db_path)
                     print("삭제 완료.")
                 except OSError as e:
-                    print(f"오류: DB 파일 삭제 실패: {e}")
+                    error_msg = f"DB 파일 삭제 실패: {e}"
+                    traceback_str = traceback.format_exc()
+                    print(f"오류: {error_msg}")
+                    print(f"Traceback:\n{traceback_str}")
                     sys.exit(1)
             else:
                 print(f"기존 DB 파일({db_path})이 없어 정리할 필요가 없습니다.")
@@ -452,7 +474,10 @@ def main():
             # ... (Visualization call logic) ...
 
     except Exception as e:
-        print(f"분석 중 오류 발생: {e}")
+        error_msg = f"분석 중 오류 발생: {e}"
+        traceback_str = traceback.format_exc()
+        print(f"Critical Error: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
         sys.exit(1)
 
 if __name__ == "__main__":

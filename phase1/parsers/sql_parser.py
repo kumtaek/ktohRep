@@ -7,6 +7,7 @@ import hashlib
 import re
 from typing import Dict, List, Optional, Tuple, Any
 import json
+import traceback
 
 try:
     # JSQLParser Python 바인딩이 있다면 사용
@@ -91,7 +92,10 @@ class SqlParser:
                     if parsed_info:
                         return parsed_info
                 except Exception as e:
-                    print(f"JSQLParser 파싱 실패, 정규식으로 폴백: {e}")
+                    error_msg = f"JSQLParser 파싱 실패, 정규식으로 폴백: {e}"
+                    traceback_str = traceback.format_exc()
+                    print(f"Debug: {error_msg}")
+                    print(f"Traceback:\n{traceback_str}")
             
             # 정규식 기반 분석
             joins = self._extract_joins_regex(normalized_sql)
@@ -100,7 +104,10 @@ class SqlParser:
             columns = self._extract_columns_regex(normalized_sql)
             
         except Exception as e:
-            print(f"SQL 파싱 오류: {e}")
+            error_msg = f"SQL 파싱 오류: {e}"
+            traceback_str = traceback.format_exc()
+            print(f"Error: {error_msg}")
+            print(f"Traceback:\n{traceback_str}")
             
         return joins, filters, tables, columns
         

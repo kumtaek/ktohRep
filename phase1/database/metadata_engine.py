@@ -25,6 +25,7 @@ from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
 from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
 from llm.assist import LlmAssist
 from llm.enricher import generate_text
+from .llm_metadata_processor import LlmMetadataProcessor
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -35,6 +36,7 @@ class MetadataEngine:
         self.logger = LoggerFactory.get_engine_logger()
         self.confidence_calculator = ConfidenceCalculator(config)
         self.llm_assist = LlmAssist(config, db_manager=self.db_manager, logger=self.logger, confidence_calculator=self.confidence_calculator)
+        self.llm_processor = LlmMetadataProcessor(config, db_manager)
         
         # 병렬 처리 설정
         self.max_workers = config.get('processing', {}).get('max_workers', 4)
@@ -1127,58 +1129,10 @@ class MetadataEngine:
         finally:
             session.close()
             
-    # ---- LLM-driven enrichment tasks ----
+    # ---- LLM-driven enrichment tasks (delegated to LlmMetadataProcessor) ----
     def llm_enrich_table_and_column_comments(self, *, max_tables: int = 50, max_columns: int = 100, lang: str = 'ko') -> Dict[str, int]:
-        updated = {"tables": 0, "columns": 0}
-        provider = self.config.get('llm_assist', {}).get('provider', 'auto') if isinstance(self.config, dict) else 'auto'
-        dry_run = bool(self.config.get('llm_assist', {}).get('dry_run', False)) if isinstance(self.config, dict) else False
-        temperature = float(self.config.get('llm_assist', {}).get('temperature', 0.0)) if isinstance(self.config, dict) else 0.0
-        max_tokens = int(self.config.get('llm_assist', {}).get('max_tokens', 256)) if isinstance(self.config, dict) else 256
-        with self._get_sync_session() as session:
-            q_tables = session.query(DbTable).limit(max_tables * 5).all()
-            picked = []
-            for t in q_tables:
-                tc = (t.table_comment or '').strip()
-                if not tc or len(tc) < 4 or tc.lower() in ('tbd', 'todo', 'unknown'):
-                    picked.append(t)
-                if len(picked) >= max_tables:
-                    break
-            for t in picked:
-                cols = [c.column_name for c in getattr(t, 'columns', [])]
-                system = f"너는 데이터베이스 테이블 설명 작성기이다. 한국어({lang})로 간결하고 정확히 한두 문장으로 설명하라."
-                user = (
-                    f"테이블명: {t.owner + '.' if t.owner else ''}{t.table_name}\n"
-                    f"컬럼들: {', '.join(cols[:30])}"
-                )
-                try:
-                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
-                except Exception as e:
-                    self.logger.debug(f"LLM table comment skipped: {t.table_name}: {e}")
-                    continue
-                t.table_comment = text
-                updated["tables"] += 1
-            q_cols = session.query(DbColumn).limit(max_columns * 5).all()
-            pickedc = []
-            for c in q_cols:
-                cc = (c.column_comment or '').strip()
-                if not cc or len(cc) < 3 or cc.lower() in ('tbd', 'todo', 'unknown'):
-                    pickedc.append(c)
-                if len(pickedc) >= max_columns:
-                    break
-            for c in pickedc:
-                table = session.query(DbTable).filter(DbTable.table_id == c.table_id).first()
-                tname = f"{getattr(table, 'owner', '') + '.' if getattr(table, 'owner', None) else ''}{getattr(table, 'table_name', '')}"
-                system = f"너는 데이터베이스 컬럼 설명 작성기이다. 한국어({lang})로 한 문장으로 설명하라."
-                user = f"테이블: {tname}\n컬럼: {c.column_name}\n데이터타입: {c.data_type or ''}\nNULL 허용: {c.nullable or ''}"
-                try:
-                    text = generate_text(system, user, provider=provider, temperature=temperature, max_tokens=max_tokens, dry_run=dry_run)
-                except Exception as e:
-                    self.logger.debug(f"LLM column comment skipped: {tname}.{c.column_name}: {e}")
-                    continue
-                c.column_comment = text
-                updated["columns"] += 1
-            session.commit()
-        return updated
+        """테이블과 컬럼 설명 보강 (LlmMetadataProcessor로 위임)"""
+        return self.llm_processor.llm_enrich_table_and_column_comments(max_tables=max_tables, max_columns=max_columns, lang=lang)
 
     def llm_summarize_sql_units(self, *, max_items: int = 50, lang: str = 'ko') -> int:
         created = 0

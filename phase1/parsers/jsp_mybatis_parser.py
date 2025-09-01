@@ -21,6 +21,7 @@ import json
 import sqlparse
 from lxml import etree
 import ast
+import traceback
 
 # Tree-sitter support for JSP/XML
 try:
@@ -185,8 +186,13 @@ class AdvancedSqlExtractor:
                 self.xml_parser = Parser()
                 self.xml_parser.set_language(xml_lang)
             except Exception as e:
+                error_msg = f"Tree-sitter initialization failed: {e}"
+                traceback_str = traceback.format_exc()
                 if self.logger:
-                    self.logger.warning(f"Tree-sitter initialization failed: {e}")
+                    self.logger.warning(f"{error_msg}\nTraceback:\n{traceback_str}")
+                else:
+                    print(f"Warning: {error_msg}")
+                    print(f"Traceback:\n{traceback_str}")
                     
     def extract_sql_from_jsp(self, content: str) -> List[Dict[str, Any]]:
         """
@@ -268,8 +274,13 @@ class AdvancedSqlExtractor:
                 sql_extracts.extend(sql_from_method)
                 
         except Exception as e:
+            error_msg = f"Tree-sitter Java parsing failed: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.debug(f"Tree-sitter Java parsing failed: {e}")
+                self.logger.debug(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Debug: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
                 
         return sql_extracts
     
@@ -699,10 +710,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             return file_obj, sql_units, joins, filters, edges, vulnerabilities
                 
         except Exception as e:
+            error_msg = f"파일 파싱 오류: {file_path}: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error(f"파일 파싱 오류: {file_path}", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"파일 파싱 오류 {file_path}: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return file_obj, [], [], [], [], []
             
     def _parse_jsp(self, content: str, file_obj: File) -> Tuple[File, List[SqlUnit], List[Join], List[RequiredFilter], List[Edge]]:
@@ -865,10 +879,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             edges.extend(include_edges)
             
         except Exception as e:
+            error_msg = f"XML 파싱 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.error("XML 파싱 오류", exception=e)
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"XML 파싱 오류: {e}")
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             
         return file_obj, sql_units, joins, filters, edges
     
@@ -929,10 +946,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 filters.extend(self._extract_filters_from_statement(statement, sql_unit))
                 
         except Exception as e:
+            error_msg = f"고급 SQL 패턴 추출 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.debug(f"고급 SQL 패턴 추출 오류: {e}")
+                self.logger.debug(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"고급 SQL 패턴 추출 오류: {e}")
+                print(f"Debug: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             # 실패시 기본 정규식 방법으로 폴백
             return self._extract_sql_patterns_regex(sql_content, sql_unit)
             
@@ -1241,10 +1261,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                         filters.append(filter_obj)
         
         except Exception as e:
+            error_msg = f"정규식 기반 SQL 패턴 추출 오류: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.debug(f"정규식 기반 SQL 패턴 추출 오류: {e}")
+                self.logger.debug(f"{error_msg}\nTraceback:\n{traceback_str}")
             else:
-                print(f"정규식 기반 SQL 패턴 추출 오류: {e}")
+                print(f"Debug: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
         
         return joins, filters
     
@@ -1272,8 +1295,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             )
             return j
         except Exception as e:
+            error_msg = f"JOIN 파싱 실패: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.debug(f"JOIN 파싱 실패: {e}")
+                self.logger.debug(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Debug: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return None
     
     def _parse_where_conditions(self, tokens) -> List[RequiredFilter]:
@@ -1312,8 +1340,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     confidence=0.7
                 ))
         except Exception as e:
+            error_msg = f"WHERE 파싱 실패: {e}"
+            traceback_str = traceback.format_exc()
             if self.logger:
-                self.logger.debug(f"WHERE 파싱 실패: {e}")
+                self.logger.debug(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Debug: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
         return results
         
     def _normalize_table_name(self, table_name: str) -> str:
@@ -1356,6 +1389,11 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 
             return True
         except Exception as e:
+            error_msg = f"삭제된 파일 처리 중 오류: {file_path}: {e}"
+            traceback_str = traceback.format_exc()
             if hasattr(self, 'logger') and self.logger:
-                self.logger.error(f"삭제된 파일 처리 중 오류: {file_path}, {e}")
+                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+            else:
+                print(f"Error: {error_msg}")
+                print(f"Traceback:\n{traceback_str}")
             return False

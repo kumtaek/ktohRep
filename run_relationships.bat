@@ -15,19 +15,7 @@ REM ================================================================
 setlocal enabledelayedexpansion
 
 REM 프로젝트 이름 설정 (기본값: sampleSrc)
-set PROJECT_NAME=sampleSrc
-
-REM 명령줄 인수 파싱
-:parse_args
-if "%~1"=="" goto start_analysis
-if "%~1"=="--project-name" (
-    set PROJECT_NAME=%~2
-    shift
-    shift
-    goto parse_args
-)
-shift
-goto parse_args
+set PROJECT_NAME=%1
 
 :start_analysis
 
@@ -106,6 +94,12 @@ echo.
 echo ================================================================
 echo [ERROR] 관계 정보 생성 중 오류 발생
 echo 프로젝트 분석이 완료되었는지 확인하세요:
+echo   .\run_analyzer.bat --project-name %PROJECT_NAME%
+echo ================================================================
+exit /b 1
+
+:end
+endlocal�료되었는지 확인하세요:
 echo   .\run_analyzer.bat --project-name %PROJECT_NAME%
 echo ================================================================
 exit /b 1

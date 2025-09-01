@@ -16,6 +16,7 @@ except ImportError:
     from models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
 from sqlalchemy import text
 import logging
+from .intelligent_chunker import IntelligentChunker, ChunkBasedSummarizer, CodeChunk
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ class CodeSummarizer:
         self.llm_config = config.get('llm', {})
         self.debug = debug
         self.dbm = DatabaseManager(config.get('database', {}).get('project', {}))
+        self.chunker = IntelligentChunker()
+        self.chunk_summarizer = ChunkBasedSummarizer(self.chunker)
         self.dbm.initialize()
     
     def session(self):
@@ -153,83 +156,144 @@ class CodeSummarizer:
             return ""
 
     def summarize_file(self, file: File) -> Optional[str]:
-        """LLM을 사용하여 파일에 대한 요약 생성"""
+        """청킹 기반 LLM 파일 요약 생성"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
             
-            # 요약 중인 객체 정보 로그 출력
-            logger.info(f"[요약 중] 파일 객체: {file.path} (ID: {file.file_id})")
-            print(f"DEBUG: 파일 요약 중 - {file.path}")
+            logger.info(f"[청킹 요약 중] 파일: {file.path} (ID: {file.file_id})")
+            print(f"DEBUG: 청킹 기반 파일 요약 중 - {file.path}")
             
+            # 파일 내용 읽기
+            file_content = self._read_project_file_content(file.path)
+            if not file_content:
+                return None
+            
+            # 파일을 의미있는 청크로 분할
+            chunks = self.chunker.chunk_file(file.path, file_content)
+            
+            if not chunks:
+                return self._fallback_file_summary(file, file_content)
+            
+            # 각 청크별로 요약 생성
+            chunk_summaries = []
             client = get_client(self.llm_config)
             
-            # 프로젝트 폴더에서 파일 내용 읽기 (최대 4KB)
-            file_content = self._read_project_file_content(file.path)
+            for chunk in chunks:
+                chunk_summary = self._summarize_code_chunk(client, chunk)
+                if chunk_summary:
+                    chunk_summaries.append(f"[{chunk.chunk_type}:{chunk.name}] {chunk_summary}")
             
-            # Determine file type and create appropriate prompt
-            file_extension = Path(file.path or "").suffix.lower()
+            # 청크 요약들을 종합하여 파일 전체 요약 생성
+            if chunk_summaries:
+                combined_prompt = f"""다음은 파일 '{file.path}'의 각 구성요소별 요약입니다:
+
+{chr(10).join(chunk_summaries)}
+
+이 정보를 바탕으로 파일 전체의 목적과 역할을 2-3문장으로 종합 요약해주세요:"""
+                
+                final_summary = self._chat_with_debug(client, [{"role": "user", "content": combined_prompt}], max_tokens=150, temperature=0.3)
+                
+                logger.info(f"[청킹 요약 완료] {file.path} -> {len(chunks)}개 청크")
+                print(f"DEBUG: 청킹 요약 완료 - {len(chunks)}개 청크 처리")
+                
+                return final_summary.strip() if isinstance(final_summary, str) else str(final_summary).strip()
             
-            if file_extension == '.jsp':
-                prompt = f"""다음 JSP 파일을 분석하고 목적과 기능을 간략하게 요약해주세요.
-
-
-파일: {file.path}
-내용:
-{file_content[:3000]}...
-
-다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요
-:
-1. 이 JSP 페이지가 하는 일
-2. 주요 기능 또는 목적
-3. 핵심 기능 또는 구성요소
-
-요약:"""
-            elif file_extension == '.java':
-                prompt = f"""다음 Java 파일을 분석하고 목적과 기능을 간략하게 요약해주세요.
-
-
-파일: {file.path}
-내용:
-{file_content[:3000]}...
-
-다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요. 
- :
-1. 이 Java 클래스/파일이 하는 일
-2. 주요 책임
-3. 핵심 메서드 또는 기능
-
-요약:"""
-            else:
-                prompt = f"""
-다음 코드 파일을 분석하고 목적과 기능을 간략하게 요약해주세요. 
-
-
-파일: {file.path}
-내용:
-{file_content[:3000]}...
-
-이 파일이 하는 일과 주요 목적에 대해 간결한 요약(1-2문장)을 제공해주세요.
-
-
-요약:"""
-            
-            # 프롬프트와 답변 디버깅 로그
-            if self.debug:
-                print(f"DEBUG: 파일 요약 프롬프트 길이: {len(prompt)} 문자")
-                print(f"DEBUG: 파일 요약 프롬프트 미리보기: {prompt[:300]}...")
-            
-            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=200, temperature=0.3)
-            
-            # 요약 결과 로그
-            summary_text = summary.strip() if isinstance(summary, str) else str(summary).strip()
-            logger.info(f"[요약 완료] 파일: {file.path} -> {summary_text[:100]}...")
-            print(f"DEBUG: 파일 요약 결과: {summary_text[:100]}...")
-            
-            return summary_text
+            return self._fallback_file_summary(file, file_content)
             
         except Exception as e:
-            logger.error(f"Failed to summarize file {file.path}: {e}")
+            import traceback
+            logger.error(f"Failed to summarize file {file.path}: {e}\n{traceback.format_exc()}")
+            return None
+    
+    def _summarize_code_chunk(self, client, chunk: CodeChunk) -> Optional[str]:
+        """개별 코드 청크 요약 생성"""
+        try:
+            # 청크 타입별 맞춤형 프롬프트
+            if chunk.chunk_type == 'method':
+                prompt = f"""다음 Java 메서드의 기능을 1문장으로 요약해주세요:
+
+메서드: {chunk.name}
+위치: {chunk.context}
+
+코드:
+{chunk.content}
+
+요약:"""
+
+            elif chunk.chunk_type.startswith('mybatis_'):
+                query_type = chunk.chunk_type.replace('mybatis_', '').upper()
+                prompt = f"""다음 MyBatis {query_type} 쿼리의 목적을 1문장으로 요약해주세요:
+
+쿼리 ID: {chunk.name}
+위치: {chunk.context}
+
+쿼리:
+{chunk.content}
+
+요약:"""
+
+            elif chunk.chunk_type == 'class':
+                prompt = f"""다음 Java 클래스의 역할을 1문장으로 요약해주세요:
+
+클래스: {chunk.name}
+위치: {chunk.context}
+
+구조:
+{chunk.content}
+
+요약:"""
+
+            elif chunk.chunk_type == 'scriptlet':
+                prompt = f"""다음 JSP 스크립틀릿의 기능을 1문장으로 요약해주세요:
+
+위치: {chunk.context}
+
+코드:
+{chunk.content}
+
+요약:"""
+
+            else:
+                prompt = f"""다음 코드 블록의 목적을 1문장으로 요약해주세요:
+
+타입: {chunk.chunk_type}
+이름: {chunk.name}
+위치: {chunk.context}
+
+코드:
+{chunk.content[:800]}
+
+요약:"""
+            
+            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=100, temperature=0.3)
+            return summary.strip() if isinstance(summary, str) else str(summary).strip()
+            
+        except Exception as e:
+            import traceback
+            logger.error(f"청크 요약 실패 {chunk.name}: {e}\n{traceback.format_exc()}")
+            return None
+    
+    def _fallback_file_summary(self, file: File, file_content: str) -> Optional[str]:
+        """청킹 실패 시 기존 방식으로 파일 요약"""
+        try:
+            client = get_client(self.llm_config)
+            file_extension = Path(file.path or "").suffix.lower()
+            
+            prompt = f"""파일을 분석하고 목적과 기능을 간략하게 요약해주세요:
+
+파일: {file.path}
+내용:
+{file_content[:3000]}
+
+이 파일의 주요 목적과 기능을 2문장으로 요약해주세요:"""
+            
+            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=150, temperature=0.3)
+            return summary.strip() if isinstance(summary, str) else str(summary).strip()
+            
+        except Exception as e:
+            import traceback
+            logger.error(f"Fallback 파일 요약 실패 {file.path}: {e}\n{traceback.format_exc()}")
             return None
     
     def summarize_method(self, method: Method) -> Optional[str]:
@@ -337,27 +401,112 @@ SQL 내용:
             return None
     
     def enhance_table_comment(self, table: DbTable, related_code_context: str = "") -> Optional[str]:
-        """LLM 분석을 사용하여 테이블 주석 향상"""
+        """청킹 기반 지능형 테이블 주석 향상"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
             
             client = get_client(self.llm_config)
             
-            prompt = f"""데이터베이스 테이블을 분석하여 한글로 향상된 설명을 제공해주세요.
-
+            # 테이블과 관련된 청킹 요약 정보 수집
+            chunk_context = self._collect_table_related_chunks(table.table_name)
+            
+            prompt = f"""데이터베이스 테이블을 종합 분석하여 한글로 향상된 설명을 제공해주세요.
 
 테이블명: {table.table_name}
 기존 코멘트: {table.table_comment or '코멘트 없음'}
 
-관련 코드 컨텍스트:
-{related_code_context[:1500]}
+관련 코드 분석 (청킹 기반):
+{chunk_context[:2000]}
 
-테이블명, 기존 코멘트, 관련 코드 사용을 바탕으로 다음을 포함하는 향상된 설명을 한글로 100자 이내로 작성해주세요
-:
-1. 테이블의 용도와 저장하는 데이터
-2. 애플리케이션에서의 역할
-3. 주요 관계나 비즈니스 로직
+기존 코드 컨텍스트:
+{related_code_context[:1000]}
+
+위 모든 정보를 종합하여 다음을 포함하는 향상된 설명을 한글로 120자 이내로 작성해주세요:
+1. 테이블의 비즈니스 목적과 저장 데이터
+2. 애플리케이션에서의 실제 사용 패턴
+3. 다른 테이블과의 관계나 특별한 제약사항
+
+향상된 설명:"""
+            
+            comment = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=250, temperature=0.3)
+            return comment.strip() if isinstance(comment, str) else str(comment).strip()
+            
+        except Exception as e:
+            import traceback
+            logger.error(f"Failed to enhance table comment for {table.table_name}: {e}\n{traceback.format_exc()}")
+            return None
+    
+    def _collect_table_related_chunks(self, table_name: str) -> str:
+        """테이블과 관련된 모든 청킹 요약 정보 수집"""
+        try:
+            session = self.session()
+            related_chunks = []
+            
+            # 1. 테이블명을 포함하는 SQL 쿼리들의 청킹 요약 찾기
+            sql_units = session.query(SqlUnit).filter(
+                SqlUnit.sql_content.ilike(f'%{table_name}%')
+            ).limit(10).all()
+            
+            for sql_unit in sql_units:
+                if sql_unit.summary:
+                    related_chunks.append(f"[SQL:{sql_unit.stmt_id}] {sql_unit.summary}")
+            
+            # 2. 테이블명을 포함하는 메서드들의 요약 찾기  
+            methods = session.query(Method).filter(
+                Method.summary.ilike(f'%{table_name}%')
+            ).limit(5).all()
+            
+            for method in methods:
+                if method.summary:
+                    related_chunks.append(f"[메서드:{method.name}] {method.summary}")
+            
+            # 3. 파일 요약에서 테이블명 언급하는 것들 찾기
+            files = session.query(File).filter(
+                File.summary.ilike(f'%{table_name}%')
+            ).limit(3).all()
+            
+            for file in files:
+                if file.summary:
+                    related_chunks.append(f"[파일:{Path(file.path).name}] {file.summary}")
+            
+            session.close()
+            return '\n'.join(related_chunks) if related_chunks else f"{table_name} 테이블 관련 청킹 정보 없음"
+            
+        except Exception as e:
+            import traceback
+            logger.error(f"테이블 관련 청킹 정보 수집 실패 {table_name}: {e}\n{traceback.format_exc()}")
+            return f"{table_name} 테이블 관련 정보 수집 중 오류 발생"
+    
+    def enhance_column_comment(self, column: DbColumn, table_context: str = "") -> Optional[str]:
+        """청킹 기반 지능형 컬럼 주석 향상"""
+        try:
+            if not self.llm_config.get('enabled', True):
+                return None
+            
+            client = get_client(self.llm_config)
+            
+            # 컬럼과 관련된 청킹 요약 정보 수집
+            column_chunk_context = self._collect_column_related_chunks(column.column_name, column.table_name)
+            
+            prompt = f"""데이터베이스 컬럼을 종합 분석하여 한글로 향상된 설명을 제공해주세요.
+
+컬럼명: {column.column_name}
+테이블: {column.table_name}
+데이터 타입: {column.data_type}
+NULL 허용: {column.nullable}
+기존 코멘트: {column.column_comment or '코멘트 없음'}
+
+관련 코드 분석 (청킹 기반):
+{column_chunk_context[:1500]}
+
+기존 테이블 컨텍스트:
+{table_context[:800]}
+
+위 모든 정보를 종합하여 다음을 포함하는 향상된 설명을 한글로 40자 이내로 작성해주세요:
+1. 이 컬럼이 저장하는 구체적인 데이터
+2. 비즈니스 로직에서의 용도와 의미
+3. 제약사항이나 특별한 고려사항
 
 향상된 설명:"""
             
@@ -365,42 +514,53 @@ SQL 내용:
             return comment.strip() if isinstance(comment, str) else str(comment).strip()
             
         except Exception as e:
-            logger.error(f"Failed to enhance table comment for {table.table_name}: {e}")
+            import traceback
+            logger.error(f"Failed to enhance column comment for {column.column_name}: {e}\n{traceback.format_exc()}")
             return None
     
-    def enhance_column_comment(self, column: DbColumn, table_context: str = "") -> Optional[str]:
-        """Enhance column comments using LLM analysis"""
+    def _collect_column_related_chunks(self, column_name: str, table_name: str) -> str:
+        """컬럼과 관련된 모든 청킹 요약 정보 수집"""
         try:
-            if not self.llm_config.get('enabled', True):
-                return None
+            session = self.session()
+            related_chunks = []
             
-            client = get_client(self.llm_config)
+            # 1. 컬럼명을 포함하는 SQL 쿼리들의 요약 찾기
+            sql_units = session.query(SqlUnit).filter(
+                SqlUnit.sql_content.ilike(f'%{column_name}%')
+            ).limit(8).all()
             
-            prompt = f"""데이터베이스 컬럼을 분석하여 한글로 향상된 설명을 제공해주세요.
-
-
-컬럼명: {column.column_name}
-데이터 타입: {column.data_type}
-NULL 허용: {column.nullable}
-기존 코멘트: {column.column_comment or '코멘트 없음'}
-
-테이블 컨텍스트:
-{table_context[:1000]}
-
-컬럼명, 데이터 타입, 테이블 컨텍스트를 바탕으로 다음을 포함하는 향상된 설명을 한글로 30자 이내로 작성해주세요
-:
-1. 이 컬럼이 저장하는 데이터
-2. 용도와 비즈니스 의미
-3. 제약사항이나 특별한 고려사항
-
-향상된 설명:"""
+            for sql_unit in sql_units:
+                if sql_unit.summary and table_name.lower() in sql_unit.sql_content.lower():
+                    related_chunks.append(f"[SQL:{sql_unit.stmt_id}] {sql_unit.summary}")
             
-            comment = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=150, temperature=0.3)
-            return comment.strip() if isinstance(comment, str) else str(comment).strip()
+            # 2. 컬럼명을 포함하는 메서드들의 요약 찾기
+            methods = session.query(Method).filter(
+                Method.summary.ilike(f'%{column_name}%')
+            ).limit(5).all()
+            
+            for method in methods:
+                if method.summary:
+                    related_chunks.append(f"[메서드:{method.name}] {method.summary}")
+            
+            # 3. getter/setter 패턴으로 컬럼 사용하는 메서드 찾기
+            getter_pattern = f"%get{column_name.title()}%"
+            setter_pattern = f"%set{column_name.title()}%"
+            
+            accessor_methods = session.query(Method).filter(
+                (Method.name.ilike(getter_pattern)) | (Method.name.ilike(setter_pattern))
+            ).limit(3).all()
+            
+            for method in accessor_methods:
+                if method.summary:
+                    related_chunks.append(f"[접근자:{method.name}] {method.summary}")
+            
+            session.close()
+            return '\n'.join(related_chunks) if related_chunks else f"{column_name} 컬럼 관련 청킹 정보 없음"
             
         except Exception as e:
-            logger.error(f"Failed to enhance column comment for {column.column_name}: {e}")
-            return None
+            import traceback
+            logger.error(f"컬럼 관련 청킹 정보 수집 실패 {column_name}: {e}\n{traceback.format_exc()}")
+            return f"{column_name} 컬럼 관련 정보 수집 중 오류 발생"
     
     def analyze_primary_key_candidates(self, table: DbTable, table_context: str = "") -> List[str]:
         """LLM을 사용하여 실질적인 Primary Key 후보를 분석"""
@@ -548,7 +708,14 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
             
             client = get_client(self.llm_config)
             
-            sql_text = getattr(sql_unit, 'normalized_fingerprint', '') or 'SQL 내용 없음'
+            # SQL 내용을 가져오기 (우선순위: sql_content > normalized_fingerprint)
+            sql_text = ''
+            if hasattr(sql_unit, 'sql_content') and sql_unit.sql_content:
+                sql_text = sql_unit.sql_content[:5120]  # 5KB 한도
+            elif hasattr(sql_unit, 'normalized_fingerprint') and sql_unit.normalized_fingerprint:
+                sql_text = sql_unit.normalized_fingerprint[:5120]  # 5KB 한도
+            else:
+                sql_text = 'SQL 내용 없음'
             
             prompt = f"""다음 SQL 쿼리를 분석하여 테이블 간 조인 조건을 추출해주세요.
 
@@ -557,9 +724,10 @@ SQL 정보:
 - Mapper: {sql_unit.mapper_ns}
 - Statement ID: {sql_unit.stmt_id}
 - SQL 종류: {sql_unit.stmt_kind}
+- SQL 크기: {len(sql_text)} 문자
 
 SQL 내용:
-{sql_text[:2000]}
+{sql_text}
 
 다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "조인 없음"이라고 답변)
 :
@@ -910,7 +1078,7 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             
             # LLM PK 분석 실행
             try:
-                summarizer_instance = CodeSummarizer({"llm": self.config.get('llm', {})})
+                summarizer_instance = CodeSummarizer({"llm": config.get('llm', {})})
                 llm_pk_candidates = summarizer_instance.analyze_primary_key_candidates(table, context)
                 if llm_pk_candidates:
                     md_content.append(f"**LLM_PK:** {', '.join(llm_pk_candidates)}\n")

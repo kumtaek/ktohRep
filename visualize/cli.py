@@ -234,84 +234,68 @@ def main():
             # 특정 명령어가 지정된 경우 해당 명령만 실행합니다.
             commands_to_run.append(args.cmd)
 
+        # Load config.yaml with project name substitution once
+        import yaml
+        import os
+        config_path = Path(__file__).parent.parent / "config" / "config.yaml"
+        config = {}
+        if config_path.exists():
+            with open(config_path, 'r', encoding='utf-8') as f:
+                raw = f.read()
+            if hasattr(args, 'project_name') and args.project_name:
+                raw = raw.replace('{project_name}', args.project_name)
+            config = yaml.safe_load(raw) or {}
+
+        # Initialize VizDB and get project_id once
+        from .data_access import VizDB
+        db = VizDB(config, args.project_name)
+        project_id = db.get_project_id_by_name(args.project_name)
+        
+        if project_id is None:
+            logger.error(f"오류: 프로젝트 '{args.project_name}'를 찾을 수 없습니다.")
+            return 1
+
+        # Validate that at least one export option is provided
+        if args.export_html is None and args.export_mermaid is None:
+            args.export_html = '' # Enable default html export
+            args.export_mermaid = '' # Enable default mermaid export
+
         for cmd_name in commands_to_run:
-            logger.info(f"--- {cmd_name.upper()} 시각화 생성 시작 ---")
-
-            # Validate that at least one export option is provided for the specific command
-            if args.export_html is None and args.export_mermaid is None:
-                args.export_html = '' # Enable default html export for this run
-                args.export_mermaid = '' # Enable default mermaid export for this run
-
-            # Load config.yaml with project name substitution
-            import yaml
-            import os
-            config_path = Path(__file__).parent.parent / "config" / "config.yaml"
-            config = {}
-            if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    raw = f.read()
-                if hasattr(args, 'project_name') and args.project_name:
-                    raw = raw.replace('{project_name}', args.project_name)
-                config = yaml.safe_load(raw) or {}
-
-            # Initialize VizDB and get project_id
-            from .data_access import VizDB
-            db = VizDB(config, args.project_name)
-            project_id = db.get_project_id_by_name(args.project_name)
-            
-            commands_to_run.append(args.cmd)
-
-        for cmd_name in commands_to_run:
-            logger.info(f"--- {cmd_name.upper()} 시각화 생성 시작 ---")
-
-            # 특정 명령에 대해 내보내기 옵션이 제공되지 않은 경우 기본 HTML 및 Mermaid 내보내기를 활성화합니다.
-            if args.export_html is None and args.export_mermaid is None:
-                args.export_html = '' # 이 실행을 위해 기본 HTML 내보내기를 활성화합니다.
-                args.export_mermaid = '' # 이 실행을 위해 기본 Mermaid 내보내기를 활성화합니다.
-
-            # 프로젝트 이름 대체를 포함하여 config.yaml을 로드합니다.
-            import yaml
-            import os
-            config_path = Path(__file__).parent.parent / "config" / "config.yaml"
-            config = {}
-            if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    raw = f.read()
-                if hasattr(args, 'project_name') and args.project_name:
-                    raw = raw.replace('{project_name}', args.project_name)
-                config = yaml.safe_load(raw) or {}
-
-            # VizDB를 초기화하고 project_id를 가져옵니다.
-            from .data_access import VizDB
-            db = VizDB(config, args.project_name)
-            project_id = db.get_project_id_by_name(args.project_name)
-            
-            if project_id is None:
-                logger.error(f"오류: 프로젝트 '{args.project_name}'를 찾을 수 없습니다.")
-                return 1
+            logger.info(f"🚀 --- {cmd_name.upper()} 시각화 생성 시작 ---")
 
             data, html, diagram_type = None, None, cmd_name
 
             # 명령에 따라 시각화 데이터를 생성합니다.
             if cmd_name == 'graph':
                 # 의존성 그래프 데이터를 구축합니다.
+                logger.info("📊 의존성 그래프 데이터 분석 중...")
                 kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
+                logger.info(f"🔍 엣지 타입: {kinds}")
                 data = build_dependency_graph_json(config, project_id, args.project_name, kinds, args.min_confidence, 
                                                  args.focus, args.depth, args.max_nodes)
+                logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('graph_view.html', data)
             elif cmd_name == 'erd':
                 # ERD 데이터를 구축합니다.
+                logger.info("🗃️ 데이터베이스 ERD 분석 중...")
+                if args.tables:
+                    logger.info(f"📋 대상 테이블: {args.tables}")
                 data = build_erd_json(config, project_id, args.project_name, args.tables, args.owners, args.from_sql)
+                logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('erd_view.html', data)
             elif cmd_name == 'component':
                 # 컴포넌트 그래프 데이터를 구축합니다.
+                logger.info("🧩 컴포넌트 구조 분석 중...")
                 data = build_component_graph_json(config, project_id, args.project_name, args.min_confidence, args.max_nodes)
+                logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('graph_view.html', data)
             elif cmd_name == 'class':
                 # 데이터베이스 정보로부터 Java 클래스 다이어그램을 생성합니다.
+                logger.info("☕ Java 클래스 구조 분석 중...")
                 from .builders.class_diagram import build_java_class_diagram_json
                 data = build_java_class_diagram_json(config, project_id, args.project_name, 
                                                    args.modules, args.max_methods, args.max_nodes)
+                logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('class_view.html', data)
             elif cmd_name == 'relatedness':
                 # 연관성 통계 요약만 출력하는 경우 처리합니다.
@@ -320,6 +304,8 @@ def main():
                     logger.info(f"연관성 통계: {summary}")
                     continue
                 # 연관성 그래프 데이터를 구축합니다.
+                logger.info("🔗 코드 연관성 분석 중... (LLM 처리로 시간이 오래 걸릴 수 있습니다)")
+                logger.info(f"⚙️ 클러스터링 방법: {args.cluster_method}, 최소 점수: {args.min_score}")
                 data = build_relatedness_graph_json(config, project_id, args.project_name, 
                                                    args.min_score, args.max_nodes, args.cluster_method)
                 html = render_html('relatedness_view.html', data)
@@ -375,6 +361,7 @@ def main():
                 logger.warning(f"'{cmd_name}'에 대한 데이터를 생성하지 못했습니다. 건너뜁니다.")
                 continue
 
+            logger.info(f"📊 생성 완료: 노드 {len(data.get('nodes', []))}개, 엣지 {len(data.get('edges', []))}개")
             logger.debug(f"Generated {len(data.get('nodes', []))} nodes and {len(data.get('edges', []))} edges for {cmd_name}")
 
             # 내보내기 로직
@@ -396,23 +383,27 @@ def main():
 
             # HTML 내보내기가 활성화된 경우 HTML 파일을 저장합니다.
             if current_export_html is not None:
+                logger.info("💾 파일 저장 준비 중...")
                 html_path = Path(visualize_dir) / current_export_html
                 html_path.parent.mkdir(parents=True, exist_ok=True)
                 
                 # static 파일들을 output 디렉토리에 복사합니다.
+                logger.info("📁 정적 파일 복사 중...")
                 copy_static_files(html_path.parent)
                 
+                logger.info(f"💾 HTML 파일 저장 중: {current_export_html}")
                 with open(html_path, 'w', encoding='utf-8') as f:
                     f.write(html)
-                logger.info(f"시각화 HTML 저장: {html_path.absolute()}")
-                logger.info(f"Static 파일 복사 완료: {html_path.parent / 'static'}")
+                logger.info(f"✅ 시각화 HTML 저장 완료: {html_path.absolute()}")
+                logger.info(f"✅ Static 파일 복사 완료: {html_path.parent / 'static'}")
 
             # Mermaid 내보내기가 활성화된 경우 Mermaid/Markdown 파일을 저장합니다.
             if current_export_mermaid is not None:
                 mermaid_path = Path(visualize_dir) / current_export_mermaid
-                logger.info(f"Mermaid/Markdown 내보내기: {mermaid_path}")
+                logger.info(f"📝 Mermaid/Markdown 생성 중: {current_export_mermaid}")
                 meta_filters = (data.get('metadata') or {}).get('filters')
                 export_mermaid(data, str(mermaid_path), diagram_type, logger, {'project_id': project_id, 'filters': meta_filters})
+                logger.info(f"✅ Mermaid 파일 저장 완료: {mermaid_path}")
 
     except KeyboardInterrupt:
         print('사용자에 의해 중단됨', file=sys.stderr)

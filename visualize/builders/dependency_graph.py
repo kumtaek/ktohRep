@@ -37,14 +37,22 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
     nodes_dict = {}
     json_edges = []
     
-    for edge in edges:
+    processed_edges = 0
+    for i, edge in enumerate(edges):
+        if i % 10 == 0:  # 10개마다 진행상황 출력
+            print(f"  엣지 처리 중... ({i}/{len(edges)})")
+        
         # Create source node ID
         src_id = f"{edge.src_type}:{edge.src_id}"
         dst_id = f"{edge.dst_type}:{edge.dst_id}" if edge.dst_id else f"unknown:{edge.edge_kind}"
         
-        # Get node details and add nodes
-        src_details = db.get_node_details(edge.src_type, edge.src_id)
-        dst_details = db.get_node_details(edge.dst_type, edge.dst_id) if edge.dst_id else None
+        try:
+            # Get node details and add nodes
+            src_details = db.get_node_details(edge.src_type, edge.src_id)
+            dst_details = db.get_node_details(edge.dst_type, edge.dst_id) if edge.dst_id else None
+        except Exception as e:
+            print(f"  노드 정보 조회 오류 (엣지 {i}): {e}")
+            continue
         
         # Add source node
         if src_id not in nodes_dict and src_details:
@@ -73,11 +81,22 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
     print(f"  노드 {len(nodes_list)}개 생성")
 
     # Initialize the clusterer with all nodes and edges
-    clusterer = AdvancedClusterer(nodes_list, json_edges)
-
-    # Assign cluster IDs to all nodes
-    for node in nodes_list:
-        node['group'] = clusterer.get_cluster_id(node['id'])
+    print("  클러스터링 시작...")
+    try:
+        clusterer = AdvancedClusterer(nodes_list, json_edges)
+        print("  클러스터 할당 중...")
+        
+        # Assign cluster IDs to all nodes
+        for i, node in enumerate(nodes_list):
+            if i % 50 == 0:  # 50개마다 진행상황 출력
+                print(f"  클러스터 할당... ({i}/{len(nodes_list)})")
+            node['group'] = clusterer.get_cluster_id(node['id'])
+        print("  클러스터링 완료")
+    except Exception as e:
+        print(f"  클러스터링 오류: {e}, 기본 그룹 사용")
+        # 클러스터링 실패시 기본 그룹 할당
+        for node in nodes_list:
+            node['group'] = node.get('group', 'default')
     
     # Apply focus filtering if specified
     if focus:

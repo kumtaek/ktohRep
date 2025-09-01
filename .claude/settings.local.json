@@ -77,7 +77,16 @@
       "Bash(./run_analyzer.bat sampleSrc)",
       "Bash(./run_analyze_joins.bat sampleSrc)",
       "Bash(./run_summarize.bat sampleSrc)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(xcopy:*)",
+      "Bash(robocopy:*)",
+      "Bash(./run_quick_demo.bat)",
+      "Bash(./test_graph_only.bat)",
+      "Bash(./run_quick_visualize.bat)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" visualizecli.py --project-name sampleSrc erd)",
+      "Bash(call:*)",
+      "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc erd)",
+      "Bash(set PYTHONPATH=E:SourceAnalyzer.git)"
     ],
     "deny": [],
     "ask": []

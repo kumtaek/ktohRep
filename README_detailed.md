@@ -268,7 +268,11 @@ Source Analyzer의 핵심 동작은 `phase1/src/main.py`에서 시작되며, 다
     python auto_sequence_runner.py sampleSrc
 
     # 특정 프로젝트 실행
-    python auto_sequence_runner.py [프로젝트명]
+    # 기본 실행 (sampleSrc 프로젝트)
+python auto_sequence_runner.py --project-name sampleSrc
+
+# 특정 프로젝트 실행
+python auto_sequence_runner.py --project-name [프로젝트명]
     ```
 *   **LLM 요약 생성**: `llm_summarize.py`를 실행하여 LLM 기반 코드 요약 및 테이블/컬럼 주석을 생성합니다.
     ```bash

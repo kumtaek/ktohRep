@@ -146,11 +146,11 @@ def _create_fallback_sequence_diagrams(db, project_id: int, project_name: str) -
 
 
 def main():
-    if len(sys.argv) < 2:
-        project_name = 'sampleSrc'
-        print(f"No project name provided, using default: {project_name}")
-    else:
-        project_name = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser(description='자동 시퀀스 다이어그램 생성 스크립트')
+    parser.add_argument('--project-name', required=True, help='분석 대상 프로젝트 이름')
+    args = parser.parse_args()
+    project_name = args.project_name
     
     print(f"Auto-generating sequence diagrams for project: {project_name}")
     

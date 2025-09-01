@@ -35,7 +35,7 @@ except ImportError:
         logger.setLevel(logging.INFO)
         return logger
 
-def load_config(config_path: str = None) -> Dict[str, Any]:
+def load_config(self, config_path: str = None) -> Dict[str, Any]:
     """Load configuration from config.yaml"""
     if config_path:
         config_file = Path(config_path)
@@ -51,7 +51,7 @@ def load_config(config_path: str = None) -> Dict[str, Any]:
     
     return config
 
-def get_project_config(global_config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
+def get_project_config(self, global_config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
     """Get project-specific configuration"""
     project_config = global_config.copy()
     
@@ -69,7 +69,7 @@ def get_project_config(global_config: Dict[str, Any], project_name: str) -> Dict
     project_config = replace_project_name(project_config)
     return project_config
 
-def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def summarize_code_elements(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """JSP, Java, Method, Query 요소들에 대한 LLM 요약 생성"""
     print(f"Starting LLM analysis for project: {project_name}")
     
@@ -115,7 +115,7 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
         print(f"Error: Error during code summarization: {e}")
         raise
 
-def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def enhance_db_comments(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """데이터베이스 테이블/컬럼 코멘트를 LLM으로 보강"""
     print(f"Starting database comment enhancement for project: {project_name}")
     
@@ -142,7 +142,7 @@ def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: i
         print(f"Error: Error during comment enhancement: {e}")
         raise
 
-def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def analyze_joins(self, config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """SQL 조인조건 LLM 분석"""
     print(f"Starting join analysis for project: {project_name}")
     
@@ -188,7 +188,7 @@ def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 1
         print(f"Error during join analysis: {e}")
         raise
 
-def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
+def generate_source_spec_md(self, config: Dict[str, Any], project_name: str, output_file: str = None):
     """소스코드 명세서 마크다운 파일 생성"""
     print(f"Generating source specification markdown for project: {project_name}")
     
@@ -213,7 +213,7 @@ def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_fi
         print(f"Error generating source specification: {e}")
         raise
 
-def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
+def generate_table_spec_md(self, config: Dict[str, Any], project_name: str, output_file: str = None):
     """테이블 명세서 마크다운 파일 생성"""
     print(f"Generating table specification markdown for project: {project_name}")
     

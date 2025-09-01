@@ -1,4 +1,11 @@
-# visualize/data_access.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+시각화 데이터 접근 모듈
+데이터베이스에서 시각화에 필요한 메타데이터를 조회하고 처리하는 기능을 제공합니다.
+노드, 엣지, 테이블, 관계 등의 정보를 추출하는 쿼리 인터페이스를 제공합니다.
+"""
+
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import sys

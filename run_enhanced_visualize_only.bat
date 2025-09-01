@@ -43,7 +43,7 @@ echo  기본 시각화 완료
 REM 2. 향상된 ERD 생성
 echo.
 echo [2/3] 향상된 ERD 생성 중...
-call venvSrcAnalyzer\Scripts\python.exe generate_enhanced_erd.py %PROJECT_NAME%
+call venvSrcAnalyzer\Scripts\python.exe generate_enhanced_erd.py --project-name %PROJECT_NAME%
 
 REM 3. 시퀀스 다이어그램 생성
 echo.

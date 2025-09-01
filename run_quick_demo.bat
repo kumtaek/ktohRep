@@ -37,7 +37,7 @@ REM 2. 기본 분석 (빠른 버전)
 echo.
 echo [1/4] 기본 소스 분석...
 rem call run_analyzer.bat --project-name sampleSrc
-call run_complete_analysis.bat sampleSrc
+call run_complete_analysis.bat --project-name sampleSrc
 
 if !errorlevel! neq 0 (
     echo ERROR: 분석 실패
@@ -57,7 +57,7 @@ rem     echo  관계성 계산 완료
 REM 4. 향상된 시각화 생성
 echo.
 echo [3/4] 향상된 시각화 생성...
-call run_enhanced_visualize_only.bat sampleSrc
+call run_enhanced_visualize_only.bat --project-name sampleSrc
 if !errorlevel! neq 0 (
     echo ERROR: 시각화 생성 실패
     goto :error
@@ -67,6 +67,7 @@ REM 5. 결과 파일 확인 및 자동 열기
 rem echo.
 rem echo [4/4] run_summarize.bat
 rem call run_summarize.bat sampleSrc
+call ./venvSrcAnalyzer\Scripts\python.exe phase1\tools\llm_analyzer.py source-spec --project-name sampleSrc --output
 
 set OUTPUT_DIR=output\sampleSrc\visualize
  

@@ -1,0 +1,59 @@
+e:
+cd E:\SourceAnalyzer.git
+
+# --- 1. 가상 환경 활성화 ---
+# 이 명령은 PowerShell 세션에서 가상 환경을 활성화합니다.
+.\venvSrcAnalyzer\Scripts\Activate.ps1
+
+# --- 2. 출력 디렉토리 생성 ---
+# 'sampleSrc' 프로젝트의 출력 디렉토리를 생성합니다.
+# 이미 존재하면 아무 작업도 하지 않습니다.
+New-Item -ItemType Directory -Path ".\output\sampleSrc" -Force | Out-Null
+
+# --- 3. 기본 소스 분석 (phase1/main.py) ---
+# 프로젝트의 기본 소스 코드를 분석합니다.
+python .\phase1\main.py --project-name sampleSrc
+
+# --- 4. 관계성 계산 (phase1/scripts/calculate_relatedness.py) ---
+# 코드 요소 간의 관계성을 계산합니다.
+python .\phase1\scripts\calculate_relatedness.py sampleSrc
+
+# --- 5. LLM 기반 분석 및 보고서 생성 ---
+
+# 5.1. LLM 기반 코드 요약 및 분석
+python .\phase1\tools\llm_analyzer.py summarize --project-name sampleSrc --batch-size 10 --debug
+
+# 5.2. LLM 기반 데이터베이스 주석 강화
+python .\phase1\tools\llm_analyzer.py enhance-db --project-name sampleSrc --batch-size 10 --debug
+
+# 5.3. LLM 기반 SQL 조인 관계 분석
+python .\phase1\tools\llm_analyzer.py analyze-joins --project-name sampleSrc --batch-size 10 --debug
+
+# 5.4. 테이블 명세서 생성
+python .\phase1\tools\llm_analyzer.py table-spec --project-name sampleSrc 
+
+# 5.5. 소스 코드 명세서 생성
+python .\phase1\tools\llm_analyzer.py source-spec --project-name sampleSrc 
+
+# --- 6. 시각화 생성 ---
+
+# 6.1. 의존성 그래프 생성
+python -m visualize graph --project-name sampleSrc --export-html "" --export-mermaid ""
+
+# 6.2. 기본 ERD 생성
+python -m visualize erd --project-name sampleSrc --export-html "" --export-mermaid ""
+
+# 6.3. 컴포넌트 다이어그램 생성
+python -m visualize component --project-name sampleSrc --export-html "" --export-mermaid ""
+
+# 6.4. 클래스 다이어그램 생성
+python -m visualize class --project-name sampleSrc --export-html "" --export-mermaid ""
+
+# 6.5. 연관성 그래프 생성
+python -m visualize relatedness --project-name sampleSrc --export-html "" --export-mermaid ""
+
+# 6.6. 향상된 ERD 생성 (generate_enhanced_erd.py)
+python .\generate_enhanced_erd.py sampleSrc
+
+# 6.7. 코드 시퀀스 다이어그램 생성
+python -m visualize sequence --project-name sampleSrc --depth 3 --max-nodes 50

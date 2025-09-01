@@ -1,4 +1,11 @@
-# visualize/builders/sequence_diagram.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+시퀀스 다이어그램 생성 모듈
+메서드 호출 흐름을 추적하여 UML 시퀀스 다이어그램 데이터를 생성합니다.
+시작점에서부터 깊이우선 탐색으로 메서드 호출 관계를 추적합니다.
+"""
+
 from typing import Dict, Any, List, Optional, Set
 from collections import defaultdict, deque
 from ..data_access import VizDB
@@ -9,7 +16,7 @@ from difflib import get_close_matches
 
 def build_sequence_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], start_file: str = None, start_method: str = None, 
                              depth: int = 3, max_nodes: int = 2000, hide_unresolved: bool = True) -> Dict[str, Any]:
-    """Build UML sequence diagram JSON for visualization"""
+    """시각화를 위한 UML 시퀀스 다이어그램 JSON 데이터 생성"""
     print(f"Building sequence diagram for project {project_id}")
     print(f"  Start file: {start_file}")
     print(f"  Start method: {start_method}")

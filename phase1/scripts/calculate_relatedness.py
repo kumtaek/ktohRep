@@ -296,8 +296,12 @@ class RelatednessCalculator:
 if __name__ == '__main__':
     import yaml
     from pathlib import Path
+    import argparse
 
-    # This allows running the script directly for testing
+    parser = argparse.ArgumentParser(description='코드 연관성 계산 도구')
+    parser.add_argument('--project-name', required=True, help='분석 대상 프로젝트 이름')
+    args = parser.parse_args()
+
     config_path = project_root / "config" / "config.yaml"
     if not config_path.exists():
         print(f"Error: Config file not found at {config_path}")
@@ -306,12 +310,7 @@ if __name__ == '__main__':
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(os.path.expandvars(f.read())) or {}
 
-    # Get project name from command line arguments
-    if len(sys.argv) < 2:
-        print(f"Usage: python {sys.argv[0]} <project_name>")
-        sys.exit(1)
-    
-    project_name_to_analyze = sys.argv[1]
+    project_name_to_analyze = args.project_name
     
     # Substitute project name in config
     import json

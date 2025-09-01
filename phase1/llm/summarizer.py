@@ -1,4 +1,9 @@
-# phase1/llm/summarizer.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+LLM 기반 코드 요약 및 메타데이터 향상 모듈
+LLM을 사용하여 소스 코드, SQL, 테이블에 대한 한글 요약을 생성합니다.
+"""
 from typing import Dict, Any, Optional, List
 import json
 from pathlib import Path
@@ -16,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class CodeSummarizer:
-    """LLM-based code summarization and metadata enhancement"""
+    """LLM 기반 코드 요약 및 메타데이터 향상 클래스"""
     
     def __init__(self, config: Dict[str, Any], debug: bool = False):
         self.config = config
@@ -26,15 +31,17 @@ class CodeSummarizer:
         self.dbm.initialize()
     
     def session(self):
-        """Get database session"""
+        """데이터베이스 세션 반환"""
         return self.dbm.get_session()
     
     def _chat_with_debug(self, client, messages: list, **kwargs):
-        """Helper method to handle LLM chat with Korean system prompt and debug output"""
+        """한국어 시스템 프롬프트와 디버그 출력을 처리하는 LLM 채팅 헬퍼 메서드"""
         # Add Korean system prompt
         korean_system = {
             "role": "system", 
-            "content": "모든 응답을 한국어로 해주세요. 간결하고 명확하게 답변해주세요."
+            "content": "모든 응답을 한국어로 해주세요. 간결하고 명확하게 답변해주세요.\n" + \
+                       "딱 필요한 답변만 하고 네, 알겠습니다 같은 군더더기 말은 하지 마세요.\n" + \
+                       "만약 이해가 안되거나 답변이 불가한 경우 '-'를 답변주세요."
         }
         
         # Insert system message at the beginning
@@ -44,20 +51,22 @@ class CodeSummarizer:
             print("=" * 50)
             print("[DEBUG] LLM 요청:")
             for i, msg in enumerate(messages_with_system):
-                print(f"[{msg['role'].upper()}] {msg['content'][:200]}{'...' if len(msg['content']) > 200 else ''}")
-            print("=" * 50)
+                #print(f"[{msg['role'].upper()}] {msg['content'][:500]}{'...' if len(msg['content']) > 500 else ''}")
+                print(f"[{msg['role'].upper()}] {msg['content'][:1500]}")
+            #print("=" * 50)
         
         response = client.chat(messages_with_system, **kwargs)
         
         if self.debug:
-            print("[DEBUG] LLM 응답:")
+            print("★★★★★★★★★★★★★★★★★★★★★★ [DEBUG] LLM 응답 ★★★★★★★★★★★★★★★★★★★★★★")
             print(f"{response[:500]}{'...' if len(str(response)) > 500 else ''}")
             print("=" * 50)
-        
+            print("\n\n\n\n\n")
+            
         return response
     
     def _add_summary_columns_if_needed(self):
-        """Add summary columns to tables if they don't exist"""
+        """테이블에 요약 컬럼이 없는 경우 추가"""
         session = self.session()
         try:
             # Add summary column to files table
@@ -116,22 +125,47 @@ class CodeSummarizer:
         finally:
             session.close()
     
+    def _read_project_file_content(self, file_path: str, max_size: int = 4096) -> str:
+        """프로젝트 폴더에서 파일 내용을 읽어옴 (최대 4KB)"""
+        if not file_path:
+            return ""
+            
+        # PROJECT/ 접두사가 있는 경우 실제 프로젝트 폴더 경로로 변환
+        if file_path.startswith('PROJECT\\') or file_path.startswith('PROJECT/'):
+            actual_path = file_path
+        else:
+            # 상대 경로인 경우 PROJECT 하위에서 찾기
+            actual_path = f"PROJECT/{file_path}"
+        
+        full_path = Path(actual_path)
+        if not full_path.exists():
+            logger.warning(f"파일을 찾을 수 없음: {full_path}")
+            return ""
+            
+        try:
+            with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read(max_size)
+                if len(content) == max_size:
+                    logger.info(f"파일 내용이 4KB로 제한됨: {full_path}")
+                return content
+        except Exception as e:
+            logger.warning(f"파일 읽기 실패 {full_path}: {e}")
+            return ""
+
     def summarize_file(self, file: File) -> Optional[str]:
-        """Generate summary for a file using LLM"""
+        """LLM을 사용하여 파일에 대한 요약 생성"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
             
+            # 요약 중인 객체 정보 로그 출력
+            logger.info(f"[요약 중] 파일 객체: {file.path} (ID: {file.file_id})")
+            print(f"DEBUG: 파일 요약 중 - {file.path}")
+            
             client = get_client(self.llm_config)
             
-            # Read file content if available
-            file_content = ""
-            if file.path and Path(file.path).exists():
-                try:
-                    with open(file.path, 'r', encoding='utf-8', errors='ignore') as f:
-                        file_content = f.read()
-                except Exception as e:
-                    logger.warning(f"Could not read file {file.path}: {e}")
+            # 프로젝트 폴더에서 파일 내용 읽기 (최대 4KB)
+            file_content = self._read_project_file_content(file.path)
             
             # Determine file type and create appropriate prompt
             file_extension = Path(file.path or "").suffix.lower()
@@ -139,11 +173,13 @@ class CodeSummarizer:
             if file_extension == '.jsp':
                 prompt = f"""다음 JSP 파일을 분석하고 목적과 기능을 간략하게 요약해주세요.
 
+
 파일: {file.path}
 내용:
 {file_content[:3000]}...
 
-다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요:
+다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요
+:
 1. 이 JSP 페이지가 하는 일
 2. 주요 기능 또는 목적
 3. 핵심 기능 또는 구성요소
@@ -152,18 +188,22 @@ class CodeSummarizer:
             elif file_extension == '.java':
                 prompt = f"""다음 Java 파일을 분석하고 목적과 기능을 간략하게 요약해주세요.
 
+
 파일: {file.path}
 내용:
 {file_content[:3000]}...
 
-다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요:
+다음을 포함하여 간결한 요약(1-2문장)을 제공해주세요. 
+ :
 1. 이 Java 클래스/파일이 하는 일
 2. 주요 책임
 3. 핵심 메서드 또는 기능
 
 요약:"""
             else:
-                prompt = f"""다음 코드 파일을 분석하고 목적과 기능을 간략하게 요약해주세요.
+                prompt = f"""
+다음 코드 파일을 분석하고 목적과 기능을 간략하게 요약해주세요. 
+
 
 파일: {file.path}
 내용:
@@ -171,27 +211,58 @@ class CodeSummarizer:
 
 이 파일이 하는 일과 주요 목적에 대해 간결한 요약(1-2문장)을 제공해주세요.
 
+
 요약:"""
             
+            # 프롬프트와 답변 디버깅 로그
+            if self.debug:
+                print(f"DEBUG: 파일 요약 프롬프트 길이: {len(prompt)} 문자")
+                print(f"DEBUG: 파일 요약 프롬프트 미리보기: {prompt[:300]}...")
+            
             summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=200, temperature=0.3)
-            return summary.strip() if isinstance(summary, str) else str(summary).strip()
+            
+            # 요약 결과 로그
+            summary_text = summary.strip() if isinstance(summary, str) else str(summary).strip()
+            logger.info(f"[요약 완료] 파일: {file.path} -> {summary_text[:100]}...")
+            print(f"DEBUG: 파일 요약 결과: {summary_text[:100]}...")
+            
+            return summary_text
             
         except Exception as e:
             logger.error(f"Failed to summarize file {file.path}: {e}")
             return None
     
     def summarize_method(self, method: Method) -> Optional[str]:
-        """Generate summary for a method using LLM"""
+        """LLM을 사용하여 메서드에 대한 요약 생성"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
             
             client = get_client(self.llm_config)
             
-            # Get method details
+            # Get method details - 메소드 소스코드를 프로젝트 폴더에서 읽어옴
             method_code = getattr(method, 'code_snippet', '') or getattr(method, 'source_code', '') or ''
             
-            prompt = f"""다음 Java 메서드를 분석하고 기능을 간략하게 요약해주세요.
+            # 만약 코드가 없고 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
+            if not method_code and hasattr(method, 'file') and method.file and method.file.path:
+                file_content = self._read_project_file_content(method.file.path)
+                # 메소드 이름으로 코드 추출 시도 (간단한 휴리스틱)
+                if file_content and method.name:
+                    lines = file_content.split('\n')
+                    method_start = -1
+                    for i, line in enumerate(lines):
+                        if method.name in line and ('public' in line or 'private' in line or 'protected' in line):
+                            method_start = i
+                            break
+                    if method_start >= 0:
+                        # 메소드 시작부터 최대 50줄까지 추출
+                        method_lines = lines[method_start:method_start + 50]
+                        method_code = '\n'.join(method_lines)
+            
+            prompt = f"""
+다음 Java 메서드를 분석하고 기능을 간략하게 요약해주세요.
+성능개선이나 더 효율적으로 리팩토링할 수 있는 방법이 있으면 추가적으로 제안해줘도 됩니다.
+
 
 메서드: {method.name}
 클래스: {method.class_fqn if hasattr(method, 'class_fqn') else 'Unknown'}
@@ -203,7 +274,11 @@ class CodeSummarizer:
 
 이 메서드가 하는 일과 목적에 대해 간결한 요약(1문장)을 제공해주세요.
 
-요약:"""
+요약:
+
+혹시 리팩토링 제안할 내용이 있으면 간결한 요약(2~3문장)으로 제공해주세요.
+
+개선제안:"""
             
             summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=150, temperature=0.3)
             return summary.strip() if isinstance(summary, str) else str(summary).strip()
@@ -213,22 +288,44 @@ class CodeSummarizer:
             return None
     
     def summarize_sql_unit(self, sql_unit: SqlUnit) -> Optional[str]:
-        """Generate summary for a SQL unit using LLM"""
+        """LLM을 사용하여 SQL 단위에 대한 요약 생성"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
             
             client = get_client(self.llm_config)
             
-            prompt = f"""다음 SQL 쿼리/문을 분석하고 기능을 간략하게 요약해주세요.
+            # SQL 내용을 프로젝트 폴더에서 읽어옴
+            sql_content = sql_unit.sql_content if sql_unit.sql_content else ''
+            
+            # SQL 내용이 없고 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
+            if not sql_content and hasattr(sql_unit, 'file') and sql_unit.file and sql_unit.file.path:
+                file_content = self._read_project_file_content(sql_unit.file.path)
+                # MyBatis XML에서 statement ID로 SQL 추출 시도
+                if file_content and sql_unit.stmt_id:
+                    import re
+                    # MyBatis select/insert/update/delete 태그에서 해당 ID 찾기
+                    pattern = rf'<(?:select|insert|update|delete)[^>]*id\s*=\s*["\']?{re.escape(sql_unit.stmt_id)}["\']?[^>]*>(.*?)</(?:select|insert|update|delete)>'
+                    match = re.search(pattern, file_content, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        sql_content = match.group(1).strip()[:2000]  # 최대 2KB
+            
+            # normalized_fingerprint 백업 사용
+            if not sql_content:
+                sql_content = getattr(sql_unit, 'normalized_fingerprint', '') or 'SQL 내용 없음'
+            
+            prompt = f"""
+다음 SQL 쿼리/문을 분석하고 기능을 간략하게 요약해주세요.
+
 
 매퍼 네임스페이스: {sql_unit.mapper_ns}
 문 ID: {sql_unit.stmt_id}
 문 종류: {sql_unit.stmt_kind}
 SQL 내용:
-{sql_unit.sql_content[:2000] if sql_unit.sql_content else 'No content available'}...
+{sql_content[:2000]}...
 
 이 SQL 문이 하는 일과 목적에 대해 간결한 요약(1문장)을 제공해주세요.
+
 
 요약:"""
             
@@ -240,7 +337,7 @@ SQL 내용:
             return None
     
     def enhance_table_comment(self, table: DbTable, related_code_context: str = "") -> Optional[str]:
-        """Enhance table comments using LLM analysis"""
+        """LLM 분석을 사용하여 테이블 주석 향상"""
         try:
             if not self.llm_config.get('enabled', True):
                 return None
@@ -249,13 +346,15 @@ SQL 내용:
             
             prompt = f"""데이터베이스 테이블을 분석하여 한글로 향상된 설명을 제공해주세요.
 
+
 테이블명: {table.table_name}
 기존 코멘트: {table.table_comment or '코멘트 없음'}
 
 관련 코드 컨텍스트:
 {related_code_context[:1500]}
 
-테이블명, 기존 코멘트, 관련 코드 사용을 바탕으로 다음을 포함하는 향상된 설명을 한글로 100자 이내로 작성해주세요:
+테이블명, 기존 코멘트, 관련 코드 사용을 바탕으로 다음을 포함하는 향상된 설명을 한글로 100자 이내로 작성해주세요
+:
 1. 테이블의 용도와 저장하는 데이터
 2. 애플리케이션에서의 역할
 3. 주요 관계나 비즈니스 로직
@@ -279,6 +378,7 @@ SQL 내용:
             
             prompt = f"""데이터베이스 컬럼을 분석하여 한글로 향상된 설명을 제공해주세요.
 
+
 컬럼명: {column.column_name}
 데이터 타입: {column.data_type}
 NULL 허용: {column.nullable}
@@ -287,7 +387,8 @@ NULL 허용: {column.nullable}
 테이블 컨텍스트:
 {table_context[:1000]}
 
-컬럼명, 데이터 타입, 테이블 컨텍스트를 바탕으로 다음을 포함하는 향상된 설명을 한글로 30자 이내로 작성해주세요:
+컬럼명, 데이터 타입, 테이블 컨텍스트를 바탕으로 다음을 포함하는 향상된 설명을 한글로 30자 이내로 작성해주세요
+:
 1. 이 컬럼이 저장하는 데이터
 2. 용도와 비즈니스 의미
 3. 제약사항이나 특별한 고려사항
@@ -300,6 +401,68 @@ NULL 허용: {column.nullable}
         except Exception as e:
             logger.error(f"Failed to enhance column comment for {column.column_name}: {e}")
             return None
+    
+    def analyze_primary_key_candidates(self, table: DbTable, table_context: str = "") -> List[str]:
+        """LLM을 사용하여 실질적인 Primary Key 후보를 분석"""
+        try:
+            if not self.llm_config.get('enabled', True):
+                return []
+            
+            client = get_client(self.llm_config)
+            
+            # 테이블의 모든 컬럼 정보 수집
+            session = self.session()
+            try:
+                columns = session.query(DbColumn).filter(DbColumn.table_id == table.table_id).all()
+                columns_info = []
+                for col in columns:
+                    col_info = f"- {col.column_name} ({col.data_type}, Nullable: {col.nullable})"
+                    if col.column_comment:
+                        col_info += f" - {col.column_comment}"
+                    columns_info.append(col_info)
+                
+                columns_text = '\n'.join(columns_info)
+                
+                prompt = f"""다음 데이터베이스 테이블을 분석하여 실질적인 Primary Key 후보 컬럼을 추천해주세요.
+
+테이블명: {table.table_name}
+테이블 설명: {table.table_comment or '설명 없음'}
+
+컬럼 목록:
+{columns_text}
+
+관련 코드 컨텍스트:
+{table_context[:1000]}
+
+다음 기준으로 Primary Key 후보를 분석해주세요:
+1. 고유성이 보장되는 컬럼
+2. NULL 값이 없는 컬럼 (NOT NULL)
+3. 비즈니스적으로 식별자 역할을 하는 컬럼
+4. 컬럼명이 ID, 번호, 코드 등을 나타내는 컬럼
+
+Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요. 없으면 '없음'이라고 답변해주세요.
+
+추천 Primary Key:"""
+                
+                response = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=100, temperature=0.3)
+                response_text = response.strip() if isinstance(response, str) else str(response).strip()
+                
+                # 응답 파싱
+                if response_text and response_text.lower() not in ['없음', '-', 'none']:
+                    # 쉼표로 구분된 컬럼명들 추출
+                    pk_candidates = [col.strip() for col in response_text.split(',')]
+                    # 실제 존재하는 컬럼명만 필터링
+                    valid_columns = {col.column_name for col in columns}
+                    return [pk for pk in pk_candidates if pk in valid_columns]
+                
+                return []
+                
+            finally:
+                session.close()
+                
+        except Exception as e:
+            logger.error(f"Failed to analyze PK candidates for {table.table_name}: {e}")
+            return []
     
     def process_project_summaries(self, project_id: int, batch_size: int = 10):
         """Process all files, methods, and SQL units for a project"""
@@ -389,6 +552,7 @@ NULL 허용: {column.nullable}
             
             prompt = f"""다음 SQL 쿼리를 분석하여 테이블 간 조인 조건을 추출해주세요.
 
+
 SQL 정보:
 - Mapper: {sql_unit.mapper_ns}
 - Statement ID: {sql_unit.stmt_id}
@@ -397,7 +561,8 @@ SQL 정보:
 SQL 내용:
 {sql_text[:2000]}
 
-다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "조인 없음"이라고 답변):
+다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "조인 없음"이라고 답변)
+:
 테이블1.컬럼1 = 테이블2.컬럼2
 테이블1.컬럼3 = 테이블3.컬럼4
 
@@ -684,11 +849,11 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             md_content.append(f"## Table: {table.table_name}\n")
             
             # Table description
+            if table.table_comment:
+                md_content.append(f"**Original Comment:** {table.table_comment}\n")
             llm_comment = getattr(table, 'llm_comment', None)
             if llm_comment:
                 md_content.append(f"**LLM_Description:** {llm_comment}\n")
-            if table.table_comment and table.table_comment != llm_comment:
-                md_content.append(f"**Original Comment:** {table.table_comment}\n")
             
             md_content.append("")
             
@@ -702,8 +867,8 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             columns = list(columns_dict.values())
             
             if columns:
-                md_content.append("| Column | Type | Nullable | Comment | Enhanced Comment |")
-                md_content.append("|--------|------|----------|---------|-------------------|")
+                md_content.append("| Column | Type | Nullable | Comment | LLM_Column |")
+                md_content.append("|--------|------|----------|---------|------------|")
                 
                 for col in columns:
                     nullable = "Yes" if col.nullable == 'Y' else "No"
@@ -718,7 +883,7 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
                 
                 md_content.append("")
             
-            # Primary keys
+            # Primary keys (기존 CSV)
             pks = session.execute(
                 text("SELECT column_name FROM db_pk WHERE table_id = :table_id ORDER BY pk_pos"),
                 {"table_id": table.table_id}
@@ -727,6 +892,33 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             if pks:
                 pk_cols = [pk[0] for pk in pks]
                 md_content.append(f"**Primary Key:** {', '.join(pk_cols)}\n")
+            
+            # LLM이 추론한 Primary Key 추가
+            # 관련 SQL 컨텍스트 수집
+            related_sql = []
+            try:
+                related_sql = session.query(SqlUnit).filter(
+                    SqlUnit.normalized_fingerprint.contains(table.table_name)
+                ).limit(3).all()
+            except Exception:
+                pass
+                
+            context = f"Related SQL queries:\n"
+            for sql in related_sql:
+                sql_text = getattr(sql, 'sql_content', '') or getattr(sql, 'normalized_fingerprint', '') or 'No SQL content'
+                context += f"- {sql.mapper_ns}.{sql.stmt_id}: {sql_text[:200]}...\n"
+            
+            # LLM PK 분석 실행
+            try:
+                summarizer_instance = CodeSummarizer({"llm": self.config.get('llm', {})})
+                llm_pk_candidates = summarizer_instance.analyze_primary_key_candidates(table, context)
+                if llm_pk_candidates:
+                    md_content.append(f"**LLM_PK:** {', '.join(llm_pk_candidates)}\n")
+                else:
+                    md_content.append(f"**LLM_PK:** 분석된 후보 없음\n")
+            except Exception as e:
+                logger.warning(f"LLM PK 분석 실패 for {table.table_name}: {e}")
+                md_content.append(f"**LLM_PK:** 분석 실패\n")
             
             md_content.append("---\n")
         

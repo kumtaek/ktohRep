@@ -1,10 +1,16 @@
-# visualize/builders/erd.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ERD (Entity Relationship Diagram) 생성 모듈
+데이터베이스 테이블 관계를 시각화하기 위한 노드와 엣지 데이터를 생성합니다.
+"""
+
 from typing import Dict, Any, List, Optional
 from collections import Counter
 from ..data_access import VizDB  
 from ..schema import create_node, create_edge, create_graph
 
-# Helper function to resolve abbreviated table names to node_ids
+# 축약된 테이블 이름을 노드 ID로 해석하는 헬퍼 함수
 def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str, Any]) -> Optional[str]:
     owner_abbr, table_abbr = abbreviated_name.split('.') if '.' in abbreviated_name else ('', abbreviated_name)
 

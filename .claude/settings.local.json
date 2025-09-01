@@ -99,7 +99,9 @@
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc component)",
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\" -m visualize.cli --project-name sampleSrc component --min-confidence 0.1)",
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\":*)",
-      "Bash(./run_analyzer.bat:*)"
+      "Bash(./run_analyzer.bat:*)",
+      "Bash(run_download_vulnerability_docs.bat sampleSrc)",
+      "Bash(./run_download_vulnerability_docs.bat sampleSrc)"
     ],
     "deny": [],
     "ask": []

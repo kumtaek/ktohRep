@@ -64,9 +64,9 @@ if !errorlevel! neq 0 (
 )
 
 REM 5. 결과 파일 확인 및 자동 열기
-echo.
-echo [4/4] run_summarize.bat
-call run_summarize.bat sampleSrc
+rem echo.
+rem echo [4/4] run_summarize.bat
+rem call run_summarize.bat sampleSrc
 
 set OUTPUT_DIR=output\sampleSrc\visualize
  

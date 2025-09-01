@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Source Analyzer - UML 시퀀스 다이어그램</title>
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        #toolbar { 
+            padding: 16px 24px; 
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #1976d2;
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+        }
+        
+        #sequence-container { 
+            width: 100%; 
+            height: calc(100% - 120px);
+            overflow: auto;
+            position: relative;
+            background: white;
+            margin: 16px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        #sequence-svg {
+            width: 100%;
+            min-height: 100%;
+        }
+        
+        .participant-box {
+            fill: #e3f2fd;
+            stroke: #1976d2;
+            stroke-width: 2;
+        }
+        
+        .participant-text {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 12px;
+            fill: #1976d2;
+            font-weight: 600;
+            text-anchor: middle;
+        }
+        
+        .lifeline {
+            stroke: #1976d2;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+        
+        .message-arrow {
+            stroke: #333;
+            stroke-width: 2;
+            fill: #333;
+            marker-end: url(#arrowhead);
+        }
+        
+        .message-text {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 11px;
+            fill: #333;
+        }
+        
+        .activation-box {
+            fill: #fff3e0;
+            stroke: #ff9800;
+            stroke-width: 2;
+        }
+        
+        .stats {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(25,118,210,0.15);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">
+            <div class="logo">우</div>
+            <span>Source Analyzer - UML 시퀀스 다이어그램</span>
+        </div>
+        <div style="font-size: 14px; opacity: 0.9;">Enterprise Solution</div>
+    </header>
+    
+    <div id="toolbar">
+        <button onclick="resetView()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG저장</button>
+        <button onclick="exportPdf()" title="PDF로 내보내기">📄 PDF저장</button>
+        <button onclick="zoomIn()" title="확대">🔍+ 확대</button>
+        <button onclick="zoomOut()" title="축소">🔍- 축소</button>
+        <div class="stats" id="stats">
+            참가자: <span id="participant-count">0</span> | 
+            메시지: <span id="message-count">0</span>
+        </div>
+    </div>
+    
+    <div id="sequence-container">
+        <svg id="sequence-svg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                        refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+    <script>
+        const DATA = __DATA_PLACEHOLDER__;
+        let currentZoom = 1;
+        const PARTICIPANT_WIDTH = 120;
+        const PARTICIPANT_HEIGHT = 40;
+        const MESSAGE_HEIGHT = 60;
+        const MARGIN = 80;
+
+        function initSequenceDiagram() {
+            if (!DATA.participants || DATA.participants.length === 0) {
+                showNoDataMessage();
+                return;
+            }
+
+            const svg = document.getElementById('sequence-svg');
+            const participants = DATA.participants;
+            const interactions = DATA.interactions || [];
+
+            // SVG 크기 계산
+            const diagramWidth = participants.length * (PARTICIPANT_WIDTH + MARGIN) + MARGIN;
+            const diagramHeight = interactions.length * MESSAGE_HEIGHT + 200;
+            
+            svg.setAttribute('width', diagramWidth);
+            svg.setAttribute('height', diagramHeight);
+            svg.setAttribute('viewBox', `0 0 ${diagramWidth} ${diagramHeight}`);
+
+            // 참가자 박스 그리기
+            participants.forEach((participant, index) => {
+                const x = MARGIN + index * (PARTICIPANT_WIDTH + MARGIN);
+                const y = 20;
+
+                // 참가자 박스
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', PARTICIPANT_WIDTH);
+                rect.setAttribute('height', PARTICIPANT_HEIGHT);
+                rect.setAttribute('class', 'participant-box');
+                svg.appendChild(rect);
+
+                // 참가자 텍스트
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x + PARTICIPANT_WIDTH / 2);
+                text.setAttribute('y', y + PARTICIPANT_HEIGHT / 2 + 4);
+                text.setAttribute('class', 'participant-text');
+                text.textContent = participant.label.length > 15 ? 
+                    participant.label.substring(0, 15) + '...' : participant.label;
+                svg.appendChild(text);
+
+                // 생명선 그리기
+                const lifeline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                lifeline.setAttribute('x1', x + PARTICIPANT_WIDTH / 2);
+                lifeline.setAttribute('y1', y + PARTICIPANT_HEIGHT);
+                lifeline.setAttribute('x2', x + PARTICIPANT_WIDTH / 2);
+                lifeline.setAttribute('y2', diagramHeight - 20);
+                lifeline.setAttribute('class', 'lifeline');
+                svg.appendChild(lifeline);
+            });
+
+            // 메시지 화살표 그리기
+            interactions.forEach((interaction, index) => {
+                const y = 80 + index * MESSAGE_HEIGHT;
+                
+                const fromIndex = participants.findIndex(p => p.id === interaction.from);
+                const toIndex = participants.findIndex(p => p.id === interaction.to);
+                
+                if (fromIndex >= 0 && toIndex >= 0) {
+                    const fromX = MARGIN + fromIndex * (PARTICIPANT_WIDTH + MARGIN) + PARTICIPANT_WIDTH / 2;
+                    const toX = MARGIN + toIndex * (PARTICIPANT_WIDTH + MARGIN) + PARTICIPANT_WIDTH / 2;
+                    
+                    // 메시지 화살표
+                    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    arrow.setAttribute('x1', fromX);
+                    arrow.setAttribute('y1', y);
+                    arrow.setAttribute('x2', toX);
+                    arrow.setAttribute('y2', y);
+                    arrow.setAttribute('class', 'message-arrow');
+                    svg.appendChild(arrow);
+                    
+                    // 메시지 텍스트
+                    const messageText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    const midX = (fromX + toX) / 2;
+                    messageText.setAttribute('x', midX);
+                    messageText.setAttribute('y', y - 8);
+                    messageText.setAttribute('class', 'message-text');
+                    messageText.setAttribute('text-anchor', 'middle');
+                    messageText.textContent = interaction.message || interaction.kind || '';
+                    svg.appendChild(messageText);
+                    
+                    // 활성화 박스 (호출 대상에)
+                    if (fromIndex !== toIndex) {
+                        const activationBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        activationBox.setAttribute('x', toX - 8);
+                        activationBox.setAttribute('y', y - 10);
+                        activationBox.setAttribute('width', 16);
+                        activationBox.setAttribute('height', 20);
+                        activationBox.setAttribute('class', 'activation-box');
+                        svg.appendChild(activationBox);
+                    }
+                }
+            });
+
+            // 통계 업데이트
+            document.getElementById('participant-count').textContent = participants.length;
+            document.getElementById('message-count').textContent = interactions.length;
+        }
+
+        function showNoDataMessage() {
+            const container = document.getElementById('sequence-container');
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div style="font-size: 18px; margin-bottom: 8px;">시퀀스 데이터가 없습니다</div>
+                    <div style="font-size: 14px; color: #999;">
+                        시작 파일과 메소드를 지정하여 시퀀스 다이어그램을 생성하세요.
+                    </div>
+                </div>
+            `;
+        }
+
+        function zoomIn() {
+            currentZoom *= 1.2;
+            const svg = document.getElementById('sequence-svg');
+            svg.style.transform = `scale(${currentZoom})`;
+        }
+
+        function zoomOut() {
+            currentZoom *= 0.8;
+            const svg = document.getElementById('sequence-svg');
+            svg.style.transform = `scale(${currentZoom})`;
+        }
+
+        function resetView() {
+            currentZoom = 1;
+            const svg = document.getElementById('sequence-svg');
+            svg.style.transform = `scale(${currentZoom})`;
+        }
+
+        function exportPng() {
+            const svg = document.getElementById('sequence-svg');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'uml-sequence-diagram.png';
+                link.click();
+            };
+            
+            const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            img.src = url;
+        }
+
+        function exportPdf() {
+            // jsPDF 라이브러리를 동적으로 로드
+            if (typeof jsPDF === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                script.onload = function() {
+                    setTimeout(generateSequencePdf, 100);
+                };
+                document.head.appendChild(script);
+            } else {
+                generateSequencePdf();
+            }
+            
+            function generateSequencePdf() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a3');
+                
+                const svg = document.getElementById('sequence-svg');
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    // A3 가로 크기에 맞게 조정
+                    const pdfWidth = 400;
+                    const pdfHeight = 280;
+                    const imgAspect = img.width / img.height;
+                    
+                    let finalWidth = pdfWidth;
+                    let finalHeight = pdfWidth / imgAspect;
+                    
+                    if (finalHeight > pdfHeight) {
+                        finalHeight = pdfHeight;
+                        finalWidth = pdfHeight * imgAspect;
+                    }
+                    
+                    const xOffset = (420 - finalWidth) / 2;
+                    const yOffset = (297 - finalHeight) / 2;
+                    
+                    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+                    pdf.save('uml-sequence-diagram.pdf');
+                };
+                
+                const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSequenceDiagram();
+        });
+    </script>
+</body>
+</html>

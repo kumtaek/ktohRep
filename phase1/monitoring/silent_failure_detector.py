@@ -461,7 +461,7 @@ def main():
     alerts = detector.detect_all_failures()
     
     if alerts:
-        print(f"\n🚨 Found {len(alerts)} silent failure issues in project '{args.project_name}'")
+        print(f"\n[경고] Found {len(alerts)} silent failure issues in project '{args.project_name}'")
         
         # Group by severity
         by_severity = defaultdict(list)
@@ -857,7 +857,7 @@ def main():
     alerts = detector.detect_all_failures()
     
     if alerts:
-        print(f"\n🚨 Found {len(alerts)} silent failure issues in project '{args.project_name}'")
+        print(f"\n[경고] Found {len(alerts)} silent failure issues in project '{args.project_name}'")
         
         # Group by severity
         by_severity = defaultdict(list)

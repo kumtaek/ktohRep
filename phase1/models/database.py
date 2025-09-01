@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Database models for metadata storage following PRD v4.0 schema.
-Supports both SQLite (development) and Oracle 11g (production).
+메타데이터 저장을 위한 데이터베이스 모델 (PRD v4.0 스키마 준수)
+SQLite (개발환경) 및 Oracle 11g (운영환경) 지원
 """
 
 from sqlalchemy import (

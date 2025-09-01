@@ -13,11 +13,11 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 def main():
-    if len(sys.argv) < 2:
-        print("사용법: python generate_enhanced_erd.py <project_name>")
-        sys.exit(1)
-    
-    project_name = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser(description='향상된 ERD 생성 스크립트')
+    parser.add_argument('--project-name', required=True, help='분석 대상 프로젝트 이름')
+    args = parser.parse_args()
+    project_name = args.project_name
     
     try:
         from visualize.builders.erd_enhanced import build_enhanced_erd_json

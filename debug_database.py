@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Debug script to analyze what's in the database
+데이터베이스 디버깅 및 분석 스크립트
+데이터베이스 내용을 분석하고 디버깅 정보를 제공하는 도구
 """
 import sys
 import json
 from pathlib import Path
 
-# 프로젝트 루트 경로를 시스템 경로에 추가합니다.
+# 프로젝트 루트 경로를 시스템 경로에 추가합니다
 project_root = Path(__file__).parent
 sys.path.append(str(project_root))
 sys.path.append(str(project_root / 'phase1'))
@@ -16,7 +18,11 @@ import yaml
 
 
 def main():
-    project_name = 'sampleSrc'
+    """
+    메인 실행 함수
+    데이터베이스 연결 및 디버깅 정보 출력
+    """
+    project_name = 'sampleSrc'  # 기본 프로젝트명 설정
     
     # 설정 파일을 로드합니다.
     config_path = Path('config/config.yaml')

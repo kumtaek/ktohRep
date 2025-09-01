@@ -184,7 +184,7 @@ def main():
     p = argparse.ArgumentParser(prog='visualize', description='Source Analyzer 시각화 도구')
     
     # cmd를 subparser 대신 위치 인자로 변경하고, 기본값을 'all'로 설정합니다.
-    p.add_argument('cmd', nargs='?', default='all', 
+    p.add_argument('--diagram-type', default='all', 
                    choices=['all', 'graph', 'erd', 'component', 'sequence', 'class', 'relatedness'],
                    help='생성할 시각화 종류 (기본값: all)')
 
@@ -262,7 +262,7 @@ def main():
             args.export_mermaid = '' # Enable default mermaid export
 
         for cmd_name in commands_to_run:
-            logger.info(f"🚀 --- {cmd_name.upper()} 시각화 생성 시작 ---")
+            logger.info(f"[시작] --- {cmd_name.upper()} 시각화 생성 시작 ---")
 
             data, html, diagram_type = None, None, cmd_name
 

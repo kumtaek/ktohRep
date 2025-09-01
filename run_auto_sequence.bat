@@ -11,7 +11,7 @@ echo Auto Sequence Diagram Generation
 echo Project: %PROJECT_NAME%
 echo =================================
 
-python auto_sequence_runner.py %PROJECT_NAME%
+python auto_sequence_runner.py --project-name %PROJECT_NAME%
 
 if errorlevel 1 (
     echo Failed to generate sequence diagrams

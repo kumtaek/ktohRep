@@ -1,4 +1,11 @@
-# visualize/builders/dependency_graph.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+의존성 그래프 생성 모듈
+소스 코드 간의 의존성 관계를 시각화하기 위한 그래프 데이터를 생성합니다.
+메서드 호출, 패키지 관계 등의 정보를 노드와 엣지로 구성합니다.
+"""
+
 from typing import List, Dict, Any, Optional
 from ..data_access import VizDB
 from ..schema import create_node, create_edge, create_graph, filter_nodes_by_focus, limit_nodes
@@ -7,7 +14,7 @@ from ..clustering import AdvancedClusterer
 
 def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project_name: Optional[str], kinds: List[str], min_conf: float,
                                focus: str = None, depth: int = 2, max_nodes: int = 2000) -> Dict[str, Any]:
-    """Build dependency graph JSON for visualization"""
+    """시각화를 위한 의존성 그래프 JSON 데이터 생성"""
     print(f"의존성 그래프 생성: 프로젝트 {project_id}")
     print(f"  종류: {kinds}")
     print(f"  최소 신뢰도: {min_conf}")

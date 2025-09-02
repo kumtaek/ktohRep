@@ -16,7 +16,7 @@ python .\phase1\main.py --project-name sampleSrc
 
 # --- 4. 관계성 계산 (phase1/scripts/calculate_relatedness.py) ---
 # 코드 요소 간의 관계성을 계산합니다.
-python .\phase1\scripts\calculate_relatedness.py --project-name sampleSrc --force-recreate
+python .\phase1\scripts\calculate_relatedness.py --project-name sampleSrc
 
 # --- 5. LLM 기반 분석 및 보고서 생성 ---
 

@@ -1,0 +1,123 @@
+2025-09-02 11:30:59,548 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:30:59,551 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:30:59,554 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:30:59,555 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:32:28,725 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:32:28,728 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:32:28,731 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:32:28,732 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:50:28,127 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:50:28,131 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:50:28,133 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:50:28,135 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:50:59,511 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:50:59,514 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:50:59,518 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:50:59,519 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:52:30,752 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:52:30,755 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:52:30,758 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:52:30,759 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:55:50,223 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:55:50,226 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:55:50,229 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:55:50,231 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 11:58:38,756 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 11:58:38,760 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 11:58:38,762 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 11:58:38,764 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:02:45,802 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:02:45,806 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:02:45,809 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:02:45,810 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:08:44,246 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:08:44,286 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:08:44,289 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:08:44,292 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:08:44,294 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:09:42,236 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:09:42,277 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:09:42,280 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:09:42,283 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:09:42,285 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:10:47,406 - llm_analyzer - INFO - log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:10:47,406 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:10:47,449 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:10:47,452 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:10:47,455 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:10:47,457 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:11:05,618 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:11:05,619 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:11:05,662 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:11:05,665 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:11:05,669 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:11:05,670 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:12:08,474 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:12:08,474 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:12:08,514 - llm_analyzer - INFO - Found project ID: 1
+2025-09-02 12:12:08,517 - llm_analyzer - INFO - Processing file summaries...
+2025-09-02 12:12:08,517 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:12:08,520 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:12:08,523 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:12:08,524 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:12:08,524 - llm_analyzer - INFO - Code element summarization completed!
+2025-09-02 12:13:02,718 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:13:02,718 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:13:02,762 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:13:02,766 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:13:02,769 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:13:02,771 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:13:20,460 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:13:20,460 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:13:20,504 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:13:20,508 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:13:20,511 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:13:20,512 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:15:33,674 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:15:33,674 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:15:33,718 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:15:33,722 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:15:33,725 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:15:33,727 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:15:49,665 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:15:49,665 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:15:49,710 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:15:49,715 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:15:49,718 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:15:49,720 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:16:17,438 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:16:17,438 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:16:17,484 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:16:17,488 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:16:17,490 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:16:17,492 - llm_analyzer - INFO - Processed 0 SQL units
+2025-09-02 12:17:01,034 - llm_analyzer - INFO - 
+
+
+log_file = output\sampleSrc\logs\llm_analysis.log
+2025-09-02 12:17:01,034 - llm_analyzer - INFO - Starting LLM analysis for project: sampleSrc
+2025-09-02 12:17:01,079 - llm_analyzer - INFO - Starting LLM summarization for project 1
+2025-09-02 12:17:01,083 - llm_analyzer - INFO - Processed 0 files
+2025-09-02 12:17:01,085 - llm_analyzer - INFO - Processed 0 methods
+2025-09-02 12:17:01,087 - llm_analyzer - INFO - Processed 0 SQL units

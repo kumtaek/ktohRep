@@ -998,7 +998,7 @@ class MetadataEngine:
                             session.add(table_edge)
                             self.logger.info(f"조인에서 발견된 테이블 메타정보 생성: {join.l_table}")
                         else:
-                            self.logger.warning(f"테이블을 찾을 수 없음_1 - (조인 대상 더미 정보는 생성됨): {join.l_table} (스키마: {default_owner})")
+                            self.logger.warning(f"테이블을 찾을 수 없음1(조인 대상 더미 정보는 생성됨): {join.l_table} (스키마: {default_owner})")
                 
                 # r_table(오른쪽 테이블)도 동일하게 처리
                 if join.r_table:
@@ -1037,7 +1037,7 @@ class MetadataEngine:
                             session.add(table_edge)
                             self.logger.info(f"조인에서 발견된 테이블 메타정보 생성 (오른쪽): {join.r_table}")
                         else:
-                            self.logger.warning(f"테이블을 찾을 수 없음_2 - (조인 대상 더미 정보는 생성됨): {join.r_table} (스키마: {default_owner})")
+                            self.logger.warning(f"테이블을 찾을 수 없음2: {join.r_table} (스키마: {default_owner})")
                     
     async def _infer_pk_fk_relationships(self, session, project_id: int):
         """PK-FK 관계 추론"""

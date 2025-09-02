@@ -20,21 +20,19 @@ project_root = phase1_root.parent
 sys.path.insert(0, str(phase1_root))
 sys.path.insert(0, str(project_root))
 
+# 로깅 설정
+logging.basicConfig(
+    level=logging.DEBUG, # DEBUG 레벨로 설정
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout) # 콘솔로 출력
+    ]
+)
+logger = logging.getLogger('llm_analyzer') # 기존 llm_analyzer 로거 사용
+
 from llm.summarizer import CodeSummarizer, generate_table_specification_md, generate_source_specification_md
 from models.database import DatabaseManager
-try:
-    from utils.logger import setup_logger
-except ImportError:
-    # Fallback logger setup
-    def setup_logger(name, log_file):
-        import logging
-        logger = logging.getLogger(name)
-        handler = logging.FileHandler(log_file)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-        return logger
+# from utils.logger import setup_logger # 더 이상 사용하지 않음
 
 def load_config(config_path: str = None) -> Dict[str, Any]:
     """Load configuration from config.yaml"""
@@ -42,20 +40,20 @@ def load_config(config_path: str = None) -> Dict[str, Any]:
         config_file = Path(config_path)
     else:
         config_file = Path(__file__).parents[2] / "config" / "config.yaml"
-    
+
     if not config_file.exists():
-        print(f"Config file not found: {config_file}")
+        logger.error(f"Config file not found: {config_file}")
         sys.exit(1)
-    
+
     with open(config_file, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
-    
+
     return config
 
 def get_project_config(global_config: Dict[str, Any], project_name: str) -> Dict[str, Any]:
     """Get project-specific configuration"""
     project_config = global_config.copy()
-    
+
     # Replace {project_name} placeholders in paths
     def replace_project_name(obj):
         if isinstance(obj, str):
@@ -66,193 +64,201 @@ def get_project_config(global_config: Dict[str, Any], project_name: str) -> Dict
             return [replace_project_name(item) for item in obj]
         else:
             return obj
-    
+
     project_config = replace_project_name(project_config)
     return project_config
 
-def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
+def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False, force_recreate: bool = False):
     """JSP, Java, Method, Query 요소들에 대한 LLM 요약 생성"""
-    print(f"Starting LLM analysis for project: {project_name}")
     
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
-    
-    # Setup logging
     log_file = Path(project_config['project']['paths']['log_dir']) / 'llm_analysis.log'
+    logger.info(f"log_file = {log_file}")
+    
+    # Setup logging (기존 로거 사용)
+    # logger = setup_logger('llm_analyzer', str(log_file))
+    logger.info(f"Starting LLM analysis for project: {project_name}")
+    
     log_file.parent.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger('llm_analyzer', str(log_file))
+    logger.debug(f"log_file = {log_file}")
     
     # Initialize database manager to get project_id
     dbm = DatabaseManager(project_config['database']['project'])
     dbm.initialize()
-    
+
     session = dbm.get_session()
     try:
-        # Get or create project
+        logger.info('# Get or create project')
         from models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
-            print(f"Project '{project_name}' not found in database")
+            logger.info(f"Project '{project_name}' not found in database")
             return
-        
+
         project_id = project.project_id
-        print(f"Found project ID: {project_id}")
-        
+        logger.info(f"Found project ID: {project_id}")
+
     finally:
         session.close()
-    
-    # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
-    
+
+    logger.info('# Initialize summarizer')
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=force_recreate)
+
     try:
         # Process code summaries
-        print("Processing file summaries...")
+        logger.info("Processing file summaries...")
         summarizer.process_project_summaries(project_id, batch_size)
-        
-        print("Code element summarization completed!")
-        
+
+        logger.info("Code element summarization completed!")
+
     except Exception as e:
         error_msg = f"Error during code summarization: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """데이터베이스 테이블/컬럼 코멘트를 LLM으로 보강"""
-    print(f"Starting database comment enhancement for project: {project_name}")
-    
+    logger.info(f"Starting database comment enhancement for project: {project_name}")
+
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
-    
-    # Setup logging
+
+    # Setup logging (기존 로거 사용)
     log_file = Path(project_config['project']['paths']['log_dir']) / 'db_comment_enhancement.log'
     log_file.parent.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger('db_comment_enhancer', str(log_file))
-    
+    # logger = setup_logger('db_comment_enhancer', str(log_file))
+
     # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
-    
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=False) # enhance-db는 force_recreate 옵션 없음
+
     try:
         # Process table/column comments
-        print("Processing table and column comment enhancement...")
+        logger.info("Processing table and column comment enhancement...")
         summarizer.process_table_comments(batch_size)
-        
-        print("Success: Database comment enhancement completed!")
-        
+
+        logger.info("Success: Database comment enhancement completed!")
+
     except Exception as e:
         error_msg = f"Error during comment enhancement: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """SQL 조인조건 LLM 분석"""
-    print(f"Starting join analysis for project: {project_name}")
-    
+    logger.info(f"Starting join analysis for project: {project_name}")
+
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
-    
-    # Setup logging
+
+    # Setup logging (기존 로거 사용)
     log_file = Path(project_config['project']['paths']['log_dir']) / 'join_analysis.log'
     log_file.parent.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger('join_analyzer', str(log_file))
-    
+    # logger = setup_logger('join_analyzer', str(log_file))
+
     # Initialize database manager to get project_id
     dbm = DatabaseManager(project_config['database']['project'])
     dbm.initialize()
-    
+
     session = dbm.get_session()
     try:
         # Get or create project
         from models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
-            print(f"Project '{project_name}' not found in database")
+            logger.info(f"Project '{project_name}' not found in database")
             return
-        
+
         project_id = project.project_id
-        print(f"Found project ID: {project_id}")
-        
+        logger.info(f"Found project ID: {project_id}")
+
     finally:
         session.close()
-    
+
     # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
-    
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=False) # analyze-joins는 force_recreate 옵션 없음
+
     try:
         # Process missing joins
-        print("Analyzing SQL joins...")
+        logger.info("Analyzing SQL joins...")
         summarizer.process_missing_joins(project_id, batch_size)
-        
-        print("Join analysis completed!")
-        
+
+        logger.info("Join analysis completed!")
+
     except Exception as e:
         error_msg = f"Error during join analysis: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """소스코드 명세서 마크다운 파일 생성"""
-    print(f"Generating source specification markdown for project: {project_name}")
-    
+    logger.info(f"Generating source specification markdown for project: {project_name}")
+
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
-    
+
     # Default output path
     if not output_file:
         output_dir = Path(project_config['project']['paths']['output_dir'])
         output_file = str(output_dir / "소스코드명세서.md")
-    
+
     # Ensure output directory exists
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-    
+
     try:
         # Generate source specification
         generate_source_specification_md(project_config, output_file)
-        
-        print(f"Source specification generated: {output_file}")
-        
+
+        logger.info(f"Source specification generated: {output_file}")
+
     except Exception as e:
         error_msg = f"Error generating source specification: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """테이블 명세서 마크다운 파일 생성"""
-    print(f"Generating table specification markdown for project: {project_name}")
-    
+    logger.info(f"Generating table specification markdown for project: {project_name}")
+
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
-    
+
     # Default output path
     if not output_file:
         output_dir = Path(project_config['project']['paths']['output_dir'])
         output_file = str(output_dir / "테이블명세서.md")
-    
+
     # Ensure output directory exists
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-    
+
     try:
         # Generate table specification
         generate_table_specification_md(project_config, output_file)
-        
-        print(f"Success: Table specification generated: {output_file}")
-        
+
+        logger.info(f"Success: Table specification generated: {output_file}")
+
     except Exception as e:
         error_msg = f"Error generating table specification: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -273,46 +279,48 @@ Examples:
   python llm_analyzer.py full-analysis --project-name sampleSrc
         """
     )
-    
+
     subparsers = parser.add_subparsers(dest='command', help='Available commands', required=True)
-    
+
     # Common arguments
     for subparser in []:  # Will be added to each subparser
         pass
-    
+
     # Summarize command
     summarize_parser = subparsers.add_parser('summarize', help='Generate LLM summaries for code elements')
     summarize_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
     summarize_parser.add_argument('--batch-size', '-b', type=int, default=10, help='Number of items to process in each batch')
     summarize_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
     summarize_parser.add_argument('--debug', '-d', action='store_true', help='Show debug information including LLM interactions')
-    
+    summarize_parser.add_argument('--force-recreate', action='store_true', help='Force recreation of LLM summaries by clearing existing ones')
+
+
     # Enhance DB command
     enhance_parser = subparsers.add_parser('enhance-db', help='Enhance database table/column comments')
     enhance_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
     enhance_parser.add_argument('--batch-size', '-b', type=int, default=10, help='Number of items to process in each batch')
     enhance_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
     enhance_parser.add_argument('--debug', '-d', action='store_true', help='Show debug information including LLM interactions')
-    
+
     # Join analysis command
     join_parser = subparsers.add_parser('analyze-joins', help='Analyze SQL join conditions using LLM')
     join_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
     join_parser.add_argument('--batch-size', '-b', type=int, default=10, help='Number of SQL units to process in each batch')
     join_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
     join_parser.add_argument('--debug', '-d', action='store_true', help='Show debug information including LLM interactions')
-    
+
     # Source spec command
     source_spec_parser = subparsers.add_parser('source-spec', help='Generate source code specification markdown')
     source_spec_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
     source_spec_parser.add_argument('--output', '-o', type=str, help='Output file path (default: ./output/{project}/소스코드명세서.md)')
     source_spec_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
-    
+
     # Table spec command
     table_spec_parser = subparsers.add_parser('table-spec', help='Generate table specification markdown')
     table_spec_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
     table_spec_parser.add_argument('--output', '-o', type=str, help='Output file path (default: ./output/{project}/테이블명세서.md)')
     table_spec_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
-    
+
     # Full analysis command
     full_parser = subparsers.add_parser('full-analysis', help='Run complete LLM analysis (all operations)')
     full_parser.add_argument('--project-name', '-p', type=str, required=True, help='Project name to analyze')
@@ -320,84 +328,85 @@ Examples:
     full_parser.add_argument('--output', '-o', type=str, help='Output file path for specifications')
     full_parser.add_argument('--config', '-c', type=str, help='Path to config.yaml file')
     full_parser.add_argument('--debug', '-d', action='store_true', help='Show debug information including LLM interactions')
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         return
-    
+
     # Load configuration
     try:
         config = load_config(args.config)
-        
+
         # Check if LLM is enabled
         if not config.get('llm', {}).get('enabled', True):
-            print("Warning:  LLM is disabled in configuration. Enable it in config.yaml to use this tool.")
+            logger.warning("Warning:  LLM is disabled in configuration. Enable it in config.yaml to use this tool.")
             return
-        
+
     except Exception as e:
         error_msg = f"Error loading configuration: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         return
-    
+
     try:
         if args.command == 'summarize':
-            summarize_code_elements(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+            summarize_code_elements(config, args.project_name, args.batch_size, getattr(args, 'debug', False), getattr(args, 'force_recreate', False))
+
         elif args.command == 'enhance-db':
             enhance_db_comments(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+
         elif args.command == 'analyze-joins':
             analyze_joins(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+
         elif args.command == 'source-spec':
             generate_source_spec_md(config, args.project_name, args.output)
-            
+
         elif args.command == 'table-spec':
             generate_table_spec_md(config, args.project_name, args.output)
-            
+
         elif args.command == 'full-analysis':
             print("Starting full LLM analysis...")
-            
+
             # Step 1: Code summarization
-            print("\nStep 1: Code Element Summarization")
-            summarize_code_elements(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+            logger.info("Step 1: Code Element Summarization")
+            # full-analysis 명령에서는 force_recreate 옵션을 summarize_code_elements에 전달
+            summarize_code_elements(config, args.project_name, args.batch_size, getattr(args, 'debug', False), getattr(args, 'force_recreate', False))
+
             # Step 2: DB comment enhancement
             print("\nStep 2: Database Comment Enhancement")
             enhance_db_comments(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+
             # Step 3: Analyze joins
             print("\nStep 3: SQL Join Analysis")
             analyze_joins(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
-            
+
             # Step 4: Generate specifications
             print("\nStep 4: Generate Specifications")
-            
+
             # Generate table specification
             table_output = args.output or f"output/{args.project_name}/테이블명세서.md"
             generate_table_spec_md(config, args.project_name, table_output)
-            
+
             # Generate source specification
             source_output = f"output/{args.project_name}/소스코드명세서.md"
             generate_source_spec_md(config, args.project_name, source_output)
-            
+
             print("\nFull LLM analysis completed!")
             print(f"Generated files:")
             print(f"  - Table specification: {table_output}")
             print(f"  - Source specification: {source_output}")
-            
+
     except KeyboardInterrupt:
-        print("\nError: Analysis interrupted by user")
+        logger.error("\nError: Analysis interrupted by user")
         sys.exit(1)
     except Exception as e:
         error_msg = f"Unexpected error: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         sys.exit(1)
 
 if __name__ == '__main__':

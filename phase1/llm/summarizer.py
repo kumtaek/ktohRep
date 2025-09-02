@@ -16,23 +16,28 @@ except ImportError:
     from models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
 from sqlalchemy import text
 import logging
+from sqlalchemy.orm import joinedload
 from .intelligent_chunker import IntelligentChunker, ChunkBasedSummarizer, CodeChunk
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger('llm_analyzer') # llm_analyzer.py에서 설정한 로거 사용
 
 class CodeSummarizer:
     """LLM 기반 코드 요약 및 메타데이터 향상 클래스"""
     
-    def __init__(self, config: Dict[str, Any], debug: bool = False):
+    def __init__(self, config: Dict[str, Any], debug: bool = False, force_recreate: bool = False):
+        
+        print('init@summarizer.py')
         self.config = config
         self.llm_config = config.get('llm', {})
         self.debug = debug
+        self.force_recreate = force_recreate # force_recreate 인스턴스 변수 추가
+        print(f"force_recreate = {force_recreate}")
         self.dbm = DatabaseManager(config.get('database', {}).get('project', {}))
         self.chunker = IntelligentChunker()
         self.chunk_summarizer = ChunkBasedSummarizer(self.chunker)
         self.dbm.initialize()
-    
+        print('end of init@summarizer.py')
+        
     def session(self):
         """데이터베이스 세션 반환"""
         return self.dbm.get_session()
@@ -162,7 +167,7 @@ class CodeSummarizer:
                 return None
             
             logger.info(f"[청킹 요약 중] 파일: {file.path} (ID: {file.file_id})")
-            print(f"DEBUG: 청킹 기반 파일 요약 중 - {file.path}")
+            logger.info(f"DEBUG: 청킹 기반 파일 요약 중 - {file.path}")
             
             # 파일 내용 읽기
             file_content = self._read_project_file_content(file.path)
@@ -195,7 +200,7 @@ class CodeSummarizer:
                 final_summary = self._chat_with_debug(client, [{"role": "user", "content": combined_prompt}], max_tokens=150, temperature=0.3)
                 
                 logger.info(f"[청킹 요약 완료] {file.path} -> {len(chunks)}개 청크")
-                print(f"DEBUG: 청킹 요약 완료 - {len(chunks)}개 청크 처리")
+                logger.info(f"DEBUG: 청킹 요약 완료 - {len(chunks)}개 청크 처리")
                 
                 return final_summary.strip() if isinstance(final_summary, str) else str(final_summary).strip()
             
@@ -203,7 +208,7 @@ class CodeSummarizer:
             
         except Exception as e:
             import traceback
-            logger.error(f"Failed to summarize file {file.path}: {e}\n{traceback.format_exc()}")
+            logger.error(f"Failed to summarize file {file.path}: {e}{traceback.format_exc()}")
             return None
     
     def _summarize_code_chunk(self, client, chunk: CodeChunk) -> Optional[str]:
@@ -360,7 +365,7 @@ class CodeSummarizer:
             client = get_client(self.llm_config)
             
             # SQL 내용을 프로젝트 폴더에서 읽어옴
-            sql_content = sql_unit.sql_content if sql_unit.sql_content else ''
+            sql_content = sql_unit.normalized_fingerprint if sql_unit.normalized_fingerprint else ''
             
             # SQL 내용이 없고 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
             if not sql_content and hasattr(sql_unit, 'file') and sql_unit.file and sql_unit.file.path:
@@ -445,7 +450,7 @@ SQL 내용:
             
             # 1. 테이블명을 포함하는 SQL 쿼리들의 청킹 요약 찾기
             sql_units = session.query(SqlUnit).filter(
-                SqlUnit.sql_content.ilike(f'%{table_name}%')
+                SqlUnit.normalized_fingerprint.ilike(f'%{table_name}%')
             ).limit(10).all()
             
             for sql_unit in sql_units:
@@ -454,7 +459,7 @@ SQL 내용:
             
             # 2. 테이블명을 포함하는 메서드들의 요약 찾기  
             methods = session.query(Method).filter(
-                Method.summary.ilike(f'%{table_name}%')
+                Method.llm_summary.ilike(f'%{table_name}%')
             ).limit(5).all()
             
             for method in methods:
@@ -463,7 +468,7 @@ SQL 내용:
             
             # 3. 파일 요약에서 테이블명 언급하는 것들 찾기
             files = session.query(File).filter(
-                File.summary.ilike(f'%{table_name}%')
+                File.llm_summary.ilike(f'%{table_name}%')
             ).limit(3).all()
             
             for file in files:
@@ -487,12 +492,12 @@ SQL 내용:
             client = get_client(self.llm_config)
             
             # 컬럼과 관련된 청킹 요약 정보 수집
-            column_chunk_context = self._collect_column_related_chunks(column.column_name, column.table_name)
+            column_chunk_context = self._collect_column_related_chunks(column.column_name, column.table.table_name)
             
             prompt = f"""데이터베이스 컬럼을 종합 분석하여 한글로 향상된 설명을 제공해주세요.
 
 컬럼명: {column.column_name}
-테이블: {column.table_name}
+테이블: {column.table.table_name}
 데이터 타입: {column.data_type}
 NULL 허용: {column.nullable}
 기존 코멘트: {column.column_comment or '코멘트 없음'}
@@ -526,21 +531,21 @@ NULL 허용: {column.nullable}
             
             # 1. 컬럼명을 포함하는 SQL 쿼리들의 요약 찾기
             sql_units = session.query(SqlUnit).filter(
-                SqlUnit.sql_content.ilike(f'%{column_name}%')
+                SqlUnit.normalized_fingerprint.ilike(f'%{column_name}%')
             ).limit(8).all()
             
             for sql_unit in sql_units:
-                if sql_unit.summary and table_name.lower() in sql_unit.sql_content.lower():
-                    related_chunks.append(f"[SQL:{sql_unit.stmt_id}] {sql_unit.summary}")
+                if sql_unit.llm_summary and table_name.lower() in sql_unit.sql_content.lower():
+                    related_chunks.append(f"[SQL:{sql_unit.stmt_id}] {sql_unit.llm_summary}")
             
             # 2. 컬럼명을 포함하는 메서드들의 요약 찾기
             methods = session.query(Method).filter(
-                Method.summary.ilike(f'%{column_name}%')
+                Method.llm_summary.ilike(f'%{column_name}%')
             ).limit(5).all()
             
             for method in methods:
-                if method.summary:
-                    related_chunks.append(f"[메서드:{method.name}] {method.summary}")
+                if method.llm_summary:
+                    related_chunks.append(f"[메서드:{method.name}] {method.llm_summary}")
             
             # 3. getter/setter 패턴으로 컬럼 사용하는 메서드 찾기
             getter_pattern = f"%get{column_name.title()}%"
@@ -551,8 +556,8 @@ NULL 허용: {column.nullable}
             ).limit(3).all()
             
             for method in accessor_methods:
-                if method.summary:
-                    related_chunks.append(f"[접근자:{method.name}] {method.summary}")
+                if method.llm_summary:
+                    related_chunks.append(f"[접근자:{method.name}] {method.llm_summary}")
             
             session.close()
             return '\n'.join(related_chunks) if related_chunks else f"{column_name} 컬럼 관련 청킹 정보 없음"
@@ -633,6 +638,17 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
         
         session = self.session()
         try:
+            if self.force_recreate:
+                logger.info(f"기존 LLM 요약 데이터 초기화 중 (프로젝트 ID: {project_id})...")
+                logger.info(f"[DEBUG] LLM 요약 데이터 초기화 SQL 실행 (프로젝트 ID: {project_id})")
+                session.execute(text("UPDATE files SET llm_summary = NULL, llm_summary_confidence = 0.0 WHERE project_id = :project_id"), {"project_id": project_id})
+                session.execute(text("UPDATE classes SET llm_summary = NULL, llm_summary_confidence = 0.0 WHERE file_id IN (SELECT file_id FROM files WHERE project_id = :project_id)"), {"project_id": project_id})
+                session.execute(text("UPDATE methods SET llm_summary = NULL, llm_summary_confidence = 0.0 WHERE class_id IN (SELECT class_id FROM classes WHERE file_id IN (SELECT file_id FROM files WHERE project_id = :project_id)) "), {"project_id": project_id})
+                session.execute(text("UPDATE sql_units SET llm_summary = NULL, llm_summary_confidence = 0.0 WHERE file_id IN (SELECT file_id FROM files WHERE project_id = :project_id)"), {"project_id": project_id})
+                session.commit()
+                logger.info("LLM 요약 데이터 초기화 완료.")
+                logger.info("[DEBUG] LLM 요약 데이터 초기화 완료.")
+
             # Process files
             files = session.query(File).filter(
                 File.project_id == project_id,
@@ -710,8 +726,8 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
             
             # SQL 내용을 가져오기 (우선순위: sql_content > normalized_fingerprint)
             sql_text = ''
-            if hasattr(sql_unit, 'sql_content') and sql_unit.sql_content:
-                sql_text = sql_unit.sql_content[:5120]  # 5KB 한도
+            if hasattr(sql_unit, 'normalized_fingerprint') and sql_unit.normalized_fingerprint:
+                sql_text = sql_unit.normalized_fingerprint[:5120]  # 5KB 한도
             elif hasattr(sql_unit, 'normalized_fingerprint') and sql_unit.normalized_fingerprint:
                 sql_text = sql_unit.normalized_fingerprint[:5120]  # 5KB 한도
             else:
@@ -820,6 +836,13 @@ SQL 내용:
         
         session = self.session()
         try:
+            if self.force_recreate:
+                logger.info("기존 LLM 테이블/컬럼 주석 데이터 초기화 중...")
+                session.execute(text("UPDATE db_tables SET llm_comment = NULL, llm_comment_confidence = 0.0"))
+                session.execute(text("UPDATE db_columns SET llm_comment = NULL, llm_comment_confidence = 0.0"))
+                session.commit()
+                logger.info("LLM 테이블/컬럼 주석 데이터 초기화 완료.")
+
             # Process tables
             tables = session.query(DbTable).filter(
                 DbTable.llm_comment.is_(None)
@@ -857,7 +880,7 @@ SQL 내용:
             logger.info(f"Processed {len(tables)} tables")
             
             # Process columns - process all columns without LLM comment
-            all_columns = session.query(DbColumn).filter(
+            all_columns = session.query(DbColumn).options(joinedload(DbColumn.table)).filter(
                 DbColumn.llm_comment.is_(None)
             ).all()
             

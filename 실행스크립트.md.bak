@@ -21,7 +21,7 @@ python .\phase1\scripts\calculate_relatedness.py --project-name sampleSrc
 # --- 5. LLM 기반 분석 및 보고서 생성 ---
 
 # 5.1. LLM 기반 코드 요약 및 분석
-python .\phase1\tools\llm_analyzer.py summarize --project-name sampleSrc --batch-size 10 --debug
+python .\phase1\tools\llm_analyzer.py summarize --project-name sampleSrc --batch-size 10 --debug --force-recreate
 
 # 5.2. LLM 기반 데이터베이스 주석 강화
 python .\phase1\tools\llm_analyzer.py enhance-db --project-name sampleSrc --batch-size 10 --debug

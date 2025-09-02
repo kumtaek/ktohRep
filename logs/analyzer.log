@@ -8551,3 +8551,936 @@ TypeError: __init__() takes exactly 1 argument (2 given)
 2025-09-02 12:34:56,391 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
 2025-09-02 12:34:56,415 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
 2025-09-02 12:34:56,419 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 13:44:34,909 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 13:44:34,909 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:44:34,910 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 13:44:34,910 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:44:34,925 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 13:44:34,930 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 13:44:34,933 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 13:44:34,935 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 13:44:34,963 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 13:44:35,043 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 13:44:35,044 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 13:44:35,045 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 13:44:35,056 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 13:44:35,056 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 13:44:35,059 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 13:44:35,061 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 13:44:35,066 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,066 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 13:44:35,080 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,081 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 13:44:35,086 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,087 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 13:44:35,091 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,095 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 13:44:35,112 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,113 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 13:44:35,129 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,130 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 13:44:35,133 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,134 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 13:44:35,140 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,142 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 13:44:35,162 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,162 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 13:44:35,166 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,167 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 13:44:35,170 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,171 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 13:44:35,174 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,177 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 13:44:35,180 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,181 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 13:44:35,187 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,190 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 13:44:35,194 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,195 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 13:44:35,202 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,204 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 13:44:35,210 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,210 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 13:44:35,218 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,221 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 13:44:35,224 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,225 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 13:44:35,227 - main - ERROR - [logger.py:87] - 파일 분석 오류 E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java: not enough values to unpack (expected 8, got 4)
+Traceback:
+Traceback (most recent call last):
+  File "E:\SourceAnalyzer.git\phase1\main.py", line 307, in _analyze_files
+    file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = parse_result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 8, got 4)
+
+2025-09-02 13:44:35,228 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 13:44:35,241 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 13:44:35,244 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 13:44:35,267 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 13:44:35,320 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 13:44:35,334 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 13:44:35,347 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 13:44:35,363 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 13:44:35,384 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 13:44:35,398 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 13:44:35,411 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 13:44:35,432 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 13:44:35,436 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 13:45:28,881 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 13:45:28,881 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:45:28,882 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 13:45:28,882 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:45:28,896 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 13:45:28,899 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 13:45:28,901 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 13:45:28,903 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 13:45:28,931 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 13:45:29,004 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 13:45:29,005 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 13:45:29,006 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 13:45:29,016 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 13:45:29,016 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 13:45:29,019 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 13:45:29,021 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 13:45:29,023 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 13:45:29,033 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 13:45:29,036 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 13:45:29,039 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 13:45:29,053 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 13:45:29,067 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 13:45:29,069 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 13:45:29,072 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 13:45:29,086 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 13:45:29,088 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 13:45:29,091 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 13:45:29,092 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 13:45:29,093 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 13:45:29,098 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 13:45:29,100 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 13:45:29,107 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 13:45:29,111 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 13:45:29,115 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 13:45:29,116 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 13:45:29,117 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 13:45:29,126 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 13:45:29,129 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 13:45:29,147 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 13:45:29,189 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 13:45:29,199 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 13:45:29,210 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 13:45:29,222 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 13:45:29,238 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 13:45:29,249 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 13:45:29,260 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 13:45:29,279 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 13:45:29,282 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 13:49:58,046 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 13:49:58,046 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:49:58,048 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 13:49:58,048 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:49:58,063 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 13:49:58,067 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 13:49:58,069 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 13:49:58,071 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 13:49:58,100 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 13:49:58,178 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 13:49:58,178 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 13:49:58,180 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 13:49:58,191 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 13:49:58,192 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 13:49:58,195 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 13:49:58,196 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 13:49:58,198 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,201 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 13:49:58,211 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,212 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 13:49:58,214 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,214 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 13:49:58,217 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,217 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 13:49:58,231 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,232 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 13:49:58,246 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,247 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 13:49:58,249 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,249 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 13:49:58,252 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,252 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 13:49:58,268 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,269 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 13:49:58,271 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,271 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 13:49:58,272 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,273 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 13:49:58,275 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,280 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 13:49:58,282 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,282 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 13:49:58,287 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,287 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 13:49:58,289 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,289 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 13:49:58,294 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,297 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 13:49:58,301 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,301 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 13:49:58,304 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,305 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 13:49:58,306 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,306 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 13:49:58,312 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:49:58,313 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 13:49:58,322 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,322 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 13:49:58,323 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,328 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 13:49:58,346 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,347 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 13:49:58,391 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,391 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 13:49:58,402 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,403 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 13:49:58,414 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,415 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 13:49:58,429 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,429 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 13:49:58,445 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,446 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 13:49:58,456 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,457 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 13:49:58,468 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,468 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 13:49:58,477 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:49:58,489 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 13:49:58,493 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 13:54:27,777 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 13:54:27,777 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:54:27,779 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 13:54:27,779 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 13:54:27,796 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 13:54:27,801 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 13:54:27,803 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 13:54:27,805 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 13:54:27,834 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 13:54:27,910 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 13:54:27,911 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 13:54:27,912 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 13:54:27,923 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 13:54:27,924 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 13:54:27,927 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 13:54:27,927 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 13:54:27,929 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,930 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 13:54:27,940 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,940 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 13:54:27,943 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,943 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 13:54:27,946 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,952 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 13:54:27,967 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,968 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 13:54:27,982 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,983 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 13:54:27,985 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,985 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 13:54:27,988 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:27,989 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 13:54:28,004 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,004 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 13:54:28,006 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,007 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 13:54:28,008 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,008 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 13:54:28,010 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,013 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 13:54:28,014 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,014 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 13:54:28,020 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,020 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 13:54:28,022 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,022 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 13:54:28,027 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,027 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 13:54:28,038 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,038 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 13:54:28,042 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,043 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 13:54:28,044 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,048 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 13:54:28,050 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 13:54:28,050 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 13:54:28,060 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,063 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 13:54:28,064 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,064 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 13:54:28,082 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,083 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 13:54:28,126 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,127 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 13:54:28,138 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,138 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 13:54:28,150 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,150 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 13:54:28,163 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,163 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 13:54:28,179 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,180 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 13:54:28,193 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,194 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 13:54:28,204 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,205 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 13:54:28,213 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 13:54:28,226 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 13:54:28,229 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 14:00:32,472 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 14:00:32,472 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:00:32,472 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 14:00:32,472 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:00:32,646 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 14:00:32,649 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 14:00:32,651 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 14:00:32,652 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 14:00:32,683 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 14:00:32,774 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 14:00:32,774 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 14:00:32,774 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 14:00:32,786 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 14:00:32,786 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 14:00:32,789 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 14:00:32,789 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 14:00:32,791 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,791 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 14:00:32,800 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,800 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 14:00:32,802 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,803 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 14:00:32,805 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,805 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 14:00:32,819 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,819 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 14:00:32,834 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,834 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 14:00:32,835 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,835 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 14:00:32,839 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,839 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 14:00:32,854 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,854 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 14:00:32,856 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,857 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 14:00:32,858 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,858 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 14:00:32,859 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,860 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 14:00:32,860 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,860 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 14:00:32,864 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,865 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 14:00:32,866 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,866 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 14:00:32,870 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,871 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 14:00:32,874 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,874 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 14:00:32,877 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,877 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 14:00:32,878 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,878 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 14:00:32,879 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:00:32,879 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 14:00:32,888 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,888 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 14:00:32,889 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,889 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 14:00:32,906 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,906 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 14:00:32,946 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,946 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 14:00:32,955 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,955 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 14:00:32,968 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,968 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 14:00:32,980 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,980 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 14:00:32,996 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:32,996 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 14:00:33,007 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:33,007 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 14:00:33,017 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:33,017 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 14:00:33,025 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:00:33,027 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 0개 처리
+2025-09-02 14:00:33,030 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 14:02:39,644 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 14:02:39,644 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:02:39,644 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 14:02:39,644 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:02:39,820 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 14:02:39,823 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 14:02:39,825 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 14:02:39,826 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 14:02:39,858 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 14:02:39,949 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 14:02:39,949 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 14:02:39,949 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 14:02:39,961 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 14:02:39,961 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 14:02:39,964 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 14:02:39,964 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 14:02:39,966 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:39,976 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java - 클래스 1개, 메소드 3개, 엣지 2개
+2025-09-02 14:02:39,976 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 14:02:39,986 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:39,996 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java - 클래스 1개, 메소드 12개, 엣지 56개
+2025-09-02 14:02:39,996 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 14:02:39,998 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,005 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java - 클래스 1개, 메소드 3개, 엣지 5개
+2025-09-02 14:02:40,005 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 14:02:40,007 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,014 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java - 클래스 1개, 메소드 4개, 엣지 7개
+2025-09-02 14:02:40,014 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 14:02:40,029 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,040 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java - 클래스 1개, 메소드 8개, 엣지 84개
+2025-09-02 14:02:40,040 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 14:02:40,055 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,065 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java - 클래스 1개, 메소드 5개, 엣지 88개
+2025-09-02 14:02:40,065 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 14:02:40,067 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,072 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-02 14:02:40,072 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 14:02:40,076 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,083 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:02:40,083 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 14:02:40,098 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,110 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-02 14:02:40,110 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 14:02:40,112 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,118 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-02 14:02:40,119 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 14:02:40,120 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,127 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-02 14:02:40,127 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 14:02:40,128 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,135 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-02 14:02:40,135 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 14:02:40,136 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,141 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-02 14:02:40,141 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 14:02:40,146 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,153 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:02:40,153 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 14:02:40,155 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,162 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-02 14:02:40,162 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 14:02:40,166 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,174 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-02 14:02:40,174 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 14:02:40,178 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,187 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-02 14:02:40,187 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 14:02:40,191 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,200 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-02 14:02:40,200 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 14:02:40,201 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,208 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-02 14:02:40,208 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 14:02:40,209 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:02:40,216 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-02 14:02:40,216 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 14:02:40,227 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,234 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,234 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 14:02:40,235 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,239 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,239 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 14:02:40,259 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,265 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,265 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 14:02:40,305 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,312 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,312 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 14:02:40,326 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,332 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,332 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 14:02:40,343 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,351 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,351 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 14:02:40,365 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,373 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,373 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 14:02:40,391 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,400 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,400 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 14:02:40,410 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,417 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,417 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 14:02:40,428 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,435 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,435 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 14:02:40,443 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:02:40,448 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:02:40,458 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 14:02:40,478 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 14:05:47,560 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 14:05:47,561 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:05:47,561 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 14:05:47,561 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:05:47,735 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 14:05:47,738 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 14:05:47,740 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 14:05:47,741 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 14:05:47,776 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 14:05:47,864 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 14:05:47,864 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 14:05:47,865 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 14:05:47,875 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 14:05:47,875 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 14:05:47,878 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 14:05:47,878 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 14:05:47,880 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,889 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java - 클래스 1개, 메소드 3개, 엣지 2개
+2025-09-02 14:05:47,889 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 14:05:47,898 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,908 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java - 클래스 1개, 메소드 12개, 엣지 56개
+2025-09-02 14:05:47,908 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 14:05:47,910 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,918 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java - 클래스 1개, 메소드 3개, 엣지 5개
+2025-09-02 14:05:47,918 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 14:05:47,920 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,927 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java - 클래스 1개, 메소드 4개, 엣지 7개
+2025-09-02 14:05:47,928 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 14:05:47,943 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,954 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java - 클래스 1개, 메소드 8개, 엣지 84개
+2025-09-02 14:05:47,954 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 14:05:47,968 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,977 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java - 클래스 1개, 메소드 5개, 엣지 88개
+2025-09-02 14:05:47,978 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 14:05:47,979 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,986 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-02 14:05:47,986 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 14:05:47,990 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:47,997 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:05:47,998 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 14:05:48,012 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,022 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-02 14:05:48,023 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 14:05:48,024 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,030 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-02 14:05:48,031 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 14:05:48,032 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,037 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-02 14:05:48,037 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 14:05:48,039 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,045 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-02 14:05:48,045 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 14:05:48,045 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,050 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-02 14:05:48,050 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 14:05:48,055 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,065 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:05:48,065 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 14:05:48,067 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,073 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-02 14:05:48,074 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 14:05:48,078 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,085 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-02 14:05:48,086 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 14:05:48,089 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,097 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-02 14:05:48,097 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 14:05:48,101 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,109 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-02 14:05:48,109 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 14:05:48,110 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,116 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-02 14:05:48,116 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 14:05:48,117 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:05:48,124 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-02 14:05:48,124 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 14:05:48,133 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,140 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,141 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 14:05:48,141 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,146 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,146 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 14:05:48,163 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,168 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,168 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 14:05:48,208 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,214 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,214 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 14:05:48,225 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,231 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,231 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 14:05:48,242 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,248 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,248 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 14:05:48,260 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,267 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,267 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 14:05:48,282 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,291 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,291 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 14:05:48,301 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,308 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,308 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 14:05:48,319 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,326 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,326 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 14:05:48,334 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:05:48,341 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:05:48,350 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 14:05:48,365 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 14:07:27,301 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 14:07:27,301 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:07:27,302 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 14:07:27,302 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:07:27,476 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 14:07:27,480 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 14:07:27,482 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 14:07:27,484 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 14:07:27,516 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 14:07:27,604 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 14:07:27,604 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 14:07:27,604 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 14:07:27,615 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 14:07:27,615 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 14:07:27,617 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 14:07:27,618 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 14:07:27,619 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,629 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java - 클래스 1개, 메소드 3개, 엣지 2개
+2025-09-02 14:07:27,629 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 14:07:27,639 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,649 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java - 클래스 1개, 메소드 12개, 엣지 56개
+2025-09-02 14:07:27,649 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 14:07:27,651 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,658 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java - 클래스 1개, 메소드 3개, 엣지 5개
+2025-09-02 14:07:27,658 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 14:07:27,660 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,667 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java - 클래스 1개, 메소드 4개, 엣지 7개
+2025-09-02 14:07:27,667 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 14:07:27,681 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,692 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java - 클래스 1개, 메소드 8개, 엣지 84개
+2025-09-02 14:07:27,692 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 14:07:27,706 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,718 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java - 클래스 1개, 메소드 5개, 엣지 88개
+2025-09-02 14:07:27,718 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 14:07:27,720 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,725 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-02 14:07:27,725 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 14:07:27,729 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,736 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:07:27,736 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 14:07:27,751 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,761 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-02 14:07:27,761 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 14:07:27,762 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,769 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-02 14:07:27,769 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 14:07:27,770 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,776 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-02 14:07:27,777 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 14:07:27,778 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,784 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-02 14:07:27,784 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 14:07:27,785 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,791 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-02 14:07:27,791 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 14:07:27,795 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,805 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:07:27,805 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 14:07:27,807 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,813 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-02 14:07:27,814 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 14:07:27,818 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,825 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-02 14:07:27,825 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 14:07:27,829 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,836 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-02 14:07:27,836 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 14:07:27,840 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,847 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-02 14:07:27,847 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 14:07:27,848 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,854 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-02 14:07:27,854 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 14:07:27,855 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:07:27,861 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-02 14:07:27,861 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 14:07:27,871 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,878 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,878 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 14:07:27,879 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,883 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,883 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 14:07:27,901 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,906 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,906 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 14:07:27,946 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,953 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,953 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 14:07:27,965 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,970 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,970 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 14:07:27,980 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:27,986 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:27,987 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 14:07:27,999 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:28,006 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:28,006 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 14:07:28,022 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:28,031 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:28,031 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 14:07:28,041 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:28,048 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:28,048 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 14:07:28,059 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:28,066 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:28,066 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 14:07:28,074 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:07:28,079 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:07:28,088 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 365개 처리
+2025-09-02 14:07:28,104 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc
+2025-09-02 14:24:13,344 - main - INFO - [logger.py:76] - 로깅 시스템 초기화 완료
+2025-09-02 14:24:13,345 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:24:13,346 - main - INFO - [logger.py:76] - 개선된 소스 분석기 시작
+2025-09-02 14:24:13,346 - main - INFO - [logger.py:76] - ============================================================
+2025-09-02 14:24:13,362 - main - INFO - [logger.py:76] - 데이터베이스 연결 성공
+2025-09-02 14:24:13,365 - main - INFO - [logger.py:76] - 파서 초기화 완료: ['java', 'jsp_mybatis', 'sql', 'jar']
+2025-09-02 14:24:13,368 - confidence_validator - INFO - [logger.py:76] - Loaded 2 ground truth entries
+2025-09-02 14:24:13,370 - main - INFO - [logger.py:76] - 프로젝트 분석 시작: sampleSrc
+2025-09-02 14:24:13,401 - main - INFO - [logger.py:76] - DB 스키마 정보 로드 시작: sampleSrc
+2025-09-02 14:24:13,483 - main - DEBUG - [logger.py:72] - 파일 수집 중: E:\SourceAnalyzer.git\project\sampleSrc\src
+2025-09-02 14:24:13,484 - main - DEBUG - [logger.py:72] - 포함 패턴: ['**/*.java', '**/*.jsp', '**/*.xml', '**/*.properties']
+2025-09-02 14:24:13,486 - main - DEBUG - [logger.py:72] - 제외 패턴: ['**/target/**', '**/build/**', '**/test/**', '**/.git/**']
+2025-09-02 14:24:13,497 - main - DEBUG - [logger.py:72] - 수집된 파일 수: 31
+2025-09-02 14:24:13,498 - main - INFO - [logger.py:76] - 발견된 소스 파일: 31개
+2025-09-02 14:24:13,501 - main - INFO - [logger.py:76] - 발견된 JAR 파일: 0개
+2025-09-02 14:24:13,502 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java
+2025-09-02 14:24:13,505 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,516 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\DatabaseConfig.java - 클래스 1개, 메소드 3개, 엣지 2개
+2025-09-02 14:24:13,517 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java
+2025-09-02 14:24:13,527 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,541 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\config\SecurityConfig.java - 클래스 1개, 메소드 12개, 엣지 56개
+2025-09-02 14:24:13,542 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java
+2025-09-02 14:24:13,545 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,553 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\ApiController.java - 클래스 1개, 메소드 3개, 엣지 5개
+2025-09-02 14:24:13,554 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java
+2025-09-02 14:24:13,556 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,564 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\MainController.java - 클래스 1개, 메소드 4개, 엣지 7개
+2025-09-02 14:24:13,565 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java
+2025-09-02 14:24:13,580 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,593 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\OrderController.java - 클래스 1개, 메소드 8개, 엣지 84개
+2025-09-02 14:24:13,593 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java
+2025-09-02 14:24:13,607 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,622 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\controller\PaymentController.java - 클래스 1개, 메소드 5개, 엣지 88개
+2025-09-02 14:24:13,623 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java
+2025-09-02 14:24:13,625 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,631 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedMapper.java - 클래스 1개, 메소드 4개, 엣지 0개
+2025-09-02 14:24:13,632 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java
+2025-09-02 14:24:13,636 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,648 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\IntegratedService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:24:13,648 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java
+2025-09-02 14:24:13,664 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,676 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\integrated\VulnerabilityTestService.java - 클래스 1개, 메소드 12개, 엣지 54개
+2025-09-02 14:24:13,677 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java
+2025-09-02 14:24:13,679 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,686 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\OrderMapper.java - 클래스 1개, 메소드 7개, 엣지 0개
+2025-09-02 14:24:13,687 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+2025-09-02 14:24:13,689 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,696 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\ProductMapper.java - 클래스 1개, 메소드 5개, 엣지 0개
+2025-09-02 14:24:13,696 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+2025-09-02 14:24:13,699 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,710 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\mapper\UserMapper.java - 클래스 1개, 메소드 6개, 엣지 0개
+2025-09-02 14:24:13,710 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java
+2025-09-02 14:24:13,711 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,717 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ListService.java - 클래스 1개, 메소드 1개, 엣지 0개
+2025-09-02 14:24:13,717 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java
+2025-09-02 14:24:13,722 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,731 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OrderService.java - 클래스 1개, 메소드 6개, 엣지 11개
+2025-09-02 14:24:13,732 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java
+2025-09-02 14:24:13,735 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,742 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\OverloadService.java - 클래스 1개, 메소드 3개, 엣지 4개
+2025-09-02 14:24:13,743 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java
+2025-09-02 14:24:13,747 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,759 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\ProductService.java - 클래스 1개, 메소드 5개, 엣지 12개
+2025-09-02 14:24:13,760 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java
+2025-09-02 14:24:13,764 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,775 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\UserService.java - 클래스 1개, 메소드 6개, 엣지 13개
+2025-09-02 14:24:13,776 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java
+2025-09-02 14:24:13,780 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,789 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\DateUtil.java - 클래스 1개, 메소드 3개, 엣지 16개
+2025-09-02 14:24:13,789 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java
+2025-09-02 14:24:13,790 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,797 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\util\Texts.java - 클래스 1개, 메소드 1개, 엣지 1개
+2025-09-02 14:24:13,798 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java
+2025-09-02 14:24:13,799 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 4, 타입: <class 'tuple'>
+2025-09-02 14:24:13,807 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\java\com\example\service\impl\ListServiceImpl1.java - 클래스 1개, 메소드 2개, 엣지 1개
+2025-09-02 14:24:13,807 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp
+2025-09-02 14:24:13,817 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,824 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\IntegratedView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,824 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp
+2025-09-02 14:24:13,825 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,830 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\views\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,830 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp
+2025-09-02 14:24:13,849 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,855 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\order\orderView.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,856 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp
+2025-09-02 14:24:13,898 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,905 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\product\productSearch.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,905 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp
+2025-09-02 14:24:13,916 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,924 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\webapp\WEB-INF\jsp\user\userList.jsp - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,925 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml
+2025-09-02 14:24:13,936 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,943 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\IntegratedMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,943 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml
+2025-09-02 14:24:13,956 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,964 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\OrderMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,964 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml
+2025-09-02 14:24:13,981 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:13,989 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\ProductMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:13,989 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml
+2025-09-02 14:24:14,001 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:14,008 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\TestJoinMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:14,009 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml
+2025-09-02 14:24:14,020 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:14,028 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:14,028 - main - DEBUG - [logger.py:72] - 파일 분석 시작: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml
+2025-09-02 14:24:14,040 - main - DEBUG - [logger.py:72] - [main.py] parse_result 길이: 6, 타입: <class 'tuple'>
+2025-09-02 14:24:14,046 - main - DEBUG - [logger.py:72] - 저장 완료: E:\SourceAnalyzer.git\project\sampleSrc\src\main\resources\mybatis\mapper\UserMapper.xml - 클래스 0개, 메소드 0개, 엣지 0개
+2025-09-02 14:24:14,060 - engine.metadata - INFO - [logger.py:76] - 메서드 호출 관계 해결 완료: 730개 처리
+2025-09-02 14:24:14,091 - main - INFO - [logger.py:76] - 프로젝트 분석 완료: sampleSrc

@@ -200,6 +200,7 @@ class SqlParser:
                         if len(groups) >= 5:
                             join = Join(
                                 sql_id=None,
+                                sql_unit_stmt_id=context.get('stmt_id'), # 추가
                                 l_table=groups[1],  # JOIN 후 테이블
                                 l_col=groups[2],
                                 op='=',
@@ -214,6 +215,7 @@ class SqlParser:
                         # WHERE 절의 조인 조건
                         join = Join(
                             sql_id=None,
+                            sql_unit_stmt_id=context.get('stmt_id'), # 추가
                             l_table=groups[0],
                             l_col=groups[1],
                             op='=',
@@ -279,6 +281,7 @@ class SqlParser:
                         
                         filter_obj = RequiredFilter(
                             sql_id=None,
+                            sql_unit_stmt_id=context.get('stmt_id'), # 추가
                             table_name=table_name,
                             column_name=column_name,
                             op=op.upper(),
@@ -450,3 +453,27 @@ class SqlParser:
         elements['cursors'] = [match.group(1) for match in matches]
         
         return elements
+
+    def _create_sql_fingerprint(self, sql_content: str) -> str:
+        """v5.2: SQL 구조적 지문 생성 (원문 저장 금지 원칙) - bind 변수 지원"""
+        
+        # SQL을 정규화: 대소문자 통일, 다중 공백 제거하여 구조적 패턴만 추출
+        normalized = re.sub(r'\s+', ' ', sql_content.lower().strip())
+        
+        # 값의 다양성에 관계없이 구조만 보존: 파라미터와 리터럴 값을 플레이스홀더로 대체
+        normalized = re.sub(r':\w+', ':PARAM', normalized)  # MyBatis 정적 파라미터 :name 형태
+        normalized = re.sub(r'\$\{\w+\}', '${PARAM}', normalized)  # MyBatis 동적 파라미터 ${} 형태
+        normalized = re.sub(r'#\{\w+\}', '#{PARAM}', normalized)  # MyBatis 바인드 파라미터 #{} 형태
+        
+        # v5.2: bind 변수 처리
+        normalized = re.sub(r'\$\{[^}]*\bparam\w*\b[^}]*\}', '${BIND_PARAM}', normalized)
+        
+        # SQL 문자열 리터럴 '원본값' -> 'VALUE'
+        normalized = re.sub(r"'[^\]*'", "'VALUE'", normalized)
+        normalized = re.sub(r'\b\d+\b', 'NUMBER', normalized)  # 숫자 리터럴 123 -> NUMBER
+        
+        # v5.2: UNRESOLVED INCLUDE 표시 정규화
+        normalized = re.sub(r'/\*\s*UNRESOLVED INCLUDE:.*?\*/', '/* INCLUDE_PLACEHOLDER */', normalized)
+        
+        # MD5 해시로 최종 지문 생성: 동일 구조 SQL은 같은 지문 생성
+        return hashlib.md5(normalized.encode('utf-8')).hexdigest()

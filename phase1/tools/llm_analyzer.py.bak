@@ -20,21 +20,19 @@ project_root = phase1_root.parent
 sys.path.insert(0, str(phase1_root))
 sys.path.insert(0, str(project_root))
 
+# 로깅 설정
+logging.basicConfig(
+    level=logging.DEBUG, # DEBUG 레벨로 설정
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout) # 콘솔로 출력
+    ]
+)
+logger = logging.getLogger('llm_analyzer') # 기존 llm_analyzer 로거 사용
+
 from llm.summarizer import CodeSummarizer, generate_table_specification_md, generate_source_specification_md
 from models.database import DatabaseManager
-try:
-    from utils.logger import setup_logger
-except ImportError:
-    # Fallback logger setup
-    def setup_logger(name, log_file):
-        import logging
-        logger = logging.getLogger(name)
-        handler = logging.FileHandler(log_file)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-        return logger
+# from utils.logger import setup_logger # 더 이상 사용하지 않음
 
 def load_config(config_path: str = None) -> Dict[str, Any]:
     """Load configuration from config.yaml"""
@@ -44,7 +42,7 @@ def load_config(config_path: str = None) -> Dict[str, Any]:
         config_file = Path(__file__).parents[2] / "config" / "config.yaml"
 
     if not config_file.exists():
-        print(f"Config file not found: {config_file}")
+        logger.error(f"Config file not found: {config_file}")
         sys.exit(1)
 
     with open(config_file, 'r', encoding='utf-8') as f:
@@ -76,12 +74,10 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
     log_file = Path(project_config['project']['paths']['log_dir']) / 'llm_analysis.log'
-    print(f"log_file = {log_file}")
+    logger.info(f"log_file = {log_file}")
     
-    # Setup logging
-    logger = setup_logger('llm_analyzer', str(log_file))
-    logger.info(f"\n\n\nlog_file = {log_file}")
-
+    # Setup logging (기존 로거 사용)
+    # logger = setup_logger('llm_analyzer', str(log_file))
     logger.info(f"Starting LLM analysis for project: {project_name}")
     
     log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -93,7 +89,7 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
 
     session = dbm.get_session()
     try:
-        print('# Get or create project')
+        logger.info('# Get or create project')
         from models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
@@ -101,111 +97,114 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
             return
 
         project_id = project.project_id
-        print(f"Found project ID: {project_id}")
+        logger.info(f"Found project ID: {project_id}")
 
     finally:
         session.close()
 
-    # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
+    logger.info('# Initialize summarizer')
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=force_recreate)
 
     try:
         # Process code summaries
-        print("Processing file summaries...")
+        logger.info("Processing file summaries...")
         summarizer.process_project_summaries(project_id, batch_size)
 
-        print("Code element summarization completed!")
+        logger.info("Code element summarization completed!")
 
     except Exception as e:
         error_msg = f"Error during code summarization: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
     """데이터베이스 테이블/컬럼 코멘트를 LLM으로 보강"""
-    print(f"Starting database comment enhancement for project: {project_name}")
+    logger.info(f"Starting database comment enhancement for project: {project_name}")
 
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
 
-    # Setup logging
+    # Setup logging (기존 로거 사용)
     log_file = Path(project_config['project']['paths']['log_dir']) / 'db_comment_enhancement.log'
     log_file.parent.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger('db_comment_enhancer', str(log_file))
+    # logger = setup_logger('db_comment_enhancer', str(log_file))
 
     # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=False) # enhance-db는 force_recreate 옵션 없음
 
     try:
         # Process table/column comments
-        print("Processing table and column comment enhancement...")
+        logger.info("Processing table and column comment enhancement...")
         summarizer.process_table_comments(batch_size)
 
-        print("Success: Database comment enhancement completed!")
+        logger.info("Success: Database comment enhancement completed!")
 
     except Exception as e:
         error_msg = f"Error during comment enhancement: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
 
+
 def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
-    """SQL 조인조건 LLM 분석"""
-    print(f"Starting join analysis for project: {project_name}")
+    logger.info("""SQL 조인조건 LLM 분석""")
+    logger.info(f"Starting join analysis for project: {project_name}")
 
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
 
-    # Setup logging
+    # Setup logging (기존 로거 사용)
     log_file = Path(project_config['project']['paths']['log_dir']) / 'join_analysis.log'
     log_file.parent.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger('join_analyzer', str(log_file))
+    # logger = setup_logger('join_analyzer', str(log_file))
 
-    # Initialize database manager to get project_id
+    logger.info('# Initialize database manager to get project_id')
     dbm = DatabaseManager(project_config['database']['project'])
     dbm.initialize()
 
     session = dbm.get_session()
     try:
-        # Get or create project
+        logger.debug('# Get or create project')
         from models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
-            print(f"Project '{project_name}' not found in database")
+            logger.info(f"Project '{project_name}' not found in database")
             return
 
         project_id = project.project_id
-        print(f"Found project ID: {project_id}")
+        logger.info(f"Found project ID: {project_id}")
 
     finally:
         session.close()
 
     # Initialize summarizer
-    summarizer = CodeSummarizer(project_config, debug=debug)
+    summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=False) # analyze-joins는 force_recreate 옵션 없음
 
     try:
         # Process missing joins
-        print("Analyzing SQL joins...")
+        logger.info("Analyzing SQL joins...")
         summarizer.process_missing_joins(project_id, batch_size)
 
-        print("Join analysis completed!")
+        logger.info("Join analysis completed!")
 
     except Exception as e:
         error_msg = f"Error during join analysis: {e}"
         traceback_str = traceback.format_exc()
         logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """소스코드 명세서 마크다운 파일 생성"""
-    print(f"Generating source specification markdown for project: {project_name}")
+    logger.info(f"Generating source specification markdown for project: {project_name}")
 
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
@@ -222,18 +221,19 @@ def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_fi
         # Generate source specification
         generate_source_specification_md(project_config, output_file)
 
-        print(f"Source specification generated: {output_file}")
+        logger.info(f"Source specification generated: {output_file}")
 
     except Exception as e:
         error_msg = f"Error generating source specification: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
     """테이블 명세서 마크다운 파일 생성"""
-    print(f"Generating table specification markdown for project: {project_name}")
+    logger.info(f"Generating table specification markdown for project: {project_name}")
 
     # Setup project-specific config
     project_config = get_project_config(config, project_name)
@@ -250,14 +250,15 @@ def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_fil
         # Generate table specification
         generate_table_specification_md(project_config, output_file)
 
-        print(f"Success: Table specification generated: {output_file}")
+        logger.info(f"Success: Table specification generated: {output_file}")
 
     except Exception as e:
         error_msg = f"Error generating table specification: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         raise
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -340,14 +341,14 @@ Examples:
 
         # Check if LLM is enabled
         if not config.get('llm', {}).get('enabled', True):
-            print("Warning:  LLM is disabled in configuration. Enable it in config.yaml to use this tool.")
+            logger.warning("Warning:  LLM is disabled in configuration. Enable it in config.yaml to use this tool.")
             return
 
     except Exception as e:
         error_msg = f"Error loading configuration: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         return
 
     try:
@@ -358,6 +359,7 @@ Examples:
             enhance_db_comments(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
 
         elif args.command == 'analyze-joins':
+            print('start of analyze-joins')
             analyze_joins(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
 
         elif args.command == 'source-spec':
@@ -370,7 +372,8 @@ Examples:
             print("Starting full LLM analysis...")
 
             # Step 1: Code summarization
-            print("\nStep 1: Code Element Summarization")
+            logger.info("Step 1: Code Element Summarization")
+            # full-analysis 명령에서는 force_recreate 옵션을 summarize_code_elements에 전달
             summarize_code_elements(config, args.project_name, args.batch_size, getattr(args, 'debug', False), getattr(args, 'force_recreate', False))
 
             # Step 2: DB comment enhancement
@@ -398,13 +401,13 @@ Examples:
             print(f"  - Source specification: {source_output}")
 
     except KeyboardInterrupt:
-        print("\nError: Analysis interrupted by user")
+        logger.error("\nError: Analysis interrupted by user")
         sys.exit(1)
     except Exception as e:
         error_msg = f"Unexpected error: {e}"
         traceback_str = traceback.format_exc()
-        print(f"Error: {error_msg}")
-        print(f"Traceback:\n{traceback_str}")
+        logger.error(f"Error: {error_msg}")
+        logger.error(f"Traceback:\n{traceback_str}")
         sys.exit(1)
 
 if __name__ == '__main__':

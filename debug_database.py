@@ -66,7 +66,7 @@ def main():
         db = VizDB(full_db_config, project_name)
         
         with db.dbm.get_session() as session:
-            from models.database import Project, Method, Class, File, Edge
+            from models.database import Project, Method, Class, File, Edge, SqlUnit, Join
             
             # 프로젝트 ID를 가져옵니다.
             project = session.query(Project).filter(Project.name == project_name).first()
@@ -87,6 +87,30 @@ def main():
             print(f'  Classes: {class_count}')
             print(f'  Methods: {method_count}')
             print(f'  Edges: {edge_count}')
+            
+            sql_unit_count = session.query(SqlUnit).join(File).filter(File.project_id == project_id).count()
+            join_count = session.query(Join).join(SqlUnit).join(File).filter(File.project_id == project_id).count()
+            
+            print(f'  SQL Units: {sql_unit_count}')
+            print(f'  Joins: {join_count}')
+            
+            # Show sample SQL Units
+            sql_units = session.query(SqlUnit).join(File).filter(
+                File.project_id == project_id
+            ).limit(5).all()
+            
+            print(f'\nSample SQL Units:')
+            for sql_unit in sql_units:
+                print(f'  {sql_unit.mapper_ns}.{sql_unit.stmt_id} ({sql_unit.stmt_kind}) - ID: {sql_unit.sql_id}')
+                
+            # Show sample Joins
+            joins = session.query(Join).join(SqlUnit).join(File).filter(
+                File.project_id == project_id
+            ).limit(5).all()
+            
+            print(f'\nSample Joins:')
+            for join in joins:
+                print(f'  SQL ID: {join.sql_id}, {join.l_table}.{join.l_col} {join.op} {join.r_table}.{join.r_col}')
             
             # Show sample methods
             methods = session.query(Method).join(Class).join(File).filter(

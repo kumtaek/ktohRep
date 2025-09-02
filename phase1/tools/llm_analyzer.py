@@ -153,7 +153,7 @@ def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: i
 
 
 def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
-    """SQL 조인조건 LLM 분석"""
+    logger.info("""SQL 조인조건 LLM 분석""")
     logger.info(f"Starting join analysis for project: {project_name}")
 
     # Setup project-specific config
@@ -164,13 +164,13 @@ def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 1
     log_file.parent.mkdir(parents=True, exist_ok=True)
     # logger = setup_logger('join_analyzer', str(log_file))
 
-    # Initialize database manager to get project_id
+    logger.info('# Initialize database manager to get project_id')
     dbm = DatabaseManager(project_config['database']['project'])
     dbm.initialize()
 
     session = dbm.get_session()
     try:
-        # Get or create project
+        logger.debug('# Get or create project')
         from models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
@@ -183,7 +183,7 @@ def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 1
     finally:
         session.close()
 
-    # Initialize summarizer
+    logger.info('# Initialize summarizer')
     summarizer = CodeSummarizer(project_config, debug=debug, force_recreate=False) # analyze-joins는 force_recreate 옵션 없음
 
     try:
@@ -359,6 +359,7 @@ Examples:
             enhance_db_comments(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
 
         elif args.command == 'analyze-joins':
+            print('start of analyze-joins')
             analyze_joins(config, args.project_name, args.batch_size, getattr(args, 'debug', False))
 
         elif args.command == 'source-spec':

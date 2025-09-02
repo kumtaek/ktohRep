@@ -803,8 +803,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             parser = etree.XMLParser(recover=True)
             root = etree.fromstring(content.encode('utf-8'), parser)
             
+            if self.logger:
+                self.logger.debug(f"[_parse_mybatis_xml] XML 파싱 완료: {file_obj.path}, root={root.tag}")
+            
             # 네임스페이스 추출
             namespace = root.get('namespace', '')
+            if self.logger:
+                self.logger.debug(f"[_parse_mybatis_xml] 네임스페이스: {namespace}")
             
             # Dynamic SQL resolver 초기화
             resolver = DynamicSqlResolver(namespace, max_branch=self.config.get('mybatis', {}).get('max_branch', 3))
@@ -820,9 +825,13 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             for stmt_type in ['select', 'insert', 'update', 'delete', 'sql']:
                 xpath_expr = f'.//{stmt_type}'
                 elements = root.xpath(xpath_expr)
+                if self.logger:
+                    self.logger.debug(f"[_parse_mybatis_xml] {stmt_type} 태그 발견: {len(elements)}개")
                 
                 for element in elements:
                     stmt_id = element.get('id', '')
+                    if self.logger:
+                        self.logger.debug(f"[_parse_mybatis_xml] 처리 중: {stmt_type} ID={stmt_id}")
                     
                     # lxml을 통한 정확한 라인 번호 추출
                     start_line = element.sourceline if hasattr(element, 'sourceline') else 1
@@ -830,6 +839,9 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     
                     # SQL 내용 추출 with dynamic resolution
                     sql_content = resolver.resolve(element)
+                    if self.logger:
+                        self.logger.debug(f"[_parse_mybatis_xml] SQL 내용 (ID={stmt_id}): {sql_content[:100]}...")
+                    
                     normalized = self._normalize_sql(sql_content)
                     
                     # 동적 SQL 분석 개선
@@ -852,8 +864,12 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                             stmt_kind=stmt_type,
                             normalized_fingerprint=self._create_sql_fingerprint(normalized)
                         )
+                        if self.logger:
+                            self.logger.debug(f"[_parse_mybatis_xml] SqlUnit 생성됨 (ID={stmt_id}): {sql_unit.normalized_fingerprint}")
                         
                         sql_units.append(sql_unit)
+                        if self.logger:
+                            self.logger.debug(f"[_parse_mybatis_xml] SqlUnit 추가됨. 현재 SQL Unit 수: {len(sql_units)}")
                         
                         # 동적 SQL 최적화된 분석
                         if has_dynamic:
@@ -872,6 +888,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                                 filter_item.confidence = min(filter_item.confidence, self.suspect_threshold)
                         
                         joins.extend(sql_joins)
+                        if self.logger:
+                            self.logger.debug(f"[_parse_mybatis_xml] 조인 추가됨. 현재 조인 수: {len(joins)}")
                         filters.extend(sql_filters)
                     
             # <include> 태그 의존성 추출
@@ -937,10 +955,15 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         try:
             # sqlparse를 이용한 SQL 파싱
             parsed = sqlparse.parse(sql_content)
+            if self.logger:
+                self.logger.debug(f"[_extract_sql_patterns_advanced] sqlparse 파싱 완료. Statement 수: {len(parsed)}")
             
             for statement in parsed:
                 # JOIN 패턴 추출 개선
-                joins.extend(self._extract_joins_from_statement(statement, sql_unit))
+                extracted_joins = self._extract_joins_from_statement(statement, sql_unit)
+                if self.logger:
+                    self.logger.debug(f"[_extract_sql_patterns_advanced] Statement에서 추출된 조인 수: {len(extracted_joins)}")
+                joins.extend(extracted_joins)
                 
                 # WHERE 절 필터 조건 추출 개선
                 filters.extend(self._extract_filters_from_statement(statement, sql_unit))
@@ -969,14 +992,23 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     # 하위 토큰을 재귀적으로 탐색 (리턴값은 사용하지 않음)
                     find_joins(token.tokens)
                 elif token.ttype is None and 'join' in str(token).lower():
+                    if self.logger:
+                        self.logger.debug(f"[_extract_joins_from_statement] 'JOIN' 키워드 발견: {str(token)}")
                     # JOIN 구문 발견, ON 조건 찾기
-                    join_info = self._parse_join_condition(tokens[i:i+5])  # 다음 5개 토큰 검사
+                    join_info = self._parse_join_condition(tokens[i:])  # 현재 토큰부터 검사
                     if join_info:
+                        if self.logger:
+                            self.logger.debug(f"[_extract_joins_from_statement] 조인 정보 추출됨: {join_info.l_table}.{join_info.l_col} {join_info.op} {join_info.r_table}.{join_info.r_col}")
                         joins.append(join_info)
         
         find_joins(statement.tokens)
+        if self.logger:
+            self.logger.debug(f"[_extract_joins_from_statement] sqlparse 기반 조인 추출 완료. 총 {len(joins)}개.")
+        
         # 토큰 기반으로 찾지 못한 경우 문자열 기반 폴백으로 ON 절에서 조건 추출
         if not joins:
+            if self.logger:
+                self.logger.debug(f"[_extract_joins_from_statement] sqlparse 기반 조인 미발견, 정규식 폴백 시도.")
             try:
                 stmt_text = str(statement)
                 # ON 다음 조건을 WHERE/ORDER/GROUP 등 다음 키워드 이전까지 캡처
@@ -984,8 +1016,12 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                     cond_text = m.group(1).strip()
                     j = self._parse_join_condition(cond_text)
                     if j:
+                        if self.logger:
+                            self.logger.debug(f"[_extract_joins_from_statement] 정규식 폴백으로 조인 추출됨: {j.l_table}.{j.l_col} {j.op} {j.r_table}.{j.r_col}")
                         joins.append(j)
-            except Exception:
+            except Exception as e:
+                if self.logger:
+                    self.logger.debug(f"[_extract_joins_from_statement] 정규식 폴백 실패: {e}")
                 pass
         return joins
     
@@ -1224,6 +1260,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                         
                         join = Join(
                             sql_id=None,
+                            sql_unit_stmt_id=sql_unit.stmt_id, # 추가
                             l_table=l_table,
                             l_col=groups[1],
                             op='=',
@@ -1251,6 +1288,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                         
                         filter_obj = RequiredFilter(
                             sql_id=None,
+                            sql_unit_stmt_id=sql_unit.stmt_id, # 추가
                             table_name=table_name,
                             column_name=groups[1],
                             op=op,
@@ -1271,7 +1309,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
         
         return joins, filters
     
-    def _parse_join_condition(self, tokens) -> Optional[Join]:
+    def _parse_join_condition(self, tokens, sql_unit) -> Optional[Join]:
         """JOIN 조건 파싱 (정규식 기반 1차 고도화)"""
         try:
             # tokens가 문자열(폴백 경로)일 수도 있으므로 분기 처리
@@ -1280,12 +1318,17 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             else:
                 text = sqlparse.sql.TokenList(tokens).value if hasattr(sqlparse.sql, 'TokenList') else str(tokens)
             text = re.sub(r"\s+", " ", text)
+            if self.logger:
+                self.logger.debug(f"[_parse_join_condition] 파싱할 조인 조건 텍스트: {text[:100]}...")
             m = re.search(r"([\w\.]+)\s*\.\s*(\w+)\s*(=|!=|>=|<=|<>|<|>)\s*([\w\.]+)\s*\.\s*(\w+)", text, re.I)
             if not m:
+                if self.logger:
+                    self.logger.debug(f"[_parse_join_condition] 정규식 패턴과 일치하는 조인 조건 없음.")
                 return None
             l_table_raw, l_col, op, r_table_raw, r_col = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
             j = Join(
                 sql_id=None,
+                sql_unit_stmt_id=sql_unit.stmt_id, # 추가
                 l_table=self._normalize_table_name(l_table_raw),
                 l_col=l_col,
                 op=op,
@@ -1293,6 +1336,8 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 r_col=r_col,
                 confidence=0.8
             )
+            if self.logger:
+                self.logger.debug(f"[_parse_join_condition] 조인 객체 생성됨: {j.l_table}.{j.l_col} {j.op} {j.r_table}.{j.r_col}")
             return j
         except Exception as e:
             error_msg = f"JOIN 파싱 실패: {e}"
@@ -1332,6 +1377,7 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
                 rhs = rhs.strip().strip("'\"")
                 results.append(RequiredFilter(
                     sql_id=None,
+                    sql_unit_stmt_id=sql_unit.stmt_id, # 추가
                     table_name=self._normalize_table_name(t_raw),
                     column_name=col,
                     op=op,

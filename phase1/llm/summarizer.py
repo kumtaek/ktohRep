@@ -33,8 +33,11 @@ class CodeSummarizer:
         self.force_recreate = force_recreate # force_recreate 인스턴스 변수 추가
         print(f"force_recreate = {force_recreate}")
         self.dbm = DatabaseManager(config.get('database', {}).get('project', {}))
+        print('init@summarizer.py1')
         self.chunker = IntelligentChunker()
+        print('init@summarizer.py2')
         self.chunk_summarizer = ChunkBasedSummarizer(self.chunker)
+        print('init@summarizer.py3')
         self.dbm.initialize()
         print('end of init@summarizer.py')
         
@@ -724,14 +727,27 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
             
             client = get_client(self.llm_config)
             
-            # SQL 내용을 가져오기 (우선순위: sql_content > normalized_fingerprint)
+            # SQL 내용을 chunks에서 가져오기
             sql_text = ''
-            if hasattr(sql_unit, 'normalized_fingerprint') and sql_unit.normalized_fingerprint:
-                sql_text = sql_unit.normalized_fingerprint[:5120]  # 5KB 한도
-            elif hasattr(sql_unit, 'normalized_fingerprint') and sql_unit.normalized_fingerprint:
-                sql_text = sql_unit.normalized_fingerprint[:5120]  # 5KB 한도
-            else:
-                sql_text = 'SQL 내용 없음'
+            session = self.session()
+            try:
+                # chunks 테이블에서 SQL 내용 찾기
+                chunk_query = session.execute(
+                    text("SELECT content FROM chunks WHERE target_type = 'sql_unit' AND target_id = :sql_id"),
+                    {"sql_id": sql_unit.sql_id}
+                ).fetchone()
+                
+                if chunk_query and chunk_query[0]:
+                    sql_text = chunk_query[0][:5120]  # 5KB 한도
+                else:
+                    # chunks에 없으면 파일에서 다시 추출
+                    sql_text = self._extract_sql_from_file(sql_unit)
+                    
+            finally:
+                session.close()
+                
+            if not sql_text or sql_text == 'SQL 내용 없음':
+                return []
             
             prompt = f"""다음 SQL 쿼리를 분석하여 테이블 간 조인 조건을 추출해주세요.
 
@@ -746,9 +762,13 @@ SQL 내용:
 {sql_text}
 
 다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "조인 없음"이라고 답변)
+Mybatis XML화일의 내용으로 다이나믹하게 조합이 되는 경우도 있습니다.
+ANSI JOIN(Explicit Join - JOIN customers c ON o.customer_id = c.customer_id)의 경우도
+아래 같이 '='로 표현하는 Implicit join으로 표기해서 답변해주세요.
+
 :
-테이블1.컬럼1 = 테이블2.컬럼2
-테이블1.컬럼3 = 테이블3.컬럼4
+컬럼1 = 컬럼2
+컬럼3 = 컬럼4
 
 추출된 조인 조건:"""
             
@@ -829,6 +849,59 @@ SQL 내용:
             raise
         finally:
             session.close()
+    
+    def _extract_sql_from_file(self, sql_unit: SqlUnit) -> str:
+        """파일에서 SQL 내용을 다시 추출"""
+        try:
+            # sql_unit에서 파일 정보 가져오기
+            session = self.session()
+            try:
+                file_info = session.execute(
+                    text("SELECT path FROM files WHERE file_id = :file_id"),
+                    {"file_id": sql_unit.file_id}
+                ).fetchone()
+                
+                if not file_info:
+                    return 'SQL 내용 없음'
+                    
+                file_path = file_info[0]
+                
+                # 파일 읽기
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 파일 확장자와 stmt_id에 따라 다르게 처리
+                import re
+                if sql_unit.stmt_id and sql_unit.stmt_id.startswith('jsp_sql_'):
+                    # JSP 파일의 경우 라인 번호 기반으로 추출
+                    lines = content.split('\n')
+                    if sql_unit.start_line and sql_unit.start_line <= len(lines):
+                        # 시작 라인부터 끝 라인까지 내용 추출
+                        end_line = sql_unit.end_line if sql_unit.end_line else sql_unit.start_line + 10
+                        sql_lines = lines[sql_unit.start_line-1:min(end_line, len(lines))]
+                        extracted_content = '\n'.join(sql_lines).strip()
+                        
+                        # SQL 키워드가 포함된 경우만 반환
+                        if any(keyword in extracted_content.upper() for keyword in ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE']):
+                            return extracted_content
+                        else:
+                            return 'SQL 키워드 없음'
+                            
+                elif file_path.endswith('.xml') and sql_unit.mapper_ns and sql_unit.stmt_id:
+                    # MyBatis XML의 경우 ID로 찾기
+                    pattern = rf'<(select|insert|update|delete)[^>]*id\s*=\s*["\']({re.escape(sql_unit.stmt_id)})["\'][^>]*>(.*?)</\1>'
+                    match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        return match.group(3).strip()
+                
+                return 'SQL 내용 추출 실패'
+                
+            finally:
+                session.close()
+                
+        except Exception as e:
+            logger.warning(f"파일에서 SQL 추출 실패: {e}")
+            return 'SQL 내용 없음'
     
     def process_table_comments(self, batch_size: int = 10):
         """Process and enhance table/column comments"""

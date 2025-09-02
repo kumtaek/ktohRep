@@ -303,78 +303,148 @@ class SourceAnalyzer:
                 
                 if parser:
                     parse_result = parser.parse_file(file_path, project_id)
-                    if parse_result and len(parse_result) == 4:
+                    self.logger.debug(f"[main.py] parse_result 길이: {len(parse_result) if parse_result else 'None'}, 타입: {type(parse_result)}")
+                    if parse_result and len(parse_result) == 4: # JavaParser의 반환값
                         file_obj, classes, methods, edges = parse_result
-                        # 파서 결과를 데이터베이스에 저장합니다 (올바른 순서로).
-                        session = self.db_manager.get_session()
-                        try:
-                            # 1. 파일 객체를 저장하고 ID를 확보합니다.
-                            if file_obj:
-                                session.add(file_obj)
-                                session.flush()  # ID를 즉시 확보하기 위해 flush
-                                file_id = file_obj.file_id
+                        sql_units = []
+                        joins = []
+                        filters = []
+                        vulnerabilities = []
+                    elif parse_result and len(parse_result) == 6: # JspMybatisParser의 반환값
+                        file_obj, sql_units, joins, filters, edges, vulnerabilities = parse_result
+                        classes = [] # JspMybatisParser는 클래스/메서드를 반환하지 않음
+                        methods = []
+                    elif parse_result and len(parse_result) == 4: # SqlParser의 반환값 (joins, filters, tables, columns)
+                        _joins, _filters, _tables, _columns = parse_result
+                        sql_units = []
+                        joins = []
+                        filters = []
+                        edges = []
+                        classes = []
+                        methods = []
+                        vulnerabilities = []
+
+                        # SqlParser에서 추출한 정보를 바탕으로 SqlUnit 생성
+                        if _joins or _filters or _tables or _columns:
+                            # SQL 파일 자체를 하나의 SqlUnit으로 간주
+                            sql_content = Path(file_path).read_text(encoding='utf-8', errors='ignore')
+                            sql_unit = SqlUnit(
+                                file_id=None,
+                                origin='sql',
+                                mapper_ns=Path(file_path).stem, # 파일 이름을 네임스페이스로 사용
+                                stmt_id='full_file_sql',
+                                start_line=1,
+                                end_line=len(sql_content.splitlines()),
+                                stmt_kind='unknown', # SqlParser에서 stmt_kind를 직접 추출하지 않으므로 unknown으로 설정
+                                normalized_fingerprint=SqlParser(self.config)._create_sql_fingerprint(sql_content) # SqlParser의 fingerprint 함수 사용
+                            )
+                            sql_units.append(sql_unit)
+
+                            # 생성된 SqlUnit의 stmt_id를 사용하여 Join 및 Filter에 연결
+                            for j in _joins:
+                                j.sql_unit_stmt_id = sql_unit.stmt_id
+                                joins.append(j)
+                            for f in _filters:
+                                f.sql_unit_stmt_id = sql_unit.stmt_id
+                                filters.append(f)
+                    else:
+                        # 파서가 결과를 반환하지 않거나 예상치 못한 길이인 경우
+                        file_obj, classes, methods, sql_units, joins, filters, edges, vulnerabilities = None, [], [], [], [], [], [], []
+
+                    # 파서 결과를 데이터베이스에 저장합니다 (올바른 순서로).
+                    session = self.db_manager.get_session()
+                    try:
+                        # 1. 파일 객체를 저장하고 ID를 확보합니다.
+                        if file_obj:
+                            session.add(file_obj)
+                            session.flush()  # ID를 즉시 확보하기 위해 flush
+                            file_id = file_obj.file_id
+                        else:
+                            file_id = None
+                        
+                        # 2. 클래스 객체의 file_id를 설정한 후 저장합니다.
+                        class_id_map = {}  # class fqn -> class_id 매핑
+                        for cls in classes:
+                            if file_id:
+                                cls.file_id = file_id
+                            session.add(cls)
+                            session.flush()
+                            class_id_map[cls.fqn] = cls.class_id
+                        
+                        # 3. 메소드 객체의 file_id, class_id를 설정한 후 저장합니다.
+                        for method in methods:
+                            if file_id:
+                                method.file_id = file_id
+                            # Method가 Class에 속한 경우 class_id를 설정합니다 (owner_fqn 기준으로 찾기).
+                            if hasattr(method, 'owner_fqn') and method.owner_fqn in class_id_map:
+                                method.class_id = class_id_map[method.owner_fqn]
+                            session.add(method)
+                            session.flush()
+
+                        # 4. SQL Unit 객체의 file_id를 설정한 후 저장합니다.
+                        for sql_unit in sql_units:
+                            if file_id:
+                                sql_unit.file_id = file_id
+                            session.add(sql_unit)
+                            session.flush()
+
+                        # 5. Join 객체의 sql_id를 설정한 후 저장합니다.
+                        sql_id_map = {f"{s.mapper_ns}.{s.stmt_id}": s.sql_id for s in sql_units}
+                        for join in joins:
+                            # join.sql_id가 None인 경우, 해당 join이 속한 sql_unit의 ID를 찾아서 설정
+                            if join.sql_id is None and hasattr(join, 'sql_unit_stmt_id') and join.sql_unit_stmt_id in sql_id_map:
+                                join.sql_id = sql_id_map[join.sql_unit_stmt_id]
+                            session.add(join)
+                            session.flush()
+
+                        # 6. RequiredFilter 객체의 sql_id를 설정한 후 저장합니다.
+                        for filter_obj in filters:
+                            # filter_obj.sql_id가 None인 경우, 해당 filter가 속한 sql_unit의 ID를 찾아서 설정
+                            if filter_obj.sql_id is None and hasattr(filter_obj, 'sql_unit_stmt_id') and filter_obj.sql_unit_stmt_id in sql_id_map:
+                                filter_obj.sql_id = sql_id_map[filter_obj.sql_unit_stmt_id]
+                            session.add(filter_obj)
+                            session.flush()
+
+                        # 모든 메서드가 저장된 후, 엣지의 src_id를 해결합니다.
+                        method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
+
+                        # 4. 엣지 객체의 project_id, src_id, dst_id를 설정한 후 저장합니다.
+                        confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
+                        saved_edges = 0
+                        for edge in edges:
+                            edge.project_id = project_id
+                            if edge.src_type == 'method' and edge.src_id is None:
+                                src_method_fqn = None
+                                try:
+                                    if getattr(edge, 'meta', None):
+                                        md = json.loads(edge.meta)
+                                        src_method_fqn = md.get('src_method_fqn')
+                                except Exception:
+                                    src_method_fqn = getattr(edge, 'src_method_fqn', None)
+                                if src_method_fqn and src_method_fqn in method_id_map:
+                                    edge.src_id = method_id_map[src_method_fqn]
+
+                            if edge.edge_kind == 'call':
+                                session.add(edge)
+                                saved_edges += 1
                             else:
-                                file_id = None
-                            
-                            # 2. 클래스 객체의 file_id를 설정한 후 저장합니다.
-                            class_id_map = {}  # class fqn -> class_id 매핑
-                            for cls in classes:
-                                if file_id:
-                                    cls.file_id = file_id
-                                session.add(cls)
-                                session.flush()
-                                class_id_map[cls.fqn] = cls.class_id
-                            
-                            # 3. 메소드 객체의 file_id, class_id를 설정한 후 저장합니다.
-                            for method in methods:
-                                if file_id:
-                                    method.file_id = file_id
-                                # Method가 Class에 속한 경우 class_id를 설정합니다 (owner_fqn 기준으로 찾기).
-                                if hasattr(method, 'owner_fqn') and method.owner_fqn in class_id_map:
-                                    method.class_id = class_id_map[method.owner_fqn]
-                                session.add(method)
-                                session.flush()
-
-                            # 모든 메서드가 저장된 후, 엣지의 src_id를 해결합니다.
-                            method_id_map = {f"{getattr(m, 'owner_fqn', '')}.{m.name}": m.method_id for m in methods}
-
-                            # 4. 엣지 객체의 project_id, src_id, dst_id를 설정한 후 저장합니다.
-                            confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
-                            saved_edges = 0
-                            for edge in edges:
-                                edge.project_id = project_id
-                                if edge.src_type == 'method' and edge.src_id is None:
-                                    src_method_fqn = None
-                                    try:
-                                        if getattr(edge, 'meta', None):
-                                            md = json.loads(edge.meta)
-                                            src_method_fqn = md.get('src_method_fqn')
-                                    except Exception:
-                                        src_method_fqn = getattr(edge, 'src_method_fqn', None)
-                                    if src_method_fqn and src_method_fqn in method_id_map:
-                                        edge.src_id = method_id_map[src_method_fqn]
-
-                                if edge.edge_kind == 'call':
+                                if (edge.src_id is not None and edge.dst_id is not None
+                                    and edge.src_id != 0 and edge.dst_id != 0
+                                    and edge.confidence >= confidence_threshold):
                                     session.add(edge)
                                     saved_edges += 1
-                                else:
-                                    if (edge.src_id is not None and edge.dst_id is not None
-                                        and edge.src_id != 0 and edge.dst_id != 0
-                                        and edge.confidence >= confidence_threshold):
-                                        session.add(edge)
-                                        saved_edges += 1
 
-                            session.commit()
-                            self.logger.debug(
-                                f"저장 완료: {file_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개, 엣지 {saved_edges}개"
-                            )
-                        except Exception as e:
-                            session.rollback()
-                            error_msg = f"데이터베이스 저장 오류 {file_path}: {e}"
-                            traceback_str = traceback.format_exc()
-                            self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-                        finally:
-                            session.close()
+                        session.commit()
+                        self.logger.debug(
+                            f"저장 완료: {file_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개, 엣지 {saved_edges}개"
+                        )
+                    except Exception as e:
+                        session.rollback()
+                        error_msg = f"데이터베이스 저장 오류 {file_path}: {e}"
+                        traceback_str = traceback.format_exc()
+                        self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                    finally:
+                        session.close()
                 else:
                     self.logger.debug(f"지원하지 않는 파일 형식: {file_path}")
                     

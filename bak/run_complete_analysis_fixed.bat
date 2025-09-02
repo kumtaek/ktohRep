@@ -1,5 +1,5 @@
 @echo off
-rem chcp 65001 >nul
+chcp 65001 >nul
 REM SourceAnalyzer Complete Analysis and Visualization Script
 REM Usage: run_complete_analysis.bat [project_name] [source_path]
 
@@ -13,7 +13,7 @@ if "%PROJECT_NAME%"=="" set PROJECT_NAME=sampleSrc
 if "%SOURCE_PATH%"=="" set SOURCE_PATH=testcase\sampleSrc
 
 echo ========================================
-echo ★  run_complete_analysis.bat - SourceAnalyzer Complete Analysis and Visualization
+echo SourceAnalyzer Complete Analysis and Visualization
 echo ========================================
 echo Project Name: %PROJECT_NAME%
 echo Source Path: %SOURCE_PATH%

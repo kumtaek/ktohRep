@@ -75,27 +75,27 @@ echo.
 echo ========================================
 echo  데모 완료!
 echo ========================================
-echo 완료시간: %date% %time%
+echo Complete Time: %date% %time%
 echo.
-echo  생성된 파일들:
+echo Generated Files:
 if exist "%OUTPUT_DIR%" (
     dir /b "%OUTPUT_DIR%\*.html"
 ) else (
-    echo 출력 디렉토리를 찾을 수 없습니다.
+    echo Output directory not found.
 )
 echo.
-echo 새로운 기능 체험하기:
-echo    1. 테이블에 마우스 오버 = 컬럼 상세정보 툴팁
-echo    2. 우상단 레이아웃 버튼 = Force/Dagre 전환
-echo    3. 검색창에 테이블명 입력 = 필터링
-echo    4. 마우스 휠 = 줌 인/아웃
-echo    5. 드래그 = 화면 이동
+echo Try New Features:
+echo    1. Mouse over table = Column detail tooltip
+echo    2. Top-right layout button = Force/Dagre switch
+echo    3. Search box with table name = Filtering
+echo    4. Mouse wheel = Zoom in/out
+echo    5. Drag = Move screen
 echo.
-echo 비교해보세요:
-echo    • erd_enhanced.html (새로운 고도화 버전)
-echo    • erd.html (기존 버전)
+echo Compare:
+echo    - erd_enhanced.html (new enhanced version)
+echo    - erd.html (original version)
 echo.
-echo 차이점을 직접 확인해보시고 피드백 주세요! 
+echo Please check the differences and provide feedback! 
 goto :end
 
 :error
@@ -106,10 +106,10 @@ echo    1. testcase\sampleSrc 디렉토리 존재 여부
 echo    2. venvSrcAnalyzer 가상환경 설정 상태
 echo    3. config\config.yaml 파일 존재 여부
 echo.
-echo 해결 방법:
-echo    1. setup_venv.bat 실행
-echo    2. config.yaml 설정 확인
-echo    3. 샘플 소스코드 준비
+echo Solution:
+echo    1. Run setup_venv.bat
+echo    2. Check config.yaml settings
+echo    3. Prepare sample source code
 exit /b 1
 
 :end

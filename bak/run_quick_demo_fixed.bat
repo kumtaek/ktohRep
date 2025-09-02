@@ -1,11 +1,11 @@
 @echo off
-rem chcp 65001 >nul
+chcp 65001 >nul
 setlocal enabledelayedexpansion
 REM Quick demo script - Complete functionality demonstration with sampleSrc project
 REM Usage: run_quick_demo.bat
 
 echo ========================================
-echo  run_quick_demo.bat.bat - SourceAnalyzer Enhanced Visualization Demo
+echo  SourceAnalyzer Enhanced Visualization Demo
 echo ========================================
 echo Project: sampleSrc (test case)
 echo Start Time: %date% %time%

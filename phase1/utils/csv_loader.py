@@ -104,11 +104,24 @@ class CsvLoader:
                 ).first()
 
                 if existing:
-                    # 코멘트/상태 업데이트(있을 때만)
+                    # CSV에서 정확한 정보가 제공되므로 모든 필드 업데이트
+                    # 조인에서 추론된 정보든 기존 정보든 CSV 정보로 덮어쓰기
+                    was_inferred = existing.table_type == 'INFERRED'
+                    
                     if comments:
                         existing.table_comment = comments
+                        existing.comments = comments  # comments 필드도 업데이트
                     if status:
                         existing.status = status
+                    
+                    # 추론된 테이블에서 실제 테이블로 업그레이드
+                    existing.table_type = 'TABLE'  # 실제 CSV 정보이므로 TABLE로 변경
+                    existing.updated_at = datetime.utcnow()
+                    
+                    if was_inferred:
+                        self.logger.info(f"CSV에서 테이블 정보 덮어쓰기: {table_name} (조인 추론 → 실제 정보)")
+                    else:
+                        self.logger.debug(f"CSV에서 테이블 정보 업데이트: {table_name}")
                 else:
                     table = DbTable(
                         owner=owner,

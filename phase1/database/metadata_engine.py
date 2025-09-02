@@ -984,7 +984,60 @@ class MetadataEngine:
                         )
                         session.add(table_edge)
                     else:
-                        self.logger.warning(f"테이블을 찾을 수 없음: {join.l_table} (스키마: {default_owner})")
+                        # CSV에 없는 테이블이지만 조인에서 발견됨 - 최소 메타정보 생성
+                        db_table = self._create_minimal_table_from_join(session, join, default_owner, project_id)
+                        if db_table:
+                            table_edge = Edge(
+                                src_type='sql_unit',
+                                src_id=sql_unit.sql_id,
+                                dst_type='table',
+                                dst_id=db_table.table_id,
+                                edge_kind='use_table',
+                                confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                            )
+                            session.add(table_edge)
+                            self.logger.info(f"조인에서 발견된 테이블 메타정보 생성: {join.l_table}")
+                        else:
+                            self.logger.warning(f"테이블을 찾을 수 없음: {join.l_table} (스키마: {default_owner})")
+                
+                # r_table(오른쪽 테이블)도 동일하게 처리
+                if join.r_table:
+                    # DB 스키마에서 오른쪽 테이블 찾기
+                    query = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper())
+                    if default_owner:
+                        db_table = query.filter(DbTable.owner == default_owner.upper()).first()
+                        
+                        if not db_table:
+                            db_table = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper()).first()
+                    else:
+                        db_table = query.first()
+                    
+                    if db_table:
+                        table_edge = Edge(
+                            src_type='sql_unit',
+                            src_id=sql_unit.sql_id,
+                            dst_type='table',
+                            dst_id=db_table.table_id,
+                            edge_kind='use_table',
+                            confidence=0.8
+                        )
+                        session.add(table_edge)
+                    else:
+                        # 오른쪽 테이블도 최소 메타정보 생성
+                        db_table = self._create_minimal_table_from_join_right(session, join, default_owner, project_id)
+                        if db_table:
+                            table_edge = Edge(
+                                src_type='sql_unit',
+                                src_id=sql_unit.sql_id,
+                                dst_type='table',
+                                dst_id=db_table.table_id,
+                                edge_kind='use_table',
+                                confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                            )
+                            session.add(table_edge)
+                            self.logger.info(f"조인에서 발견된 테이블 메타정보 생성 (오른쪽): {join.r_table}")
+                        else:
+                            self.logger.warning(f"테이블을 찾을 수 없음: {join.r_table} (스키마: {default_owner})")
                     
     async def _infer_pk_fk_relationships(self, session, project_id: int):
         """PK-FK 관계 추론"""
@@ -1468,3 +1521,118 @@ class MetadataEngine:
             
         finally:
             session.close()
+    
+    def _create_minimal_table_from_join(self, session, join, default_owner: str, project_id: int) -> Optional[DbTable]:
+        """
+        조인에서 발견된 누락 테이블의 최소 메타정보 생성
+        
+        Args:
+            session: 데이터베이스 세션
+            join: 조인 객체
+            default_owner: 기본 스키마
+            project_id: 프로젝트 ID
+            
+        Returns:
+            생성된 DbTable 객체 또는 None
+        """
+        try:
+            # 중복 생성 방지를 위해 다시 한 번 확인
+            existing_table = session.query(DbTable).filter(
+                and_(
+                    DbTable.table_name == join.l_table.upper(),
+                    DbTable.table_owner == default_owner.upper()
+                )
+            ).first()
+            
+            if existing_table:
+                return existing_table
+            
+            # 조인 정보로부터 최소 메타정보 생성
+            new_table = DbTable(
+                table_name=join.l_table.upper(),
+                table_owner=default_owner.upper(),
+                table_type='INFERRED',  # 추론된 테이블임을 표시
+                # 조인에서 발견되었다는 정보를 커멘트에 추가
+                comments=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.r_table}, 조인 필드: {join.l_field})",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            session.add(new_table)
+            session.flush()  # ID 할당을 위해 flush
+            
+            # 조인 필드에 대한 최소 컬럼 정보도 생성
+            if join.l_field and join.l_field.strip():
+                join_column = DbColumn(
+                    table_id=new_table.table_id,
+                    column_name=join.l_field.upper(),
+                    data_type='UNKNOWN',  # 타입 정보가 없으므로 UNKNOWN
+                    comments=f"조인 필드로 발견됨 (파트너 테이블: {join.r_table}.{join.r_field})",
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
+                )
+                session.add(join_column)
+            
+            self.logger.debug(f"조인에서 발견된 테이블 메타정보 생성: {join.l_table} (ID: {new_table.table_id})")
+            return new_table
+            
+        except Exception as e:
+            self.logger.error(f"조인 테이블 메타정보 생성 실패: {join.l_table}", exception=e)
+            return None
+    
+    def _create_minimal_table_from_join_right(self, session, join, default_owner: str, project_id: int) -> Optional[DbTable]:
+        """
+        조인에서 발견된 오른쪽 테이블의 최소 메타정보 생성
+        
+        Args:
+            session: 데이터베이스 세션
+            join: 조인 객체
+            default_owner: 기본 스키마
+            project_id: 프로젝트 ID
+            
+        Returns:
+            생성된 DbTable 객체 또는 None
+        """
+        try:
+            # 중복 생성 방지를 위해 다시 한 번 확인
+            existing_table = session.query(DbTable).filter(
+                and_(
+                    DbTable.table_name == join.r_table.upper(),
+                    DbTable.table_owner == default_owner.upper()
+                )
+            ).first()
+            
+            if existing_table:
+                return existing_table
+            
+            # 조인 정보로부터 최소 메타정보 생성 (오른쪽 테이블)
+            new_table = DbTable(
+                table_name=join.r_table.upper(),
+                table_owner=default_owner.upper(),
+                table_type='INFERRED',  # 추론된 테이블임을 표시
+                comments=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.l_table}, 조인 필드: {join.r_field})",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            session.add(new_table)
+            session.flush()
+            
+            # 조인 필드에 대한 최소 컬럼 정보도 생성
+            if join.r_field and join.r_field.strip():
+                join_column = DbColumn(
+                    table_id=new_table.table_id,
+                    column_name=join.r_field.upper(),
+                    data_type='UNKNOWN',
+                    comments=f"조인 필드로 발견됨 (파트너 테이블: {join.l_table}.{join.l_field})",
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
+                )
+                session.add(join_column)
+            
+            self.logger.debug(f"조인에서 발견된 오른쪽 테이블 메타정보 생성: {join.r_table} (ID: {new_table.table_id})")
+            return new_table
+            
+        except Exception as e:
+            self.logger.error(f"조인 오른쪽 테이블 메타정보 생성 실패: {join.r_table}", exception=e)
+            return None

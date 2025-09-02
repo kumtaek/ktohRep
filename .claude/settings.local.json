@@ -101,7 +101,8 @@
       "Bash(\"venvSrcAnalyzer\\Scripts\\python.exe\":*)",
       "Bash(./run_analyzer.bat:*)",
       "Bash(run_download_vulnerability_docs.bat sampleSrc)",
-      "Bash(./run_download_vulnerability_docs.bat sampleSrc)"
+      "Bash(./run_download_vulnerability_docs.bat sampleSrc)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": []

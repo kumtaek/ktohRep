@@ -144,7 +144,7 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                     'comment': getattr(col, 'column_comment', None)
                 })
         
-        print('# Get sample joins for this table')
+        # Get sample joins for this table
         sample_joins = db.fetch_sample_joins_for_table(table.table_id, limit=5)
         
         table_meta = {

@@ -184,7 +184,7 @@ class VizDB:
                 )
             ).limit(limit * 2).all()  # 필터링 및 순위 지정을 위해 더 많이 가져옵니다.
             
-            print(f'# 조인 패턴을 처리하고 빈도별로 순위를 매깁니다.\njoins={joins}')
+            print('# 조인 패턴을 처리하고 빈도별로 순위를 매깁니다.')
             join_patterns = {}
             for join in joins:
                 key = f"{join.left_table}|{join.right_table}|{join.left_column}|{join.right_column}"

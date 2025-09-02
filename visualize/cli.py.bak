@@ -290,7 +290,7 @@ def main():
                 logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('graph_view.html', data)
             elif cmd_name == 'erd':
-                print('# ERD 데이터를 구축합니다.')
+                print(# ERD 데이터를 구축합니다.')
                 logger.info("🗃️ 데이터베이스 ERD 분석 중...")
                 if args.tables:
                     logger.info(f"📋 대상 테이블: {args.tables}")

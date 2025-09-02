@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 
 from models.database import DbTable, DbColumn, DbPk, DbView
+from .logger import handle_critical_error, handle_non_critical_error
 
 class CsvLoader:
     """CSV 파일을 로드하여 DB 스키마 정보를 저장하는 클래스"""
@@ -65,8 +66,7 @@ class CsvLoader:
             return result
             
         except Exception as e:
-            self.logger.error(f"CSV 로드 실패 {filename}: {e}")
-            raise
+            handle_critical_error(self.logger, f"CSV 로드 실패 {filename}", e)
             
     async def _load_tables(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """
@@ -104,15 +104,12 @@ class CsvLoader:
                 ).first()
 
                 if existing:
-                    # CSV 업로드는 최신 정보이므로 기존 정보 타입에 관계없이 모든 필드 덮어쓰기
-                    was_inferred = existing.table_type == 'INFERRED'
+                    # CSV 업로드는 최신 정보이므로 기존 정보를 모든 필드 덮어쓰기
+                    was_inferred = existing.status == 'INFERRED'
                     
                     # 모든 필드를 CSV 값으로 무조건 덮어쓰기 (비어있어도)
                     existing.table_comment = comments  # 빈 값이어도 덮어쓰기
-                    existing.comments = comments
-                    existing.status = status
-                    existing.table_type = 'TABLE'  # CSV 정보이므로 실제 테이블로 설정
-                    existing.updated_at = datetime.utcnow()
+                    existing.status = status if status else 'VALID'  # CSV 정보이므로 실제 테이블로 설정
                     
                     if was_inferred:
                         self.logger.info(f"CSV에서 테이블 정보 덮어쓰기: {table_name} (조인 추론 → 실제 정보)")
@@ -133,7 +130,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -187,8 +184,6 @@ class CsvLoader:
                     existing.data_type = row.get('DATA_TYPE', '').strip()
                     existing.nullable = row.get('NULLABLE', 'Y').strip()
                     existing.column_comment = col_comments
-                    existing.comments = col_comments
-                    existing.updated_at = datetime.utcnow()
                     
                     if was_inferred:
                         self.logger.info(f"CSV에서 컬럼 정보 덮어쓰기: {owner}.{table_name}.{column_name} (조인 추론 → 실제 정보)")
@@ -203,7 +198,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -255,7 +250,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -311,7 +306,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -364,7 +359,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -403,7 +398,7 @@ class CsvLoader:
             
         except Exception as e:
             session.rollback()
-            raise e
+            handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
         finally:
             session.close()
             
@@ -456,7 +451,7 @@ class CsvLoader:
                 return result
                 
         except Exception as e:
-            return {'valid': False, 'reason': f'파일 읽기 오류: {e}'}
+            handle_critical_error(self.logger, "파일 읽기 오류", e)
     
     async def load_project_db_schema(self, project_name: str, project_id: int) -> Dict[str, Any]:
         """
@@ -517,8 +512,6 @@ class CsvLoader:
                     self.logger.info(f"DB 스키마 CSV 로드 완료: {filename} ({sum(load_result.values())} records)")
                     
                 except Exception as e:
-                    error_msg = f"{filename} 로드 실패: {e}"
-                    self.logger.error(error_msg)
-                    result['errors'].append(error_msg)
+                    handle_critical_error(self.logger, f"{filename} 로드 실패", e)
         
         return result

@@ -38,6 +38,7 @@ except ImportError:
 
 from models.database import File, SqlUnit, Edge, Join, RequiredFilter
 from utils.confidence_calculator import ConfidenceCalculator
+from utils.logger import handle_critical_error, handle_non_critical_error
 from security.vulnerability_detector import SqlInjectionDetector, XssDetector
 
 
@@ -698,14 +699,14 @@ class JspMybatisParser: # Renamed from ImprovedJspMybatisParser
             else:
                 file_obj, sql_units, joins, filters, edges, vulnerabilities = result
             
-            # 보안 취약점 탐지 (Using the new detectors)
-            if file_path.endswith('.jsp'):
-                vuln = self.sql_injection_detector.detect_jsp_sql_injection(content, file_path)
-                vuln.extend(self.xss_detector.detect_jsp_xss(content, file_path))
-                vulnerabilities.extend(vuln)
-            elif file_path.endswith('.xml'):
-                vuln = self.sql_injection_detector.detect_mybatis_sql_injection(content, file_path)
-                vulnerabilities.extend(vuln)
+            # 보안 취약점 탐지 (Using the new detectors) - 스킵
+            # if file_path.endswith('.jsp'):
+            #     vuln = self.sql_injection_detector.detect_jsp_sql_injection(content, file_path)
+            #     vuln.extend(self.xss_detector.detect_jsp_xss(content, file_path))
+            #     vulnerabilities.extend(vuln)
+            # elif file_path.endswith('.xml'):
+            #     vuln = self.sql_injection_detector.detect_mybatis_sql_injection(content, file_path)
+            #     vulnerabilities.extend(vuln)
                 
             return file_obj, sql_units, joins, filters, edges, vulnerabilities
                 

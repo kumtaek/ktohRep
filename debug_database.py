@@ -66,8 +66,9 @@ def main():
         db = VizDB(full_db_config, project_name)
         
         with db.dbm.get_session() as session:
-            from models.database import Project, Method, Class, File, Edge, SqlUnit, Join
-            
+            from models.database import Base, Project, Method, Class, File, Edge, SqlUnit, Join, DbTable, DbColumn, DbPk, DbView, RequiredFilter, Summary, EnrichmentLog, Chunk, Embedding, JavaImport, EdgeHint, Relatedness, VulnerabilityFix, CodeMetric, Duplicate, DuplicateInstance, ParseResultModel
+            from sqlalchemy import inspect, func
+
             # 프로젝트 ID를 가져옵니다.
             project = session.query(Project).filter(Project.name == project_name).first()
             if not project:
@@ -75,25 +76,69 @@ def main():
                 return 1
             project_id = project.project_id
             print(f'Project ID: {project_id}')
-            
-            # Count basic entities
+
+            # 모든 테이블의 레코드 수를 출력합니다.
+            inspector = inspect(session.bind)
+            table_names = inspector.get_table_names()
+
+            print(f'\n--- 모든 테이블 레코드 수 ---')
+            table_counts = {}
+            for table_name in table_names:
+                # Base.metadata.tables에서 테이블 객체를 가져옵니다.
+                table_class = None
+                for mapper in Base.registry.mappers:
+                    if mapper.local_table.name == table_name:
+                        table_class = mapper.class_
+                        break
+                
+                if table_class:
+                    count = session.query(table_class).count()
+                    table_counts[table_name] = count
+                    print(f'  {table_name}: {count} records')
+                else:
+                    print(f'  {table_name}: (클래스 매핑을 찾을 수 없음)')
+
+            print(f'\n--- 프로젝트 관련 엔티티 수 (project_id={project_id}) ---')
             file_count = session.query(File).filter(File.project_id == project_id).count()
             class_count = session.query(Class).join(File).filter(File.project_id == project_id).count()
             method_count = session.query(Method).join(Class).join(File).filter(File.project_id == project_id).count()
             edge_count = session.query(Edge).filter(Edge.project_id == project_id).count()
-            
-            print(f'\nDatabase contents:')
+            sql_unit_count = session.query(SqlUnit).join(File).filter(File.project_id == project_id).count()
+            join_count = session.query(Join).join(SqlUnit).join(File).filter(File.project_id == project_id).count()
+            filter_count = session.query(RequiredFilter).join(SqlUnit).join(File).filter(File.project_id == project_id).count()
+            summary_count = session.query(Summary).filter(Summary.target_type.in_(['file', 'class', 'method', 'sql_unit'])).count()
+            enrichment_log_count = session.query(EnrichmentLog).filter(EnrichmentLog.target_type.in_(['file', 'class', 'method', 'sql_unit'])).count()
+            chunk_count = session.query(Chunk).filter(Chunk.target_type.in_(['file', 'class', 'method', 'sql_unit'])).count()
+            embedding_count = session.query(Embedding).join(Chunk).filter(Chunk.target_type.in_(['file', 'class', 'method', 'sql_unit'])).count()
+            java_import_count = session.query(JavaImport).join(File).filter(File.project_id == project_id).count()
+            edge_hint_count = session.query(EdgeHint).filter(EdgeHint.project_id == project_id).count()
+            relatedness_count = session.query(Relatedness).filter(Relatedness.project_id == project_id).count()
+            vulnerability_fix_count = session.query(VulnerabilityFix).filter(VulnerabilityFix.target_type.in_(['file', 'class', 'method', 'sql_unit'])).count()
+            code_metric_count = session.query(CodeMetric).filter(CodeMetric.target_type.in_(['file', 'class', 'method'])).count()
+            duplicate_count = session.query(Duplicate).count()
+            duplicate_instance_count = session.query(DuplicateInstance).join(File).filter(File.project_id == project_id).count()
+            parse_result_count = session.query(ParseResultModel).join(File).filter(File.project_id == project_id).count()
+
             print(f'  Files: {file_count}')
             print(f'  Classes: {class_count}')
             print(f'  Methods: {method_count}')
             print(f'  Edges: {edge_count}')
-            
-            sql_unit_count = session.query(SqlUnit).join(File).filter(File.project_id == project_id).count()
-            join_count = session.query(Join).join(SqlUnit).join(File).filter(File.project_id == project_id).count()
-            
             print(f'  SQL Units: {sql_unit_count}')
             print(f'  Joins: {join_count}')
-            
+            print(f'  Required Filters: {filter_count}')
+            print(f'  Summaries: {summary_count}')
+            print(f'  Enrichment Logs: {enrichment_log_count}')
+            print(f'  Chunks: {chunk_count}')
+            print(f'  Embeddings: {embedding_count}')
+            print(f'  Java Imports: {java_import_count}')
+            print(f'  Edge Hints: {edge_hint_count}')
+            print(f'  Relatedness: {relatedness_count}')
+            print(f'  Vulnerability Fixes: {vulnerability_fix_count}')
+            print(f'  Code Metrics: {code_metric_count}')
+            print(f'  Duplicates: {duplicate_count}')
+            print(f'  Duplicate Instances: {duplicate_instance_count}')
+            print(f'  Parse Results: {parse_result_count}')
+
             # Show sample SQL Units
             sql_units = session.query(SqlUnit).join(File).filter(
                 File.project_id == project_id
@@ -122,7 +167,6 @@ def main():
                 print(f'  {method.class_.fqn}.{method.name}() - ID: {method.method_id}')
             
             # Show edge types
-            from sqlalchemy import func
             edge_types = session.query(Edge.edge_kind, func.count(Edge.edge_id)).filter(
                 Edge.project_id == project_id
             ).group_by(Edge.edge_kind).all()

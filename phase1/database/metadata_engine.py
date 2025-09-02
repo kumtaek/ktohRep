@@ -1550,10 +1550,9 @@ class MetadataEngine:
             # 조인 정보로부터 최소 메타정보 생성
             new_table = DbTable(
                 table_name=join.l_table.upper(),
-                table_owner=default_owner.upper(),
-                table_type='INFERRED',  # 추론된 테이블임을 표시
-                # 조인에서 발견되었다는 정보를 커멘트에 추가
-                comments=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.r_table}, 조인 필드: {join.l_field})",
+                owner=default_owner.upper(),
+                status='INFERRED',  # 추론된 테이블임을 표시
+                table_comment=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.r_table}, 조인 필드: {join.l_col})",
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
@@ -1562,12 +1561,12 @@ class MetadataEngine:
             session.flush()  # ID 할당을 위해 flush
             
             # 조인 필드에 대한 최소 컬럼 정보도 생성
-            if join.l_field and join.l_field.strip():
+            if join.l_col and join.l_col.strip():
                 join_column = DbColumn(
                     table_id=new_table.table_id,
-                    column_name=join.l_field.upper(),
+                    column_name=join.l_col.upper(),
                     data_type='UNKNOWN',  # 타입 정보가 없으므로 UNKNOWN
-                    comments=f"조인 필드로 발견됨 (파트너 테이블: {join.r_table}.{join.r_field})",
+                    column_comment=f"조인 필드로 발견됨 (파트너 테이블: {join.r_table}.{join.r_col})",
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
                 )
@@ -1608,9 +1607,9 @@ class MetadataEngine:
             # 조인 정보로부터 최소 메타정보 생성 (오른쪽 테이블)
             new_table = DbTable(
                 table_name=join.r_table.upper(),
-                table_owner=default_owner.upper(),
-                table_type='INFERRED',  # 추론된 테이블임을 표시
-                comments=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.l_table}, 조인 필드: {join.r_field})",
+                owner=default_owner.upper(),
+                status='INFERRED',  # 추론된 테이블임을 표시
+                table_comment=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.l_table}, 조인 필드: {join.r_col})",
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
@@ -1619,12 +1618,12 @@ class MetadataEngine:
             session.flush()
             
             # 조인 필드에 대한 최소 컬럼 정보도 생성
-            if join.r_field and join.r_field.strip():
+            if join.r_col and join.r_col.strip():
                 join_column = DbColumn(
                     table_id=new_table.table_id,
-                    column_name=join.r_field.upper(),
+                    column_name=join.r_col.upper(),
                     data_type='UNKNOWN',
-                    comments=f"조인 필드로 발견됨 (파트너 테이블: {join.l_table}.{join.l_field})",
+                    column_comment=f"조인 필드로 발견됨 (파트너 테이블: {join.l_table}.{join.l_col})",
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
                 )

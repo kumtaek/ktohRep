@@ -169,8 +169,14 @@ class SourceAnalyzer:
 
     async def _load_db_schema(self, project_root: str, project_name: str, project_id: int):
         self.logger.info(f"DB 스키마 정보 로드 시작: {project_name}")
-        # CSV 로더를 사용하여 프로젝트 DB 스키마를 로드합니다.
-        await self.csv_loader.load_project_db_schema(project_name, project_id)
+        try:
+            # CSV 로더를 사용하여 프로젝트 DB 스키마를 로드합니다.
+            await self.csv_loader.load_project_db_schema(project_name, project_id)
+        except Exception as e:
+            error_msg = f"DB 스키마 로드 실패: {e}"
+            traceback_str = traceback.format_exc()
+            self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+            sys.exit(1)
 
     def _collect_source_files(self, project_root: str) -> List[str]:
         """소스 파일 수집"""
@@ -268,15 +274,11 @@ class SourceAnalyzer:
                     self.logger.debug(f"저장 완료: JAR {jar_path} - 클래스 {len(classes)}개, 메소드 {len(methods)}개")
                 except Exception as e:
                     session.rollback()
-                    error_msg = f"JAR 저장 오류 {jar_path}: {e}"
-                    traceback_str = traceback.format_exc()
-                    self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                    handle_non_critical_error(self.logger, f"JAR 저장 오류 {jar_path}", e)
                 finally:
                     session.close()
             except Exception as e:
-                error_msg = f"JAR 분석 실패 {jar_path}: {e}"
-                traceback_str = traceback.format_exc()
-                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                handle_non_critical_error(self.logger, f"JAR 분석 실패 {jar_path}", e)
 
     async def _analyze_files(self, source_files: List[str], project_id: int):
         """파일 분석 실행"""
@@ -440,18 +442,14 @@ class SourceAnalyzer:
                         )
                     except Exception as e:
                         session.rollback()
-                        error_msg = f"데이터베이스 저장 오류 {file_path}: {e}"
-                        traceback_str = traceback.format_exc()
-                        self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                        handle_non_critical_error(self.logger, f"데이터베이스 저장 오류 {file_path}", e)
                     finally:
                         session.close()
                 else:
                     self.logger.debug(f"지원하지 않는 파일 형식: {file_path}")
                     
             except Exception as e:
-                error_msg = f"파일 분석 오류 {file_path}: {e}"
-                traceback_str = traceback.format_exc()
-                self.logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
+                handle_non_critical_error(self.logger, f"파일 분석 오류 {file_path}", e)
 
     def _validate_confidence_formula_on_startup(self):
         # ... (Implementation from previous version) ...

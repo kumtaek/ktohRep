@@ -32,6 +32,7 @@ logger = logging.getLogger('llm_analyzer') # 기존 llm_analyzer 로거 사용
 
 from llm.summarizer import CodeSummarizer, generate_table_specification_md, generate_source_specification_md
 from models.database import DatabaseManager
+from utils.logger import handle_critical_error, handle_non_critical_error
 # from utils.logger import setup_logger # 더 이상 사용하지 않음
 
 def load_config(config_path: str = None) -> Dict[str, Any]:
@@ -113,12 +114,7 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
         logger.info("Code element summarization completed!")
 
     except Exception as e:
-        error_msg = f"Error during code summarization: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        raise
+        handle_critical_error(logger, "코드 요약 처리 실패", e)
 
 
 def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
@@ -144,12 +140,7 @@ def enhance_db_comments(config: Dict[str, Any], project_name: str, batch_size: i
         logger.info("Success: Database comment enhancement completed!")
 
     except Exception as e:
-        error_msg = f"Error during comment enhancement: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        raise
+        handle_critical_error(logger, "코멘트 향상 처리 실패", e)
 
 
 def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 10, debug: bool = False):
@@ -194,12 +185,7 @@ def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 1
         logger.info("Join analysis completed!")
 
     except Exception as e:
-        error_msg = f"Error during join analysis: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"{error_msg}\nTraceback:\n{traceback_str}")
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        raise
+        handle_critical_error(logger, "조인 분석 처리 실패", e)
 
 
 def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
@@ -224,11 +210,7 @@ def generate_source_spec_md(config: Dict[str, Any], project_name: str, output_fi
         logger.info(f"Source specification generated: {output_file}")
 
     except Exception as e:
-        error_msg = f"Error generating source specification: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        raise
+        handle_critical_error(logger, "소스 명세서 생성 실패", e)
 
 
 def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_file: str = None):
@@ -253,11 +235,7 @@ def generate_table_spec_md(config: Dict[str, Any], project_name: str, output_fil
         logger.info(f"Success: Table specification generated: {output_file}")
 
     except Exception as e:
-        error_msg = f"Error generating table specification: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        raise
+        handle_critical_error(logger, "테이블 명세서 생성 실패", e)
 
 
 def main():
@@ -345,11 +323,7 @@ Examples:
             return
 
     except Exception as e:
-        error_msg = f"Error loading configuration: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        return
+        handle_critical_error(logger, "설정 파일 로드 실패", e)
 
     try:
         if args.command == 'summarize':
@@ -404,11 +378,7 @@ Examples:
         logger.error("\nError: Analysis interrupted by user")
         sys.exit(1)
     except Exception as e:
-        error_msg = f"Unexpected error: {e}"
-        traceback_str = traceback.format_exc()
-        logger.error(f"Error: {error_msg}")
-        logger.error(f"Traceback:\n{traceback_str}")
-        sys.exit(1)
+        handle_critical_error(logger, "예상치 못한 오류 발생", e)
 
 if __name__ == '__main__':
     main()

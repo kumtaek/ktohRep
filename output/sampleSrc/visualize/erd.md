@@ -1,0 +1,218 @@
+# Source Analyzer ERD Diagram (Project 1)
+
+## 개요
+- 프로젝트 ID: 1
+- 다이어그램 유형: ERD
+- 생성 시각: 2025-09-02 17:41:40
+- 노드 수: 14
+- 엣지 수: 11
+
+## 다이어그램
+
+```mermaid
+erDiagram
+  n1_table_PUBL {
+    NUMBER ROLE_ID PK
+    NUMBER USER_ID PK
+    NUMBER ROLE_ID PK
+    NUMBER USER_ID PK
+  }
+  n2_table_SAMP {
+    VARCHAR2 BRAND_CODE
+    VARCHAR2 BRAND_ID PK
+    VARCHAR2 BRAND_NAME
+    CHAR DEL_YN
+    VARCHAR2 BRAND_CODE
+    VARCHAR2 BRAND_ID PK
+    VARCHAR2 BRAND_NAME
+    CHAR DEL_YN
+  }
+  n3_table_SAMP {
+    VARCHAR2 CATEGORY_CODE
+    VARCHAR2 CATEGORY_ID PK
+    VARCHAR2 CATEGORY_NAME
+    CHAR DEL_YN
+    VARCHAR2 CATEGORY_CODE
+    VARCHAR2 CATEGORY_ID PK
+    VARCHAR2 CATEGORY_NAME
+    CHAR DEL_YN
+  }
+  n4_table_SAMP {
+    CHAR ACTIVE_YN
+    VARCHAR2 DISCOUNT_ID PK
+    NUMBER DISCOUNT_RATE
+    DATE END_DATE
+    VARCHAR2 PRODUCT_ID
+    DATE START_DATE
+    CHAR ACTIVE_YN
+    VARCHAR2 DISCOUNT_ID PK
+    NUMBER DISCOUNT_RATE
+    DATE END_DATE
+  }
+  n5_table_SAMP {
+    NUMBER CURRENT_STOCK
+    VARCHAR2 INVENTORY_ID PK
+    VARCHAR2 PRODUCT_ID
+    DATE UPDATED_DATE
+    NUMBER CURRENT_STOCK
+    VARCHAR2 INVENTORY_ID PK
+    VARCHAR2 PRODUCT_ID
+    DATE UPDATED_DATE
+  }
+  n6_table_SAMP {
+    DATE CREATED_DATE
+    VARCHAR2 CUSTOMER_ID
+    CHAR DEL_YN
+    NUMBER DISCOUNT_AMOUNT
+    DATE ORDER_DATE
+    VARCHAR2 ORDER_ID PK
+    VARCHAR2 STATUS
+    NUMBER TAX_AMOUNT
+    NUMBER TOTAL_AMOUNT
+    DATE UPDATED_DATE
+  }
+  n7_table_SAMP {
+    CHAR DEL_YN
+    VARCHAR2 ORDER_ID
+    VARCHAR2 ORDER_ITEM_ID PK
+    VARCHAR2 PRODUCT_ID
+    NUMBER QUANTITY
+    NUMBER UNIT_PRICE
+    CHAR DEL_YN
+    VARCHAR2 ORDER_ID
+    VARCHAR2 ORDER_ITEM_ID PK
+    VARCHAR2 PRODUCT_ID
+  }
+  n8_table_SAMP {
+    VARCHAR2 BRAND_ID
+    VARCHAR2 CATEGORY_ID
+    DATE CREATED_DATE
+    CHAR DEL_YN
+    CLOB DESCRIPTION
+    NUMBER PRICE
+    VARCHAR2 PRODUCT_ID PK
+    VARCHAR2 PRODUCT_NAME
+    VARCHAR2 STATUS
+    NUMBER STOCK_QUANTITY
+  }
+  n9_table_SAMP {
+    DATE CREATED_DATE
+    VARCHAR2 CUSTOMER_ID
+    CHAR DEL_YN
+    VARCHAR2 PRODUCT_ID
+    NUMBER RATING
+    VARCHAR2 REVIEW_ID PK
+    CLOB REVIEW_TEXT
+    DATE CREATED_DATE
+    VARCHAR2 CUSTOMER_ID
+    CHAR DEL_YN
+  }
+  n10_table_SAMP {
+    CHAR DEL_YN
+    VARCHAR2 SUPPLIER_ID PK
+    VARCHAR2 SUPPLIER_NAME
+    CHAR DEL_YN
+    VARCHAR2 SUPPLIER_ID PK
+    VARCHAR2 SUPPLIER_NAME
+  }
+  n11_table_SAMP {
+    DATE CREATED_DATE
+    CHAR DEL_YN
+    VARCHAR2 EMAIL
+    VARCHAR2 PHONE
+    VARCHAR2 STATUS
+    DATE UPDATED_DATE
+    VARCHAR2 USER_ID PK
+    VARCHAR2 USER_NAME
+    DATE CREATED_DATE
+    CHAR DEL_YN
+  }
+  n12_table_SAMP {
+    CHAR DEL_YN
+    VARCHAR2 LOCATION
+    VARCHAR2 WAREHOUSE_ID PK
+    VARCHAR2 WAREHOUSE_NAME
+    CHAR DEL_YN
+    VARCHAR2 LOCATION
+    VARCHAR2 WAREHOUSE_ID PK
+    VARCHAR2 WAREHOUSE_NAME
+  }
+  n13_table_SCOT {
+    NUMBER ID PK
+    VARCHAR2 NAME
+    VARCHAR2 STATUS
+    NUMBER ID PK
+    VARCHAR2 NAME
+    VARCHAR2 STATUS
+  }
+  n14_table_SCOT {
+    NUMBER ID PK
+    NUMBER RELATED_ID
+    VARCHAR2 VALUE
+    NUMBER ID PK
+    NUMBER RELATED_ID
+    VARCHAR2 VALUE
+  }
+  n1_table_PUBL ||--|| n11_table_SAMP : "relationship"
+  n4_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n5_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n6_table_SAMP : "foreign_key"
+  n7_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n2_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n3_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n10_table_SAMP : "foreign_key"
+  n8_table_SAMP ||--|| n12_table_SAMP : "foreign_key"
+  n9_table_SAMP ||--|| n8_table_SAMP : "foreign_key"
+  n13_table_SCOT ||--|| n14_table_SCOT : "relationship"
+```
+
+## 범례
+
+### ERD 범례
+- 실선: 외래키 관계(높은 신뢰도)
+- 점선: 추론된 조인 관계
+- 굵은 글자: PK 컬럼
+- [REQ] 마크: SQLERD 모드의 필수 필터 컬럼
+
+## 원본 데이터
+
+<details>
+<summary>원본 데이터를 보려면 클릭</summary>
+
+노드 목록 (14)
+```json
+  table:PUBLIC.USER_ROLE: PUBLIC.USER_ROLE (table)
+  table:SAMPLE.BRANDS: SAMPLE.BRANDS (table)
+  table:SAMPLE.CATEGORIES: SAMPLE.CATEGORIES (table)
+  table:SAMPLE.DISCOUNTS: SAMPLE.DISCOUNTS (table)
+  table:SAMPLE.INVENTORIES: SAMPLE.INVENTORIES (table)
+  table:SAMPLE.ORDERS: SAMPLE.ORDERS (table)
+  table:SAMPLE.ORDER_ITEMS: SAMPLE.ORDER_ITEMS (table)
+  table:SAMPLE.PRODUCTS: SAMPLE.PRODUCTS (table)
+  table:SAMPLE.PRODUCT_REVIEWS: SAMPLE.PRODUCT_REVIEWS (table)
+  table:SAMPLE.SUPPLIERS: SAMPLE.SUPPLIERS (table)
+  table:SAMPLE.USERS: SAMPLE.USERS (table)
+  table:SAMPLE.WAREHOUSES: SAMPLE.WAREHOUSES (table)
+  table:SCOTT.DYNAMIC_DATA: SCOTT.DYNAMIC_DATA (table)
+  table:SCOTT.RELATED_DATA: SCOTT.RELATED_DATA (table)
+```
+
+엣지 목록 (11)
+```json
+  table:PUBLIC.USER_ROLE -> table:SAMPLE.USERS (relationship)
+  table:SAMPLE.DISCOUNTS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SAMPLE.INVENTORIES -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.ORDERS (foreign_key)
+  table:SAMPLE.ORDER_ITEMS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SAMPLE.PRODUCTS -> table:SAMPLE.BRANDS (foreign_key)
+  table:SAMPLE.PRODUCTS -> table:SAMPLE.CATEGORIES (foreign_key)
+  table:SAMPLE.PRODUCTS -> table:SAMPLE.SUPPLIERS (foreign_key)
+  table:SAMPLE.PRODUCTS -> table:SAMPLE.WAREHOUSES (foreign_key)
+  table:SAMPLE.PRODUCT_REVIEWS -> table:SAMPLE.PRODUCTS (foreign_key)
+  table:SCOTT.DYNAMIC_DATA -> table:SCOTT.RELATED_DATA (relationship)
+```
+
+</details>
+
+---
+*Source Analyzer v1.1 — 생성 시각: 2025-09-02 17:41:40*

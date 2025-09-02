@@ -10,6 +10,7 @@ import sys
 from datetime import datetime
 from typing import Optional, Dict, Any
 import traceback
+import inspect
 
 
 class AnalyzerLogger:
@@ -241,6 +242,85 @@ class ExceptionHandler:
                     return return_value
             return wrapper
         return decorator
+
+
+def handle_critical_error(logger, error_msg: str, exception: Exception = None, exit_code: int = 1):
+    """
+    치명적 에러 처리 공통 함수
+    에러 로그를 남기고 프로그램을 종료합니다.
+    
+    Args:
+        logger: 로거 인스턴스 (AnalyzerLogger 또는 표준 logger)
+        error_msg: 에러 메시지
+        exception: 발생한 예외 (선택사항)
+        exit_code: 종료 코드 (기본값: 1)
+    """
+    # 전체 스택 트레이스에서 실제 에러 발생 지점 찾기
+    tb = traceback.extract_tb(sys.exc_info()[2]) if exception else traceback.extract_stack()
+    
+    if tb and len(tb) >= 2:
+        # 마지막에서 두 번째 프레임이 실제 에러 발생 지점 (마지막은 이 함수)
+        error_frame = tb[-2]
+        actual_filename = os.path.basename(error_frame.filename)
+        actual_line = error_frame.lineno
+        actual_function = error_frame.name
+        
+        # 전체 에러 메시지 구성
+        full_error_msg = f"[{actual_filename}:{actual_line}] {actual_function}() - {error_msg}"
+    else:
+        # 스택 정보가 없는 경우 기본 메시지
+        full_error_msg = f"CRITICAL ERROR - {error_msg}"
+    
+    if exception:
+        full_error_msg += f" | Exception: {str(exception)}"
+    
+    # 전체 트레이스백 정보 추가
+    traceback_str = traceback.format_exc()
+    full_error_msg += f"\nFull Traceback:\n{traceback_str}"
+    
+    # 로거 타입에 따라 로깅
+    if hasattr(logger, 'error'):
+        if isinstance(logger, AnalyzerLogger):
+            logger.error(full_error_msg)
+        else:
+            logger.error(full_error_msg)
+    else:
+        print(f"CRITICAL ERROR: {full_error_msg}")
+    
+    # 프로그램 종료
+    sys.exit(exit_code)
+
+
+def handle_non_critical_error(logger, error_msg: str, exception: Exception = None):
+    """
+    일반 에러 처리 공통 함수
+    에러 로그만 남기고 계속 진행합니다.
+    
+    Args:
+        logger: 로거 인스턴스
+        error_msg: 에러 메시지  
+        exception: 발생한 예외 (선택사항)
+    """
+    # 호출자 정보 수집
+    frame = inspect.currentframe().f_back
+    filename = os.path.basename(frame.f_code.co_filename)
+    line_number = frame.f_lineno
+    function_name = frame.f_code.co_name
+    
+    # 전체 에러 메시지 구성
+    full_error_msg = f"[{filename}:{line_number}] {function_name}() - {error_msg}"
+    
+    if exception:
+        full_error_msg += f" | Exception: {str(exception)}"
+        
+    # 로거 타입에 따라 로깅
+    if hasattr(logger, 'error'):
+        if isinstance(logger, AnalyzerLogger):
+            logger.error(full_error_msg)
+        else:
+            logger.error(full_error_msg)
+    else:
+        print(f"ERROR: {full_error_msg}")
 
 
 def setup_logging(config: Dict[str, Any]):

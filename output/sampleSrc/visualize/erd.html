@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Source Analyzer - 고도화 ERD</title>
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #toolbar { 
+            padding: 12px; 
+            border-bottom: 1px solid #ddd; 
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #cy { 
+            width: 100%; 
+            height: calc(100% - 60px); 
+        }
+        
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #search {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        /* 향상된 툴팁 스타일 */
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 2000;
+            font-size: 12px;
+        }
+        
+        .tooltip-header {
+            background: #f8f9fa;
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+        
+        .tooltip-subtitle {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        
+        .tooltip-content {
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .columns-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .column-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .column-item:last-child {
+            border-bottom: none;
+        }
+        
+        .column-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .column-name {
+            font-weight: 500;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .column-type {
+            font-size: 11px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .pk-icon {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .fk-icon {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .nullable {
+            color: #28a745;
+            font-size: 10px;
+        }
+        
+        .sample-joins {
+            background: #f8f9fa;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .sample-joins-title {
+            font-weight: 500;
+            font-size: 11px;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        
+        .join-item {
+            font-size: 10px;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .stats {
+            background: rgba(255, 152, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-line {
+            width: 20px;
+            height: 2px;
+            border-radius: 1px;
+        }
+
+        /* 겹침 방지를 위한 노드 스타일 개선 */
+        .cy-node-selected {
+            z-index: 999;
+        }
+
+        /* 컬럼 상세 정보 패널 */
+        .column-details {
+            padding: 4px 0;
+        }
+        
+        .column-comment {
+            font-size: 10px;
+            color: #28a745;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        
+        /* 관계선 툴팁 스타일 */
+        .edge-tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 380px;
+            min-width: 200px;
+            box-shadow: 0 8px 25px rgba(0,123,255,0.15), 0 3px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 2100;
+            font-size: 12px;
+            pointer-events: none;
+            animation: fadeInTooltip 0.2s ease-out;
+        }
+        
+        @keyframes fadeInTooltip {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .edge-tooltip-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 10px 12px;
+            margin: 0;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .edge-tooltip-type {
+            font-size: 10px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .edge-tooltip-content {
+            color: #495057;
+            padding: 12px;
+        }
+        
+        .join-condition {
+            background: linear-gradient(135deg, #e8f4fd 0%, #f1f8ff 100%);
+            border: 1px solid #b3d9ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: #0056b3;
+            position: relative;
+        }
+        
+        .join-condition::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #007bff;
+            border-radius: 50%;
+        }
+        
+        .edge-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 8px 0;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .confidence-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(40,167,69,0.3);
+        }
+        
+        .frequency-info {
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        .relation-detail {
+            margin: 4px 0;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+            border-radius: 0 4px 4px 0;
+            font-size: 11px;
+        }
+        
+        .relation-detail strong {
+            color: #495057;
+        }
+    </style>
+    <!-- Offline assets -->
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script>
+        const DATA = {
+  "nodes": [
+    {
+      "id": "table:PUBLIC.USER_ROLE",
+      "type": "table",
+      "label": "PUBLIC.USER_ROLE",
+      "group": "DB",
+      "meta": {
+        "owner": "PUBLIC",
+        "table_name": "USER_ROLE",
+        "status": "VALID",
+        "pk_columns": [
+          "USER_ID",
+          "ROLE_ID"
+        ],
+        "comment": "사용자역할",
+        "columns": [
+          {
+            "name": "ROLE_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "ROLE_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.BRANDS",
+      "type": "table",
+      "label": "SAMPLE.BRANDS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "BRANDS",
+        "status": "VALID",
+        "pk_columns": [
+          "BRAND_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "BRAND_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.CATEGORIES",
+      "type": "table",
+      "label": "SAMPLE.CATEGORIES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "CATEGORIES",
+        "status": "VALID",
+        "pk_columns": [
+          "CATEGORY_ID"
+        ],
+        "comment": "분류코드",
+        "columns": [
+          {
+            "name": "CATEGORY_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.DISCOUNTS",
+      "type": "table",
+      "label": "SAMPLE.DISCOUNTS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "DISCOUNTS",
+        "status": "VALID",
+        "pk_columns": [
+          "DISCOUNT_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ACTIVE_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_RATE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "END_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "START_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ACTIVE_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_RATE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "END_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "START_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.INVENTORIES",
+      "type": "table",
+      "label": "SAMPLE.INVENTORIES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "INVENTORIES",
+        "status": "VALID",
+        "pk_columns": [
+          "INVENTORY_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "CURRENT_STOCK",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "INVENTORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CURRENT_STOCK",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "INVENTORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.ORDERS",
+      "type": "table",
+      "label": "SAMPLE.ORDERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "ORDERS",
+        "status": "VALID",
+        "pk_columns": [
+          "ORDER_ID"
+        ],
+        "comment": "주문",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.ORDER_ITEMS",
+      "type": "table",
+      "label": "SAMPLE.ORDER_ITEMS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "ORDER_ITEMS",
+        "status": "VALID",
+        "pk_columns": [
+          "ORDER_ITEM_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ITEM_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UNIT_PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ITEM_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UNIT_PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.PRODUCTS",
+      "type": "table",
+      "label": "SAMPLE.PRODUCTS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "PRODUCTS",
+        "status": "VALID",
+        "pk_columns": [
+          "PRODUCT_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DESCRIPTION",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STOCK_QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DESCRIPTION",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STOCK_QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.PRODUCT_REVIEWS",
+      "type": "table",
+      "label": "SAMPLE.PRODUCT_REVIEWS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "PRODUCT_REVIEWS",
+        "status": "VALID",
+        "pk_columns": [
+          "REVIEW_ID"
+        ],
+        "comment": "상품리뷰",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "RATING",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_TEXT",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "RATING",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_TEXT",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.SUPPLIERS",
+      "type": "table",
+      "label": "SAMPLE.SUPPLIERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SUPPLIERS",
+        "status": "VALID",
+        "pk_columns": [
+          "SUPPLIER_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.USERS",
+      "type": "table",
+      "label": "SAMPLE.USERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "USERS",
+        "status": "VALID",
+        "pk_columns": [
+          "USER_ID"
+        ],
+        "comment": "사용자",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SAMPLE.WAREHOUSES",
+      "type": "table",
+      "label": "SAMPLE.WAREHOUSES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "WAREHOUSES",
+        "status": "VALID",
+        "pk_columns": [
+          "WAREHOUSE_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "LOCATION",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "LOCATION",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SCOTT.DYNAMIC_DATA",
+      "type": "table",
+      "label": "SCOTT.DYNAMIC_DATA",
+      "group": "DB",
+      "meta": {
+        "owner": "SCOTT",
+        "table_name": "DYNAMIC_DATA",
+        "status": "VALID",
+        "pk_columns": [
+          "ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    },
+    {
+      "id": "table:SCOTT.RELATED_DATA",
+      "type": "table",
+      "label": "SCOTT.RELATED_DATA",
+      "group": "DB",
+      "meta": {
+        "owner": "SCOTT",
+        "table_name": "RELATED_DATA",
+        "status": "VALID",
+        "pk_columns": [
+          "ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "RELATED_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "VALUE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "RELATED_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "VALUE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ],
+        "sample_joins": []
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "rel_1",
+      "source": "table:PUBLIC.USER_ROLE",
+      "target": "table:SAMPLE.USERS",
+      "kind": "relationship",
+      "confidence": 0.5,
+      "meta": {
+        "column": "USER_ID",
+        "references": "USERS.USER_ID",
+        "inferred": true,
+        "arrow": false
+      }
+    },
+    {
+      "id": "fk_2",
+      "source": "table:SAMPLE.DISCOUNTS",
+      "target": "table:SAMPLE.PRODUCTS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_3",
+      "source": "table:SAMPLE.INVENTORIES",
+      "target": "table:SAMPLE.PRODUCTS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_4",
+      "source": "table:SAMPLE.ORDER_ITEMS",
+      "target": "table:SAMPLE.ORDERS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "ORDER_ID",
+        "references": "ORDERS.ORDER_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_5",
+      "source": "table:SAMPLE.ORDER_ITEMS",
+      "target": "table:SAMPLE.PRODUCTS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_6",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.BRANDS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "BRAND_ID",
+        "references": "BRANDS.BRAND_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_7",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.CATEGORIES",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "CATEGORY_ID",
+        "references": "CATEGORIES.CATEGORY_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_8",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.SUPPLIERS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "SUPPLIER_ID",
+        "references": "SUPPLIERS.SUPPLIER_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_9",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.WAREHOUSES",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "WAREHOUSE_ID",
+        "references": "WAREHOUSES.WAREHOUSE_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "fk_10",
+      "source": "table:SAMPLE.PRODUCT_REVIEWS",
+      "target": "table:SAMPLE.PRODUCTS",
+      "kind": "foreign_key",
+      "confidence": 0.6,
+      "meta": {
+        "column": "PRODUCT_ID",
+        "references": "PRODUCTS.PRODUCT_ID",
+        "inferred": true,
+        "arrow": true
+      }
+    },
+    {
+      "id": "rel_11",
+      "source": "table:SCOTT.DYNAMIC_DATA",
+      "target": "table:SCOTT.RELATED_DATA",
+      "kind": "relationship",
+      "confidence": 0.5,
+      "meta": {
+        "column": "ID",
+        "references": "RELATED_DATA.ID",
+        "inferred": true,
+        "arrow": false
+      }
+    }
+  ],
+  "metadata": {
+    "node_count": 14,
+    "edge_count": 11,
+    "node_types": [
+      "table"
+    ],
+    "edge_kinds": [
+      "foreign_key",
+      "relationship"
+    ]
+  }
+};
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
+    </script>
+</head>
+<body>
+    <div id="toolbar">
+        <button onclick="cy.fit()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="cy.center()" title="중앙 정렬">🎯 중앙정렬</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG저장</button>
+        <button onclick="resetView()" title="레이아웃 초기화">🔄 레이아웃초기화</button>
+        <button onclick="toggleLayout()" title="레이아웃 전환">📐 레이아웃 (<span id="current-layout">fcose</span>)</button>
+        <input id="search" placeholder="테이블 검색..." oninput="searchNode(this.value)" />
+        <div class="stats" id="stats">
+            테이블: <span id="node-count">0</span> | 
+            관계: <span id="edge-count">0</span>
+        </div>
+        <div class="legend" id="legend"></div>
+    </div>
+    
+    <div id="cy"></div>
+    
+    <!-- 향상된 툴팁 -->
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-header">
+            <div class="tooltip-title" id="tooltip-title"></div>
+            <div class="tooltip-subtitle" id="tooltip-subtitle"></div>
+        </div>
+        <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+    
+    <!-- 관계선 툴팁 -->
+    <div id="edge-tooltip" class="edge-tooltip">
+        <div class="edge-tooltip-header" id="edge-tooltip-header">
+            <span id="edge-tooltip-title"></span>
+            <span class="edge-tooltip-type" id="edge-tooltip-type"></span>
+        </div>
+        <div class="edge-tooltip-content" id="edge-tooltip-content"></div>
+    </div>
+    
+    <div id="info-panel" class="info-panel">
+        <h4 id="info-title">테이블 정보</h4>
+        <div id="info-content"></div>
+    </div>
+
+    <script>
+        // Build Cytoscape elements
+        const elements = [];
+        
+        // Add nodes (tables)
+        for (const node of DATA.nodes || []) {
+            elements.push({
+                data: {
+                    id: node.id,
+                    label: node.label,
+                    type: node.type,
+                    group: node.group,
+                    meta: node.meta,
+                    hasComment: node.meta && node.meta.comment ? 1 : 0
+                }
+            });
+        }
+        
+        // Add edges (relationships)
+        for (const edge of DATA.edges || []) {
+            elements.push({
+                data: {
+                    id: edge.id,
+                    source: edge.source,
+                    target: edge.target,
+                    kind: edge.kind,
+                    confidence: edge.confidence,
+                    meta: edge.meta
+                }
+            });
+        }
+
+        let currentLayout = 'dagre';
+        let layoutOptions = {
+            'fcose': {
+                name: 'fcose',
+                quality: 'proof',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 500, // 겹침 방지를 위해 노드 간격 증가
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return Math.max(300, 600 - (confidence * 150)); // 관계선 길이 증가
+                    }
+                    return Math.max(250, 500 - (confidence * 120));
+                },
+                nodeRepulsion: 25000, // 노드 반발력 증가
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                        return confidence * 0.25;
+                    }
+                    return confidence * 0.2;
+                },
+                gravity: 0.1,
+                gravityRange: 3.8,
+                gravityCompound: 0.3,
+                initialTemp: 200,
+                coolingFactor: 0.95,
+                minTemp: 1.0,
+                numIter: 2500
+            },
+            'dagre': {
+                name: 'dagre',
+                nodeSep: 150, // 노드 간격 증가
+                edgeSep: 50,
+                rankSep: 200, // 레벨 간격 증가
+                rankDir: 'TB',
+                ranker: 'longest-path',
+                animate: true,
+                fit: true,
+                padding: 100
+            }
+        };
+
+        // Initialize Cytoscape
+        const cy = window.cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elements,
+            layout: layoutOptions[currentLayout],
+            
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#ffffff',
+                        'border-color': data => {
+                            const group = data.group;
+                            if (group === 'DB') return '#007bff';
+                            return '#6c757d';
+                        },
+                        'border-width': 2,
+                        'label': 'data(label)',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '180px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': '14px',
+                        'font-weight': 'bold',
+                        'width': 'mapData(label.length, 5, 50, 100, 200)', // 레이블 길이에 따른 동적 크기 조정
+                        'height': data => {
+                            const columns = data.meta?.columns || [];
+                            const baseHeight = 60;
+                            const columnHeight = Math.min(columns.length * 8, 100); // 최대 높이 제한
+                            return baseHeight + columnHeight;
+                        },
+                        'shape': 'round-rectangle',
+                        'z-index': 1
+                    }
+                },
+                {
+                    selector: 'node[type="table"]',
+                    style: {
+                        'background-color': '#e3f2fd',
+                        'border-color': '#1976d2'
+                    }
+                },
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': 4,
+                        'border-color': '#ff5722',
+                        'z-index': 999
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': data => {
+                            const confidence = data.confidence || 0.5;
+                            return Math.max(1, confidence * 4);
+                        },
+                        'line-color': data => {
+                            const kind = data.kind;
+                            if (kind === 'foreign_key') return '#dc3545';
+                            if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
+                            return '#6c757d';
+                        },
+                        'target-arrow-color': data => {
+                            const kind = data.kind;
+                            if (kind === 'foreign_key') return '#dc3545';
+                            if (kind === 'fk_inferred') return '#fd7e14';
+                            if (kind === 'pk_to_pk') return '#007bff';
+                            if (kind === 'non_pk_relation') return '#6c757d';
+                            return '#6c757d';
+                        },
+                        'target-arrow-shape': data => {
+                            const kind = data.kind;
+                            const meta = data.meta || {};
+                            
+                            // arrow 메타데이터가 false이거나 relationship 타입이면 화살표 없음
+                            if (meta.arrow === false || kind === 'relationship') {
+                                return 'none';
+                            }
+                            // PK가 아닌 관계는 화살표 없음 (기존 로직 유지)
+                            if (kind === 'non_pk_relation') return 'none';
+                            
+                            return 'triangle';
+                        },
+                        'target-arrow-size': '10px',
+                        'curve-style': 'bezier',
+                        'source-endpoint': 'outside-to-node',
+                        'target-endpoint': 'outside-to-node',
+                        'opacity': data => {
+                            const confidence = data.confidence || 0.5;
+                            return Math.max(0.3, confidence);
+                        }
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff5722',
+                        'target-arrow-color': '#ff5722',
+                        'width': 4,
+                        'opacity': 1
+                    }
+                }
+            ],
+
+            minZoom: 0.1,
+            maxZoom: 5,
+            wheelSensitivity: 0.2
+        });
+
+        // 툴팁 관련 변수
+        let tooltip = document.getElementById('tooltip');
+        let edgeTooltip = document.getElementById('edge-tooltip');
+        let tooltipTimeout;
+        let edgeTooltipTimeout;
+        let isTooltipVisible = false;
+        let isEdgeTooltipVisible = false;
+
+        // 향상된 툴팁 표시 함수
+        function showTooltip(node, x, y) {
+            const data = node.data();
+            const meta = data.meta || {};
+            
+            // 툴팁 제목 설정
+            document.getElementById('tooltip-title').textContent = data.label || 'Unknown Table';
+            document.getElementById('tooltip-subtitle').textContent = meta.owner ? `Owner: ${meta.owner}` : '';
+            
+            // 컬럼 정보 생성
+            const columns = meta.columns || [];
+            const pkColumns = meta.pk_columns || [];
+            const sampleJoins = meta.sample_joins || [];
+            
+            let contentHtml = '';
+            
+            if (columns.length > 0) {
+                contentHtml += '<ul class="columns-list">';
+                
+                columns.forEach(col => {
+                    const isPk = col.is_pk || pkColumns.includes(col.name);
+                    const isFk = col.is_foreign_key || false;
+                    
+                    let columnHtml = '<li class="column-item">';
+                    columnHtml += '<div>';
+                    columnHtml += '<div class="column-name">';
+                    
+                    if (isPk) {
+                        columnHtml += '<span class="pk-icon">🔑</span>';
+                    } else if (isFk) {
+                        columnHtml += '<span class="fk-icon">🔗</span>';
+                    }
+                    
+                    columnHtml += col.name;
+                    
+                    if (!col.nullable) {
+                        columnHtml += ' <span class="nullable">NOT NULL</span>';
+                    }
+                    
+                    columnHtml += '</div>';
+                    
+                    if (col.comment) {
+                        columnHtml += '<div class="column-comment">' + col.comment + '</div>';
+                    }
+                    
+                    columnHtml += '</div>';
+                    columnHtml += '<span class="column-type">' + (col.data_type || 'Unknown') + '</span>';
+                    columnHtml += '</li>';
+                    
+                    contentHtml += columnHtml;
+                });
+                
+                contentHtml += '</ul>';
+            } else {
+                contentHtml = '<div style="padding: 12px; color: #6c757d;">컬럼 정보가 없습니다.</div>';
+            }
+            
+            // 샘플 조인 정보 추가
+            if (sampleJoins.length > 0) {
+                contentHtml += '<div class="sample-joins">';
+                contentHtml += '<div class="sample-joins-title">샘플 조인 관계</div>';
+                
+                sampleJoins.slice(0, 5).forEach(join => {
+                    contentHtml += '<div class="join-item">';
+                    contentHtml += `${join.l_table}.${join.l_col} → ${join.r_table}.${join.r_col}`;
+                    contentHtml += '</div>';
+                });
+                
+                if (sampleJoins.length > 5) {
+                    contentHtml += '<div class="join-item">... 및 ' + (sampleJoins.length - 5) + '개 더</div>';
+                }
+                
+                contentHtml += '</div>';
+            }
+            
+            document.getElementById('tooltip-content').innerHTML = contentHtml;
+            
+            // 툴팁 위치 조정
+            tooltip.style.left = Math.min(x + 10, window.innerWidth - tooltip.offsetWidth - 20) + 'px';
+            tooltip.style.top = Math.min(y - 10, window.innerHeight - tooltip.offsetHeight - 20) + 'px';
+            
+            tooltip.style.display = 'block';
+            isTooltipVisible = true;
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+            isTooltipVisible = false;
+        }
+        
+        // 관계선 툴팁 표시 함수
+        function showEdgeTooltip(edge, x, y) {
+            const data = edge.data();
+            const meta = data.meta || {};
+            const kind = data.kind || 'unknown';
+            const confidence = data.confidence || 0;
+            
+            // 툴팁 제목 설정
+            const sourceNode = cy.getElementById(data.source);
+            const targetNode = cy.getElementById(data.target);
+            const sourceName = sourceNode.data('label') || data.source;
+            const targetName = targetNode.data('label') || data.target;
+            
+            document.getElementById('edge-tooltip-title').textContent = `${sourceName} → ${targetName}`;
+            
+            // 관계 타입 표시
+            let typeText = '관계';
+            if (kind === 'foreign_key') typeText = '외래키';
+            else if (kind === 'fk_inferred') typeText = '추론된 FK';
+            document.getElementById('edge-tooltip-type').textContent = typeText;
+            
+            // 조인 조건 정보 생성
+            let contentHtml = '';
+            
+            // 조인 조건 표시
+            if (meta.join_condition) {
+                // 백엔드에서 제공된 조인 조건 사용
+                contentHtml += '<div class="join-condition">';
+                contentHtml += meta.join_condition;
+                contentHtml += '</div>';
+            } else if (meta.left_column && meta.right_column) {
+                // 컬럼 정보로 조인 조건 생성
+                contentHtml += '<div class="join-condition">';
+                contentHtml += `${sourceName}.${meta.left_column} = ${targetName}.${meta.right_column}`;
+                contentHtml += '</div>';
+            } else if (meta.column) {
+                // 단일 컬럼 정보로 조인 조건 생성
+                const targetCol = meta.references ? meta.references.split('.').pop() : meta.column;
+                contentHtml += '<div class="join-condition">';
+                contentHtml += `${sourceName}.${meta.column} = ${targetName}.${targetCol}`;
+                contentHtml += '</div>';
+            } else {
+                // 기본키로 대체 조인 조건 생성
+                const sourceColumns = sourceNode.data('meta')?.pk_columns || [];
+                const targetColumns = targetNode.data('meta')?.pk_columns || [];
+                
+                if (sourceColumns.length > 0 && targetColumns.length > 0) {
+                    contentHtml += '<div class="join-condition">';
+                    contentHtml += `${sourceName}.${sourceColumns[0]} = ${targetName}.${targetColumns[0]}`;
+                    contentHtml += '</div>';
+                }
+            }
+            
+            // 추가 정보 섹션
+            let additionalInfo = '';
+            
+            if (meta.description) {
+                additionalInfo += `<div style="margin: 8px 0; color: #495057;">${meta.description}</div>`;
+            }
+            
+            if (meta.join_type) {
+                additionalInfo += `<div><strong>조인 타입:</strong> ${meta.join_type}</div>`;
+            }
+            
+            if (meta.relationship_type) {
+                additionalInfo += `<div><strong>관계 유형:</strong> ${meta.relationship_type}</div>`;
+            }
+            
+            if (meta.cardinality) {
+                additionalInfo += `<div><strong>카디널리티:</strong> ${meta.cardinality}</div>`;
+            }
+            
+            if (meta.constraint_name) {
+                additionalInfo += `<div><strong>제약명:</strong> ${meta.constraint_name}</div>`;
+            }
+            
+            if (additionalInfo) {
+                const additionalLines = additionalInfo.split('<div>').filter(line => line.trim());
+                additionalLines.forEach(line => {
+                    const cleanLine = line.replace('</div>', '');
+                    if (cleanLine.trim()) {
+                        contentHtml += '<div class="relation-detail">' + cleanLine + '</div>';
+                    }
+                });
+            }
+            
+            // 메타데이터 표시
+            contentHtml += '<div class="edge-metadata">';
+            contentHtml += '<span class="frequency-info">';
+            
+            if (meta.frequency) {
+                contentHtml += `빈도: ${meta.frequency}회`;
+            }
+            
+            if (meta.pattern) {
+                contentHtml += ` (패턴: ${meta.pattern})`;
+            }
+            
+            contentHtml += '</span>';
+            contentHtml += `<span class="confidence-badge">신뢰도: ${Math.round(confidence * 100)}%</span>`;
+            contentHtml += '</div>';
+            
+            document.getElementById('edge-tooltip-content').innerHTML = contentHtml;
+            
+            // 툴팁 위치 조정
+            edgeTooltip.style.left = Math.min(x + 10, window.innerWidth - 370) + 'px';
+            edgeTooltip.style.top = Math.max(y - 10, 10) + 'px';
+            
+            edgeTooltip.style.display = 'block';
+            isEdgeTooltipVisible = true;
+        }
+        
+        function hideEdgeTooltip() {
+            edgeTooltip.style.display = 'none';
+            isEdgeTooltipVisible = false;
+        }
+
+        // 마우스 이벤트 핸들러 - 노드
+        cy.on('mouseover', 'node', function(event) {
+            const node = event.target;
+            clearTimeout(tooltipTimeout);
+            hideEdgeTooltip(); // 관계선 툴팁 숨김
+            
+            tooltipTimeout = setTimeout(() => {
+                const renderedPosition = event.renderedPosition;
+                showTooltip(node, renderedPosition.x, renderedPosition.y);
+            }, 500); // 0.5초 지연
+        });
+
+        cy.on('mouseout', 'node', function(event) {
+            clearTimeout(tooltipTimeout);
+            setTimeout(() => {
+                if (!isTooltipVisible) return;
+                hideTooltip();
+            }, 100);
+        });
+        
+        // 마우스 이벤트 핸들러 - 관계선
+        cy.on('mouseover', 'edge', function(event) {
+            const edge = event.target;
+            clearTimeout(edgeTooltipTimeout);
+            hideTooltip(); // 노드 툴팁 숨김
+            
+            edgeTooltipTimeout = setTimeout(() => {
+                const renderedPosition = event.renderedPosition;
+                showEdgeTooltip(edge, renderedPosition.x, renderedPosition.y);
+            }, 300); // 0.3초 지연
+        });
+        
+        cy.on('mouseout', 'edge', function(event) {
+            clearTimeout(edgeTooltipTimeout);
+            setTimeout(() => {
+                if (!isEdgeTooltipVisible) return;
+                hideEdgeTooltip();
+            }, 100);
+        });
+
+        // 툴팁이 마우스 오버될 때 숨기지 않음
+        tooltip.addEventListener('mouseenter', function() {
+            clearTimeout(tooltipTimeout);
+        });
+
+        tooltip.addEventListener('mouseleave', function() {
+            hideTooltip();
+        });
+
+        // 캔버스 클릭 시 툴팁 숨김
+        cy.on('tap', function(event) {
+            if (event.target === cy) {
+                hideTooltip();
+                hideEdgeTooltip();
+            }
+        });
+        
+        // 관계선 툴팁 마우스 이벤트
+        edgeTooltip.addEventListener('mouseenter', function() {
+            clearTimeout(edgeTooltipTimeout);
+        });
+        
+        edgeTooltip.addEventListener('mouseleave', function() {
+            hideEdgeTooltip();
+        });
+
+        // Functions for toolbar buttons
+        function resetView() {
+            cy.layout(layoutOptions[currentLayout]).run();
+            cy.fit();
+        }
+
+        function toggleLayout() {
+            currentLayout = currentLayout === 'fcose' ? 'dagre' : 'fcose';
+            document.getElementById('current-layout').textContent = currentLayout;
+            resetView();
+        }
+
+        function exportPng() {
+            const png = cy.png({
+                scale: 2,
+                full: true,
+                bg: 'white'
+            });
+            
+            const link = document.createElement('a');
+            link.download = 'erd-enhanced.png';
+            link.href = png;
+            link.click();
+        }
+
+        function searchNode(query) {
+            cy.elements().removeClass('highlighted');
+            
+            if (!query.trim()) {
+                cy.elements().style('opacity', 1);
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label').toLowerCase();
+                const tableName = node.data('meta')?.table_name?.toLowerCase() || '';
+                const owner = node.data('meta')?.owner?.toLowerCase() || '';
+                
+                return label.includes(query.toLowerCase()) || 
+                       tableName.includes(query.toLowerCase()) || 
+                       owner.includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                cy.elements().style('opacity', 0.3);
+                matchedNodes.style('opacity', 1);
+                matchedNodes.connectedEdges().style('opacity', 0.8);
+                cy.fit(matchedNodes, 100);
+            } else {
+                cy.elements().style('opacity', 1);
+            }
+        }
+
+        // Update stats
+        document.getElementById('node-count').textContent = (DATA.nodes || []).length;
+        document.getElementById('edge-count').textContent = (DATA.edges || []).length;
+
+        // Initial fit
+        cy.ready(function() {
+            cy.fit();
+        });
+        
+        console.log('고도화 ERD 초기화 완료:', {
+            nodes: (DATA.nodes || []).length,
+            edges: (DATA.edges || []).length,
+            layout: currentLayout
+        });
+    </script>
+</body>
+</html>

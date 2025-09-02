@@ -106,14 +106,15 @@ class SqlUnit(Base):
 
 class DbTable(Base):
     __tablename__ = 'db_tables'
+    __table_args__ = {'comment': '데이터베이스 테이블 메타데이터'}
     
-    table_id = Column(Integer, primary_key=True)
-    owner = Column(String(128))
-    table_name = Column(String(128), nullable=False)
-    status = Column(String(50))
-    table_comment = Column(Text)  # Table comment/description
-    llm_comment = Column(Text)  # LLM-enhanced comment
-    llm_comment_confidence = Column(Float, default=0.0)  # Confidence score
+    table_id = Column(Integer, primary_key=True, comment='테이블 고유 ID')
+    owner = Column(String(128), comment='테이블 소유자/스키마')
+    table_name = Column(String(128), nullable=False, comment='테이블 이름')
+    status = Column(String(50), comment='테이블 상태 (예: ACTIVE, INFERRED)')
+    table_comment = Column(Text, comment='원본 테이블 설명')  # Table comment/description
+    llm_comment = Column(Text, comment='LLM이 보강한 테이블 설명')  # LLM-enhanced comment
+    llm_comment_confidence = Column(Float, default=0.0, comment='LLM 보강 설명의 신뢰도')  # Confidence score
     
     # Relationships
     columns = relationship("DbColumn", back_populates="table", cascade="all, delete-orphan")
@@ -121,15 +122,16 @@ class DbTable(Base):
 
 class DbColumn(Base):
     __tablename__ = 'db_columns'
+    __table_args__ = {'comment': '데이터베이스 테이블의 컬럼 메타데이터'}
     
-    column_id = Column(Integer, primary_key=True)
-    table_id = Column(Integer, ForeignKey('db_tables.table_id'), nullable=False)
-    column_name = Column(String(128), nullable=False)
-    data_type = Column(String(128))
-    nullable = Column(String(1))  # Y/N
-    column_comment = Column(Text)  # Column comment/description
-    llm_comment = Column(Text)  # LLM-enhanced comment
-    llm_comment_confidence = Column(Float, default=0.0)  # Confidence score
+    column_id = Column(Integer, primary_key=True, comment='컬럼 고유 ID')
+    table_id = Column(Integer, ForeignKey('db_tables.table_id'), nullable=False, comment='컬럼이 속한 테이블 ID')
+    column_name = Column(String(128), nullable=False, comment='컬럼 이름')
+    data_type = Column(String(128), comment='데이터 타입')
+    nullable = Column(String(1), comment='Null 허용 여부 (Y/N)')  # Y/N
+    column_comment = Column(Text, comment='원본 컬럼 설명')  # Column comment/description
+    llm_comment = Column(Text, comment='LLM이 보강한 컬럼 설명')  # LLM-enhanced comment
+    llm_comment_confidence = Column(Float, default=0.0, comment='LLM 보강 설명의 신뢰도')  # Confidence score
     
     # Relationships
     table = relationship("DbTable", back_populates="columns")

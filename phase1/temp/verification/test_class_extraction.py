@@ -6,7 +6,7 @@ import sys
 import re
 sys.path.append('phase1')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 def test_class_extraction():
     """클래스 추출 테스트"""

@@ -11,8 +11,8 @@ from pathlib import Path
 from datetime import datetime
 
 # 상대 임포트
-from utils.hierarchy_analyzer import JavaHierarchyAnalyzer
-from utils.report_generator import HierarchyReportGenerator
+from phase1.utils.hierarchy_analyzer import JavaHierarchyAnalyzer
+from phase1.utils.report_generator import HierarchyReportGenerator
 
 def setup_logging():
     """로깅 설정"""

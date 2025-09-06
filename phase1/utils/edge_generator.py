@@ -9,7 +9,7 @@
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
-from models.database import Edge, Class, Method, File, SqlUnit, DbTable, DbColumn, DbPk
+from phase1.models.database import Edge, Class, Method, File, SqlUnit, DbTable, DbColumn, DbPk
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,9 @@ class EdgeGenerator:
             
             # 각 유형별 엣지 생성
             self._generate_java_dependency_edges()
+            self._generate_method_call_edges()           # 메서드 호출 관계 추가
+            self._generate_data_flow_edges()             # 데이터 흐름 관계 추가
+            self._generate_service_layer_edges()         # 계층 간 관계 추가  
             self._generate_xml_mapper_edges()
             self._generate_jsp_controller_edges()
             self._generate_db_table_edges()
@@ -907,3 +910,218 @@ class EdgeGenerator:
             return column_upper[:-2]
             
         return None
+
+    def _generate_method_call_edges(self):
+        """메서드 간 호출 관계 엣지를 생성합니다."""
+        logger.info("메서드 호출 관계 엣지 생성 시작")
+        
+        # 모든 클래스를 가져와서 메서드 호출 관계 분석
+        all_classes = self.db_session.query(Class).all()
+        
+        for source_class in all_classes:
+            try:
+                # 클래스 파일을 읽어서 메서드 호출 분석
+                file_obj = self.db_session.query(File).filter_by(file_id=source_class.file_id).first()
+                if not file_obj or not file_obj.path:
+                    continue
+                    
+                with open(file_obj.path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 메서드 호출 패턴 찾기
+                method_calls = self._extract_method_calls(content)
+                
+                for call in method_calls:
+                    # 호출되는 메서드가 같은 클래스 내부인지 확인
+                    if call['is_internal']:
+                        # 같은 클래스 내부 메서드 호출
+                        self._create_edge(
+                            source_type='class',
+                            source_id=source_class.class_id,
+                            target_type='class',
+                            target_id=source_class.class_id,
+                            edge_type='calls',
+                            description=f"{source_class.name} 내부 메서드 호출: {call['method_name']}"
+                        )
+                    else:
+                        # 다른 클래스 메서드 호출
+                        target_class = self._find_class_by_name_or_fqn(call['target_class'])
+                        if target_class:
+                            self._create_edge(
+                                source_type='class',
+                                source_id=source_class.class_id,
+                                target_type='class',
+                                target_id=target_class.class_id,
+                                edge_type='calls',
+                                description=f"{source_class.name} → {target_class.name}.{call['method_name']}()"
+                            )
+                            
+            except Exception as e:
+                logger.warning(f"메서드 호출 관계 분석 실패 {source_class.name}: {e}")
+    
+    def _extract_method_calls(self, content: str) -> List[dict]:
+        """소스 코드에서 메서드 호출을 추출합니다."""
+        method_calls = []
+        import re
+        
+        # 메서드 호출 패턴들
+        patterns = [
+            # 일반적인 메서드 호출: object.method()
+            r'(\w+)\.(\w+)\s*\(',
+            # this.method() 호출
+            r'this\.(\w+)\s*\(',
+            # super.method() 호출  
+            r'super\.(\w+)\s*\(',
+            # 정적 메서드 호출: ClassName.method()
+            r'([A-Z]\w+)\.(\w+)\s*\('
+        ]
+        
+        # 일반 메서드 호출
+        for pattern in patterns[:1]:  # object.method()
+            matches = re.findall(pattern, content)
+            for obj_name, method_name in matches:
+                # 필드명에서 클래스 추정 (userService → UserService)
+                if obj_name.endswith('Service') or obj_name.endswith('Mapper') or obj_name.endswith('Repository'):
+                    target_class = obj_name.capitalize() if obj_name.islower() else obj_name
+                    if not target_class.endswith('Service') and not target_class.endswith('Mapper'):
+                        target_class += 'Service'  # 기본으로 Service 추가
+                    
+                    method_calls.append({
+                        'method_name': method_name,
+                        'target_class': target_class,
+                        'is_internal': False,
+                        'call_type': 'external'
+                    })
+        
+        # 내부 메서드 호출 (this.method())
+        this_pattern = r'this\.(\w+)\s*\('
+        this_matches = re.findall(this_pattern, content)
+        for method_name in this_matches:
+            method_calls.append({
+                'method_name': method_name,
+                'target_class': None,
+                'is_internal': True,
+                'call_type': 'internal'
+            })
+        
+        # 정적 메서드 호출 (ClassName.method())
+        static_pattern = r'([A-Z]\w+)\.(\w+)\s*\('
+        static_matches = re.findall(static_pattern, content)
+        for class_name, method_name in static_matches:
+            method_calls.append({
+                'method_name': method_name,
+                'target_class': class_name,
+                'is_internal': False,
+                'call_type': 'static'
+            })
+        
+        return method_calls
+    
+    def _generate_data_flow_edges(self):
+        """데이터 흐름 관계 엣지를 생성합니다."""
+        logger.info("데이터 흐름 관계 엣지 생성 시작")
+        
+        # 모든 클래스에 대해 데이터 흐름 분석
+        all_classes = self.db_session.query(Class).all()
+        
+        for source_class in all_classes:
+            try:
+                file_obj = self.db_session.query(File).filter_by(file_id=source_class.file_id).first()
+                if not file_obj or not file_obj.path:
+                    continue
+                    
+                with open(file_obj.path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 데이터 변환 패턴 찾기
+                data_flows = self._extract_data_flows(content)
+                
+                for flow in data_flows:
+                    if flow['target_class']:
+                        target_class = self._find_class_by_name_or_fqn(flow['target_class'])
+                        if target_class:
+                            self._create_edge(
+                                source_type='class',
+                                source_id=source_class.class_id,
+                                target_type='class',
+                                target_id=target_class.class_id,
+                                edge_type='data_flow',
+                                description=f"데이터 흐름: {source_class.name} → {target_class.name} ({flow['flow_type']})"
+                            )
+                            
+            except Exception as e:
+                logger.warning(f"데이터 흐름 분석 실패 {source_class.name}: {e}")
+    
+    def _extract_data_flows(self, content: str) -> List[dict]:
+        """소스 코드에서 데이터 흐름을 추출합니다."""
+        data_flows = []
+        import re
+        
+        # 데이터 변환 패턴들
+        patterns = {
+            'dto_conversion': [
+                r'(\w+)\.toDto\(',
+                r'(\w+)\.fromDto\(',
+                r'(\w+)\.convert\('
+            ],
+            'model_mapping': [
+                r'new\s+(\w+)\s*\(',  # 객체 생성
+                r'(\w+)\.builder\(\)'  # 빌더 패턴
+            ],
+            'return_statement': [
+                r'return\s+(\w+)\.',  # 반환문
+                r'return\s+new\s+(\w+)\('
+            ]
+        }
+        
+        for flow_type, type_patterns in patterns.items():
+            for pattern in type_patterns:
+                matches = re.findall(pattern, content)
+                for match in matches:
+                    # 클래스명 추정 (dto, model 등)
+                    if isinstance(match, str) and match[0].isupper():
+                        data_flows.append({
+                            'target_class': match,
+                            'flow_type': flow_type,
+                            'pattern': pattern
+                        })
+        
+        return data_flows
+    
+    def _generate_service_layer_edges(self):
+        """Spring MVC 계층 간 관계 엣지를 생성합니다."""
+        logger.info("서비스 계층 관계 엣지 생성 시작")
+        
+        # Controller → Service 관계
+        controllers = self.db_session.query(Class).filter(
+            Class.name.like('%Controller%')
+        ).all()
+        
+        for controller in controllers:
+            service_deps = self._find_service_dependencies(controller)
+            for service_id in service_deps:
+                self._create_edge(
+                    source_type='class',
+                    source_id=controller.class_id,
+                    target_type='class',
+                    target_id=service_id,
+                    edge_type='uses_service',
+                    description=f"{controller.name} uses service"
+                )
+        
+        # Service → Repository/Mapper 관계
+        services = self.db_session.query(Class).filter(
+            Class.name.like('%Service%')
+        ).all()
+        
+        for service in services:
+            mapper_deps = self._find_mapper_dependencies(service)
+            for mapper_id in mapper_deps:
+                self._create_edge(
+                    source_type='class',
+                    source_id=service.class_id,
+                    target_type='class',
+                    target_id=mapper_id,
+                    edge_type='uses_repository',
+                    description=f"{service.name} uses mapper/repository"
+                )

@@ -28,10 +28,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger('llm_analyzer') # 기존 llm_analyzer 로거 사용
 
-from llm.summarizer import CodeSummarizer, generate_table_specification_md, generate_source_specification_md
-from models.database import DatabaseManager
-from utils.logger import handle_critical_error, handle_non_critical_error
-# from utils.logger import setup_logger # 더 이상 사용하지 않음
+from phase1.llm.summarizer import CodeSummarizer, generate_table_specification_md, generate_source_specification_md
+from phase1.models.database import DatabaseManager
+from phase1.utils.logger import handle_critical_error, handle_non_critical_error
+# from phase1.utils.logger import setup_logger # 더 이상 사용하지 않음
 
 def load_config(config_path: str = None) -> Dict[str, Any]:
     """Load configuration from config.yaml"""
@@ -89,7 +89,7 @@ def summarize_code_elements(config: Dict[str, Any], project_name: str, batch_siz
     session = dbm.get_session()
     try:
         logger.info('# Get or create project')
-        from models.database import Project
+        from phase1.models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
             logger.info(f"Project '{project_name}' not found in database")
@@ -160,7 +160,7 @@ def analyze_joins(config: Dict[str, Any], project_name: str, batch_size: int = 1
     session = dbm.get_session()
     try:
         logger.debug('# Get or create project')
-        from models.database import Project
+        from phase1.models.database import Project
         project = session.query(Project).filter(Project.name == project_name).first()
         if not project:
             logger.info(f"Project '{project_name}' not found in database")

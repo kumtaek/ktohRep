@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.parser_factory import ParserFactory
+from phase1.parsers.parser_factory import ParserFactory
 
 def debug_missing_xml_files():
     """누락된 XML 파일들 디버깅"""

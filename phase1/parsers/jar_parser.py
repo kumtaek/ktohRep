@@ -6,7 +6,7 @@ import zipfile
 from datetime import datetime
 from typing import Dict, List, Tuple, Any
 
-from models.database import File, Class, Method
+from phase1.models.database import File, Class, Method
 
 
 class JarParser:
@@ -15,7 +15,7 @@ class JarParser:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         try:
-            from utils.logger import LoggerFactory
+            from phase1.utils.logger import LoggerFactory
             self.logger = LoggerFactory.get_parser_logger("jar")
         except Exception:
             self.logger = None

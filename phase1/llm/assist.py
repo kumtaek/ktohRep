@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from llm.client import get_client
-from llm import prompt_templates as T
-from utils.confidence_calculator import ConfidenceCalculator
-from models.database import EnrichmentLog
+from phase1.llm.client import get_client
+from phase1.llm import prompt_templates as T
+from phase1.utils.confidence_calculator import ConfidenceCalculator
+from phase1.models.database import EnrichmentLog
 
 
 @dataclass

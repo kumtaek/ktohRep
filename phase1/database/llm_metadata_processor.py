@@ -8,12 +8,12 @@ from sqlalchemy.orm import Session
 from contextlib import contextmanager
 import traceback
 
-from models.database import (
+from phase1.models.database import (
     DatabaseManager, DbTable, DbColumn, SqlUnit, Method, File, Join
 )
-from utils.logger import LoggerFactory
-from utils.confidence_calculator import ConfidenceCalculator
-from llm.assist import LlmAssist
+from phase1.utils.logger import LoggerFactory
+from phase1.utils.confidence_calculator import ConfidenceCalculator
+from phase1.llm.assist import LlmAssist
 
 
 class LlmMetadataProcessor:

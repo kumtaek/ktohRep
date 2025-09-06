@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 def debug_missing_files():
     """누락된 파일들의 파싱 문제 디버깅"""

@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.parser_factory import ParserFactory
+from phase1.parsers.parser_factory import ParserFactory
 
 def analyze_mybatis_issues():
     """MyBatis 파서 문제점 분석"""

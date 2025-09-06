@@ -13,7 +13,7 @@ current_dir = Path(__file__).parent
 project_root = current_dir.parent.parent
 sys.path.insert(0, str(project_root))
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, Project, Relatedness 
+from phase1.models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, Project, Relatedness 
 
 class RelatednessStrategy(ABC):
     """
@@ -199,7 +199,7 @@ class RelatednessCalculator:
         ]
 
     def _get_project_id(self) -> int:
-        """Get project ID from database."""
+        """Get project ID from phase1.database."""
         project = self.session.query(Project).filter_by(name=self.project_name).first()
         return project.project_id if project else None
 

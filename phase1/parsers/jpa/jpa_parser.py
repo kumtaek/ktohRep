@@ -6,8 +6,8 @@ JPA 관련 파일에서 엔티티, 관계, 쿼리 등을 추출합니다.
 
 import re
 from typing import Dict, List, Any, Set
-from parsers.base_parser import BaseParser
-from utils.table_alias_resolver import get_table_alias_resolver
+from phase1.parsers.base_parser import BaseParser
+from phase1.utils.table_alias_resolver import get_table_alias_resolver
 
 class JPAParser(BaseParser):
     """JPA 전용 파서 - 재현율 우선"""

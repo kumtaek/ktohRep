@@ -6,8 +6,8 @@ SELECT 쿼리에서 테이블, 컬럼, 조건, 서브쿼리 등을 추출합니�
 
 import re
 from typing import Dict, List, Any, Set
-from parsers.base_parser import BaseParser
-from utils.table_alias_resolver import get_table_alias_resolver
+from phase1.parsers.base_parser import BaseParser
+from phase1.utils.table_alias_resolver import get_table_alias_resolver
 
 class OracleSelectParser(BaseParser):
     """Oracle SELECT 쿼리 전용 파서 - 재현율 우선"""

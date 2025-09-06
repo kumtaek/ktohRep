@@ -7,7 +7,7 @@ import re
 sys.path.append('..')
 sys.path.append('../phase1')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 import yaml
 
 def test_error_vs_normal_files():

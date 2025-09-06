@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, DbColumn
+from phase1.models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, DbColumn
 from sqlalchemy import func, text
 import logging
 

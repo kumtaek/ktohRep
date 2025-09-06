@@ -12,7 +12,7 @@ import hashlib
 from typing import Dict, List, Any, Set, Tuple, Optional
 from pathlib import Path
 
-from ..base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 class JavaParserEnhanced(BaseParser):
     """향상된 Java 파서 - Context7 기반"""

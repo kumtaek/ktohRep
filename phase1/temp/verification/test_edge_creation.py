@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from parsers.java.javaparser_enhanced import JavaParserEnhanced
+from phase1.parsers.java.javaparser_enhanced import JavaParserEnhanced
 import json
 
 # ListServiceImpl1.java 내용

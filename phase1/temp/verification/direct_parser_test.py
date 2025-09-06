@@ -9,7 +9,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 import yaml
 
 def test_java_parser_directly():

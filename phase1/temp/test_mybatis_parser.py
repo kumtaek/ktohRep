@@ -12,7 +12,7 @@ from pathlib import Path
 # phase1 경로를 sys.path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
 
 def test_mybatis_parser():
     """MyBatis 파서 테스트"""

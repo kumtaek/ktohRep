@@ -4,7 +4,7 @@ from pathlib import Path
 # Add phase1 to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 import inspect
 
 # JavaParser 인스턴스 생성
@@ -29,7 +29,7 @@ for method_name in parse_methods:
         print(f"  {method_name}: {sig} {'(async)' if is_async else '(sync)'}")
 
 # BaseParser에서 상속받은 메서드 확인
-from parsers.common.base_parser import BaseParser
+from phase1.parsers.common.base_parser import BaseParser
 base_methods = [method for method in dir(BaseParser) if not method.startswith('_')]
 print(f"\nBaseParser 메서드들: {base_methods}")
 

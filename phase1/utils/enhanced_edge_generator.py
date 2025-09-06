@@ -14,7 +14,7 @@ import json
 from typing import List, Dict, Any, Optional, Tuple, Set
 from pathlib import Path
 from sqlalchemy.orm import Session
-from models.database import Edge, Class, Method, File, SqlUnit, DbTable, DbColumn, Project
+from phase1.models.database import Edge, Class, Method, File, SqlUnit, DbTable, DbColumn, Project
 from phase1.parsers.java.javaparser_enhanced import JavaParserEnhanced
 from phase1.parsers.jsp.jsp_parser import JSPParser
 from phase1.parsers.mybatis.mybatis_parser import MyBatisParser

@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.parser_factory import ParserFactory
+from phase1.parsers.parser_factory import ParserFactory
 
 def test_context7_oracle_parser():
     """Context7 기반 개선된 Oracle 파서 테스트"""

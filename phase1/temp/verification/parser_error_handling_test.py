@@ -6,9 +6,9 @@ import os
 import yaml
 sys.path.append('.')
 
-from parsers.java.java_parser import JavaParser
-from parsers.mybatis.mybatis_parser import MyBatisParser
-from parsers.jsp.jsp_parser import JSPParser
+from phase1.parsers.java.java_parser import JavaParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.jsp.jsp_parser import JSPParser
 
 def test_parser_error_handling():
     """파서의 오류 처리 방식 테스트"""

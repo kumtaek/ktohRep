@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append('phase1')
 
-from parsers.jsp_mybatis_parser import JspMybatisParser
+from phase1.parsers.jsp_mybatis_parser import JspMybatisParser
 
 def debug_jsp_mybatis_parser():
     """JSP MyBatis 파서의 XML 처리 디버깅"""

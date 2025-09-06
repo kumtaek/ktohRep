@@ -8,18 +8,18 @@ from typing import Dict, Any, Optional, List
 import json
 from pathlib import Path
 try:
-    from llm.client import get_client
-    from models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
-    from utils.logger import handle_critical_error, handle_non_critical_error
+    from phase1.llm.client import get_client
+    from phase1.models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
+    from phase1.utils.logger import handle_critical_error, handle_non_critical_error
 except ImportError:
     # If relative imports fail, try direct imports
-    from llm.client import get_client
-    from models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
-    from utils.logger import handle_critical_error, handle_non_critical_error
+    from phase1.llm.client import get_client
+    from phase1.models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
+    from phase1.utils.logger import handle_critical_error, handle_non_critical_error
 from sqlalchemy import text
 import logging
 from sqlalchemy.orm import joinedload
-from llm.intelligent_chunker import IntelligentChunker, ChunkBasedSummarizer, CodeChunk
+from phase1.llm.intelligent_chunker import IntelligentChunker, ChunkBasedSummarizer, CodeChunk
 
 logger = logging.getLogger('llm_analyzer') # llm_analyzer.py에서 설정한 로거 사용
 

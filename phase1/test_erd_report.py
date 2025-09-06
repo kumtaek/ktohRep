@@ -11,8 +11,8 @@ from pathlib import Path
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
-from utils.erd_analyzer import ERDAnalyzer
-from utils.erd_report_generator import ERDReportGenerator
+from phase1.utils.erd_analyzer import ERDAnalyzer
+from phase1.utils.erd_report_generator import ERDReportGenerator
 
 def test_erd_report_generation():
     """ERD 리포트 생성 테스트"""

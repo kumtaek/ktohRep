@@ -19,8 +19,8 @@ except ImportError:
     JAVALANG_AVAILABLE = False
     print("Warning: javalang library not available. Install with: pip install javalang")
 
-from parsers.base_parser import BaseParser
-from models.database import Class, Method, Edge, File
+from phase1.parsers.base_parser import BaseParser
+from phase1.models.database import Class, Method, Edge, File
 
 class JavaParserEnhanced(BaseParser):
     """JavaParser 라이브러리를 사용한 향상된 Java 파서"""

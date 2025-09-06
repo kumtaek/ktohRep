@@ -5,7 +5,7 @@ MERGE 쿼리에서 테이블, 컬럼, 조건 등을 추출합니다.
 
 import re
 from typing import Dict, List, Any
-from parsers.base_parser import BaseParser
+from phase1.parsers.base_parser import BaseParser
 
 class OracleMergeParser(BaseParser):
     """Oracle MERGE 쿼리 전용 파서"""

@@ -6,7 +6,7 @@ SQL Parser (Simple Regex-based)
 import re
 import hashlib
 from typing import Dict, List, Any, Set, Tuple
-from parsers.base_parser import BaseParser
+from phase1.parsers.base_parser import BaseParser
 
 class SimpleSQLParser(BaseParser):
     """간단한 정규식 기반 SQL 파서"""

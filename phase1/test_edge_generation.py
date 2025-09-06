@@ -40,7 +40,7 @@ def test_edge_generation():
         session = Session()
         
         # 프로젝트 ID 확인
-        from models.database import Project
+        from phase1.models.database import Project
         project = session.query(Project).filter_by(name="sampleSrc").first()
         if not project:
             print("프로젝트를 찾을 수 없습니다: sampleSrc")
@@ -49,7 +49,7 @@ def test_edge_generation():
         print(f"프로젝트 ID: {project.project_id}")
         
         # 엣지 생성기 초기화
-        from utils.edge_generator import EdgeGenerator
+        from phase1.utils.edge_generator import EdgeGenerator
         edge_generator = EdgeGenerator(session, config)
         
         print("엣지 생성 시작...")
@@ -57,7 +57,7 @@ def test_edge_generation():
         print(f"엣지 생성 완료: {edge_count}개")
         
         # 결과 확인
-        from models.database import Edge
+        from phase1.models.database import Edge
         edges = session.query(Edge).all()
         print(f"DB에 저장된 엣지 수: {len(edges)}")
         

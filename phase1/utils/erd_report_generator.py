@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 from datetime import datetime
 import logging
-from utils.erd_analyzer import ERDStructure, TableInfo, ColumnInfo
+from phase1.utils.erd_analyzer import ERDStructure, TableInfo, ColumnInfo
 
 class ERDReportGenerator:
     """ERD 텍스트 리포트 생성기"""

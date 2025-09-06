@@ -7,7 +7,7 @@ MyBatis XML 파일에서 SQL 쿼리, 매핑, 동적 쿼리 등을 추출합니�
 import re
 from typing import Dict, List, Any, Set
 from ..base_parser import BaseParser
-from utils.table_alias_resolver import get_table_alias_resolver
+from phase1.utils.table_alias_resolver import get_table_alias_resolver
 
 class MyBatisParser(BaseParser):
     """MyBatis 전용 파서 - 재현율 우선"""

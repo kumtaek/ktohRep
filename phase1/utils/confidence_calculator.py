@@ -9,7 +9,7 @@ import hashlib
 from datetime import datetime
 from dataclasses import dataclass
 
-from utils.logger import LoggerFactory
+from phase1.utils.logger import LoggerFactory
 
 
 @dataclass

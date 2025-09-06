@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append('phase1')
 
-from database.metadata_engine import MetadataEngine
+from phase1.database.metadata_engine import MetadataEngine
 
 def debug_metadata_engine():
     """메타디비 엔진의 XML 처리 과정 디버깅"""

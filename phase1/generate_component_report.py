@@ -16,8 +16,8 @@ import logging
 script_dir = Path(__file__).parent
 sys.path.append(str(script_dir))
 
-from utils.component_analyzer import ComponentAnalyzer
-from utils.component_report_generator import ComponentReportGenerator
+from phase1.utils.component_analyzer import ComponentAnalyzer
+from phase1.utils.component_report_generator import ComponentReportGenerator
 
 # 로깅 설정
 logging.basicConfig(

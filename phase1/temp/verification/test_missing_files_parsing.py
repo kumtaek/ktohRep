@@ -5,7 +5,7 @@ from pathlib import Path
 # Add phase1 to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parsers.java_parser import JavaParser
+from phase1.parsers.java_parser import JavaParser
 
 # 누락된 파일들 테스트
 missing_files = [

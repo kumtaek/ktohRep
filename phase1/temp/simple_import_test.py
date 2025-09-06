@@ -30,7 +30,7 @@ except ImportError as e:
 # 직접 경로로 테스트
 try:
     sys.path.append('../phase1')
-    from parsers.java.java_parser import JavaParser
+    from phase1.parsers.java.java_parser import JavaParser
     print("✅ 직접 경로로 JavaParser import 성공")
 except ImportError as e:
     print(f"❌ 직접 경로로 JavaParser import 실패: {e}")

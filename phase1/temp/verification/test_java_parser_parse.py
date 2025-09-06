@@ -5,7 +5,7 @@ from pathlib import Path
 # Add phase1 to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 # JavaParser 인스턴스 생성
 parser = JavaParser({})

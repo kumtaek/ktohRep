@@ -6,7 +6,7 @@ Context7 라이브러리 문서를 참조하여 개발된 개선된 JSP 파서
 import re
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
-from parsers.jsp.jsp_parser_context7 import JSPParserContext7
+from phase1.parsers.jsp.jsp_parser_context7 import JSPParserContext7
 
 class JSPParser(JSPParserContext7):
     """JSP 전용 파서 - 재현율 우선"""
@@ -146,7 +146,7 @@ class JSPParser(JSPParserContext7):
     
     def _create_file_object(self, file_path: str, project_id: int, content: str) -> 'File':
         """File 객체를 생성합니다."""
-        from models.database import File
+        from phase1.models.database import File
         import hashlib
         import datetime
         
@@ -172,7 +172,7 @@ class JSPParser(JSPParserContext7):
     
     def _create_sql_units(self, parsed_data: Dict[str, Any], file_path: str, project_id: int) -> List[Any]:
         """SQL Unit 객체들을 생성합니다."""
-        from models.database import SqlUnit
+        from phase1.models.database import SqlUnit
         
         sql_units = []
         sql_queries = parsed_data.get('sql_queries', [])
@@ -204,7 +204,7 @@ class JSPParser(JSPParserContext7):
     
     def _create_edges(self, parsed_data: Dict[str, Any], file_path: str, project_id: int) -> List[Any]:
         """Edge 객체들을 생성합니다."""
-        from models.database import Edge
+        from phase1.models.database import Edge
         
         edges = []
         

@@ -19,28 +19,28 @@ from datetime import datetime, timedelta
 import traceback
 import glob
 
-# 절대 경로로 임포트
-from models.database import (
+# ROOT(./) 기준 상대경로로 임포트 (규정지침 준수)
+from phase1.models.database import (
     DatabaseManager, File, Project, Class, Method, SqlUnit, DbTable, DbColumn, DbPk,
     Edge, Join, RequiredFilter, Summary, EnrichmentLog, Chunk, Embedding,
     JavaImport, EdgeHint, Relatedness, VulnerabilityFix, CodeMetric, Duplicate,
     DuplicateInstance, ParseResultModel, Base
 )
-from parsers.parser_factory import ParserFactory
+from phase1.parsers.parser_factory import ParserFactory
 
-from parsers.java.javaparser_enhanced import JavaParserEnhanced
-from parsers.jsp.jsp_parser import JSPParser
-from parsers.sql_parser_simple import SimpleSQLParser as SqlParser
-from database.metadata_engine import MetadataEngine
-from utils.csv_loader import CsvLoader
-from utils.logger import handle_non_critical_error, handle_critical_error
-from utils.logger import setup_logging
-from utils.log_cleaner import cleanup_old_log_files
-from utils.confidence_calculator import ConfidenceCalculator
-from utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator, GroundTruthEntry
-from utils.filter_config_manager import FilterConfigManager
-from utils.edge_generator import EdgeGenerator
-from llm.intelligent_chunker import IntelligentChunker
+from phase1.parsers.java.javaparser_enhanced import JavaParserEnhanced
+from phase1.parsers.jsp.jsp_parser import JSPParser
+from phase1.parsers.sql_parser_simple import SimpleSQLParser as SqlParser
+from phase1.database.metadata_engine import MetadataEngine
+from phase1.utils.csv_loader import CsvLoader
+from phase1.utils.logger import handle_non_critical_error, handle_critical_error
+from phase1.utils.logger import setup_logging
+from phase1.utils.log_cleaner import cleanup_old_log_files
+from phase1.utils.confidence_calculator import ConfidenceCalculator
+from phase1.utils.confidence_validator import ConfidenceValidator, ConfidenceCalibrator, GroundTruthEntry
+from phase1.utils.filter_config_manager import FilterConfigManager
+from phase1.utils.edge_generator import EdgeGenerator
+from phase1.llm.intelligent_chunker import IntelligentChunker
 
 
 class SourceAnalyzer:
@@ -172,14 +172,14 @@ class SourceAnalyzer:
         try:
             if self.config.get('parsers', {}).get('java', {}).get('enabled', True):
                 # Context7 기반 JavaParser 사용
-                from parsers.java.javaparser_enhanced import JavaParserEnhanced
+                from phase1.parsers.java.javaparser_enhanced import JavaParserEnhanced
                 parsers['java'] = JavaParserEnhanced(self.config)
             if self.config.get('parsers', {}).get('jsp', {}).get('enabled', True):
                 parsers['jsp_mybatis'] = JSPParser(self.config)
             if self.config.get('parsers', {}).get('sql', {}).get('enabled', True):
                 parsers['sql'] = SqlParser(self.config)
             if self.config.get('parsers', {}).get('jar', {}).get('enabled', True):
-                from parsers.jar_parser import JarParser
+                from phase1.parsers.jar_parser import JarParser
                 parsers['jar'] = JarParser(self.config)
         except Exception as e:
             self.logger.critical(f"파서 초기화 실패: {e}")
@@ -195,7 +195,7 @@ class SourceAnalyzer:
         if self.config.get('parsers', {}).get('jpa', {}).get('enabled', True):
             parsers['jpa'] = self.parser_factory
         if self.config.get('parsers', {}).get('mybatis', {}).get('enabled', True):
-            from parsers.mybatis.mybatis_parser import MyBatisParser
+            from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
             parsers['mybatis'] = MyBatisParser(self.config)
         
         # 사용 가능한 파서가 없으면 오류를 발생시킵니다.
@@ -213,7 +213,7 @@ class SourceAnalyzer:
         self.logger.info(f"프로젝트 분석 시작: {project_name}")
         
         # 전역 캐시 초기화 (SQL 중복 방지를 위해)
-        from parsers.mybatis.mybatis_parser import MyBatisParser
+        from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
         MyBatisParser.reset_global_cache()
         
         # 필터 설정 파일 검증
@@ -943,7 +943,7 @@ class SourceAnalyzer:
                         sql_units.append(sql_unit)
                 
                 # dict 형태의 클래스와 메서드를 객체로 변환
-                from models.database import Class, Method
+                from phase1.models.database import Class, Method
                 
                 # 클래스 변환
                 class_objects = []

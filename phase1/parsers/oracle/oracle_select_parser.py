@@ -5,7 +5,7 @@ Context7 라이브러리 문서를 참조하여 개발된 개선된 Oracle SELEC
 
 import re
 from typing import Dict, List, Any
-from parsers.oracle.oracle_parser_context7 import OracleParserContext7
+from phase1.parsers.oracle.oracle_parser_context7 import OracleParserContext7
 
 class OracleSelectParser(OracleParserContext7):
     """

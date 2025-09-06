@@ -11,7 +11,7 @@ import os
 import hashlib
 from typing import Dict, List, Any, Set, Tuple
 
-from ..base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 class JavaParserImproved(BaseParser):
     """개선된 Java 파서 - 과추출 문제 해결"""

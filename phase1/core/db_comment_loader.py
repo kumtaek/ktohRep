@@ -5,7 +5,7 @@ import csv
 from pathlib import Path
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
-from models.database import DbTable, DbColumn
+from phase1.models.database import DbTable, DbColumn
 
 
 class DbCommentLoader:

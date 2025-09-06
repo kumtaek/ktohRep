@@ -13,7 +13,7 @@ from pathlib import Path
 # phase1 디렉토리를 Python 경로에 추가
 sys.path.insert(0, str(Path(__file__).parent))
 
-from models.database import DatabaseManager, Base
+from phase1.models.database import DatabaseManager, Base
 
 def test_minimal_db_creation():
     """최소한의 설정으로 데이터베이스 생성 테스트"""

@@ -11,8 +11,8 @@ from pathlib import Path
 from datetime import datetime
 
 # 상대 임포트
-from utils.erd_analyzer import ERDAnalyzer
-from utils.erd_report_generator import ERDReportGenerator
+from phase1.utils.erd_analyzer import ERDAnalyzer
+from phase1.utils.erd_report_generator import ERDReportGenerator
 
 def setup_logging():
     """로깅 설정"""

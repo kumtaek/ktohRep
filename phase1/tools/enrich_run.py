@@ -21,8 +21,8 @@ for p in (REPO_ROOT, PHASE1_ROOT):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from models.database import DatabaseManager
-from database.metadata_engine import MetadataEngine
+from phase1.models.database import DatabaseManager
+from phase1.database.metadata_engine import MetadataEngine
 
 
 def load_config() -> Dict[str, Any]:

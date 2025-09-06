@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append('phase1')
 
-from parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
 
 def debug_xml_processing():
     """XML 파일 처리 과정 디버깅"""

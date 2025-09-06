@@ -4,7 +4,7 @@ from pathlib import Path
 # Add phase1 to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from parsers.parser_factory import ParserFactory
+from phase1.parsers.parser_factory import ParserFactory
 
 # 파서 팩토리 생성
 config = {}

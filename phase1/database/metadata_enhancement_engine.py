@@ -9,10 +9,10 @@ from typing import Dict, List, Optional, Any, Tuple
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session
 
-from models.database import (
+from phase1.models.database import (
     EdgeHint, Edge, Method, Class, File, SqlUnit, Join, RequiredFilter, Project
 )
-from utils.logger import get_logger
+from phase1.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -437,7 +437,7 @@ class MetadataEnhancementEngine:
     
     def _validate_pk_fk(self, l_table: str, l_col: str, r_table: str, r_col: str) -> Tuple[bool, bool]:
         """Validate if columns are primary keys"""
-        from models.database import DbTable, DbPk
+        from phase1.models.database import DbTable, DbPk
         
         def is_primary_key(table_name: str, column_name: str) -> bool:
             if '.' in table_name:

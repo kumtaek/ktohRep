@@ -14,7 +14,7 @@ import os
 import hashlib
 from typing import Dict, List, Any, Set, Tuple
 
-from ..base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 # PRegEx를 사용한 패턴 구성 (Context7 기반 - 간소화)
 try:

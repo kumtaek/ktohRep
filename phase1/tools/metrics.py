@@ -17,7 +17,7 @@ for p in (REPO_ROOT, PHASE1_ROOT):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from models.database import DatabaseManager, DbTable, DbColumn, Join, Summary, File, SqlUnit, Method, EnrichmentLog
+from phase1.models.database import DatabaseManager, DbTable, DbColumn, Join, Summary, File, SqlUnit, Method, EnrichmentLog
 
 
 def load_config() -> Dict[str, Any]:

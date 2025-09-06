@@ -9,8 +9,8 @@ from typing import Dict, List, Any, Optional
 import logging
 from datetime import datetime
 
-from models.database import DbTable, DbColumn, DbPk, DbView
-from utils.logger import handle_critical_error, handle_non_critical_error
+from phase1.models.database import DbTable, DbColumn, DbPk, DbView
+from phase1.utils.logger import handle_critical_error, handle_non_critical_error
 
 class CsvLoader:
     """CSV 파일을 로드하여 DB 스키마 정보를 저장하는 클래스"""
@@ -210,8 +210,8 @@ class CsvLoader:
         import sys
         import os
         sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-        from models.database import DatabaseManager
-        from models.database import Summary
+        from phase1.models.database import DatabaseManager
+        from phase1.models.database import Summary
         
         db_config = self.config.get('database', {})
         db_manager = DatabaseManager(db_config)
@@ -265,8 +265,8 @@ class CsvLoader:
         import sys
         import os
         sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-        from models.database import DatabaseManager
-        from models.database import Summary
+        from phase1.models.database import DatabaseManager
+        from phase1.models.database import Summary
         
         db_config = self.config.get('database', {})
         db_manager = DatabaseManager(db_config)

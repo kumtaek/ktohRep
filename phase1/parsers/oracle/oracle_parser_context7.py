@@ -10,7 +10,7 @@ Context7 라이브러리 문서를 참조하여 개발된 개선된 Oracle SQL �
 import re
 import hashlib
 from typing import Dict, List, Any, Set, Tuple
-from parsers.base_parser import BaseParser
+from phase1.parsers.base_parser import BaseParser
 
 class OracleParserContext7(BaseParser):
     """

@@ -4,8 +4,8 @@
 
 from typing import Set
 from sqlalchemy import and_, or_
-from database.metadata_engine import MetadataEngine
-from models.database import File, Class, Method, SqlUnit, Edge, Join, RequiredFilter, Summary, EnrichmentLog, VulnerabilityFix
+from phase1.database.metadata_engine import MetadataEngine
+from phase1.models.database import File, Class, Method, SqlUnit, Edge, Join, RequiredFilter, Summary, EnrichmentLog, VulnerabilityFix
 
 
 async def cleanup_deleted_files(self, deleted_file_paths: Set[str], project_id: int) -> int:

@@ -16,16 +16,16 @@ import time
 import os
 import json
 
-from models.database import (
+from phase1.models.database import (
     DatabaseManager, Project, File, Class, Method, SqlUnit,
     Join, RequiredFilter, Edge, Summary, EnrichmentLog,
     DbTable, DbColumn, DbPk, DbView, ParseResultModel, VulnerabilityFix,
 )
-from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
-from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
-from llm.assist import LlmAssist
-from llm.enricher import generate_text
-from database.llm_metadata_processor import LlmMetadataProcessor
+from phase1.utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
+from phase1.utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
+from phase1.llm.assist import LlmAssist
+from phase1.llm.enricher import generate_text
+from phase1.database.llm_metadata_processor import LlmMetadataProcessor
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
@@ -801,7 +801,7 @@ class MetadataEngine:
             
     async def _resolve_method_calls(self, session, project_id: int):
         """메서드 호출 관계 해결"""
-        from models.database import EdgeHint, Method, Class, File
+        from phase1.models.database import EdgeHint, Method, Class, File
         import json as _json
         # 미해결된 메서드 호출 엣지들 조회
         unresolved_calls = session.query(Edge).filter(
@@ -1578,7 +1578,7 @@ class MetadataEngine:
                     called_name = None
                 if not called_name:
                     continue
-                from models.database import EdgeHint
+                from phase1.models.database import EdgeHint
                 hint = {"called_name": called_name}
                 row = EdgeHint(
                     project_id=1,  # unknown here; left as 1 for hint bucket

@@ -4,18 +4,18 @@
 """
 
 from typing import Dict, Any, Optional, Type
-from parsers.base_parser import BaseParser
-from parsers.oracle.oracle_select_parser import OracleSelectParser
-from parsers.oracle.oracle_update_parser import OracleUpdateParser
-from parsers.oracle.oracle_delete_parser import OracleDeleteParser
-from parsers.oracle.oracle_insert_parser import OracleInsertParser
-from parsers.oracle.oracle_truncate_parser import OracleTruncateParser
-from parsers.oracle.oracle_merge_parser import OracleMergeParser
-from parsers.spring.spring_parser import SpringParser
-from parsers.jpa.jpa_parser import JPAParser
-from parsers.mybatis.mybatis_parser import MyBatisParser
-from parsers.jsp.jsp_parser import JSPParser
-from parsers.java.javaparser_enhanced import JavaParserEnhanced as JavaParser
+from phase1.parsers.base_parser import BaseParser
+from phase1.parsers.oracle.oracle_select_parser import OracleSelectParser
+from phase1.parsers.oracle.oracle_update_parser import OracleUpdateParser
+from phase1.parsers.oracle.oracle_delete_parser import OracleDeleteParser
+from phase1.parsers.oracle.oracle_insert_parser import OracleInsertParser
+from phase1.parsers.oracle.oracle_truncate_parser import OracleTruncateParser
+from phase1.parsers.oracle.oracle_merge_parser import OracleMergeParser
+from phase1.parsers.spring.spring_parser import SpringParser
+from phase1.parsers.jpa.jpa_parser import JPAParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.jsp.jsp_parser import JSPParser
+from phase1.parsers.java.javaparser_enhanced import JavaParserEnhanced as JavaParser
 from pathlib import Path
 import asyncio
 

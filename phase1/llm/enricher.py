@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any
 import os
 
-from llm.client import get_client
+from phase1.llm.client import get_client
 
 
 def generate_text(system: str, user: str, *, provider: Optional[str] = None, temperature: float = 0.0, max_tokens: int = 256, dry_run: bool = False) -> str:

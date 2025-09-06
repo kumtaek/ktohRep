@@ -7,7 +7,7 @@ Spring 관련 파일에서 어노테이션, 빈 정의, 의존성 등을 추출�
 import re
 from typing import Dict, List, Any, Set
 from ..base_parser import BaseParser
-from utils.table_alias_resolver import get_table_alias_resolver
+from phase1.utils.table_alias_resolver import get_table_alias_resolver
 
 class SpringParser(BaseParser):
     """Spring Framework 전용 파서 - 재현율 우선"""

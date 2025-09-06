@@ -435,7 +435,7 @@ class ProjectContextBuilder:
     
     def build_context(self, project_id: int = 1) -> Dict[str, Any]:
         """프로젝트 컨텍스트 구축"""
-        from models.database import Class, File
+        from phase1.models.database import Class, File
         
         # 모든 클래스 정보 수집
         classes = self.db_session.query(Class).all()

@@ -15,7 +15,7 @@ import sqlite3
 from collections import defaultdict
 
 from visualize.data_access import DatabaseManager
-from validation.data_quality_validator import DataQualityValidator
+from phase1.validation.data_quality_validator import DataQualityValidator
 
 
 @dataclass

@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append('phase1')
 
-from parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
 
 def debug_mybatis_output():
     """MyBatis 파서 출력 구조 디버깅"""

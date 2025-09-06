@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.jsp.jsp_parser import JSPParser
+from phase1.parsers.jsp.jsp_parser import JSPParser
 
 def test_jsp_parser_direct():
     """JSP 파서 직접 테스트"""

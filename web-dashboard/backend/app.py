@@ -24,8 +24,8 @@ try:
 except Exception:
     _md = None
 from flask_cors import CORS
-from database.metadata_engine import MetadataEngine
-from models.database import DatabaseManager
+from phase1.database.metadata_engine import MetadataEngine
+from phase1.models.database import DatabaseManager
 
 def load_config():
     config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'config.yaml'))

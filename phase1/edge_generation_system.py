@@ -12,12 +12,12 @@ import time
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from sqlalchemy.orm import Session
-from models.database import Project, Class, File, SqlUnit, DbTable, Edge
+from phase1.models.database import Project, Class, File, SqlUnit, DbTable, Edge
 
 # 우리가 만든 모듈들
-from utils.enhanced_edge_generator import EnhancedEdgeGenerator
-from utils.edge_manager import EdgeManager
-from llm.relationship_analyzer import RelationshipAnalyzer, ProjectContextBuilder
+from phase1.utils.enhanced_edge_generator import EnhancedEdgeGenerator
+from phase1.utils.edge_manager import EdgeManager
+from phase1.llm.relationship_analyzer import RelationshipAnalyzer, ProjectContextBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -491,7 +491,7 @@ class EdgeGenerationSystem:
 def main():
     """메인 실행 함수 - 테스트용"""
     import sys
-    from database.metadata_engine import MetadataEngine
+    from phase1.database.metadata_engine import MetadataEngine
     
     if len(sys.argv) < 2:
         print("사용법: python edge_generation_system.py <프로젝트_경로>")
@@ -500,7 +500,7 @@ def main():
     project_path = sys.argv[1]
     
     # DB 세션 생성 (메인 프로세스와 동일한 방식)
-    from models.database import DatabaseManager
+    from phase1.models.database import DatabaseManager
     import yaml
     
     # 설정 파일 로드

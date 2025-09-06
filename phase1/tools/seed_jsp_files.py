@@ -15,7 +15,7 @@ for p in (REPO_ROOT, PHASE1_ROOT):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from models.database import DatabaseManager, File
+from phase1.models.database import DatabaseManager, File
 
 
 def load_config() -> Dict[str, Any]:

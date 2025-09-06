@@ -6,7 +6,7 @@ from typing import Iterator
 from dotenv import load_dotenv
 import yaml
 
-from llm.client import get_client
+from phase1.llm.client import get_client
 
 
 def main(argv=None) -> int:

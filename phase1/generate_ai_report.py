@@ -12,8 +12,8 @@ from pathlib import Path
 from datetime import datetime
 
 # 상대 임포트
-from utils.ai_analyzer import AIAnalyzer, AnalysisRequest
-from utils.ai_report_generator import AIReportGenerator
+from phase1.utils.ai_analyzer import AIAnalyzer, AnalysisRequest
+from phase1.utils.ai_report_generator import AIReportGenerator
 
 def load_config(config_path: str = None) -> dict:
     """설정 파일 로드"""

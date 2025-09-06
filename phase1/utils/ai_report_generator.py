@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 import logging
-from utils.ai_analyzer import AnalysisResult
+from phase1.utils.ai_analyzer import AnalysisResult
 
 class AIReportGenerator:
     """AI 분석 리포트 생성기"""

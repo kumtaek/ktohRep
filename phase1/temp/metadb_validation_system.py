@@ -17,8 +17,8 @@ import logging
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from models.database import DatabaseManager
-from parsers.parser_factory import ParserFactory
+from phase1.models.database import DatabaseManager
+from phase1.parsers.parser_factory import ParserFactory
 
 class MetaDBValidationSystem:
     """

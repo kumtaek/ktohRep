@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 from datetime import datetime
 import logging
-from utils.hierarchy_analyzer import ProjectStructure, PackageInfo, JavaClassInfo
+from phase1.utils.hierarchy_analyzer import ProjectStructure, PackageInfo, JavaClassInfo
 
 class HierarchyReportGenerator:
     """계층도 분석 리포트 생성기"""

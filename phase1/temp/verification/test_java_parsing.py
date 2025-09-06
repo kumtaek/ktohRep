@@ -6,7 +6,7 @@ import os
 import yaml
 sys.path.append('.')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 def test_java_parsing():
     print("=== Java 파싱 테스트 ===")

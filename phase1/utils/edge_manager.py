@@ -11,7 +11,7 @@ import yaml
 from typing import Dict, Any, Optional, List, Set, Tuple
 from pathlib import Path
 from sqlalchemy.orm import Session
-from models.database import (
+from phase1.models.database import (
     Edge, Class, Method, File, SqlUnit, DbTable, DbColumn, 
     Project, Chunk
 )

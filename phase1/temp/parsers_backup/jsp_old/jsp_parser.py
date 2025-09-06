@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Any, Set, Tuple
 from ..base_parser import BaseParser
-from utils.table_alias_resolver import get_table_alias_resolver
+from phase1.utils.table_alias_resolver import get_table_alias_resolver
 
 class JSPParser(BaseParser):
     """JSP 전용 파서 - 재현율 우선"""
@@ -148,7 +148,7 @@ class JSPParser(BaseParser):
     
     def _create_file_object(self, file_path: str, project_id: int, content: str) -> 'File':
         """File 객체를 생성합니다."""
-        from models.database import File
+        from phase1.models.database import File
         import hashlib
         import datetime
         
@@ -174,7 +174,7 @@ class JSPParser(BaseParser):
     
     def _create_sql_units(self, parsed_data: Dict[str, Any], file_path: str, project_id: int) -> List[Any]:
         """SQL Unit 객체들을 생성합니다."""
-        from models.database import SqlUnit
+        from phase1.models.database import SqlUnit
         
         sql_units = []
         sql_queries = parsed_data.get('sql_queries', [])
@@ -206,7 +206,7 @@ class JSPParser(BaseParser):
     
     def _create_edges(self, parsed_data: Dict[str, Any], file_path: str, project_id: int) -> List[Any]:
         """Edge 객체들을 생성합니다."""
-        from models.database import Edge
+        from phase1.models.database import Edge
         
         edges = []
         

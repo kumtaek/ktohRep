@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append('phase1')
 
-from parsers.mybatis.mybatis_parser import MyBatisParser
+from phase1.parsers.mybatis.mybatis_parser import MyBatisParser
 
 def check_sql_statements_structure():
     """MyBatis 파서의 sql_statements 구조 확인"""

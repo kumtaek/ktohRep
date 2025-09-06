@@ -6,7 +6,7 @@ import sys
 import re
 sys.path.append('phase1')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 def debug_java_parser_methods():
     """Java 파서 메소드 추출 디버깅"""

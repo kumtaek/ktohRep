@@ -5,7 +5,7 @@ Context7 라이브러리 문서를 참조하여 개발된 개선된 Spring 파�
 
 import re
 from typing import Dict, Any, List, Tuple
-from parsers.spring.spring_parser_context7 import SpringParserContext7
+from phase1.parsers.spring.spring_parser_context7 import SpringParserContext7
 
 class SpringParser(SpringParserContext7):
     """Spring Framework 전용 파서 - 재현율 우선"""

@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('phase1')
 
-from parsers.java.java_parser import JavaParser
+from phase1.parsers.java.java_parser import JavaParser
 
 def test_java_parser_direct():
     """Java 파서 직접 테스트"""

@@ -5,7 +5,7 @@ TRUNCATE 쿼리에서 테이블을 추출합니다.
 
 import re
 from typing import Dict, List, Any
-from parsers.base_parser import BaseParser
+from phase1.parsers.base_parser import BaseParser
 
 class OracleTruncateParser(BaseParser):
     """Oracle TRUNCATE 쿼리 전용 파서"""

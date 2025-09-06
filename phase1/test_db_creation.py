@@ -13,7 +13,7 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
 # 모든 모델을 임포트
-from models.database import (
+from phase1.models.database import (
     DatabaseManager, File, Project, Class, Method, SqlUnit, DbTable, DbColumn, DbPk,
     Edge, Join, RequiredFilter, Summary, EnrichmentLog, Chunk, Embedding,
     JavaImport, EdgeHint, Relatedness, VulnerabilityFix, CodeMetric, Duplicate,

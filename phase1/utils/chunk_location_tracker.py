@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from pathlib import Path
 from dataclasses import dataclass
 from sqlalchemy.orm import Session
-from models.database import Class, Method, File, SqlUnit, Chunk
+from phase1.models.database import Class, Method, File, SqlUnit, Chunk
 
 logger = logging.getLogger(__name__)
 

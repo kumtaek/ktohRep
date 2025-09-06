@@ -10,7 +10,7 @@ phase1_root = Path(__file__).parent / "phase1"
 sys.path.insert(0, str(phase1_root))
 
 from parsers.jsp_mybatis_parser import JspMybatisParser
-from models.database import SqlUnit
+from phase1.models.database import SqlUnit
 
 def test_simple_join():
     """간단한 조인 추출 테스트"""

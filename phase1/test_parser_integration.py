@@ -15,7 +15,7 @@ sys.path.insert(0, str(project_root))
 def test_java_parser():
     """Java 파서 테스트"""
     try:
-        from parsers.java_parser import JavaParser
+        from phase1.parsers.java_parser import JavaParser
         
         # 간단한 설정
         config = {
@@ -51,7 +51,7 @@ def test_java_parser():
 def test_jsp_parser():
     """JSP 파서 테스트"""
     try:
-        from parsers.jsp_mybatis_parser import JspMybatisParser
+        from phase1.parsers.jsp_mybatis_parser import JspMybatisParser
         
         # 간단한 설정
         config = {
@@ -87,7 +87,7 @@ def test_jsp_parser():
 def test_sql_parser():
     """SQL 파서 테스트"""
     try:
-        from parsers.sql_parser import SqlParser
+        from phase1.parsers.sql_parser import SqlParser
         
         # 간단한 설정
         config = {
@@ -117,7 +117,7 @@ def test_sql_parser():
 def test_parser_factory():
     """파서 팩토리 테스트"""
     try:
-        from parsers.parser_factory import ParserFactory
+        from phase1.parsers.parser_factory import ParserFactory
         
         # 간단한 설정
         config = {

@@ -1,0 +1,39 @@
+table_name,column_name,data_type,is_primary_key,is_foreign_key,foreign_table,foreign_column,is_nullable,default_value,comment
+users,id,BIGINT,Y,N,,,N,,사용자 ID (Primary Key)
+users,user_id,VARCHAR(50),N,N,,,N,,사용자 고유 식별자
+users,username,VARCHAR(100),N,N,,,N,,로그인 사용자명
+users,email,VARCHAR(200),N,N,,,N,,이메일 주소
+users,password,VARCHAR(255),N,N,,,N,,암호화된 비밀번호
+users,name,VARCHAR(100),N,N,,,Y,,사용자 실명
+users,age,INTEGER,N,N,,,Y,,나이
+users,status,VARCHAR(20),N,N,,,N,ACTIVE,사용자 상태 (ACTIVE/INACTIVE)
+users,user_type,VARCHAR(20),N,Y,user_types,type_code,Y,,사용자 유형 코드
+users,phone,VARCHAR(20),N,N,,,Y,,전화번호
+users,address,VARCHAR(500),N,N,,,Y,,주소
+users,created_date,TIMESTAMP,N,N,,,N,SYSDATE,생성일시
+users,updated_date,TIMESTAMP,N,N,,,Y,,수정일시
+user_types,type_code,VARCHAR(20),Y,N,,,N,,사용자 유형 코드
+user_types,type_name,VARCHAR(50),N,N,,,N,,유형명
+user_types,description,VARCHAR(200),N,N,,,Y,,유형 설명
+products,id,BIGINT,Y,N,,,N,,상품 ID (Primary Key)
+products,product_id,VARCHAR(50),N,N,,,N,,상품 고유 식별자
+products,product_name,VARCHAR(200),N,N,,,N,,상품명
+products,price,DECIMAL(10,2),N,N,,,N,,상품 가격
+products,status,VARCHAR(20),N,N,,,N,ACTIVE,상품 상태
+products,category_id,VARCHAR(20),N,Y,categories,category_id,Y,,카테고리 ID
+products,brand_id,VARCHAR(20),N,Y,brands,brand_id,Y,,브랜드 ID
+products,stock_quantity,INTEGER,N,N,,,N,0,재고 수량
+products,description,TEXT,N,N,,,Y,,상품 설명
+products,del_yn,CHAR(1),N,N,,,N,N,삭제 여부 (Y/N)
+products,created_date,TIMESTAMP,N,N,,,N,SYSDATE,생성일시
+products,updated_date,TIMESTAMP,N,N,,,Y,,수정일시
+categories,category_id,VARCHAR(20),Y,N,,,N,,카테고리 ID
+categories,category_name,VARCHAR(100),N,N,,,N,,카테고리명
+categories,description,VARCHAR(200),N,N,,,Y,,카테고리 설명
+categories,status,VARCHAR(20),N,N,,,N,ACTIVE,카테고리 상태
+categories,created_date,TIMESTAMP,N,N,,,N,SYSDATE,생성일시
+brands,brand_id,VARCHAR(20),Y,N,,,N,,브랜드 ID
+brands,brand_name,VARCHAR(100),N,N,,,N,,브랜드명
+brands,description,VARCHAR(200),N,N,,,Y,,브랜드 설명
+brands,status,VARCHAR(20),N,N,,,N,ACTIVE,브랜드 상태
+brands,created_date,TIMESTAMP,N,N,,,N,SYSDATE,생성일시

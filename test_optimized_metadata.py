@@ -35,12 +35,21 @@ def test_optimized_system():
     print(f"  - 에러 수: {len(results['errors'])}개")
     
     if results['errors']:
-        print("\n❌ 에러 목록:")
+        print("\n에러 목록:")
         for error in results['errors']:
             print(f"  - {error['file']}: {error['error']}")
     
-    # 4. 메타DB 통계
-    print(f"\n메타DB 통계:")
+    # 4. 중복 제거 실행
+    print("\n중복 제거 실행...")
+    project_id = results.get('project_id', 1)
+    duplicate_removal = analyzer.metadata_engine.remove_duplicates(project_id)
+    print(f"중복 제거 결과:")
+    print(f"  - 제거된 컴포넌트: {duplicate_removal['components_removed']}개")
+    print(f"  - 제거된 관계: {duplicate_removal['relationships_removed']}개")
+    print(f"  - 제거된 파일: {duplicate_removal['files_removed']}개")
+    
+    # 5. 메타DB 통계 (중복 제거 후)
+    print(f"\n메타DB 통계 (중복 제거 후):")
     stats = results['statistics']
     print(f"  - 파일 수: {stats['file_count']}")
     print(f"  - 컴포넌트 수: {stats['component_count']}")

@@ -23,6 +23,7 @@ class OptimizedMetadataEngine:
         self.project_path = Path(project_path)
         self.file_reader = DynamicFileReader(project_path)
         self.init_database()
+        self._ensure_dummy_file()
     
     def init_database(self):
         """최적화된 스키마로 데이터베이스 초기화"""
@@ -46,53 +47,127 @@ class OptimizedMetadataEngine:
             conn.commit()
             return project_id
     
+    def find_file(self, project_id: int, file_path: str) -> Optional[int]:
+        """주어진 프로젝트와 파일 경로로 기존 파일의 ID를 찾습니다."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT file_id FROM files
+                WHERE project_id = ? AND file_path = ?
+            """, (project_id, file_path))
+            result = cursor.fetchone()
+            return result[0] if result else None
+    
     def add_file_index(self, project_id: int, file_path: str, file_type: str) -> int:
-        """파일 인덱스 추가 (기본 정보만)"""
+        """파일 인덱스 추가 (중복 체크 후 추가)"""
+        # 먼저 중복 체크
+        existing_id = self.find_file(project_id, file_path)
+        if existing_id:
+            return existing_id  # 중복이면 기존 ID 반환
+        
         file_name = Path(file_path).name
         file_hash = self._calculate_file_hash(file_path)
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO files (project_id, file_path, file_name, file_type, hash_value)
-                VALUES (?, ?, ?, ?, ?)
-            """, (project_id, file_path, file_name, file_type, file_hash))
-            file_id = cursor.lastrowid
-            conn.commit()
-            return file_id
+            try:
+                cursor.execute("""
+                    INSERT INTO files (project_id, file_path, file_name, file_type, hash_value)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (project_id, file_path, file_name, file_type, file_hash))
+                file_id = cursor.lastrowid
+                conn.commit()
+                return file_id
+            except sqlite3.IntegrityError:
+                # UNIQUE 제약조건 위반 시 기존 레코드 찾아서 반환
+                conn.rollback()
+                existing_id = self.find_file(project_id, file_path)
+                return existing_id if existing_id else None
     
-    def add_component(self, project_id: int, file_id: int, component_name: str, 
-                     component_type: str, line_start: int = None, line_end: int = None,
-                     parent_component_id: int = None) -> int:
-        """컴포넌트 추가 (위치 정보 포함)"""
+    def find_component(self, project_id: int, file_id: int, component_name: str, component_type: str, parent_component_id: Optional[int] = None) -> Optional[int]:
+        """
+        주어진 정보로 기존 컴포넌트의 ID를 찾습니다. 없으면 None을 반환합니다.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            query = """
+            SELECT component_id FROM components
+            WHERE project_id = ? AND file_id = ? AND component_name = ? AND component_type = ?
+            """
+            params = [project_id, file_id, component_name, component_type]
+
+            if parent_component_id:
+                query += " AND parent_component_id = ?"
+                params.append(parent_component_id)
+            else:
+                query += " AND parent_component_id IS NULL"
+
+            cursor.execute(query, tuple(params))
+            result = cursor.fetchone()
+            return result[0] if result else None
+
+    def get_or_create_dummy_file(self, project_id: int) -> int:
+        """CSV나 가상 테이블을 위한 더미 파일 ID 반환 (항상 0)"""
+        return 0
+
+    def _ensure_dummy_file(self):
+        """더미 파일 ID 0이 존재하도록 보장"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            # file_id = 0인 더미 파일이 있는지 확인
+            cursor.execute("SELECT file_id FROM files WHERE file_id = 0")
+            if not cursor.fetchone():
+                # 없으면 생성
+                cursor.execute("""
+                    INSERT OR REPLACE INTO files (file_id, project_id, file_path, file_name, file_type, hash_value)
+                    VALUES (0, 0, '<virtual>', '<virtual>', 'virtual', 'dummy')
+                """)
+            conn.commit()
+
+    def add_component(self, project_id: int, file_id: Optional[int], component_name: str, 
+                     component_type: str, line_start: Optional[int] = None, line_end: Optional[int] = None,
+                     parent_component_id: Optional[int] = None) -> int:
+        """컴포넌트 추가 (중복 체크 후 추가)"""
+        # file_id가 None인 경우 더미 파일 ID 사용
+        if file_id is None:
+            file_id = self.get_or_create_dummy_file(project_id)
+        
+        # 먼저 중복 체크
+        existing_id = self.find_component(project_id, file_id, component_name, component_type, parent_component_id)
+        if existing_id:
+            return existing_id  # 중복이면 기존 ID 반환
+        
         component_hash = self._calculate_component_hash(component_name, component_type)
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO components 
-                (project_id, file_id, component_name, component_type, line_start, line_end, parent_component_id, hash_value)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (project_id, file_id, component_name, component_type, line_start, line_end, parent_component_id, component_hash))
-            component_id = cursor.lastrowid
-            conn.commit()
-            return component_id
+            try:
+                cursor.execute("""
+                    INSERT INTO components 
+                    (project_id, file_id, component_name, component_type, line_start, line_end, parent_component_id, hash_value)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (project_id, file_id, component_name, component_type, line_start, line_end, parent_component_id, component_hash))
+                component_id = cursor.lastrowid
+                conn.commit()
+                return component_id
+            except sqlite3.IntegrityError as e:
+                # UNIQUE 제약조건 위반 시 기존 레코드 찾아서 반환
+                conn.rollback()
+                existing_id = self.find_component(project_id, file_id, component_name, component_type, parent_component_id)
+                return existing_id if existing_id else None
     
     def add_relationship(self, project_id: int, src_component_id: int, dst_component_id: int,
                         relationship_type: str, confidence: float = 1.0):
-        """관계 추가"""
-        print(f"DEBUG: add_relationship called - project_id:{project_id}, src:{src_component_id}, dst:{dst_component_id}, type:{relationship_type}")
-        try:
-            with sqlite3.connect(self.db_path) as conn:
+        """관계 추가 - 중복 방지"""
+        with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
+                # 중복 체크 후 INSERT 또는 UPDATE
                 cursor.execute("""
-                    INSERT INTO relationships (project_id, src_component_id, dst_component_id, relationship_type, confidence)
+                    INSERT OR IGNORE INTO relationships (project_id, src_component_id, dst_component_id, relationship_type, confidence)
                     VALUES (?, ?, ?, ?, ?)
                 """, (project_id, src_component_id, dst_component_id, relationship_type, confidence))
                 conn.commit()
-                print(f"DEBUG: relationship added successfully")
-        except Exception as e:
-            print(f"DEBUG: Error adding relationship: {e}")
     
     def add_business_tag(self, project_id: int, component_id: int, 
                         domain: str = None, layer: str = None, priority: int = 3):
@@ -339,6 +414,62 @@ class OptimizedMetadataEngine:
         """메타데이터 정리 (해시값으로 변경 감지)"""
         # 실제 파일과 메타DB 동기화
         pass
+    
+    def remove_duplicates(self, project_id: int):
+        """최종 중복 제거 - 동일한 컴포넌트/관계의 중복 레코드 제거"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # 1. 컴포넌트 중복 제거 (동일한 project_id, file_id, component_name, component_type, parent_component_id)
+            print("DEBUG: Removing duplicate components...")
+            cursor.execute("""
+                DELETE FROM components 
+                WHERE component_id NOT IN (
+                    SELECT MIN(component_id) 
+                    FROM components 
+                    WHERE project_id = ?
+                    GROUP BY project_id, file_id, component_name, component_type, 
+                             COALESCE(parent_component_id, -1)
+                ) AND project_id = ?
+            """, (project_id, project_id))
+            components_removed = cursor.rowcount
+            print(f"DEBUG: Removed {components_removed} duplicate components")
+            
+            # 2. 관계 중복 제거 (동일한 project_id, src_component_id, dst_component_id, relationship_type)
+            print("DEBUG: Removing duplicate relationships...")
+            cursor.execute("""
+                DELETE FROM relationships 
+                WHERE relationship_id NOT IN (
+                    SELECT MIN(relationship_id) 
+                    FROM relationships 
+                    WHERE project_id = ?
+                    GROUP BY project_id, src_component_id, dst_component_id, relationship_type
+                ) AND project_id = ?
+            """, (project_id, project_id))
+            relationships_removed = cursor.rowcount
+            print(f"DEBUG: Removed {relationships_removed} duplicate relationships")
+            
+            # 3. 파일 중복 제거 (동일한 project_id, file_path)
+            print("DEBUG: Removing duplicate files...")
+            cursor.execute("""
+                DELETE FROM files 
+                WHERE file_id NOT IN (
+                    SELECT MIN(file_id) 
+                    FROM files 
+                    WHERE project_id = ?
+                    GROUP BY project_id, file_path
+                ) AND project_id = ?
+            """, (project_id, project_id))
+            files_removed = cursor.rowcount
+            print(f"DEBUG: Removed {files_removed} duplicate files")
+            
+            conn.commit()
+            
+            return {
+                'components_removed': components_removed,
+                'relationships_removed': relationships_removed,
+                'files_removed': files_removed
+            }
 
 
 # 사용 편의를 위한 팩토리 클래스

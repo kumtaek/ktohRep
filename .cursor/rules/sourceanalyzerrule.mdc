@@ -23,11 +23,12 @@ alwaysApply: true
 - ⚠️ 예상 금지: 스키마를 예상으로 추측하지 말고 반드시 실제 구조 확인 후 작업
   
 - 개발,테스트 실행시 터미널에 출력하지 말고 리디렉션한 화일의 내용을 읽어서 작업할 것.
-아래처럼 output.txt로 리디렉션 해서 파일을 읽는 식으로
+아래처럼 output.log로 리디렉션 해서 파일을 읽는 식으로.  리다이렉션은 화면에 보이지 않으므로
+.log화일을 읽고 사용자에게 공유해야할 의미 있는 정보는 사용자에게 보여줄 것.
 
-python test_optimized_metadata.py >output.txt 2>&1
+python test_optimized_metadata.py >output.log 2>&1
 
-sqlite3 project\sampleSrc\metadata_optimized.db "SELECT COUNT(*) FROM relationships;" > output.txt 2>&1
+sqlite3 project\sampleSrc\metadata_optimized.db "SELECT COUNT(*) FROM relationships;" > output.log 2>&1
 
 
 # ※ 아래 내용보다 위에 내용이 최우선임.  
@@ -53,7 +54,7 @@ sqlite3 project\sampleSrc\metadata_optimized.db "SELECT COUNT(*) FROM relationsh
   
         return None  # None 반환하고 다음 파일로 넘어감 # 계속 진행 --> 이러면 안된다고!!! 제발 Exit!!!
   
-- ⚠️ 규칙: 소스오류 스킵처럼 의미가 있는 경우를 제외하고는 모든 오류 발생시 에러로그 남기고 중단되어야 함
+- ⚠️ 규칙: 파싱중 소스에 오류가 있는 경우 스킵하는 것처럼 의미가 있는 경우를 제외하고는 모든 오류 발생시 에러로그 남기고 중단되어야 함
   
 
 3. 하드코딩 금지 규칙

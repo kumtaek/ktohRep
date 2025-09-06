@@ -1,5 +1,0 @@
-calls|14
-dependency|24
-foreign_key|10
-implements|4
-imports|46

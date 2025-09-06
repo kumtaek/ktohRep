@@ -111,14 +111,14 @@ class JavaParserEnhanced(BaseParser):
             package_name = tree.package.name if tree.package else ""
 
             for type_decl in tree.types:
-                if isinstance(type_decl, tree.ClassDeclaration):
+                if type(type_decl).__name__ == 'ClassDeclaration':
                     class_obj = self._extract_class_from_javalang(type_decl, file_path, project_id, package_name)
                     if class_obj:
                         classes.append(class_obj)
                         class_methods = self._extract_methods_from_class(type_decl, file_path, project_id, class_obj.fqn)
                         methods.extend(class_methods)
 
-                elif isinstance(type_decl, tree.InterfaceDeclaration):
+                elif type(type_decl).__name__ == 'InterfaceDeclaration':
                     interface_obj = self._extract_interface_from_javalang(type_decl, file_path, project_id, package_name)
                     if interface_obj:
                         classes.append(interface_obj) # Treat interfaces as classes for simplicity
@@ -175,18 +175,13 @@ class JavaParserEnhanced(BaseParser):
                 class_type.append('static')
             
             return Class(
-                file_path=file_path,
-                project_id=project_id,
+                file_id=None,  # 나중에 설정됨
                 name=class_name,
                 fqn=fqn,
-                package=package_name,
-                extends=extends,
-                implements=','.join(implements) if implements else None,
-                annotations=','.join(annotations) if annotations else None,
-                class_type=','.join(class_type) if class_type else 'class',
-                line_count=self._count_lines_in_node(class_decl),
-                method_count=len([m for m in class_decl.methods]) if class_decl.methods else 0,
-                comment_count=0  # TODO: 주석 수 계산
+                start_line=0,  # TODO: 정확한 라인 번호 계산
+                end_line=0,    # TODO: 정확한 라인 번호 계산
+                modifiers=json.dumps(list(modifiers)) if modifiers else None,
+                annotations=json.dumps(annotations) if annotations else None
             )
             
         except Exception as e:
@@ -223,18 +218,13 @@ class JavaParserEnhanced(BaseParser):
                 interface_type.append('public')
             
             return Class(
-                file_path=file_path,
-                project_id=project_id,
+                file_id=None,  # 나중에 설정됨
                 name=interface_name,
                 fqn=fqn,
-                package=package_name,
-                extends=','.join(extends) if extends else None,
-                implements=None,
-                annotations=','.join(annotations) if annotations else None,
-                class_type=','.join(interface_type),
-                line_count=self._count_lines_in_node(interface_decl),
-                method_count=len([m for m in interface_decl.methods]) if interface_decl.methods else 0,
-                comment_count=0  # TODO: 주석 수 계산
+                start_line=0,  # TODO: 정확한 라인 번호 계산
+                end_line=0,    # TODO: 정확한 라인 번호 계산
+                modifiers=json.dumps(list(modifiers)) if modifiers else None,
+                annotations=json.dumps(annotations) if annotations else None
             )
             
         except Exception as e:
@@ -321,18 +311,25 @@ class JavaParserEnhanced(BaseParser):
             if 'synchronized' in modifiers:
                 method_type.append('synchronized')
             
-            return Method(
-                file_path=file_path,
-                project_id=project_id,
+            # 시그너처 생성
+            signature = f"{method_name}({','.join(parameters) if parameters else ''})"
+            
+            method_obj = Method(
+                class_id=None,  # 나중에 설정됨
                 name=method_name,
-                owner_fqn=owner_fqn,
+                signature=signature,
                 return_type=return_type,
-                parameters=','.join(parameters) if parameters else None,
-                annotations=','.join(annotations) if annotations else None,
-                method_type=','.join(method_type) if method_type else 'method',
-                line_count=self._count_lines_in_node(method_decl),
-                comment_count=0  # TODO: 주석 수 계산
+                start_line=0,  # TODO: 정확한 라인 번호 계산
+                end_line=0,    # TODO: 정확한 라인 번호 계산
+                annotations=json.dumps(annotations) if annotations else None,
+                parameters=json.dumps(parameters) if parameters else None,
+                modifiers=json.dumps(list(modifiers)) if modifiers else None
             )
+            
+            # MetadataEngine에서 필요한 속성 추가
+            method_obj.owner_fqn = owner_fqn
+            
+            return method_obj
             
         except Exception as e:
             print(f"Error extracting method from javalang: {e}")

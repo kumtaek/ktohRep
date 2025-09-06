@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 
 from models.database import DbTable, DbColumn, DbPk, DbView
-from .logger import handle_critical_error, handle_non_critical_error
+from utils.logger import handle_critical_error, handle_non_critical_error
 
 class CsvLoader:
     """CSV 파일을 로드하여 DB 스키마 정보를 저장하는 클래스"""
@@ -33,13 +33,14 @@ class CsvLoader:
             'ALL_VIEWS.csv': self._load_views
         }
         
-    async def load_csv(self, csv_path: str, project_id: int) -> Dict[str, int]:
+    async def load_csv(self, csv_path: str, project_id: int, session=None) -> Dict[str, int]:
         """
         CSV 파일 로드
         
         Args:
             csv_path: CSV 파일 경로
             project_id: 프로젝트 ID
+            session: 데이터베이스 세션 (메인 프로세스에서 전달)
             
         Returns:
             로드된 레코드 수
@@ -60,7 +61,7 @@ class CsvLoader:
                 rows = list(reader)
                 
             handler = self.csv_handlers[filename]
-            result = await handler(rows, project_id)
+            result = await handler(rows, project_id, session)
             
             self.logger.info(f"CSV 로드 완료: {filename}, 레코드 수: {result['records']}")
             return result
@@ -68,25 +69,21 @@ class CsvLoader:
         except Exception as e:
             handle_critical_error(self.logger, f"CSV 로드 실패 {filename}", e)
             
-    async def _load_tables(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
+    async def _load_tables(self, rows: List[Dict[str, str]], project_id: int, session=None) -> Dict[str, int]:
         """
         Oracle ALL_TABLES.csv 파일을 로드하여 테이블 정보를 데이터베이스에 저장
         
         Args:
             rows: CSV에서 읽은 데이터 행들
             project_id: 프로젝트 ID
+            session: 데이터베이스 세션 (메인 프로세스에서 전달)
             
         Returns:
             로드된 레코드 수 정보
         """
         
-        from models.database import DatabaseManager
-        
-        # 임시로 세션 생성 (실제로는 의존성 주입 필요)
-        db_config = self.config.get('database', {}).get('project', {})
-        db_manager = DatabaseManager(db_config)
-        db_manager.initialize()  # 데이터베이스 초기화 추가
-        session = db_manager.get_session()
+        if not session:
+            raise ValueError("데이터베이스 세션이 필요합니다")
         
         try:
             loaded_count = 0
@@ -123,26 +120,19 @@ class CsvLoader:
                         table_comment=comments
                     )
                     session.add(table)
+                    session.flush()
                     loaded_count += 1
                     
-            session.commit()
             return {'records': loaded_count}
             
         except Exception as e:
-            session.rollback()
             handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
-        finally:
-            session.close()
             
-    async def _load_columns(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
+    async def _load_columns(self, rows: List[Dict[str, str]], project_id: int, session=None) -> Dict[str, int]:
         """ALL_TAB_COLUMNS.csv 로드"""
         
-        from models.database import DatabaseManager
-        
-        db_config = self.config.get('database', {}).get('project', {})
-        db_manager = DatabaseManager(db_config)
-        db_manager.initialize()  # 데이터베이스 초기화 추가
-        session = db_manager.get_session()
+        if not session:
+            raise ValueError("데이터베이스 세션이 필요합니다")
         
         try:
             loaded_count = 0
@@ -160,8 +150,23 @@ class CsvLoader:
                 # 테이블 ID 찾기
                 table_key = (owner, table_name)
                 if table_key not in table_map:
-                    self.logger.warning(f"테이블을 찾을 수 없음(조인대상 테이블은 더미정보로 생성됨): {owner}.{table_name}")
-                    continue
+                    # 누락된 테이블을 자동으로 생성
+                    self.logger.warning(f"테이블을 찾을 수 없어 자동 생성: {owner}.{table_name}")
+                    
+                    # 누락된 테이블을 db_tables에 추가
+                    missing_table = DbTable(
+                        owner=owner,
+                        table_name=table_name,
+                        status='INFERRED_FROM_COLUMNS',
+                        table_comment=f'{table_name} (컬럼 정보에서 자동 생성)'
+                    )
+                    session.add(missing_table)
+                    session.flush()  # table_id 생성을 위해 flush
+                    
+                    # table_map 업데이트
+                    table_map[table_key] = missing_table.table_id
+                    
+                    self.logger.info(f"누락된 테이블 자동 생성 완료: {owner}.{table_name} (ID: {missing_table.table_id})")
                     
                 column = DbColumn(
                     table_id=table_map[table_key],
@@ -191,24 +196,24 @@ class CsvLoader:
                         self.logger.debug(f"CSV에서 컬럼 정보 업데이트: {owner}.{table_name}.{column_name}")
                 else:
                     session.add(column)
+                    session.flush()
                     loaded_count += 1
                     
-            session.commit()
             return {'records': loaded_count}
             
         except Exception as e:
-            session.rollback()
             handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
-        finally:
-            session.close()
             
     async def _load_table_comments(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_TAB_COMMENTS.csv 로드"""
         
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
         from models.database import DatabaseManager
         from models.database import Summary
         
-        db_config = self.config.get('database', {}).get('project', {})
+        db_config = self.config.get('database', {})
         db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
@@ -257,10 +262,13 @@ class CsvLoader:
     async def _load_column_comments(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
         """ALL_COL_COMMENTS.csv 로드"""
         
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
         from models.database import DatabaseManager
         from models.database import Summary
         
-        db_config = self.config.get('database', {}).get('project', {})
+        db_config = self.config.get('database', {})
         db_manager = DatabaseManager(db_config)
         db_manager.initialize()  # 데이터베이스 초기화 추가
         session = db_manager.get_session()
@@ -310,15 +318,11 @@ class CsvLoader:
         finally:
             session.close()
             
-    async def _load_pk_info(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
+    async def _load_pk_info(self, rows: List[Dict[str, str]], project_id: int, session=None) -> Dict[str, int]:
         """PK_INFO.csv 로드 (PK 컬럼 정보)"""
         
-        from models.database import DatabaseManager
-        
-        db_config = self.config.get('database', {}).get('project', {})
-        db_manager = DatabaseManager(db_config)
-        db_manager.initialize()  # 데이터베이스 초기화 추가
-        session = db_manager.get_session()
+        if not session:
+            raise ValueError("데이터베이스 세션이 필요합니다")
         
         try:
             loaded_count = 0
@@ -354,24 +358,16 @@ class CsvLoader:
                     session.add(pk_info)
                     loaded_count += 1
                     
-            session.commit()
             return {'records': loaded_count}
             
         except Exception as e:
-            session.rollback()
             handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
-        finally:
-            session.close()
             
-    async def _load_views(self, rows: List[Dict[str, str]], project_id: int) -> Dict[str, int]:
+    async def _load_views(self, rows: List[Dict[str, str]], project_id: int, session=None) -> Dict[str, int]:
         """ALL_VIEWS.csv 로드"""
         
-        from models.database import DatabaseManager
-        
-        db_config = self.config.get('database', {}).get('project', {})
-        db_manager = DatabaseManager(db_config)
-        db_manager.initialize()  # 데이터베이스 초기화 추가
-        session = db_manager.get_session()
+        if not session:
+            raise ValueError("데이터베이스 세션이 필요합니다")
         
         try:
             loaded_count = 0
@@ -391,16 +387,13 @@ class CsvLoader:
                 
                 if not existing:
                     session.add(view)
+                    session.flush()
                     loaded_count += 1
                     
-            session.commit()
             return {'records': loaded_count}
             
         except Exception as e:
-            session.rollback()
             handle_critical_error(self.logger, "테이블 정보 저장 실패", e)
-        finally:
-            session.close()
             
     def validate_csv_structure(self, csv_path: str) -> Dict[str, Any]:
         """
@@ -453,20 +446,21 @@ class CsvLoader:
         except Exception as e:
             handle_critical_error(self.logger, "파일 읽기 오류", e)
     
-    async def load_project_db_schema(self, project_name: str, project_id: int) -> Dict[str, Any]:
+    async def load_project_db_schema(self, project_name: str, project_id: int, session=None) -> Dict[str, Any]:
         """
         프로젝트별 DB 스키마 CSV 파일 자동 검색 및 로드
         
         Args:
             project_name: 프로젝트 이름
             project_id: 프로젝트 ID
+            session: 데이터베이스 세션 (메인 프로세스에서 전달)
             
         Returns:
             로드 결과 정보
         """
         import os
         
-        # 프로젝트별 db_schema 디렉토리 경로
+        # 프로젝트별 db_schema 디렉토리 경로 (프로젝트 루트 기준)
         db_schema_dir = f"./project/{project_name}/db_schema"
         
         result = {
@@ -493,9 +487,9 @@ class CsvLoader:
                 found_files.append(filename)
         
         if not found_files:
-            self.logger.warning(f"DB 스키마 CSV 파일을 찾을 수 없습니다: {db_schema_dir}")
-            result['errors'].append(f"지원되는 CSV 파일이 없습니다. 필요한 파일: {supported_files}")
-            return result
+            error_msg = f"DB 스키마 CSV 파일을 찾을 수 없습니다: {db_schema_dir}"
+            self.logger.error(error_msg)
+            raise FileNotFoundError(error_msg)
         
         # 찾은 CSV 파일들을 순서대로 로드
         load_order = ['ALL_TABLES.csv', 'ALL_TAB_COLUMNS.csv', 'PK_INFO.csv', 'ALL_VIEWS.csv']
@@ -505,7 +499,7 @@ class CsvLoader:
                 csv_path = os.path.join(db_schema_dir, filename)
                 try:
                     self.logger.info(f"DB 스키마 CSV 로드 중: {filename}")
-                    load_result = await self.load_csv(csv_path, project_id)
+                    load_result = await self.load_csv(csv_path, project_id, session)
                     
                     result['loaded_files'][filename] = load_result
                     result['total_records'] += sum(load_result.values())

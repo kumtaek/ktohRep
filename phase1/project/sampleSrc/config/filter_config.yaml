@@ -1,0 +1,47 @@
+# sampleSrc 프로젝트 필터 설정 파일
+include_patterns:
+  - "**/*.java"
+  - "**/*.xml" 
+  - "**/*.jsp"
+  - "**/*.jspf"
+  - "**/*.properties"
+
+exclude_patterns:
+  - "**/target/**"
+  - "**/build/**"
+  - "**/test/**"
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/vendor/**"
+
+layer_patterns:
+  controller: 
+    - "*Controller*"
+    - "*Servlet*"
+    - "*Action*"
+  
+  service: 
+    - "*Service*"
+    - "*Manager*"
+    - "*Handler*"
+  
+  mapper: 
+    - "*Mapper*"
+    - "*DAO*"
+    - "*Repository*"
+  
+  config: 
+    - "*Config*"
+    - "*Configuration*"
+    - "*Setup*"
+  
+  util: 
+    - "*Util*"
+    - "*Helper*"
+    - "*Tool*"
+  
+  entity: 
+    - "*Entity*"
+    - "*Model*"
+    - "*DTO*"
+    - "*VO*"

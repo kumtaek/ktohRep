@@ -1,0 +1,149 @@
+# Phase 1: Metadata Generation Configuration
+# Phase1 전용 설정 파일: 소스 코드 분석 및 메타데이터 생성에 특화된 설정
+
+# 파서 설정
+# 다양한 언어 및 파일 유형에 대한 파서 활성화 및 유형을 설정합니다.
+parsers:
+  java:
+    enabled: true          # Java 파서 활성화 여부
+    parser_type: "javalang"  # Java 파서 유형 (javaparser 또는 tree-sitter)
+    java_version: 8        # 분석할 Java 소스 코드 버전
+  jsp:
+    enabled: true          # JSP 파서 활성화 여부
+    parser_type: "antlr"   # JSP 파서 유형 (현재 antlr만 지원)
+  mybatis:
+    enabled: true          # MyBatis 파서 활성화 여부
+    parser_type: "jsqlparser" # MyBatis SQL 파서 유형 (현재 jsqlparser만 지원)
+  sql:
+    enabled: true          # 일반 SQL 파서 활성화 여부
+    parser_type: "jsqlparser" # SQL 파서 유형 (현재 jsqlparser만 지원)
+    oracle_dialect: true   # Oracle SQL 방언 사용 여부
+  tree_sitter:
+    enabled: false         # Tree-sitter 파서 활성화 여부 (향후 기능)
+    languages: ["java", "javascript", "typescript", "python"] # Tree-sitter로 분석할 언어 목록
+
+# LLM 설정 (메타데이터 보강용)
+# 코드 메타데이터 보강에 사용될 대규모 언어 모델(LLM)의 설정을 정의합니다.
+llm_assist:                                                                    
+  enabled: true             # LLM 보강 기능 활성화 여부                      
+  provider: "auto"          # LLM 제공자 (auto, ollama, vllm, openai)        
+  provider: "ollama"          # LLM 제공자 (auto, ollama, vllm, openai)      
+  low_conf_threshold: 0.6   # 낮은 신뢰도 임계값                             
+  max_calls_per_run: 50     # 한 번 실행 시 LLM 호출 최대 횟수               
+  file_max_lines: 1200      # LLM이 처리할 파일의 최대 라인 수  
+  
+# llm:
+#   enabled: true             # LLM 기반 보강 활성화 여부
+#   base_model: "qwen2.5-7b"  # 기본 LLM 모델 이름
+#   fallback_model: "qwen2.5-32b" # 기본 모델 실패 시 사용할 대체 LLM 모델 이름
+#   vllm_endpoint: "http://localhost:8000/v1" # vLLM 서버 엔드포인트 URL
+#   temperature: 0.0          # LLM 응답의 무작위성 (0.0은 가장 결정론적)
+#   max_tokens: 2048          # LLM 응답의 최대 토큰 수
+#   model_quality: 0.6        # LLM 모델 품질 임계값 (0.0 ~ 1.0)
+#   provider: "ollama"        # LLM 제공자 (auto, ollama, vllm, openai)  
+
+# 임베딩 모델 설정
+# 텍스트를 벡터로 변환하는 데 사용될 임베딩 모델 목록을 정의합니다.
+embedding:
+  models:
+    - name: "BAAI/bge-m3"  # 다국어 임베딩 모델
+      type: "multilingual"
+      max_length: 8192
+      batch_size: 32
+    - name: "jhgan00/ko-sentence-transformers" # 한국어 임베딩 모델
+      type: "korean"
+      max_length: 512
+      batch_size: 16
+
+# 처리 설정
+# 코드 분석 및 LLM 처리의 일반적인 설정을 정의합니다.
+processing:
+  max_workers: 4            # 병렬 처리 작업자 수
+  chunk_size: 512           # 텍스트 처리 단위 (토큰 또는 문자)
+  chunk_overlap: 50         # 텍스트 청크 간의 중복 크기
+  confidence_threshold: 0.5 # 분석 결과의 신뢰도 임계값 (0.0 ~ 1.0)
+
+# 기본 로깅 설정
+logging:
+  level: "DEBUG"
+  file: "./logs/analyzer.log"
+
+# 출력 설정
+# 분석 결과 및 메타데이터 출력 방식을 설정합니다.
+output:
+  metadata_only: true       # 소스 코드 저장 없이 메타데이터만 저장할지 여부
+  include_line_ranges: true # 메타데이터에 코드 라인 범위 포함 여부
+  include_confidence: true  # 메타데이터에 신뢰도 점수 포함 여부
+  log_enrichment: true      # LLM 보강 로그 기록 여부
+
+# 파일 패턴 설정
+# 분석에 포함하거나 제외할 파일 및 디렉토리 패턴을 정의합니다.
+file_patterns:
+  include:
+    - "**/*.java"
+    - "**/*.jsp"
+    - "**/*.xml"
+    - "**/*.properties"
+  exclude:
+    - "**/target/**"
+    - "**/build/**"
+    - "**/test/**"
+    - "**/.git/**"
+
+# DB 스키마 파일 설정
+# 데이터베이스 스키마 분석에 필요한 파일 목록 및 경로 템플릿을 정의합니다.
+db_schema:
+  required_files:
+    - "ALL_TABLES.csv"
+    - "ALL_TAB_COLUMNS.csv"
+    - "PK_INFO.csv"
+  path_template: "./PROJECT/{project_name}/DB_SCHEMA/" # DB 스키마 파일 경로 템플릿
+
+# LLM Assist (Phase1) — LLM 기반 보강 기능 설정
+# LLM을 활용한 코드 메타데이터 보강 기능의 세부 설정을 정의합니다.
+llm_assist:
+  enabled: true             # LLM 보강 기능 활성화 여부
+  provider: "auto"          # LLM 제공자 (auto, ollama, vllm, openai)
+  low_conf_threshold: 0.6   # 낮은 신뢰도 임계값
+  max_calls_per_run: 50     # 한 번 실행 시 LLM 호출 최대 횟수
+  file_max_lines: 1200      # LLM이 처리할 파일의 최대 라인 수
+  temperature: 0.0          # LLM 응답의 무작위성
+  max_tokens: 512           # LLM 응답의 최대 토큰 수
+  strict_json: true         # LLM 응답이 엄격한 JSON 형식이어야 하는지 여부
+  cache: true               # LLM 응답 캐싱 활성화 여부
+  cache_dir: ./output/llm_cache # LLM 캐시 디렉토리 경로
+  log_prompt: false         # LLM 프롬프트 로깅 활성화 여부
+  dry_run: false            # 실제 LLM 호출 없이 드라이 런 모드 활성화 여부
+  fallback_to_ollama: true  # vLLM 실패 시 Ollama로 대체할지 여부
+  enrich:                   # LLM을 통한 보강 항목별 설정
+    table_comments:
+      enabled: true
+      max_tables: 25
+    column_comments:
+      enabled: true
+      max_columns: 50
+    sql_summary:
+      enabled: true
+      max_items: 30
+    method_summary:
+      enabled: true
+      max_items: 30
+    jsp_summary:
+      enabled: true
+      max_items: 30
+    join_infer:
+      enabled: true
+      max_items: 50
+    edge_hint:
+      enabled: true
+      max_items: 50
+  # LLM 제공자별 상세 설정 (환경 변수 대신 이 파일에서 직접 설정)
+  vllm_base_url: "http://localhost:8000/v1" # vLLM 서버 기본 URL
+  vllm_api_key: "EMPTY"                     # vLLM API 키
+  vllm_model: "Qwen2.5"                     # vLLM 모델 이름
+  ollama_host: "http://localhost:11434"     # Ollama 서버 호스트
+  ollama_model: "gemma3:1b"                 # Ollama 모델 이름
+
+# Validation settings
+validation:
+  ground_truth_path: "./phase1/config/ground_truth_data.json"

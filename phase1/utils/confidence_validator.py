@@ -11,8 +11,8 @@ from datetime import datetime
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
-from .confidence_calculator import ConfidenceCalculator, ParseResult
-from .logger import LoggerFactory
+from utils.confidence_calculator import ConfidenceCalculator, ParseResult
+from utils.logger import LoggerFactory
 
 
 @dataclass

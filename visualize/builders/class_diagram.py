@@ -447,20 +447,20 @@ def build_java_class_diagram_json(
                 package_groups[package] = []
             package_groups[package].append(cls.class_id)
         
-        # Add package relationship edges
-        for package, class_list in package_groups.items():
-            if len(class_list) > 1:
-                for i, src_class in enumerate(class_list):
-                    for dst_class in class_list[i+1:]:
-                        edges.append(create_edge(
-                            f"edge_{edge_id}",
-                            f"class:{src_class}",
-                            f"class:{dst_class}",
-                            "same_package",
-                            0.5,
-                            {'relationship_type': 'same_package', 'package': package}
-                        ))
-                        edge_id += 1
+        # Package relationship edges (주석 처리 - 시각적 노이즈 방지)
+        # for package, class_list in package_groups.items():
+        #     if len(class_list) > 1:
+        #         for i, src_class in enumerate(class_list):
+        #             for dst_class in class_list[i+1:]:
+        #                 edges.append(create_edge(
+        #                     f"edge_{edge_id}",
+        #                     f"class:{src_class}",
+        #                     f"class:{dst_class}",
+        #                     "same_package",
+        #                     0.5,
+        #                     {'relationship_type': 'same_package', 'package': package}
+        #                 ))
+        #                 edge_id += 1
         
         # Statistics
         stats = {

@@ -1,0 +1,98 @@
+# SourceAnalyzer 프로젝트 개발 지침 필독!!!
+
+## 프로젝트 구조
+- `./phase1`: 1단계 메타DB구축 (2단계와 시각화에 이용)
+- `./visualize`: 시각화 리포트 생성  
+- `./phase2`: 2단계 LLM을 이용한 자연어 질의응답
+- `./project`: 분석대상 소스 저장 (프로젝트별 폴더)
+- `./project/<프로젝트명>/report`: 분석 리포트 파일 저장 (프로젝트별 폴더)
+- `./logs`: 로그 파일 통합 저장
+- `./venvSrcAnalyzer`: 파이썬 가상환경
+
+## 폴더 구조 규칙
+- 각 단계별 종속 파일은 해당 폴더 하위에 위치
+- 설정 파일: `./phase1/config`, `./visualize/config`, `./phase2/config/`
+- 로그 파일: `./logs/phase1_yyyymmdd_hms.log`, `./logs/phase2_yyyymmdd_hms.log`, `./logs/visualize_yyyymmdd_hms.log`
+- 분석대상 소스: `./project/<프로젝트명>/src/`, `./project/<프로젝트명>/db_schema/`
+- 메타데이터베이스: `./project/<프로젝트명>/metadata.db`
+- 시각화 리포트: `./project/<프로젝트명>/report/erd_yyyymmdd_hms.html`, `./project/<프로젝트명>/report/테이블명세서_yyyymmdd_hms.md` ...
+- 개발관련 내용은 `E:\SourceAnalyzer.git\Dev.Report\Dev.Report\`에 
+    분석대상 <프로젝트> 관련 문서는 ./project/<프로젝트명>/report/에 저장.
+- 상대경로 문제 신경써서 코딩할 것.
+- 개발,테스트중 필요한 파일은 아래와 같이 temp폴더에 생성할 것
+    './phase1/temp/'
+    './phase2/temp/'
+    './viaulize/temp/'
+- ※ temp 폴더 화일은 안지우잖아?(물론 언제든 지워질 수 있다는 전제로 사용해야 하지만) 
+일단 바로 지워지지는 않는다는 가정하에 현재 세션에 채팅에서는 이전 생성한 파일은 유지된다 
+가정하고 조금전에 생성한 파일은 재사용하도록 해. 재사용을 고려해서 분할 모듈화 하는게 효율적이겠지.
+커멘트를 잘 달아서 재사용할때 도움이 되도록 해.
+
+## 테이블설계
+- db_tables - 테이블
+- db_columns - 컬럼
+- PK - csv로부터 PK가 등록되기도 하고, 쿼리 파싱 이후 조인조건에서 도출되기도 한다.
+    조인조건 추출시 쿼리에서 알리아스 말고 테이블이 인식되고
+    그 테이블이 db_tables에 있는 테이블이면 db_tables에서 owner를 가지고 오면 되고
+    없으면 설정화일에 있는 default_owner(현재 'DEFAULT')로 한다.
+- 'E:\SourceAnalyzer.git\Dev.Report\메타데이터베이스_스키마_및_현황_20250119_1520.md' 참고.    
+- 금융회사 금전 처리도 아니고, 대량 다중사용자용도 아님 -> autocommit=True로 설정함.
+
+## 개발 원칙
+- **동적 분석**: 샘플소스에 하드코딩 금지, 분석대상 소스가 달라져도 동작하도록 개발
+- **상대경로**: 절대경로 사용 금지, 운영환경 배포 시 경로 변경 고려
+- **오프라인 환경**: 오프라인 폐쇄망에서 동작 가능하도록 구현
+- **라이선스**: 기업내 무료 사용 가능한 라이선스만 사용
+- **AutoCommit**: AutoCommitSession 공통 적용하여 건건 Commit되도록 한다.
+- **이모지 사용 금지**: 인코딩 에러남. 절대 사용 금지.
+
+## 파일 생성 규칙
+- 시각화 리포트, 분석 리포트: `./project/<프로젝트명>/report/` 하위에 생성일시 포함하여 저장
+
+## 메타데이터 처리
+- `metadata.db` 미존재 시 신규 생성
+- 파일 HASH값으로 변동분만 재분석, 변동되지 않은 파일은 스킵
+- `./project/` 하위 폴더는 언제든 사용자가 삭제/재업로드 가능
+
+## 개발 단계별 작업
+1. **1단계 (phase1)**: 메타DB구축
+2. **시각화 (visualize)**: 시각화 리포트 생성
+3. **2단계 (phase2)**: LLM 기반 자연어 질의응답
+
+## 에러 처리
+- 매 작업 완료 시 "작업이 완료되었습니다. 다음은 무엇을 할까요?" 안내 후 대기할 것.
+- 예외 발생 시 에러 로그 출력 후 exit.  그래야 에러난지 인식할 수 있잖아.
+
+* 잘못된 사례 
+    . 제발 좀 에러 뱉고 중지하자!!! 로그는 남기고 중단해야 한다!!! 그래야 원인파악을 하지.
+try:
+    # 파싱 로직
+    return await parser.parse(content, file_path)  # 여기서 에러 발생
+except Exception as e:
+    logger.error(f"파일 분석 중 오류 발생 {file_path}: {e}")  # 에러 로그만 찍고
+    logger.error(f"파일 분석 실패 {file_path}: {e}")        
+    return None  # None 반환하고 다음 파일로 넘어감 # 계속 진행 --> 이러면 안된다고!!! 제발 Exit!!!
+    
+
+## 진행상황 보고
+- 적절한 시점마다 `진척현황_yyyymmdd_hms_<핵심수행내역>.md` 파일 작성하도록 안내해줄 것.
+- `E:\SourceAnalyzer.git\Dev.Report\Dev.Report\` 폴더에 생성
+- 이전 파일 내용은 추가하지 않고, 직전 진척현황에서 추가된 내용만 기록
+
+## 샘플소스
+- `./project/sampleSrc/`는 개발/테스트용 샘플
+- 하위에 내용은 실제 프로젝트와 다른 구조일 수 있음
+- 하드코딩 금지, 동적 분석 구현 필수
+
+## Mermaid 작성시 에러 교정 가이드
+- Mermaid 작성시 에러가 많이 나는데 아래 문서 참고해서 오류 없는 Mermaid를 작성할 것!!!
+- E:\SourceAnalyzer.git\Dev.Report\Mermaid_에러사례_통합교정가이드.md
+
+## include_patterns:
+- "**/main/java/**" : 상위,하위 폴더 몇 depth던 상관없이 중간에 .../main/java/...가 있으면 만족한다.
+
+## 개발환경
+- Windows에 PowerShell에서 개발함.(인터넷 연결 가능)
+
+## 운영환경
+- Ubuntu Linux이고 폐쇄망임.(오프라인 상태임은 숙지할 것)

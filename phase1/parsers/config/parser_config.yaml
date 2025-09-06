@@ -1,0 +1,131 @@
+# ============================================================================
+# 📝 파서 설정 파일
+# ============================================================================
+# 데이터베이스별 파서 설정과 재현율 관련 설정을 관리합니다.
+
+# 데이터베이스별 파서 설정
+database_parsers:
+  oracle:
+    enabled: true
+    priority: 1
+    parsers:
+      select:
+        enabled: true
+        class: "oracle.oracle_select_parser.OracleSelectParser"
+        confidence: "high"
+        aggressive_mode: true  # 재현율 우선 모드
+      update:
+        enabled: true
+        class: "oracle.oracle_update_parser.OracleUpdateParser"
+        confidence: "high"
+        aggressive_mode: true
+      delete:
+        enabled: false  # 향후 구현 예정
+        class: "oracle.oracle_delete_parser.OracleDeleteParser"
+        confidence: "medium"
+        aggressive_mode: true
+      insert:
+        enabled: false  # 향후 구현 예정
+        class: "oracle.oracle_insert_parser.OracleInsertParser"
+        confidence: "medium"
+        aggressive_mode: true
+      merge:
+        enabled: false  # 향후 구현 예정
+        class: "oracle.oracle_merge_parser.OracleMergeParser"
+        confidence: "medium"
+        aggressive_mode: true
+  
+  postgresql:
+    enabled: false  # 향후 구현 예정
+    priority: 2
+    parsers:
+      select:
+        enabled: false
+        class: "postgresql.postgresql_select_parser.PostgreSQLSelectParser"
+        confidence: "high"
+        aggressive_mode: true
+  
+  mssql:
+    enabled: false  # 향후 구현 예정
+    priority: 3
+    parsers:
+      select:
+        enabled: false
+        class: "mssql.mssql_select_parser.MSSQLSelectParser"
+        confidence: "high"
+        aggressive_mode: true
+
+# 재현율 관련 설정
+recall_settings:
+  # 테이블 추출 설정
+  table_extraction:
+    enable_pattern_matching: true
+    enable_heuristic_guessing: true
+    enable_context_analysis: true
+    min_table_name_length: 2
+    max_table_name_length: 50
+  
+  # 컬럼 추출 설정
+  column_extraction:
+    enable_table_column_pattern: true
+    enable_alias_detection: true
+    enable_function_analysis: true
+    min_column_name_length: 1
+    max_column_name_length: 30
+  
+  # 조건 추출 설정
+  condition_extraction:
+    enable_where_clause: true
+    enable_join_conditions: true
+    enable_having_clauses: true
+    enable_subquery_conditions: true
+    split_by_logical_operators: true
+  
+  # 서브쿼리 추출 설정
+  subquery_extraction:
+    enable_parentheses_detection: true
+    enable_in_exists_patterns: true
+    enable_correlated_subqueries: true
+    max_nesting_depth: 5
+  
+  # 동적 쿼리 처리 설정
+  dynamic_query_handling:
+    enable_mybatis_tags: true
+    enable_jpa_patterns: true
+    enable_string_concatenation: true
+    enable_conditional_logic: true
+    confidence_penalty: 0.2  # 동적 쿼리는 신뢰도 감소
+
+# 파싱 품질 설정
+quality_settings:
+  # 정확도 vs 재현율 균형
+  precision_recall_balance: "recall"  # "precision", "balanced", "recall"
+  
+  # 최소 신뢰도 임계값
+  min_confidence_threshold: 0.3
+  
+  # 최대 결과 수 제한
+  max_results_per_category: 1000
+  
+  # 중복 제거 설정
+  deduplication:
+    enabled: true
+    method: "exact_match"  # "exact_match", "fuzzy_match", "semantic_similarity"
+    similarity_threshold: 0.8
+
+# 로깅 및 디버깅 설정
+logging_settings:
+  enable_parser_logging: true
+  log_level: "INFO"  # "DEBUG", "INFO", "WARNING", "ERROR"
+  log_parser_decisions: true
+  log_extraction_details: false
+  save_parsing_results: true
+  results_output_dir: "./parsing_results"
+
+# 성능 최적화 설정
+performance_settings:
+  enable_caching: true
+  cache_size: 1000
+  enable_parallel_parsing: false
+  max_workers: 4
+  timeout_seconds: 30

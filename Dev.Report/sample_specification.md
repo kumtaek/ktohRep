@@ -1,0 +1,422 @@
+# 샘플소스 명세서 (Sample Source Specification)
+
+## 생성 일시
+2025-09-05 11:10:00
+
+## 개요
+- **목적**: 파서 검증용 샘플 소스의 명세서
+- **검증 방식**: 메타디비 산출 결과와 명세서 내용 비교 검증
+- **기술 스택**: Java + Spring + MyBatis + JSP + Oracle
+
+## 1. 데이터베이스 스키마 명세
+
+### 1.1 테이블 구조
+
+#### users 테이블
+- **목적**: 사용자 정보 저장
+- **컬럼**:
+  - `id`: NUMBER, PK, AUTO_INCREMENT
+  - `username`: VARCHAR2(50), NOT NULL, UNIQUE
+  - `email`: VARCHAR2(100), NOT NULL
+  - `password`: VARCHAR2(100), NOT NULL
+  - `name`: VARCHAR2(100)
+  - `age`: NUMBER(3)
+  - `status`: VARCHAR2(20), DEFAULT 'ACTIVE'
+  - `user_type`: VARCHAR2(20), DEFAULT 'NORMAL'
+  - `phone`: VARCHAR2(20)
+  - `address`: VARCHAR2(200)
+  - `created_date`: DATE, DEFAULT SYSDATE
+  - `updated_date`: DATE, DEFAULT SYSDATE
+
+#### user_types 테이블
+- **목적**: 사용자 유형 관리
+- **컬럼**:
+  - `type_code`: VARCHAR2(20), PK
+  - `type_name`: VARCHAR2(50), NOT NULL
+  - `description`: VARCHAR2(200)
+
+### 1.2 테이블 관계
+- `users.user_type` → `user_types.type_code` (FK)
+
+## 2. Java 클래스 명세
+
+### 2.1 UserController (정상 케이스)
+- **패키지**: com.example.controller
+- **어노테이션**: @Controller, @RequestMapping("/user")
+- **메소드**:
+  - `getUserList()`: @GetMapping("/list"), 다이나믹 쿼리 처리
+  - `searchUsers()`: @PostMapping("/search"), 검색 기능
+
+### 2.2 ErrorController (오류 케이스)
+- **패키지**: com.example.controller
+- **어노테이션**: @Controller, @RequestMapping("/error")
+- **메소드**:
+  - `getErrorList()`: @GetMapping("/list")
+  - `searchErrors()`: @PostMapping("/search")
+  - `getUsersByType()`: @GetMapping("/dynamic/{type}")
+  - `createUser()`: @PostMapping("/create")
+- **오류 패턴**: 8가지 신택스 오류 포함
+
+## 3. JSP 페이지 명세
+
+### 3.1 list.jsp (정상 케이스)
+- **경로**: src/main/webapp/user/list.jsp
+- **기능**: 사용자 목록 표시, 검색 폼
+- **JSTL 태그**: 8개
+
+### 3.2 error.jsp (오류 케이스)
+- **경로**: src/main/webapp/user/error.jsp
+- **기능**: 오류 케이스 처리 페이지
+- **오류 패턴**: 4가지 신택스 오류 포함
+
+## 4. SQL 쿼리 명세
+
+### 4.1 DDL 쿼리 (5개)
+- CREATE TABLE users
+- CREATE TABLE user_types
+- CREATE INDEX (3개)
+
+### 4.2 DML 쿼리 (10개)
+- INSERT INTO user_types (3개)
+- INSERT INTO users (5개)
+- CREATE VIEW error_user_view
+- CREATE PROCEDURE error_get_user_by_id
+- CREATE FUNCTION error_count_users_by_status
+
+## 5. 검증 기준
+
+### 5.1 메타디비 산출 예상 결과
+- **클래스**: 2개
+- **메소드**: 8개
+- **SQL 쿼리**: 15개
+- **JSP 태그**: 16개
+- **신택스 오류**: 15개
+
+### 5.2 허용 오차 범위
+- **과소추출**: 0% (절대 금지)
+- **과다추출**: 10% 이내 허용
+- **파일별 오차**: 10% 이내
+
+---
+
+## 6. ERD 다이어그램 (Mermaid 형식)
+
+```mermaid
+erDiagram
+    users {
+        NUMBER id PK
+        VARCHAR2 username UK
+        VARCHAR2 email
+        VARCHAR2 password
+        VARCHAR2 name
+        NUMBER age
+        VARCHAR2 status
+        VARCHAR2 user_type FK
+        VARCHAR2 phone
+        VARCHAR2 address
+        DATE created_date
+        DATE updated_date
+    }
+    
+    user_types {
+        VARCHAR2 type_code PK
+        VARCHAR2 type_name
+        VARCHAR2 description
+    }
+    
+    users ||--o{ user_types : "user_type references type_code"
+```
+
+## 7. 컴포넌트 다이어그램 (Mermaid 형식)
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        A[list.jsp<br/>정상 케이스]
+        B[error.jsp<br/>오류 케이스]
+    end
+    
+    subgraph "Controller Layer"
+        C[UserController<br/>정상 케이스]
+        D[ErrorController<br/>오류 케이스]
+    end
+    
+    subgraph "Service Layer"
+        E[UserService<br/>비즈니스 로직]
+    end
+    
+    subgraph "Data Access Layer"
+        F[UserMapper<br/>MyBatis]
+    end
+    
+    subgraph "Database"
+        G[users 테이블]
+        H[user_types 테이블]
+    end
+    
+    A --> C
+    B --> D
+    C --> E
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+```
+
+## 8. 청크 간 연관 관계 다이어그램 (Mermaid 형식)
+
+```mermaid
+graph LR
+    subgraph "Java 청크"
+        J1[UserController 클래스]
+        J2[ErrorController 클래스]
+        J3[getUserList 메소드]
+        J4[searchUsers 메소드]
+        J5[getErrorList 메소드]
+        J6[searchErrors 메소드]
+        J7[getUsersByType 메소드]
+        J8[createUser 메소드]
+    end
+    
+    subgraph "JSP 청크"
+        P1[list.jsp 페이지]
+        P2[error.jsp 페이지]
+        P3[JSTL 태그들]
+        P4[JavaScript 코드]
+        P5[CSS 스타일]
+    end
+    
+    subgraph "SQL 청크"
+        S1[DDL 쿼리들]
+        S2[DML 쿼리들]
+        S3[VIEW 정의]
+        S4[PROCEDURE 정의]
+        S5[FUNCTION 정의]
+    end
+    
+    subgraph "오류 청크"
+        E1[Java 오류 패턴]
+        E2[JSP 오류 패턴]
+        E3[SQL 오류 패턴]
+    end
+    
+    J1 --> J3
+    J1 --> J4
+    J2 --> J5
+    J2 --> J6
+    J2 --> J7
+    J2 --> J8
+    
+    J3 --> P1
+    J4 --> P1
+    J5 --> P2
+    J6 --> P2
+    J7 --> P2
+    J8 --> P2
+    
+    J3 --> S2
+    J4 --> S2
+    J5 --> S2
+    J6 --> S2
+    J7 --> S2
+    J8 --> S2
+    
+    J2 --> E1
+    P2 --> E2
+    S1 --> E3
+    S2 --> E3
+```
+
+## 9. 파서 검증 플로우 (Mermaid 형식)
+
+```mermaid
+flowchart TD
+    A[샘플 소스 코드] --> B[Java Parser]
+    A --> C[JSP Parser]
+    A --> D[SQL Parser]
+    
+    B --> E[메타디비 저장]
+    C --> E
+    D --> E
+    
+    E --> F[검증 엔진]
+    F --> G{정확도 검사}
+    
+    G -->|과소추출| H[오류: 누락 감지]
+    G -->|과다추출 > 10%| I[오류: 과다추출]
+    G -->|정상 범위| J[검증 통과]
+    
+    H --> K[파서 개선]
+    I --> K
+    K --> B
+    
+    J --> L[최종 리포트 생성]
+```
+
+## 10. 검증 체크리스트
+
+### 10.1 클래스 검증
+- [ ] UserController 클래스 인식
+- [ ] ErrorController 클래스 인식
+- [ ] 어노테이션 정보 추출
+- [ ] 패키지 정보 추출
+
+### 10.2 메소드 검증
+- [ ] getUserList 메소드 인식
+- [ ] searchUsers 메소드 인식
+- [ ] getErrorList 메소드 인식
+- [ ] searchErrors 메소드 인식
+- [ ] getUsersByType 메소드 인식
+- [ ] createUser 메소드 인식
+- [ ] 어노테이션 정보 추출
+- [ ] 파라미터 정보 추출
+
+### 10.3 SQL 쿼리 검증
+- [ ] CREATE TABLE 쿼리 인식
+- [ ] CREATE INDEX 쿼리 인식
+- [ ] INSERT 쿼리 인식
+- [ ] CREATE VIEW 쿼리 인식
+- [ ] CREATE PROCEDURE 쿼리 인식
+- [ ] CREATE FUNCTION 쿼리 인식
+- [ ] 테이블명 추출
+- [ ] 컬럼명 추출
+
+### 10.4 JSP 태그 검증
+- [ ] JSTL 태그 인식
+- [ ] HTML 태그 인식
+- [ ] JavaScript 코드 인식
+- [ ] CSS 스타일 인식
+
+### 10.5 오류 처리 검증
+- [ ] Java 신택스 오류 감지
+- [ ] JSP 신택스 오류 감지
+- [ ] SQL 신택스 오류 감지
+- [ ] 오류 위치 정보 추출
+- [ ] 오류 유형 분류
+
+## 11. 검증 실행 방법
+
+### 11.1 메타디비 생성
+```bash
+cd phase1
+python main.py --project-name sampleSrc
+```
+
+### 11.2 검증 스크립트 실행
+```bash
+python temp/verification/specification_verification.py --project-name sampleSrc
+```
+
+### 11.3 결과 비교
+- 명세서 기준값과 메타디비 결과 비교
+- 오차율 계산 및 리포트 생성
+- 10% 이내 오차 확인
+
+## 12. 대체 텍스트 형식 다이어그램 (Mermaid 오류 시 대안)
+
+### 12.1 ERD 다이어그램 (텍스트 형식)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        users                                │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ id (NUMBER, PK, AUTO_INCREMENT)                         │ │
+│  │ username (VARCHAR2(50), NOT NULL, UNIQUE)               │ │
+│  │ email (VARCHAR2(100), NOT NULL)                         │ │
+│  │ password (VARCHAR2(100), NOT NULL)                      │ │
+│  │ name (VARCHAR2(100))                                    │ │
+│  │ age (NUMBER(3))                                         │ │
+│  │ status (VARCHAR2(20), DEFAULT 'ACTIVE')                 │ │
+│  │ user_type (VARCHAR2(20), DEFAULT 'NORMAL')              │ │
+│  │ phone (VARCHAR2(20))                                    │ │
+│  │ address (VARCHAR2(200))                                 │ │
+│  │ created_date (DATE, DEFAULT SYSDATE)                    │ │
+│  │ updated_date (DATE, DEFAULT SYSDATE)                    │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ FK: user_type
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    user_types                               │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ type_code (VARCHAR2(20), PK)                            │ │
+│  │ type_name (VARCHAR2(50), NOT NULL)                      │ │
+│  │ description (VARCHAR2(200))                             │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 12.2 컴포넌트 다이어그램 (텍스트 형식)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ list.jsp (정상 케이스)                                 │ │
+│  │ error.jsp (오류 케이스)                                │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 호출
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Controller Layer                         │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ UserController (정상 케이스)                           │ │
+│  │ ErrorController (오류 케이스)                          │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 호출
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Service Layer                            │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ UserService (비즈니스 로직)                            │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 호출
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Access Layer                        │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ UserMapper (MyBatis)                                   │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 쿼리 실행
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Database                             │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ users 테이블                                           │ │
+│  │ user_types 테이블                                      │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 13. 결론
+
+이 명세서는 파서 검증을 위한 완전한 기준점을 제공합니다. 메타디비에서 산출된 결과와 이 명세서의 내용을 비교하여 파서의 정확도를 검증할 수 있습니다.
+
+### 검증 성공 기준
+1. **과소추출**: 0% (누락 없음)
+2. **과다추출**: 10% 이내
+3. **파일별 오차**: 10% 이내
+4. **오류 감지**: 100% (모든 신택스 오류 감지)
+
+### 검증 실패 시 조치
+1. 파서 패턴 개선
+2. 오류 처리 로직 강화
+3. 재검증 수행
+4. 반복 개선
+
+### Mermaid 오류 대응
+- Mermaid 렌더링 오류 시 텍스트 형식 다이어그램 사용
+- 두 형식 모두 동일한 정보 제공
+- 검증 기준은 동일하게 적용
+
+### 파일명 문제 해결
+- 한글 파일명 대신 영문 파일명 사용
+- `sample_specification.md`로 생성 완료
+- 모든 기능은 동일하게 작동

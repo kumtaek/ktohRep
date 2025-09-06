@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem"],
+      "env": {
+        "MCP_FILESYSTEM_ROOT": "./Dev.Report"
+      }
+    },
+    "directory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-directory"],
+      "env": {
+        "MCP_DIRECTORY_ROOT": "./Dev.Report"
+      }
+    }
+  },
+  "monitoring": {
+    "watchPatterns": ["A_*.md"],
+    "pollInterval": 30000,
+    "autoNotify": true
+  }
+}

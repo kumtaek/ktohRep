@@ -25,26 +25,42 @@ from utils.logger import LoggerFactory, PerformanceLogger, ExceptionHandler
 from utils.confidence_calculator import ConfidenceCalculator, ParseResult as ConfidenceParseResult
 from llm.assist import LlmAssist
 from llm.enricher import generate_text
-from .llm_metadata_processor import LlmMetadataProcessor
+from database.llm_metadata_processor import LlmMetadataProcessor
 
 class MetadataEngine:
     """메타데이터 저장 및 관리 엔진"""
     
-    def __init__(self, config: Dict[str, Any], db_manager: DatabaseManager):
+    def __init__(self, config: Dict[str, Any], db_manager: DatabaseManager, project_name: str = None):
         self.config = config
         self.db_manager = db_manager
+        self.project_name = project_name
         self.logger = LoggerFactory.get_engine_logger()
         self.confidence_calculator = ConfidenceCalculator(config)
-        self.llm_assist = LlmAssist(config, db_manager=self.db_manager, logger=self.logger, confidence_calculator=self.confidence_calculator)
+        self.llm_assist = LlmAssist(config, db_manager=self.db_manager, logger=self.logger, confidence_calculator=self.confidence_calculator, project_name=self.project_name)
+        
+        # 테이블 별칭 매핑은 동적으로 메타데이터베이스에서 조회
+        self.table_alias_map = {}
         self.llm_processor = LlmMetadataProcessor(config, db_manager)
         
         # 병렬 처리 설정
         self.max_workers = config.get('processing', {}).get('max_workers', 4)
-        self.batch_size = config.get('processing', {}).get('batch_size', 10)
+
+    def _resolve_table_alias(self, table_name: str) -> str:
+        """테이블 별칭을 실제 테이블명으로 변환"""
+        if not table_name:
+            return table_name
+            
+        # 별칭 매핑에서 찾기
+        resolved = self.table_alias_map.get(table_name.lower())
+        if resolved:
+            return resolved
+            
+        # 매핑되지 않으면 원본 반환
+        return table_name
         
         # 삭제된 파일 정리 확장 로드
         try:
-            from . import metadata_engine_cleanup
+            from database import metadata_engine_cleanup
         except ImportError:
             self.logger.debug("삭제된 파일 정리 확장 모듈을 로드할 수 없습니다")
     
@@ -269,7 +285,69 @@ class MetadataEngine:
 
                 return saved_counts
                 
-            elif (file_path.endswith('.jsp') or file_path.endswith('.xml')) and 'jsp_mybatis' in parsers:
+            elif file_path.endswith('.xml') and 'mybatis' in parsers:
+                # XML 파일은 MyBatis 파서로 처리
+                mybatis_parser = parsers['mybatis'].get_parser('mybatis', 'mapper')
+                if mybatis_parser:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    context = {'default_schema': 'DEFAULT'}
+                    _ret = mybatis_parser.parse_content(content, context)
+                    
+                    # File 객체 생성
+                    file_obj = File(
+                        project_id=project_id,
+                        path=file_path,
+                        file_type='xml',
+                        size=len(content),
+                        hash_value=hashlib.md5(content.encode()).hexdigest()
+                    )
+                    
+                    sql_units = _ret.get('sql_units', [])
+                    joins = _ret.get('joins', [])
+                    filters = _ret.get('filters', [])
+                    edges = _ret.get('edges', [])
+                    vulnerabilities = _ret.get('vulnerabilities', [])
+                else:
+                    # MyBatis 파서를 찾을 수 없는 경우 기본 처리
+                    file_obj = File(
+                        project_id=project_id,
+                        path=file_path,
+                        file_type='xml',
+                        size=0,
+                        hash_value=''
+                    )
+                    sql_units = joins = filters = edges = vulnerabilities = []
+                parse_time = time.time() - start_time
+                
+                # 파싱 결과 저장
+                parse_result_data = ConfidenceParseResult(
+                    file_path=file_path,
+                    parser_type='mybatis_xml',
+                    success=True,
+                    parse_time=parse_time,
+                    ast_complete=True,
+                    sql_units=len(sql_units)
+                )
+                self._save_parse_result(parse_result_data, project_id)
+                
+                # 메타데이터 저장
+                saved_counts = self._save_jsp_mybatis_analysis_sync(file_obj, sql_units, joins, filters, edges, vulnerabilities)
+                
+                # LLM 보강 시도
+                try:
+                    if 'llm_processor' in parsers and len(sql_units) > 0:
+                        _ret = parsers['llm_processor'].process_file(file_path, project_id)
+                        if isinstance(_ret, dict) and 'json' in _ret:
+                            _added = self._augment_sql_from_json(file_id=file_obj.file_id, file_path=file_path, data=_ret['json'])
+                            if isinstance(_added, dict):
+                                self.logger.info(f"LLM augment(xml): +sql_units={_added.get('sql_units',0)}, +joins={_added.get('joins',0)}, +filters={_added.get('filters',0)}")
+                except Exception as _e:
+                    self.logger.debug(f"LLM assist(xml) skipped: {_e}")
+
+                return saved_counts
+            elif file_path.endswith('.jsp') and 'jsp_mybatis' in parsers:
+                # JSP 파일은 JSP MyBatis 파서로 처리
                 file_obj, sql_units, joins, filters, edges, vulnerabilities = parsers['jsp_mybatis'].parse_file(file_path, project_id)
                 parse_time = time.time() - start_time
                 
@@ -498,6 +576,7 @@ class MetadataEngine:
         added = {"sql_units": 0, "joins": 0, "filters": 0}
         if not isinstance(data, dict):
             return added
+        # 모든 파서는 sql_units를 반환
         units = data.get("sql_units")
         if not isinstance(units, list):
             return added
@@ -508,7 +587,8 @@ class MetadataEngine:
             for u in units:
                 if not isinstance(u, dict):
                     continue
-                stmt_kind = (u.get("stmt_kind") or "select").lower()
+                # MyBatis 파서는 type 필드 사용, JSP 파서는 stmt_kind 필드 사용
+                stmt_kind = (u.get("type") or u.get("stmt_kind") or "select").lower()
                 tables = u.get("tables") or []
                 joins = u.get("joins") or []
                 filters = u.get("filters") or []
@@ -524,18 +604,36 @@ class MetadataEngine:
                     fp = json.dumps(fp_obj, sort_keys=True)
                 except Exception:
                     fp = stmt_kind
-                if fp in existing_fp:
-                    continue
-                su = SqlUnit(
-                    file_id=file_id,
-                    origin=origin,
-                    mapper_ns=None,
-                    stmt_id=None,
-                    start_line=None,
-                    end_line=None,
-                    stmt_kind=stmt_kind,
-                    normalized_fingerprint=fp,
-                )
+                # XML 파일의 경우 stmt_id 기반 중복제거, JSP의 경우 normalized_fingerprint 기반 중복제거
+                if file_path.endswith('.xml'):
+                    # XML 파일: stmt_id 기반 중복제거
+                    stmt_id = u.get("id") or u.get("stmt_id")
+                    if stmt_id in [existing.stmt_id for existing in existing_units if existing.stmt_id]:
+                        continue
+                    su = SqlUnit(
+                        file_id=file_id,
+                        origin=origin,
+                        mapper_ns=None,
+                        stmt_id=stmt_id,
+                        start_line=None,
+                        end_line=None,
+                        stmt_kind=stmt_kind,
+                        normalized_fingerprint=None,  # XML은 stmt_id 사용
+                    )
+                else:
+                    # JSP 파일: normalized_fingerprint 기반 중복제거
+                    if fp in existing_fp:
+                        continue
+                    su = SqlUnit(
+                        file_id=file_id,
+                        origin=origin,
+                        mapper_ns=None,
+                        stmt_id=None,
+                        start_line=None,
+                        end_line=None,
+                        stmt_kind=stmt_kind,
+                        normalized_fingerprint=fp,
+                    )
                 session.add(su)
                 session.flush()
                 added["sql_units"] += 1
@@ -958,23 +1056,28 @@ class MetadataEngine:
             for join in joins:
                 # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
                 if join.l_table:
+                    # 테이블 별칭을 실제 테이블명으로 변환
+                    actual_table_name = self._resolve_table_alias(join.l_table)
+                    
                     # DB 스키마에서 테이블 찾기 (개선된 스키마 매칭)
-                    default_owner = self.config.get('database', {}).get('project', {}).get('default_schema', 'SAMPLE')
+                    default_owner = self.config.get('database', {}).get('project', {}).get('default_schema')
+                    
+                    # default_schema가 설정되지 않은 경우 오류 발생
+                    if not default_owner:
+                        raise ValueError("설정 파일에 database.project.default_schema가 설정되지 않았습니다")
                     
                     # 1차: 기본 스키마에서 검색
-                    query = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper())
-                    if default_owner:
-                        db_table = query.filter(DbTable.owner == default_owner.upper()).first()
-                        
-                        # 2차: 기본 스키마에서 못 찾으면 전역 검색
-                        if not db_table:
-                            self.logger.debug(f"기본 스키마 '{default_owner}'에서 테이블 '{join.l_table}' 못 찾음, 전역 검색 시도")
-                            db_table = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper()).first()
-                    else:
-                        db_table = query.first()
+                    query = session.query(DbTable).filter(DbTable.table_name == actual_table_name.upper())
+                    db_table = query.filter(DbTable.owner == default_owner.upper()).first()
+                    
+                    # 2차: 기본 스키마에서 못 찾으면 전역 검색
+                    if not db_table:
+                        self.logger.debug(f"기본 스키마 '{default_owner}'에서 테이블 '{join.l_table}' 못 찾음, 전역 검색 시도")
+                        db_table = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper()).first()
                     
                     if db_table:
                         table_edge = Edge(
+                            project_id=project_id,
                             src_type='sql_unit',
                             src_id=sql_unit.sql_id,
                             dst_type='table',
@@ -988,6 +1091,7 @@ class MetadataEngine:
                         db_table = self._create_minimal_table_from_join(session, join, default_owner, project_id)
                         if db_table:
                             table_edge = Edge(
+                                project_id=project_id,
                                 src_type='sql_unit',
                                 src_id=sql_unit.sql_id,
                                 dst_type='table',
@@ -1002,18 +1106,19 @@ class MetadataEngine:
                 
                 # r_table(오른쪽 테이블)도 동일하게 처리
                 if join.r_table:
+                    # 테이블 별칭을 실제 테이블명으로 변환
+                    actual_r_table_name = self._resolve_table_alias(join.r_table)
+                    
                     # DB 스키마에서 오른쪽 테이블 찾기
-                    query = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper())
-                    if default_owner:
-                        db_table = query.filter(DbTable.owner == default_owner.upper()).first()
-                        
-                        if not db_table:
-                            db_table = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper()).first()
-                    else:
-                        db_table = query.first()
+                    query = session.query(DbTable).filter(DbTable.table_name == actual_r_table_name.upper())
+                    db_table = query.filter(DbTable.owner == default_owner.upper()).first()
+                    
+                    if not db_table:
+                        db_table = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper()).first()
                     
                     if db_table:
                         table_edge = Edge(
+                            project_id=project_id,
                             src_type='sql_unit',
                             src_id=sql_unit.sql_id,
                             dst_type='table',
@@ -1027,6 +1132,7 @@ class MetadataEngine:
                         db_table = self._create_minimal_table_from_join_right(session, join, default_owner, project_id)
                         if db_table:
                             table_edge = Edge(
+                                project_id=project_id,
                                 src_type='sql_unit',
                                 src_id=sql_unit.sql_id,
                                 dst_type='table',
@@ -1540,7 +1646,7 @@ class MetadataEngine:
             existing_table = session.query(DbTable).filter(
                 and_(
                     DbTable.table_name == join.l_table.upper(),
-                    DbTable.table_owner == default_owner.upper()
+                    DbTable.owner == default_owner.upper()
                 )
             ).first()
             
@@ -1597,7 +1703,7 @@ class MetadataEngine:
             existing_table = session.query(DbTable).filter(
                 and_(
                     DbTable.table_name == join.r_table.upper(),
-                    DbTable.table_owner == default_owner.upper()
+                    DbTable.owner == default_owner.upper()
                 )
             ).first()
             

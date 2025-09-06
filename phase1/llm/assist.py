@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from .client import get_client
-from . import prompt_templates as T
+from llm.client import get_client
+from llm import prompt_templates as T
 from utils.confidence_calculator import ConfidenceCalculator
 from models.database import EnrichmentLog
 
@@ -22,7 +22,7 @@ class AssistConfig:
     max_tokens: int = 512
     strict_json: bool = True
     cache: bool = True
-    cache_dir: str = "./output/llm_cache"
+    cache_dir: Optional[str] = None  # 동적으로 설정됨
     log_prompt: bool = False
     dry_run: bool = False
     fallback_to_ollama: bool = True
@@ -35,12 +35,21 @@ class AssistConfig:
 
 
 class LlmAssist:
-    def __init__(self, config: Dict[str, Any], db_manager, logger, confidence_calculator: ConfidenceCalculator):
+    def __init__(self, config: Dict[str, Any], db_manager, logger, confidence_calculator: ConfidenceCalculator, project_name: str = None):
         self.logger = logger
         self.db_manager = db_manager
         self.confidence_calculator = confidence_calculator
+        self.project_name = project_name
 
         llm_cfg = (config or {}).get("llm_assist", {})
+        
+        # 프로젝트명이 없으면 설정에서 가져오기
+        if not self.project_name:
+            self.project_name = config.get('project_name', 'default')
+        
+        # 캐시 디렉토리 경로 생성
+        default_cache_dir = f"./project/{self.project_name}/llm_cache"
+        
         self.cfg = AssistConfig(
             enabled=llm_cfg.get("enabled", True),
             provider=llm_cfg.get("provider", "auto"),
@@ -51,7 +60,7 @@ class LlmAssist:
             max_tokens=llm_cfg.get("max_tokens", 512),
             strict_json=llm_cfg.get("strict_json", True),
             cache=llm_cfg.get("cache", True),
-            cache_dir=llm_cfg.get("cache_dir", "./output/llm_cache"),
+            cache_dir=llm_cfg.get("cache_dir", default_cache_dir),
             log_prompt=llm_cfg.get("log_prompt", False),
             dry_run=llm_cfg.get("dry_run", False),
             fallback_to_ollama=llm_cfg.get("fallback_to_ollama", True),

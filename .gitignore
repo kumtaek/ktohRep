@@ -1,0 +1,41 @@
+# LLM 캐시 (임시 파일)
+project/*/llm_cache/
+
+# 로그 파일
+logs/
+
+# 메타데이터베이스 (프로젝트별)
+project/*/metadata.db
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 가상환경
+venv*/
+env/
+ENV/
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+*.tmp
+*.temp
+*.log
+
+# 출력 파일 (프로젝트별)
+project/*/report/
+project/*/data/
+
+# 백업 파일
+*.bak
+*.backup

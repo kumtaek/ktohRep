@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>정확한 ERD - SourceAnalyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .mermaid { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>정확한 ERD 구조</h1>
+    
+    <div class="mermaid">
+        erDiagram
+            CUSTOMERS {
+                VARCHAR2 CUSTOMER_ID PK "고객ID"
+                VARCHAR2 CUSTOMER_NAME "고객명"
+                VARCHAR2 EMAIL "이메일"
+                VARCHAR2 PHONE "전화번호"
+                VARCHAR2 ADDRESS "주소"
+                DATE CREATED_DATE "생성일"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            ORDERS {
+                VARCHAR2 ORDER_ID PK "주문ID"
+                VARCHAR2 CUSTOMER_ID FK "고객ID"
+                DATE ORDER_DATE "주문일"
+                VARCHAR2 STATUS "상태"
+                NUMBER TOTAL_AMOUNT "총금액"
+                NUMBER DISCOUNT_AMOUNT "할인금액"
+                NUMBER TAX_AMOUNT "세금"
+                DATE CREATED_DATE "생성일"
+                DATE UPDATED_DATE "수정일"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            ORDER_ITEMS {
+                VARCHAR2 ORDER_ITEM_ID PK "주문항목ID"
+                VARCHAR2 ORDER_ID FK "주문ID"
+                VARCHAR2 PRODUCT_ID FK "상품ID"
+                NUMBER QUANTITY "수량"
+                NUMBER UNIT_PRICE "단가"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            PRODUCTS {
+                VARCHAR2 PRODUCT_ID PK "상품ID"
+                VARCHAR2 PRODUCT_NAME "상품명"
+                CLOB DESCRIPTION "설명"
+                NUMBER PRICE "가격"
+                NUMBER STOCK_QUANTITY "재고수량"
+                VARCHAR2 CATEGORY_ID FK "분류ID"
+                VARCHAR2 BRAND_ID FK "브랜드ID"
+                VARCHAR2 SUPPLIER_ID FK "공급업체ID"
+                VARCHAR2 WAREHOUSE_ID FK "창고ID"
+                VARCHAR2 STATUS "상태"
+                DATE CREATED_DATE "생성일"
+                DATE UPDATED_DATE "수정일"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            CATEGORIES {
+                VARCHAR2 CATEGORY_ID PK "분류ID"
+                VARCHAR2 CATEGORY_CODE "분류코드"
+                VARCHAR2 CATEGORY_NAME "분류명"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            BRANDS {
+                VARCHAR2 BRAND_ID PK "브랜드ID"
+                VARCHAR2 BRAND_CODE "브랜드코드"
+                VARCHAR2 BRAND_NAME "브랜드명"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            SUPPLIERS {
+                VARCHAR2 SUPPLIER_ID PK "공급업체ID"
+                VARCHAR2 SUPPLIER_NAME "공급업체명"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            WAREHOUSES {
+                VARCHAR2 WAREHOUSE_ID PK "창고ID"
+                VARCHAR2 WAREHOUSE_NAME "창고명"
+                VARCHAR2 LOCATION "위치"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            INVENTORIES {
+                VARCHAR2 INVENTORY_ID PK "재고ID"
+                VARCHAR2 PRODUCT_ID FK "상품ID"
+                NUMBER CURRENT_STOCK "현재재고"
+                DATE UPDATED_DATE "수정일"
+            }
+            
+            PRODUCT_REVIEWS {
+                VARCHAR2 REVIEW_ID PK "리뷰ID"
+                VARCHAR2 PRODUCT_ID FK "상품ID"
+                VARCHAR2 CUSTOMER_ID FK "고객ID"
+                NUMBER RATING "평점"
+                CLOB REVIEW_TEXT "리뷰내용"
+                DATE CREATED_DATE "생성일"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            DISCOUNTS {
+                VARCHAR2 DISCOUNT_ID PK "할인ID"
+                VARCHAR2 PRODUCT_ID FK "상품ID"
+                NUMBER DISCOUNT_RATE "할인율"
+                DATE START_DATE "시작일"
+                DATE END_DATE "종료일"
+                CHAR ACTIVE_YN "활성여부"
+            }
+            
+            USERS {
+                VARCHAR2 USER_ID PK "사용자ID"
+                VARCHAR2 USER_NAME "사용자명"
+                VARCHAR2 EMAIL "이메일"
+                VARCHAR2 PHONE "전화번호"
+                VARCHAR2 STATUS "상태"
+                DATE CREATED_DATE "생성일"
+                DATE UPDATED_DATE "수정일"
+                CHAR DEL_YN "삭제여부"
+            }
+            
+            USER_ROLE {
+                NUMBER USER_ID PK "사용자ID"
+                NUMBER ROLE_ID PK "역할ID"
+            }
+            
+            CUSTOMERS ||--o{ ORDERS : "주문"
+            ORDERS ||--o{ ORDER_ITEMS : "주문항목"
+            PRODUCTS ||--o{ ORDER_ITEMS : "상품정보"
+            PRODUCTS ||--o{ INVENTORIES : "재고관리"
+            PRODUCTS ||--o{ PRODUCT_REVIEWS : "상품리뷰"
+            PRODUCTS ||--o{ DISCOUNTS : "할인정보"
+            CUSTOMERS ||--o{ PRODUCT_REVIEWS : "리뷰작성"
+            CATEGORIES ||--o{ PRODUCTS : "분류"
+            BRANDS ||--o{ PRODUCTS : "브랜드"
+            SUPPLIERS ||--o{ PRODUCTS : "공급업체"
+            WAREHOUSES ||--o{ PRODUCTS : "창고"
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            erDiagram: {
+                useMaxWidth: true
+            }
+        });
+    </script>
+</body>
+</html>

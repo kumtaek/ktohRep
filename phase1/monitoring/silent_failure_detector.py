@@ -15,7 +15,7 @@ import sqlite3
 from collections import defaultdict
 
 from visualize.data_access import DatabaseManager
-from phase1.validation.data_quality_validator import DataQualityValidator
+from validation.data_quality_validator import DataQualityValidator
 
 
 @dataclass
@@ -252,7 +252,7 @@ class SilentFailureDetector:
     def _detect_visualization_generation_failures(self):
         """Detect failures in visualization file generation"""
         try:
-            output_dir = Path(f"output/{self.project_name}/visualize")
+            output_dir = Path(f"../output/{self.project_name}/visualize")
             if not output_dir.exists():
                 self._add_alert(
                     component="visualization_generation",
@@ -427,7 +427,7 @@ class SilentFailureDetector:
     def save_alert_report(self, output_path: Optional[str] = None) -> str:
         """Save the alert report to a JSON file"""
         if output_path is None:
-            output_path = f"output/{self.project_name}/silent_failure_report.json"
+            output_path = f"../output/{self.project_name}/silent_failure_report.json"
         
         report = self.generate_alert_report()
         
@@ -648,7 +648,7 @@ if __name__ == "__main__":
     def _detect_visualization_generation_failures(self):
         """Detect failures in visualization file generation"""
         try:
-            output_dir = Path(f"output/{self.project_name}/visualize")
+            output_dir = Path(f"../output/{self.project_name}/visualize")
             if not output_dir.exists():
                 self._add_alert(
                     component="visualization_generation",
@@ -823,7 +823,7 @@ if __name__ == "__main__":
     def save_alert_report(self, output_path: Optional[str] = None) -> str:
         """Save the alert report to a JSON file"""
         if output_path is None:
-            output_path = f"output/{self.project_name}/silent_failure_report.json"
+            output_path = f"../output/{self.project_name}/silent_failure_report.json"
         
         report = self.generate_alert_report()
         

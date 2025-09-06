@@ -30,16 +30,8 @@ class LlmMetadataProcessor:
     @contextmanager
     def _get_sync_session(self):
         """동기 데이터베이스 세션 관리"""
-        Session = self.db_manager.get_session_class()
-        session = Session()
-        try:
+        with self.db_manager.get_auto_commit_session() as session:
             yield session
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
 
     def llm_enrich_table_and_column_comments(self, *, max_tables: int = 50, max_columns: int = 100, lang: str = 'ko') -> Dict[str, int]:
         """

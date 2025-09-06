@@ -37,7 +37,7 @@ def collect_metrics() -> Dict[str, Any]:
     config = load_config()
     dbm = DatabaseManager(config)
     dbm.initialize()
-    sess = dbm.get_session()
+    sess = dbm.get_auto_commit_session()
     try:
         # Tables
         total_tables = sess.query(DbTable).count()

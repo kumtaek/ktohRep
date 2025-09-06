@@ -1,23 +1,27 @@
 package com.example.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
+import com.example.model.User;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 import java.util.Map;
 
-@Mapper
 public interface UserMapper {
     
-    Object selectUserById(@Param("userId") String userId);
+    List<User> selectUsersByCondition(Map<String, Object> params);
     
-    List<Object> selectActiveUsers();
+    List<User> selectUsersByAdvancedCondition(Map<String, Object> params);
     
-    List<Object> searchUsersByCondition(Map<String, Object> params);
+    List<User> selectUsersByType(@Param("type") String type);
     
-    List<Object> findUsersWithDynamicConditions(Map<String, Object> conditions);
+    User selectUserById(@Param("id") Long id);
     
-    int insertUser(Object user);
+    int updateUserDynamic(User user);
     
-    // 동적 SQL 실행용 (테스트/분석 목적)
-    List<Map<String, Object>> executeDynamicQuery(@Param("sql") String sql);
+    int deleteUsersByCondition(Map<String, Object> params);
+    
+    // 동적 INSERT 쿼리
+    int insertUserDynamic(User user);
+    
+    // 동적 COUNT 쿼리
+    int countUsersByCondition(Map<String, Object> params);
 }

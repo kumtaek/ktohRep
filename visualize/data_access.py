@@ -29,7 +29,7 @@ def DatabaseManager(config: str | Dict[str, Any]) -> _DatabaseManager:
         config = {
             "type": "sqlite",
             "sqlite": {
-                "path": f"./project/{config}/data/metadata.db",
+                "path": f"./project/{config}/metadata.db",
                 "wal_mode": True,
             },
         }
@@ -45,13 +45,14 @@ class VizDB:
         self.project_name = project_name
         
         # 새로운 데이터베이스 설정 구조에서 프로젝트 데이터베이스를 사용합니다.
-        db_config = config.get('database', {}).get('project', {})
-        if not db_config:
-            # project 섹션이 없을 경우를 대비한 하위 호환성을 유지합니다.
-            db_config = config.get('database', {})
+        db_config = config.get('database', {})
+        
+        # 프로젝트명이 설정된 경우 경로에 치환
+        if project_name and 'sqlite' in db_config and 'path' in db_config['sqlite']:
+            db_config['sqlite']['path'] = db_config['sqlite']['path'].replace('{project_name}', project_name)
         
         # DatabaseManager를 초기화합니다.
-        self.dbm = DatabaseManager(db_config)
+        self.dbm = _DatabaseManager(db_config)
         self.dbm.initialize()
 
     def session(self):
@@ -176,25 +177,37 @@ class VizDB:
         print("""특정 테이블에 대한 샘플 조인 정보를 가져옵니다.""")
         session = self.session()
         try:
+            # table_id로 테이블명 조회
+            table_info = session.query(DbTable).filter(DbTable.table_id == table_id).first()
+            if not table_info:
+                print(f'# 테이블 정보를 찾을 수 없음: table_id={table_id}')
+                return []
+            
+            # 테이블 별칭 생성 (예: SAMPLE.CUSTOMERS -> public.c)
+            table_name_upper = table_info.table_name.upper()
+            table_alias = table_name_upper[0].lower()  # 첫 글자를 소문자로
+            
             # 이 테이블에 대한 조인 패턴을 가져옵니다 - 왼쪽 및 오른쪽 테이블 모두.
-            joins = session.query(Join).join(SqlUnit).join(File).filter(
+            joins = session.query(Join).filter(
                 or_(
-                    func.upper(Join.left_table).like(f'%{table_id}%'),  # 현재는 단순화됨
-                    func.upper(Join.right_table).like(f'%{table_id}%')
+                    Join.l_table.like(f'%{table_alias}%'),
+                    Join.r_table.like(f'%{table_alias}%'),
+                    func.upper(Join.l_table).like(f'%{table_name_upper}%'),
+                    func.upper(Join.r_table).like(f'%{table_name_upper}%')
                 )
             ).limit(limit * 2).all()  # 필터링 및 순위 지정을 위해 더 많이 가져옵니다.
             
             print(f'# 조인 패턴을 처리하고 빈도별로 순위를 매깁니다.\njoins={joins}')
             join_patterns = {}
             for join in joins:
-                key = f"{join.left_table}|{join.right_table}|{join.left_column}|{join.right_column}"
+                key = f"{join.l_table}|{join.r_table}|{join.l_col}|{join.r_col}"
                 print(f"********* key = {key}")
                 if key not in join_patterns:
                     join_patterns[key] = {
-                        'left_table': join.left_table,
-                        'right_table': join.right_table,
-                        'left_column': join.left_column,
-                        'right_column': join.right_column,
+                        'left_table': join.l_table,
+                        'right_table': join.r_table,
+                        'left_column': join.l_col,
+                        'right_column': join.r_col,
                         'frequency': 0,
                         'confidence': join.confidence
                     }

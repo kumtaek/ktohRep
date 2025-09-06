@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Source Analyzer - Cytoscape.js ERD</title>
+    
+    <!-- Cytoscape.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    
+    <!-- Cytoscape.js Layout Extensions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape-dagre/2.5.0/cytoscape-dagre.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape-fcose/2.1.0/cytoscape-fcose.min.js"></script>
+    
+    <!-- Cytoscape.js UI Extensions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape-qtip/2.2.0/cytoscape-qtip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qtip2/3.0.3/jquery.qtip.min.js"></script>
+    
+    <!-- jQuery for qtip -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header .project-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .toolbar {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .toolbar-group label {
+            font-weight: 500;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .search-box {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 250px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e1e5e9;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+        
+        .sidebar-section h3 {
+            color: #495057;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+        
+        .table-list {
+            list-style: none;
+        }
+        
+        .table-item {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .table-item:hover {
+            background: #e9ecef;
+            border-left-color: #667eea;
+        }
+        
+        .table-item.selected {
+            background: #667eea;
+            color: white;
+        }
+        
+        .table-item .table-name {
+            font-weight: 500;
+        }
+        
+        .table-item .table-owner {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+        
+        .cytoscape-container {
+            flex: 1;
+            background: #f8f9fa;
+            position: relative;
+        }
+        
+        #cy {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .legend-text {
+            color: #495057;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 2000;
+            font-size: 12px;
+        }
+        
+        .tooltip-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .tooltip-subtitle {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .tooltip-content {
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .columns-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .column-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .column-item:last-child {
+            border-bottom: none;
+        }
+        
+        .column-info {
+            flex: 1;
+        }
+        
+        .column-name {
+            font-weight: 500;
+            color: #212529;
+        }
+        
+        .column-type {
+            font-size: 11px;
+            color: #6c757d;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .column-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        .badge-pk {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-fk {
+            background: #007bff;
+            color: white;
+        }
+        
+        .badge-nullable {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .badge-not-null {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .edge-tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 380px;
+            min-width: 200px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            display: none;
+            z-index: 2100;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        
+        .edge-tooltip-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .edge-tooltip-type {
+            font-size: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .edge-tooltip-content {
+            color: #495057;
+            padding: 12px;
+        }
+        
+        .join-condition {
+            background: linear-gradient(135deg, #e8f4fd 0%, #f1f8ff 100%);
+            border: 1px solid #b3d9ff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: #0056b3;
+        }
+        
+        .responsive-controls {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .toolbar-group {
+                justify-content: center;
+            }
+            
+            .responsive-controls {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🏗️ Source Analyzer ERD</h1>
+            <div class="project-info" id="project-info">프로젝트: TEST_HR_PROJECT</div>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                📊 테이블: <span class="stat-value" id="node-count">0</span>
+            </div>
+            <div class="stat-item">
+                🔗 관계: <span class="stat-value" id="edge-count">0</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toolbar">
+        <div class="toolbar-group">
+            <label>레이아웃:</label>
+            <button class="btn" onclick="toggleLayout()">
+                <span id="current-layout">fcose</span>
+            </button>
+        </div>
+        
+        <div class="toolbar-group">
+            <label>검색:</label>
+            <input type="text" id="search" class="search-box" placeholder="테이블명 또는 스키마명 검색..." oninput="searchNode(this.value)">
+        </div>
+        
+        <div class="toolbar-group">
+            <button class="btn btn-secondary" onclick="resetView()">🔍 전체보기</button>
+            <button class="btn btn-success" onclick="exportPng()">📷 PNG 내보내기</button>
+            <button class="btn btn-warning" onclick="toggleSidebar()">📋 사이드바</button>
+        </div>
+        
+        <div class="responsive-controls">
+            <button class="btn btn-secondary" onclick="toggleFullscreen()">⛶ 전체화면</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <h3>📋 테이블 목록</h3>
+                <div id="table-list-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        테이블 정보 로딩 중...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>🎯 필터링</h3>
+                <div>
+                    <label>스키마:</label>
+                    <select id="owner-filter" class="search-box" onchange="filterByOwner()">
+                        <option value="">전체</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>📊 통계</h3>
+                <div id="stats-details">
+                    <div>총 테이블: <span id="total-tables">0</span></div>
+                    <div>PK 컬럼: <span id="total-pk">0</span></div>
+                    <div>FK 관계: <span id="total-fk">0</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cytoscape-container">
+            <div id="cy"></div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e3f2fd; border: 2px solid #1976d2;"></div>
+                    <span class="legend-text">테이블</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #dc3545;"></div>
+                    <span class="legend-text">FK 관계</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #007bff;"></div>
+                    <span class="legend-text">PK-PK 관계</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #6c757d;"></div>
+                    <span class="legend-text">일반 관계</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tooltips -->
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-header">
+            <div class="tooltip-title" id="tooltip-title"></div>
+            <div class="tooltip-subtitle" id="tooltip-subtitle"></div>
+        </div>
+        <div class="tooltip-content">
+            <div id="tooltip-content"></div>
+        </div>
+    </div>
+    
+    <div class="edge-tooltip" id="edge-tooltip">
+        <div class="edge-tooltip-header">
+            <span id="edge-tooltip-title">관계 정보</span>
+            <span class="edge-tooltip-type" id="edge-tooltip-type">FK</span>
+        </div>
+        <div class="edge-tooltip-content">
+            <div id="edge-tooltip-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 전역 변수
+        let cy;
+        let currentLayout = 'fcose';
+        let layoutOptions = {};
+        let tooltip = document.getElementById('tooltip');
+        let edgeTooltip = document.getElementById('edge-tooltip');
+        let tooltipTimeout;
+        let edgeTooltipTimeout;
+        let isTooltipVisible = false;
+        let isEdgeTooltipVisible = false;
+        
+        // Cytoscape.js 초기화
+        function initCytoscape() {
+            // 레이아웃 옵션 설정
+            layoutOptions = {
+                'fcose': {
+                    name: 'fcose',
+                    quality: 'proof',
+                    randomize: true,
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 200,
+                    nodeSeparation: 500,
+                    idealEdgeLength: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const kind = edge.data('kind') || '';
+                        if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                            return Math.max(300, 600 - (confidence * 150));
+                        }
+                        return Math.max(250, 500 - (confidence * 120));
+                    },
+                    nodeRepulsion: 25000,
+                    edgeElasticity: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const kind = edge.data('kind') || '';
+                        if (kind === 'foreign_key' || kind === 'fk_inferred') {
+                            return confidence * 0.25;
+                        }
+                        return confidence * 0.2;
+                    },
+                    gravity: 0.1,
+                    gravityRange: 3.8,
+                    gravityCompound: 0.3,
+                    initialTemp: 200,
+                    coolingFactor: 0.95,
+                    minTemp: 1.0,
+                    numIter: 2500
+                },
+                'dagre': {
+                    name: 'dagre',
+                    nodeSep: 150,
+                    edgeSep: 50,
+                    rankSep: 200,
+                    rankDir: 'TB',
+                    ranker: 'longest-path',
+                    animate: true,
+                    fit: true,
+                    padding: 100
+                }
+            };
+            
+            // Cytoscape 인스턴스 생성
+            cy = window.cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: [],
+                layout: layoutOptions[currentLayout],
+                
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#ffffff',
+                            'border-color': data => {
+                                const group = data.group;
+                                if (group === 'DB') return '#1976d2';
+                                return '#6c757d';
+                            },
+                            'border-width': 2,
+                            'label': 'data(label)',
+                            'text-wrap': 'wrap',
+                            'text-max-width': '180px',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'font-size': '14px',
+                            'font-weight': 'bold',
+                            'width': 'mapData(label.length, 5, 50, 100, 200)',
+                            'height': data => {
+                                const columns = data.meta?.columns || [];
+                                const baseHeight = 60;
+                                const columnHeight = Math.min(columns.length * 8, 100);
+                                return baseHeight + columnHeight;
+                            },
+                            'shape': 'round-rectangle',
+                            'z-index': 1
+                        }
+                    },
+                    {
+                        selector: 'node[type="table"]',
+                        style: {
+                            'background-color': '#e3f2fd',
+                            'border-color': '#1976d2'
+                        }
+                    },
+                    {
+                        selector: 'node:selected',
+                        style: {
+                            'border-width': 4,
+                            'border-color': '#ff5722',
+                            'z-index': 999
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': data => {
+                                const confidence = data.confidence || 0.5;
+                                return Math.max(1, confidence * 4);
+                            },
+                            'line-color': data => {
+                                const kind = data.kind;
+                                if (kind === 'foreign_key') return '#dc3545';
+                                if (kind === 'fk_inferred') return '#fd7e14';
+                                if (kind === 'pk_to_pk') return '#007bff';
+                                if (kind === 'non_pk_relation') return '#6c757d';
+                                return '#6c757d';
+                            },
+                            'target-arrow-color': data => {
+                                const kind = data.kind;
+                                if (kind === 'foreign_key') return '#dc3545';
+                                if (kind === 'fk_inferred') return '#fd7e14';
+                                if (kind === 'pk_to_pk') return '#007bff';
+                                if (kind === 'non_pk_relation') return '#6c757d';
+                                return '#6c757d';
+                            },
+                            'target-arrow-shape': data => {
+                                const kind = data.kind;
+                                const meta = data.meta || {};
+                                
+                                if (meta.arrow === false || kind === 'relationship') {
+                                    return 'none';
+                                }
+                                if (kind === 'non_pk_relation') return 'none';
+                                
+                                return 'triangle';
+                            },
+                            'target-arrow-size': '10px',
+                            'curve-style': 'bezier',
+                            'source-endpoint': 'outside-to-node',
+                            'target-endpoint': 'outside-to-node',
+                            'opacity': data => {
+                                const confidence = data.confidence || 0.5;
+                                return Math.max(0.3, confidence);
+                            }
+                        }
+                    },
+                    {
+                        selector: 'edge:selected',
+                        style: {
+                            'line-color': '#ff5722',
+                            'target-arrow-color': '#ff5722',
+                            'width': 4,
+                            'opacity': 1
+                        }
+                    }
+                ],
+                
+                minZoom: 0.1,
+                maxZoom: 5,
+                wheelSensitivity: 0.2
+            });
+            
+            // 이벤트 핸들러 설정
+            setupEventHandlers();
+            
+            // 초기 데이터 로드
+            loadData();
+        }
+        
+        // 이벤트 핸들러 설정
+        function setupEventHandlers() {
+            // 노드 마우스 이벤트
+            cy.on('mouseover', 'node', function(event) {
+                const node = event.target;
+                clearTimeout(tooltipTimeout);
+                hideEdgeTooltip();
+                
+                tooltipTimeout = setTimeout(() => {
+                    const renderedPosition = event.renderedPosition;
+                    showTooltip(node, renderedPosition.x, renderedPosition.y);
+                }, 500);
+            });
+            
+            cy.on('mouseout', 'node', function(event) {
+                clearTimeout(tooltipTimeout);
+                setTimeout(() => {
+                    if (!isTooltipVisible) return;
+                    hideTooltip();
+                }, 100);
+            });
+            
+            // 엣지 마우스 이벤트
+            cy.on('mouseover', 'edge', function(event) {
+                const edge = event.target;
+                clearTimeout(edgeTooltipTimeout);
+                hideTooltip();
+                
+                edgeTooltipTimeout = setTimeout(() => {
+                    const renderedPosition = event.renderedPosition;
+                    showEdgeTooltip(edge, renderedPosition.x, renderedPosition.y);
+                }, 300);
+            });
+            
+            cy.on('mouseout', 'edge', function(event) {
+                clearTimeout(edgeTooltipTimeout);
+                setTimeout(() => {
+                    if (!isEdgeTooltipVisible) return;
+                    hideEdgeTooltip();
+                }, 100);
+            });
+            
+            // 캔버스 클릭 시 툴팁 숨김
+            cy.on('tap', function(event) {
+                if (event.target === cy) {
+                    hideTooltip();
+                    hideEdgeTooltip();
+                }
+            });
+            
+            // 노드 선택 이벤트
+            cy.on('select', 'node', function(event) {
+                const node = event.target;
+                highlightRelatedElements(node);
+                updateSidebarSelection(node.id());
+            });
+            
+            // 선택 해제 이벤트
+            cy.on('unselect', 'node', function(event) {
+                cy.elements().style('opacity', 1);
+                cy.elements().style('z-index', 1);
+            });
+        }
+        
+        
+            // 실제 데이터는 서버에서 로드되어야 함
+            const DATA = {
+  "project_info": {
+    "name": "Unknown Project",
+    "generated_at": "2025-09-03 20:44:22"
+  },
+  "nodes": [
+    {
+      "id": "table:HR.EMPLOYEES",
+      "label": "EMPLOYEES",
+      "type": "table",
+      "group": "DB",
+      "meta": {
+        "owner": "HR",
+        "table_name": "EMPLOYEES",
+        "status": "VALID",
+        "comment": "직원 정보 테이블",
+        "columns": [
+          {
+            "name": "EMPLOYEE_ID",
+            "data_type": "NUMBER",
+            "nullable": false,
+            "is_pk": true,
+            "comment": "직원 고유 ID"
+          },
+          {
+            "name": "FIRST_NAME",
+            "data_type": "VARCHAR2(50)",
+            "nullable": false,
+            "is_pk": false,
+            "comment": "이름"
+          },
+          {
+            "name": "LAST_NAME",
+            "data_type": "VARCHAR2(50)",
+            "nullable": false,
+            "is_pk": false,
+            "comment": "성"
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2(100)",
+            "nullable": false,
+            "is_pk": false,
+            "comment": "이메일"
+          },
+          {
+            "name": "DEPARTMENT_ID",
+            "data_type": "NUMBER",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "부서 ID"
+          },
+          {
+            "name": "HIRE_DATE",
+            "data_type": "DATE",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "입사일"
+          }
+        ],
+        "pk_columns": [
+          "EMPLOYEE_ID"
+        ]
+      }
+    },
+    {
+      "id": "table:HR.DEPARTMENTS",
+      "label": "DEPARTMENTS",
+      "type": "table",
+      "group": "DB",
+      "meta": {
+        "owner": "HR",
+        "table_name": "DEPARTMENTS",
+        "status": "VALID",
+        "comment": "부서 정보 테이블",
+        "columns": [
+          {
+            "name": "DEPARTMENT_ID",
+            "data_type": "NUMBER",
+            "nullable": false,
+            "is_pk": true,
+            "comment": "부서 고유 ID"
+          },
+          {
+            "name": "DEPARTMENT_NAME",
+            "data_type": "VARCHAR2(100)",
+            "nullable": false,
+            "is_pk": false,
+            "comment": "부서명"
+          },
+          {
+            "name": "MANAGER_ID",
+            "data_type": "NUMBER",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "매니저 ID"
+          },
+          {
+            "name": "LOCATION_ID",
+            "data_type": "NUMBER",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "위치 ID"
+          }
+        ],
+        "pk_columns": [
+          "DEPARTMENT_ID"
+        ]
+      }
+    },
+    {
+      "id": "table:HR.LOCATIONS",
+      "label": "LOCATIONS",
+      "type": "table",
+      "group": "DB",
+      "meta": {
+        "owner": "HR",
+        "table_name": "LOCATIONS",
+        "status": "VALID",
+        "comment": "위치 정보 테이블",
+        "columns": [
+          {
+            "name": "LOCATION_ID",
+            "data_type": "NUMBER",
+            "nullable": false,
+            "is_pk": true,
+            "comment": "위치 고유 ID"
+          },
+          {
+            "name": "STREET_ADDRESS",
+            "data_type": "VARCHAR2(200)",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "도로명 주소"
+          },
+          {
+            "name": "CITY",
+            "data_type": "VARCHAR2(100)",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "도시"
+          },
+          {
+            "name": "COUNTRY_ID",
+            "data_type": "CHAR(2)",
+            "nullable": true,
+            "is_pk": false,
+            "comment": "국가 코드"
+          }
+        ],
+        "pk_columns": [
+          "LOCATION_ID"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "fk_emp_dept",
+      "source": "table:HR.EMPLOYEES",
+      "target": "table:HR.DEPARTMENTS",
+      "kind": "foreign_key",
+      "confidence": 0.95,
+      "meta": {
+        "left_column": "DEPARTMENT_ID",
+        "right_column": "DEPARTMENT_ID",
+        "frequency": 10,
+        "arrow": true,
+        "source": "joins_table",
+        "join_condition": "EMPLOYEES.DEPARTMENT_ID = DEPARTMENTS.DEPARTMENT_ID"
+      }
+    },
+    {
+      "id": "fk_dept_loc",
+      "source": "table:HR.DEPARTMENTS",
+      "target": "table:HR.LOCATIONS",
+      "kind": "foreign_key",
+      "confidence": 0.9,
+      "meta": {
+        "left_column": "LOCATION_ID",
+        "right_column": "LOCATION_ID",
+        "frequency": 5,
+        "arrow": true,
+        "source": "joins_table",
+        "join_condition": "DEPARTMENTS.LOCATION_ID = LOCATIONS.LOCATION_ID"
+      }
+    },
+    {
+      "id": "fk_emp_mgr",
+      "source": "table:HR.EMPLOYEES",
+      "target": "table:HR.EMPLOYEES",
+      "kind": "self_reference",
+      "confidence": 0.8,
+      "meta": {
+        "left_column": "MANAGER_ID",
+        "right_column": "EMPLOYEE_ID",
+        "frequency": 3,
+        "arrow": true,
+        "source": "joins_table",
+        "join_condition": "EMPLOYEES.MANAGER_ID = EMPLOYEES.EMPLOYEE_ID"
+      }
+    }
+  ],
+  "metadata": {
+    "total_tables": 3,
+    "total_columns": 14,
+    "total_pk": 3,
+    "total_fk": 2,
+    "total_relationships": 3
+  }
+};
+            
+            // 데이터 로드 함수 수정
+            function loadData() {
+                // Cytoscape에 데이터 적용
+                applyData(DATA);
+                
+                // 사이드바 업데이트
+                updateSidebar(DATA);
+                
+                // 프로젝트 정보 업데이트
+                document.getElementById('project-info').textContent = '프로젝트: TEST_HR_PROJECT';
+            }
+            
+        // 데이터 로드
+        function loadData() {
+            // 실제 데이터는 서버에서 로드되어야 함
+            // 여기서는 샘플 데이터를 사용
+            const sampleData = {
+                nodes: [
+                    {
+                        id: 'table:HR.EMPLOYEES',
+                        label: 'EMPLOYEES',
+                        type: 'table',
+                        group: 'DB',
+                        meta: {
+                            owner: 'HR',
+                            table_name: 'EMPLOYEES',
+                            columns: [
+                                { name: 'EMPLOYEE_ID', data_type: 'NUMBER', is_pk: true, nullable: false },
+                                { name: 'FIRST_NAME', data_type: 'VARCHAR2', is_pk: false, nullable: false },
+                                { name: 'LAST_NAME', data_type: 'VARCHAR2', is_pk: false, nullable: false },
+                                { name: 'EMAIL', data_type: 'VARCHAR2', is_pk: false, nullable: false },
+                                { name: 'DEPARTMENT_ID', data_type: 'NUMBER', is_pk: false, nullable: true }
+                            ]
+                        }
+                    },
+                    {
+                        id: 'table:HR.DEPARTMENTS',
+                        label: 'DEPARTMENTS',
+                        type: 'table',
+                        group: 'DB',
+                        meta: {
+                            owner: 'HR',
+                            table_name: 'DEPARTMENTS',
+                            columns: [
+                                { name: 'DEPARTMENT_ID', data_type: 'NUMBER', is_pk: true, nullable: false },
+                                { name: 'DEPARTMENT_NAME', data_type: 'VARCHAR2', is_pk: false, nullable: false },
+                                { name: 'MANAGER_ID', data_type: 'NUMBER', is_pk: false, nullable: true }
+                            ]
+                        }
+                    }
+                ],
+                edges: [
+                    {
+                        id: 'fk_1',
+                        source: 'table:HR.EMPLOYEES',
+                        target: 'table:HR.DEPARTMENTS',
+                        kind: 'foreign_key',
+                        confidence: 0.9,
+                        meta: {
+                            left_column: 'DEPARTMENT_ID',
+                            right_column: 'DEPARTMENT_ID',
+                            arrow: true
+                        }
+                    }
+                ]
+            };
+            
+            // 데이터 적용
+            applyData(sampleData);
+            
+            // 사이드바 업데이트
+            updateSidebar(sampleData);
+        }
+        
+        // 데이터 적용
+        function applyData(data) {
+            const elements = [];
+            
+            // 노드 추가
+            for (const node of data.nodes || []) {
+                elements.push({
+                    data: {
+                        id: node.id,
+                        label: node.label,
+                        type: node.type,
+                        group: node.group,
+                        meta: node.meta
+                    }
+                });
+            }
+            
+            // 엣지 추가
+            for (const edge of data.edges || []) {
+                elements.push({
+                    data: {
+                        id: edge.id,
+                        source: edge.source,
+                        target: edge.target,
+                        kind: edge.kind,
+                        confidence: edge.confidence,
+                        meta: edge.meta
+                    }
+                });
+            }
+            
+            // Cytoscape에 요소 추가
+            cy.add(elements);
+            
+            // 레이아웃 적용
+            cy.layout(layoutOptions[currentLayout]).run();
+            
+            // 통계 업데이트
+            updateStats(data);
+        }
+        
+        // 사이드바 업데이트
+        function updateSidebar(data) {
+            const tableListContainer = document.getElementById('table-list-container');
+            const ownerFilter = document.getElementById('owner-filter');
+            
+            // 테이블 목록 생성
+            let tableListHTML = '';
+            const owners = new Set();
+            
+            for (const node of data.nodes || []) {
+                if (node.type === 'table') {
+                    const owner = node.meta?.owner || 'UNKNOWN';
+                    owners.add(owner);
+                    
+                    tableListHTML += `
+                        <div class="table-item" data-table-id="${node.id}" onclick="selectTable('${node.id}')">
+                            <div class="table-name">${node.label}</div>
+                            <div class="table-owner">${owner}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            tableListContainer.innerHTML = tableListHTML;
+            
+            // 스키마 필터 옵션 생성
+            let ownerOptions = '<option value="">전체</option>';
+            for (const owner of owners) {
+                ownerOptions += `<option value="${owner}">${owner}</option>`;
+            }
+            ownerFilter.innerHTML = ownerOptions;
+        }
+        
+        // 통계 업데이트
+        function updateStats(data) {
+            const nodes = data.nodes || [];
+            const edges = data.edges || [];
+            
+            let totalPk = 0;
+            let totalFk = 0;
+            
+            for (const node of nodes) {
+                if (node.meta?.columns) {
+                    for (const col of node.meta.columns) {
+                        if (col.is_pk) totalPk++;
+                    }
+                }
+            }
+            
+            for (const edge of edges) {
+                if (edge.kind === 'foreign_key') totalFk++;
+            }
+            
+            document.getElementById('node-count').textContent = nodes.length;
+            document.getElementById('edge-count').textContent = edges.length;
+            document.getElementById('total-tables').textContent = nodes.length;
+            document.getElementById('total-pk').textContent = totalPk;
+            document.getElementById('total-fk').textContent = totalFk;
+        }
+        
+        // 툴팁 표시
+        function showTooltip(node, x, y) {
+            const data = node.data();
+            const meta = data.meta || {};
+            
+            document.getElementById('tooltip-title').textContent = data.label || 'Unknown Table';
+            document.getElementById('tooltip-subtitle').textContent = meta.owner ? `Owner: ${meta.owner}` : '';
+            
+            let contentHTML = '';
+            if (meta.columns && meta.columns.length > 0) {
+                contentHTML = '<ul class="columns-list">';
+                for (const col of meta.columns) {
+                    const badges = [];
+                    if (col.is_pk) badges.push('<span class="column-badge badge-pk">PK</span>');
+                    if (col.nullable) badges.push('<span class="column-badge badge-nullable">NULL</span>');
+                    else badges.push('<span class="column-badge badge-not-null">NOT NULL</span>');
+                    
+                    contentHTML += `
+                        <li class="column-item">
+                            <div class="column-info">
+                                <div class="column-name">${col.name}</div>
+                                <div class="column-type">${col.data_type}</div>
+                            </div>
+                            <div>${badges.join('')}</div>
+                        </li>
+                    `;
+                }
+                contentHTML += '</ul>';
+            }
+            
+            document.getElementById('tooltip-content').innerHTML = contentHTML;
+            
+            tooltip.style.display = 'block';
+            tooltip.style.left = (x + 10) + 'px';
+            tooltip.style.top = (y - 10) + 'px';
+            isTooltipVisible = true;
+        }
+        
+        // 툴팁 숨김
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+            isTooltipVisible = false;
+        }
+        
+        // 엣지 툴팁 표시
+        function showEdgeTooltip(edge, x, y) {
+            const data = edge.data();
+            const meta = data.meta || {};
+            
+            document.getElementById('edge-tooltip-title').textContent = `${data.source} → ${data.target}`;
+            document.getElementById('edge-tooltip-type').textContent = data.kind === 'foreign_key' ? 'FK' : 'REL';
+            
+            let contentHTML = '';
+            if (meta.left_column && meta.right_column) {
+                contentHTML += `
+                    <div class="join-condition">
+                        ${meta.left_column} = ${meta.right_column}
+                    </div>
+                `;
+            }
+            
+            if (meta.frequency) {
+                contentHTML += `<div>빈도: ${meta.frequency}</div>`;
+            }
+            
+            if (meta.confidence) {
+                contentHTML += `<div>신뢰도: ${(meta.confidence * 100).toFixed(1)}%</div>`;
+            }
+            
+            document.getElementById('edge-tooltip-content').innerHTML = contentHTML;
+            
+            edgeTooltip.style.display = 'block';
+            edgeTooltip.style.left = (x + 10) + 'px';
+            edgeTooltip.style.top = (y - 10) + 'px';
+            isEdgeTooltipVisible = true;
+        }
+        
+        // 엣지 툴팁 숨김
+        function hideEdgeTooltip() {
+            edgeTooltip.style.display = 'none';
+            isEdgeTooltipVisible = false;
+        }
+        
+        // 관련 요소 하이라이트
+        function highlightRelatedElements(node) {
+            cy.elements().style('opacity', 0.3);
+            node.style('opacity', 1);
+            node.connectedEdges().style('opacity', 0.8);
+            node.connectedEdges().connectedNodes().style('opacity', 0.6);
+        }
+        
+        // 사이드바 선택 업데이트
+        function updateSidebarSelection(tableId) {
+            document.querySelectorAll('.table-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            const selectedItem = document.querySelector(`[data-table-id="${tableId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+            }
+        }
+        
+        // 테이블 선택
+        function selectTable(tableId) {
+            const node = cy.getElementById(tableId);
+            if (node.length > 0) {
+                cy.elements().unselect();
+                node.select();
+                cy.fit(node, 100);
+            }
+        }
+        
+        // 스키마별 필터링
+        function filterByOwner() {
+            const selectedOwner = document.getElementById('owner-filter').value;
+            
+            if (!selectedOwner) {
+                cy.elements().style('display', 'element');
+                return;
+            }
+            
+            cy.nodes().forEach(node => {
+                const owner = node.data('meta')?.owner;
+                if (owner === selectedOwner) {
+                    node.style('display', 'element');
+                    node.connectedEdges().style('display', 'element');
+                } else {
+                    node.style('display', 'none');
+                    node.connectedEdges().style('display', 'none');
+                }
+            });
+        }
+        
+        // 레이아웃 전환
+        function toggleLayout() {
+            currentLayout = currentLayout === 'fcose' ? 'dagre' : 'fcose';
+            document.getElementById('current-layout').textContent = currentLayout;
+            resetView();
+        }
+        
+        // 뷰 리셋
+        function resetView() {
+            cy.layout(layoutOptions[currentLayout]).run();
+            cy.fit();
+        }
+        
+        // PNG 내보내기
+        function exportPng() {
+            const png = cy.png({
+                scale: 2,
+                full: true,
+                bg: 'white'
+            });
+            
+            const link = document.createElement('a');
+            link.download = 'erd-cytoscape.png';
+            link.href = png;
+            link.click();
+        }
+        
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // 전체화면 토글
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // 노드 검색
+        function searchNode(query) {
+            cy.elements().removeClass('highlighted');
+            
+            if (!query.trim()) {
+                cy.elements().style('opacity', 1);
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label').toLowerCase();
+                const tableName = node.data('meta')?.table_name?.toLowerCase() || '';
+                const owner = node.data('meta')?.owner?.toLowerCase() || '';
+                
+                return label.includes(query.toLowerCase()) || 
+                       tableName.includes(query.toLowerCase()) || 
+                       owner.includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                cy.elements().style('opacity', 0.3);
+                matchedNodes.style('opacity', 1);
+                matchedNodes.connectedEdges().style('opacity', 0.8);
+                cy.fit(matchedNodes, 100);
+            } else {
+                cy.elements().style('opacity', 1);
+            }
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initCytoscape();
+        });
+        
+        // 윈도우 리사이즈 이벤트
+        window.addEventListener('resize', function() {
+            if (cy) {
+                cy.resize();
+            }
+        });
+    </script>
+</body>
+</html>

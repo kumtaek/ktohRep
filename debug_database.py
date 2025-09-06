@@ -39,7 +39,7 @@ def main():
         project_config = full_config.get('database', {}).get('project', {
             'type': 'sqlite',
             'sqlite': {
-                'path': f'./project/{project_name}/data/metadata.db',
+                'path': f'./project/{project_name}/metadata.db',
                 'wal_mode': True
             }
         })
@@ -48,7 +48,7 @@ def main():
         project_config = {
             'type': 'sqlite',
             'sqlite': {
-                'path': f'./project/{project_name}/data/metadata.db',
+                'path': f'./project/{project_name}/metadata.db',
                 'wal_mode': True
             }
         }

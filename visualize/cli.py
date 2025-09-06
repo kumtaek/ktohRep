@@ -17,6 +17,7 @@ from .builders.sequence_diagram import build_sequence_graph_json
 from .builders.relatedness_graph import build_relatedness_graph_json, get_relatedness_summary
 from .templates.render import render_html
 from .exporters.mermaid_exporter import MermaidExporter
+from .renderers.cytoscape_erd_renderer import create_cytoscape_erd
 
 
 def copy_static_files(output_dir: Path) -> None:
@@ -193,44 +194,52 @@ def main():
     # 시각화 도구의 명령줄 인수를 파싱하기 위한 ArgumentParser를 설정합니다.
     p = argparse.ArgumentParser(prog='visualize', description='Source Analyzer 시각화 도구')
     
-    # cmd를 subparser 대신 위치 인자로 변경하고, 기본값을 'all'로 설정합니다.
-    p.add_argument('--diagram-type', default='all', 
-                   choices=['all', 'graph', 'erd', 'component', 'sequence', 'class', 'relatedness'],
-                   help='생성할 시각화 종류 (기본값: all)')
+    # === 오늘 개발된 기능: ERD HTML 버전들 ===
+    p.add_argument('--diagram-type', default='erd', 
+                   choices=['erd'],
+                   help='생성할 시각화 종류 (ERD: Cytoscape.js HTML + Mermaid HTML 버전)')
 
-    # 공통 인자를 추가합니다.
+    # 공통 인자
     p.add_argument('--project-name', required=True, help='프로젝트 이름 (DB 스키마 로드용)')
-    p.add_argument('--export-html', nargs='?', const='', default=None, help='출력 HTML 경로 (미지정 시 생성 생략, 값 없이 사용 시 기본 경로)')
-    p.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
-    p.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
-    p.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
-    p.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
-    p.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
-    p.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
-    p.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
-    p.add_argument('--keep-edge-kinds', default='include,call,use_table', help='Edge kinds to keep')
     p.add_argument('-v', '--verbose', action='count', default=0, help='로그 상세화 증가: -v=INFO, -vv=DEBUG')
     p.add_argument('-q', '--quiet', action='store_true', help='조용 모드: 경고/오류만 출력')
     p.add_argument('--log-file', help='로그를 파일로 기록')
-    p.add_argument('--export-json', help='JSON으로 내보내기(파일 경로)')
-    p.add_argument('--export-csv-dir', help='CSV로 내보내기(디렉토리 경로)')
-    p.add_argument('--export-mermaid', nargs='?', const='', default=None, help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
 
-    # 각 시각화별 특수 인자를 추가합니다.
-    p.add_argument('--kinds', default='call', help='[graph] 포함할 엣지 종류(콤마 구분)')
-    p.add_argument('--focus', help='[graph] 시작 노드(이름/경로/테이블)')
-    p.add_argument('--depth', type=int, default=2, help='[graph/sequence] 중심 기준 최대 깊이')
+    # ERD 관련 인자
     p.add_argument('--tables', help='[erd] 포함할 테이블명 목록(콤마 구분)')
     p.add_argument('--owners', help='[erd] 포함할 스키마/소유자 목록(콤마 구분)')
     p.add_argument('--from-sql', help='[erd] 특정 SQL 기준 ERD (형식: mapper_ns:stmt_id)')
-    p.add_argument('--start-file', help='[sequence] 시작 파일 경로')
-    p.add_argument('--start-method', help='[sequence] 시작 메서드 이름')
-    p.add_argument('--modules', help='[class] 포함할 모듈/파일 목록(콤마 구분)')
-    p.add_argument('--include-private', action='store_true', help='[class] private 멤버 포함')
-    p.add_argument('--max-methods', type=int, default=10, help='[class] 클래스당 최대 메서드 표시 수')
-    p.add_argument('--min-score', type=float, default=0.5, help='[relatedness] 최소 연관성 점수 임계값 (0.0-1.0)')
-    p.add_argument('--cluster-method', default='louvain', help='[relatedness] 클러스터링 방법')
-    p.add_argument('--summary', action='store_true', help='[relatedness] 연관성 통계 요약만 출력')
+    
+    # === 오늘 개발된 기능: Mermaid HTML ERD ===
+    p.add_argument('--export-mermaid', nargs='?', const='', default=None, help='Mermaid HTML로 내보내기(.html 경로)')
+
+    # === 기개발분: 향후 제거 예정 ===
+    # p.add_argument('--export-html', nargs='?', const='', default=None, help='출력 HTML 경로 (미지정 시 생성 생략, 값 없이 사용 시 기본 경로)')
+    # p.add_argument('--min-confidence', type=float, default=0.5, help='최소 신뢰도 임계값')
+    # p.add_argument('--max-nodes', type=int, default=2000, help='최대 노드 수')
+    # p.add_argument('--mermaid-label-max', type=int, default=20, help='Mermaid 라벨 최대 길이')
+    # p.add_argument('--mermaid-erd-max-cols', type=int, default=10, help='Mermaid ERD 컬럼 최대 표기 수')
+    # p.add_argument('--export-strategy', choices=['full', 'balanced', 'minimal'], default='balanced', help='Export strategy')
+    # p.add_argument('--class-methods-max', type=int, default=10, help='Class diagram methods max')
+    # p.add_argument('--class-attrs-max', type=int, default=10, help='Class diagram attributes max')
+    # p.add_argument('--keep-edge-kinds', default='include,call,use_table', help='Edge kinds to keep')
+    # p.add_argument('--export-json', help='JSON으로 내보내기(파일 경로)')
+    # p.add_argument('--export-csv-dir', help='CSV로 내보내기(디렉토리 경로)')
+    # p.add_argument('--export-mermaid', nargs='?', const='', default=None, help='Mermaid/Markdown으로 내보내기(.md/.mmd 경로)')
+    # 
+    # # 각 시각화별 특수 인자 (기개발분)
+    # p.add_argument('--kinds', default='call', help='[graph] 포함할 엣지 종류(콤마 구분)')
+    # p.add_argument('--focus', help='[graph] 시작 노드(이름/경로/테이블)')
+    # p.add_argument('--depth', type=int, default=2, help='[graph/sequence] 중심 기준 최대 깊이')
+    # p.add_argument('--cytoscape', action='store_true', help='[erd] Cytoscape.js ERD도 함께 생성')
+    # p.add_argument('--start-file', help='[sequence] 시작 파일 경로')
+    # p.add_argument('--start-method', help='[sequence] 시작 메서드 이름')
+    # p.add_argument('--modules', help='[class] 포함할 모듈/파일 목록(콤마 구분)')
+    # p.add_argument('--include-private', action='store_true', help='[class] private 멤버 포함')
+    # p.add_argument('--max-methods', type=int, default=10, help='[class] 클래스당 최대 메서드 표시 수')
+    # p.add_argument('--min-score', type=float, default=0.5, help='[relatedness] 최소 연관성 점수 임계값 (0.0-1.0)')
+    # p.add_argument('--cluster-method', default='louvain', help='[relatedness] 클러스터링 방법')
+    # p.add_argument('--summary', action='store_true', help='[relatedness] 연관성 통계 요약만 출력')
     
     print('start')
     try:
@@ -248,10 +257,15 @@ def main():
 
         print(f"commands_to_run = {commands_to_run}")
 
+        # 프로젝트명 검증
+        if not hasattr(args, 'project_name') or not args.project_name or args.project_name.strip() == '':
+            logger.error("오류: 프로젝트명이 유효하지 않습니다.")
+            return 1
+
         # Load config.yaml with project name substitution once
         import yaml
         import os
-        config_path = Path(__file__).parent.parent / "config" / "config.yaml"
+        config_path = Path(__file__).parent / "config" / "config.yaml"
         config = {}
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
@@ -269,18 +283,64 @@ def main():
             logger.error(f"오류: 프로젝트 '{args.project_name}'를 찾을 수 없습니다.")
             return 1
 
-        # Validate that at least one export option is provided
-        if args.export_html is None and args.export_mermaid is None:
-            args.export_html = '' # Enable default html export
-            args.export_mermaid = '' # Enable default mermaid export
+        # === 기개발분: export 옵션 검증 (향후 제거 예정) ===
+        # ERD는 자동으로 Cytoscape.js HTML 파일을 생성하므로 export 옵션 불필요
+        # if args.export_html is None and args.export_mermaid is None:
+        #     args.export_html = '' # Enable default html export
+        #     args.export_mermaid = '' # Enable default mermaid export
 
         for cmd_name in commands_to_run:
             print(f"[시작] --- {cmd_name.upper()} 시각화 생성 시작 ---")
 
             data, html, diagram_type = None, None, cmd_name
+            
+            # ERD 명령어의 경우 html 변수 초기화
+            if cmd_name == 'erd':
+                html = ""  # 빈 문자열로 초기화
 
             # 명령에 따라 시각화 데이터를 생성합니다.
-            if cmd_name == 'graph':
+            if cmd_name == 'erd':
+                # === 새로 개발된 기능: Cytoscape.js ERD ===
+                print('# ERD 데이터를 구축합니다.')
+                logger.info("🗃️ 데이터베이스 ERD 분석 중...")
+                if args.tables:
+                    logger.info(f"📋 대상 테이블: {args.tables}")
+                data = build_erd_json(config, project_id, args.project_name, args.tables, args.owners, args.from_sql)
+                # 기존 ERD HTML/MD 생성 완전 비활성화 (Cytoscape.js만 사용)
+                html = ""  # 빈 문자열로 설정하여 기존 파일 생성 방지
+                
+                # Cytoscape.js ERD 자동 생성
+                logger.info("🎨 Cytoscape.js ERD 생성 중...")
+                try:
+                    # visualize_dir 변수 정의
+                    project_name_for_path = getattr(args, 'project_name', 'default')
+                    visualize_dir = Path(f"./project/{project_name_for_path}/report")
+                    visualize_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # static 폴더 생성 및 JavaScript 라이브러리 복사 (project 폴더 삭제 대비)
+                    static_dir = visualize_dir / "static" / "js"
+                    static_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # JavaScript 라이브러리 복사
+                    source_js_dir = Path("./visualize/static/js")
+                    if source_js_dir.exists():
+                        import shutil
+                        for js_file in source_js_dir.glob("*.js"):
+                            target_file = static_dir / js_file.name
+                            if not target_file.exists() or js_file.stat().st_mtime > target_file.stat().st_mtime:
+                                shutil.copy2(js_file, static_dir)
+                        logger.info(f"✅ JavaScript 라이브러리 복사 완료: {static_dir}")
+                    else:
+                        logger.warning(f"⚠️  JavaScript 라이브러리 소스 디렉토리를 찾을 수 없습니다: {source_js_dir}")
+                    
+                    cytoscape_output_dir = Path(visualize_dir)
+                    cytoscape_path = create_cytoscape_erd(data, args.project_name, cytoscape_output_dir)
+                    logger.info(f"✅ Cytoscape.js ERD 생성 완료: {cytoscape_path}")
+                except Exception as e:
+                    logger.warning(f"Cytoscape.js ERD 생성 실패: {e}")
+            
+            # === 기개발분: 향후 제거 예정 ===
+            elif cmd_name == 'graph':
                 # 의존성 그래프 데이터를 구축합니다.
                 logger.info("📊 의존성 그래프 데이터 분석 중...")
                 kinds = args.kinds.split(',') if hasattr(args, 'kinds') and args.kinds else []
@@ -289,14 +349,6 @@ def main():
                                                  args.focus, args.depth, args.max_nodes)
                 logger.info("🎨 HTML 렌더링 중...")
                 html = render_html('graph_view.html', data)
-            elif cmd_name == 'erd':
-                print('# ERD 데이터를 구축합니다.')
-                logger.info("🗃️ 데이터베이스 ERD 분석 중...")
-                if args.tables:
-                    logger.info(f"📋 대상 테이블: {args.tables}")
-                data = build_erd_json(config, project_id, args.project_name, args.tables, args.owners, args.from_sql)
-                logger.info("🎨 HTML 렌더링 중...")
-                html = render_html('erd_view.html', data)
             elif cmd_name == 'component':
                 # 컴포넌트 그래프 데이터를 구축합니다.
                 logger.info("🧩 컴포넌트 구조 분석 중...")
@@ -333,7 +385,7 @@ def main():
                         continue
 
                     project_name_for_path = getattr(args, 'project_name', 'default')
-                    visualize_dir = Path(f"./output/{project_name_for_path}/visualize")
+                    visualize_dir = Path(f"./project/{project_name_for_path}/report")
                     visualize_dir.mkdir(parents=True, exist_ok=True)
                     copy_static_files(visualize_dir)
 
@@ -379,53 +431,86 @@ def main():
                 html = render_html('sequence_view.html', data)
             
             # 데이터 또는 HTML이 생성되지 않은 경우 경고를 기록하고 다음 명령으로 건너뜀니다.
-            if not data or not html:
+            # ERD 명령어의 경우 Cytoscape.js만 사용하므로 HTML 체크 건너뛰기
+            if not data:
                 logger.warning(f"'{cmd_name}'에 대한 데이터를 생성하지 못했습니다. 건너뜁니다.")
+                continue
+            if cmd_name != 'erd' and not html:
+                logger.warning(f"'{cmd_name}'에 대한 HTML을 생성하지 못했습니다. 건너뜁니다.")
                 continue
 
             logger.info(f"📊 생성 완료: 노드 {len(data.get('nodes', []))}개, 엣지 {len(data.get('edges', []))}개")
             logger.debug(f"Generated {len(data.get('nodes', []))} nodes and {len(data.get('edges', []))} edges for {cmd_name}")
 
+            # ERD 명령어의 경우 Cytoscape.js만 사용하므로 기존 파일 생성 건너뛰기
+            if cmd_name == 'erd':
+                logger.info("🎨 Cytoscape.js ERD만 생성됨 - 기존 HTML/MD 파일 생성 건너뛰기")
+                # html을 None으로 설정하여 파일 생성 방지
+                html = None
+                
             # 내보내기 로직
             project_name_for_path = getattr(args, 'project_name', 'default')
-            visualize_dir = f"./output/{project_name_for_path}/visualize"
+            visualize_dir = f"./project/{project_name_for_path}/report"
             
             # 기본 HTML 및 Mermaid 파일 이름을 정의합니다.
             default_html_names = {'graph': 'graph.html', 'erd': 'erd.html', 'component': 'components.html', 'sequence': 'sequence.html', 'class': 'class.html', 'relatedness': 'relatedness.html'}
             default_mermaid_names = {'graph': 'dependency_graph.md', 'erd': 'erd.md', 'component': 'component.md', 'sequence': 'sequence.md', 'class': 'class.md', 'relatedness': 'relatedness.md'}
 
-            current_export_html = args.export_html
+            # === 기개발분: export 옵션 참조 (향후 제거 예정) ===
+            # current_export_html = args.export_html
+            current_export_html = None  # ERD는 자동 생성되므로 불필요
+            
+            # 오늘 개발된 기능: Mermaid ERD
             current_export_mermaid = args.export_mermaid
 
-            # 내보내기 경로가 비어있는 경우 기본 파일 이름을 사용합니다.
-            if current_export_html == '':
-                current_export_html = default_html_names.get(diagram_type, f'{diagram_type}.html')
-            if current_export_mermaid == '':
-                current_export_mermaid = default_mermaid_names.get(diagram_type, f'{diagram_type}.md')
-
-            # HTML 내보내기가 활성화된 경우 HTML 파일을 저장합니다.
-            if current_export_html is not None:
-                logger.info("💾 파일 저장 준비 중...")
-                html_path = Path(visualize_dir) / current_export_html
-                html_path.parent.mkdir(parents=True, exist_ok=True)
-                
-                # static 파일들을 output 디렉토리에 복사합니다.
-                logger.info("📁 정적 파일 복사 중...")
-                copy_static_files(html_path.parent)
-                
-                logger.info(f"💾 HTML 파일 저장 중: {current_export_html}")
-                with open(html_path, 'w', encoding='utf-8') as f:
-                    f.write(html)
-                logger.info(f"✅ 시각화 HTML 저장 완료: {html_path.absolute()}")
-                logger.info(f"✅ Static 파일 복사 완료: {html_path.parent / 'static'}")
-
+            # === 오늘 개발된 기능: Mermaid ERD 내보내기 로직 ===
             # Mermaid 내보내기가 활성화된 경우 Mermaid/Markdown 파일을 저장합니다.
-            if current_export_mermaid is not None:
-                mermaid_path = Path(visualize_dir) / current_export_mermaid
-                logger.info(f"📝 Mermaid/Markdown 생성 중: {current_export_mermaid}")
-                meta_filters = (data.get('metadata') or {}).get('filters')
-                export_mermaid(data, str(mermaid_path), diagram_type, logger, {'project_id': project_id, 'filters': meta_filters})
+            if current_export_mermaid is not None and data is not None:
+                from .exporters.mermaid_exporter import MermaidExporter
+                from datetime import datetime
+                
+                # 타임스탬프 기반 파일명 생성: erd_mermaid_yyyymmdd_hms.html
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                if current_export_mermaid == '' or current_export_mermaid == 'erd.md':
+                    mermaid_filename = f"erd_mermaid_{timestamp}.html"
+                else:
+                    mermaid_filename = current_export_mermaid
+                    
+                mermaid_path = Path(visualize_dir) / mermaid_filename
+                logger.info(f"📝 Mermaid/Markdown 생성 중: {mermaid_filename}")
+                
+                # MermaidExporter 인스턴스 생성
+                exporter = MermaidExporter()
+                
+                # Markdown으로 내보내기
+                markdown_content = exporter.export_to_markdown(data, diagram_type, 
+                                                             title=f"{args.project_name} ERD", 
+                                                             metadata={'project_id': project_id})
+                
+                # 파일 저장
+                with open(mermaid_path, 'w', encoding='utf-8') as f:
+                    f.write(markdown_content)
+                    
                 logger.info(f"✅ Mermaid 파일 저장 완료: {mermaid_path}")
+            
+            # === 기개발분: HTML 내보내기 로직 (향후 제거 예정) ===
+            # # HTML 내보내기가 활성화된 경우 HTML 파일을 저장합니다.
+            # if current_export_html is not None and html is not None:
+            #     logger.info("💾 파일 저장 준비 중...")
+            #     html_path = Path(visualize_dir) / current_export_html
+            #     html_path.parent.mkdir(parents=True, exist_ok=True)
+            #     
+            #     # static 파일들을 output 디렉토리에 복사합니다.
+            #     logger.info("📁 정적 파일 복사 중...")
+            #     copy_static_files(html_path.parent)
+            #     
+            #     logger.info(f"💾 HTML 파일 저장 중: {current_export_html}")
+            #     with open(html_path, 'w', encoding='utf-8') as f:
+            #         f.write(html)
+            #     logger.info(f"✅ 시각화 HTML 저장 완료: {html_path.absolute()}")
+            #     logger.info(f"✅ Static 파일 복사 완료: {html_path.parent / 'static'}")
+            # elif current_export_html is not None and html is None:
+            #     logger.info("🎨 HTML 내용이 없어서 파일 생성 건너뛰기")
 
     except KeyboardInterrupt:
         print('사용자에 의해 중단됨', file=sys.stderr)

@@ -45,18 +45,42 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
     json_edges = []
     
     processed_edges = 0
+    filtered_edges = 0
     for i, edge in enumerate(edges):
-        if i % 10 == 0:  # 10개마다 진행상황 출력
+        if i % 100 == 0:  # 100개마다 진행상황 출력
             print(f"  엣지 처리 중... ({i}/{len(edges)})")
         
+        # method call 엣지의 경우 외부 라이브러리 호출 필터링
+        if edge.edge_kind == 'call' and edge.src_type == 'method':
+            try:
+                import json
+                meta = json.loads(edge.meta) if isinstance(edge.meta, str) else edge.meta
+                callee_qualifier = meta.get('callee_qualifier_type', '')
+                
+                # 강화된 필터링: 외부 라이브러리, 유틸리티, 기본 타입 제외
+                if (callee_qualifier.startswith(('java.', 'javax.', 'org.springframework.', 'org.slf4j.', 'org.apache.', 'com.fasterxml.')) or
+                    not callee_qualifier or len(callee_qualifier) <= 2 or
+                    callee_qualifier in ('String', 'StringBuilder', 'ResponseEntity', 'logger', 'e', 'System', 'Date', 'Long', 'Integer', 'Double', 'Boolean', 
+                                       'List', 'Map', 'Set', 'HashMap', 'ArrayList', 'Optional', 'Stream', 'Collections') or
+                    callee_qualifier.endswith(('Exception', 'Error', 'Util', 'Utils', 'Helper', 'Constants'))):
+                    filtered_edges += 1
+                    continue
+            except:
+                pass
+        
+        # dst_id가 None인 경우 (unknown 호출) 또는 낮은 신뢰도 필터링
+        if not edge.dst_id or edge.confidence < min_confidence:
+            filtered_edges += 1
+            continue
+            
         # Create source node ID
         src_id = f"{edge.src_type}:{edge.src_id}"
-        dst_id = f"{edge.dst_type}:{edge.dst_id}" if edge.dst_id else f"unknown:{edge.edge_kind}"
+        dst_id = f"{edge.dst_type}:{edge.dst_id}"
         
         try:
             # Get node details and add nodes
             src_details = db.get_node_details(edge.src_type, edge.src_id)
-            dst_details = db.get_node_details(edge.dst_type, edge.dst_id) if edge.dst_id else None
+            dst_details = db.get_node_details(edge.dst_type, edge.dst_id)
         except Exception as e:
             print(f"  노드 정보 조회 오류 (엣지 {i}): {e}")
             continue
@@ -86,6 +110,8 @@ def build_dependency_graph_json(config: Dict[str, Any], project_id: int, project
     
     nodes_list = list(nodes_dict.values())
     print(f"  노드 {len(nodes_list)}개 생성")
+    print(f"  필터링된 엣지: {filtered_edges}개 (외부 라이브러리 호출 제외)")
+    print(f"  실제 처리된 엣지: {len(json_edges)}개")
 
     # Initialize the clusterer with all nodes and edges
     print("  클러스터링 시작...")

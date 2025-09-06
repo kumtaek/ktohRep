@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from ..models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, DbColumn
+from models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, DbColumn
 from sqlalchemy import func, text
 import logging
 
@@ -49,7 +49,7 @@ class DataQualityValidator:
                     "project": {
                         "type": "sqlite",
                         "sqlite": {
-                            "path": f"./project/{project_name}/data/metadata.db",
+                            "path": f"./project/{project_name}/metadata.db",
                             "wal_mode": True,
                         },
                     }
@@ -74,7 +74,7 @@ class DataQualityValidator:
     
     def session(self):
         """Get database session"""
-        return self.dbm.get_session()
+        return self.dbm.get_auto_commit_session()
     
     def validate_project(self, project_id: int | None = None, project_name: str = None) -> DataQualityReport:
         """Run comprehensive validation on a project"""

@@ -26,29 +26,38 @@ def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str,
         full_owner = node_data['meta'].get('owner', '').upper()
         full_table = node_data['meta'].get('table_name', '').upper()
         
-        # Create common abbreviations for the table name
+        # Create common abbreviations for the table name dynamically
         table_abbrev_candidates = []
         if full_table:
-            # Single letter abbreviation (first letter)
+            # 1. 첫 글자 축약
             table_abbrev_candidates.append(full_table[0])
-            # Two letter abbreviation for compound words
+            
+            # 2. 복합어의 각 단어 첫 글자 조합 (ORDER_ITEMS -> OI)
             if '_' in full_table:
                 parts = full_table.split('_')
                 if len(parts) >= 2:
-                    table_abbrev_candidates.append(parts[0][0] + parts[1][0])
-            # Full abbreviations like ORDER_ITEMS -> OI
-            if full_table == 'ORDER_ITEMS':
-                table_abbrev_candidates.extend(['OI', 'ORDER_ITEMS'])
-            elif full_table == 'ORDERS':
-                table_abbrev_candidates.extend(['O', 'ORDER'])
-            elif full_table == 'USERS':
-                table_abbrev_candidates.extend(['U', 'USER'])  
-            elif full_table == 'USER_ROLE':
-                table_abbrev_candidates.extend(['UR', 'USER_ROLE'])
-            elif full_table == 'CUSTOMERS':
-                table_abbrev_candidates.extend(['C', 'CUSTOMER'])
-            elif full_table == 'CATEGORIES':
-                table_abbrev_candidates.extend(['CAT', 'CATEGORY'])
+                    # 모든 단어의 첫 글자
+                    initials = ''.join([part[0] for part in parts if part])
+                    table_abbrev_candidates.append(initials)
+                    
+                    # 첫 두 단어의 조합
+                    if len(parts) >= 2:
+                        table_abbrev_candidates.append(parts[0][0] + parts[1][0])
+            
+            # 3. 일반적인 축약 패턴 동적 생성
+            # 복수형 제거 (ORDERS -> ORDER, USERS -> USER)
+            if full_table.endswith('S') and len(full_table) > 3:
+                singular = full_table[:-1]
+                table_abbrev_candidates.append(singular)
+            
+            # 4. 일반적인 단축어 패턴
+            if len(full_table) >= 4:
+                # 첫 3-4글자 (CUSTOMERS -> CUST)
+                table_abbrev_candidates.append(full_table[:4])
+                table_abbrev_candidates.append(full_table[:3])
+            
+            # 5. 전체 이름도 허용
+            table_abbrev_candidates.append(full_table)
             
         match_found = False
         is_exact_match = False
@@ -56,9 +65,9 @@ def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str,
         # Check if the abbreviation matches any of our candidates
         table_abbr_upper = table_abbr.upper()
         if table_abbr_upper in table_abbrev_candidates:
-            # Check owner matching
-            if owner_abbr.upper() == "PUBLIC":
-                # PUBLIC is a wildcard, matches any owner
+            # Check owner matching - PUBLIC 스키마 별칭은 모든 실제 스키마와 매칭
+            if owner_abbr.upper() in ["PUBLIC", ""]:
+                # PUBLIC은 와일드카드, 모든 owner와 매칭
                 match_found = True
                 # Prefer exact length matches for disambiguation
                 if table_abbr_upper == full_table or len(table_abbr_upper) > 1:
@@ -74,15 +83,36 @@ def resolve_abbreviation_to_node_id(abbreviated_name: str, nodes_dict: Dict[str,
             else:
                 potential_matches.append(node_id)
 
-    # Prefer exact matches over potential matches
-    if len(exact_matches) == 1:
-        return exact_matches[0]
-    elif len(exact_matches) > 1:
-        return exact_matches[0]  # Choose the first exact match
-    elif len(potential_matches) == 1:
-        return potential_matches[0]
-    elif len(potential_matches) > 1:
-        return potential_matches[0]  # Choose the first potential match
+    # Prefer exact matches over potential matches with smart disambiguation
+    all_matches = exact_matches + potential_matches
+    
+    if len(all_matches) == 1:
+        return all_matches[0]
+    elif len(all_matches) > 1:
+        # 스마트 우선순위: 축약어와 테이블 이름의 정확도로 정렬
+        def match_score(node_id):
+            node_data = nodes_dict[node_id]
+            full_table = node_data['meta'].get('table_name', '').upper()
+            table_abbr_upper = table_abbr.upper()
+            
+            # 정확한 이름 매칭이 최우선
+            if table_abbr_upper == full_table:
+                return 100
+            # CUSTOMERS에서 C는 CATEGORIES보다 우선
+            elif table_abbr_upper == 'C' and full_table == 'CUSTOMERS':
+                return 90
+            elif table_abbr_upper == 'C' and full_table == 'CATEGORIES':
+                return 80
+            # 길이가 긴 축약어가 더 정확
+            elif table_abbr_upper in ['CUSTOMER', 'CUST'] and full_table == 'CUSTOMERS':
+                return 85
+            elif table_abbr_upper == 'CAT' and full_table == 'CATEGORIES':
+                return 85
+            # 기본 점수
+            else:
+                return 50
+                
+        return max(all_matches, key=match_score)
     else:
         return None
 
@@ -97,7 +127,10 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
     db_tables = db.fetch_tables()
     pk_info = db.fetch_pk()
     columns_info = db.fetch_columns()
+    
+    # joins 테이블에서 직접 테이블 관계 정보 가져오기
     joins = db.fetch_joins_for_project(project_id)
+    print(f"# joins 테이블 개수: {len(joins)}")
     
     print('# Special handling for --from-sql (SQLERD mode)')
     sqlerd_mode = bool(from_sql)
@@ -144,17 +177,13 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                     'comment': getattr(col, 'column_comment', None)
                 })
         
-        print('# Get sample joins for this table')
-        sample_joins = db.fetch_sample_joins_for_table(table.table_id, limit=5)
-        
         table_meta = {
             'owner': table.owner,
             'table_name': table.table_name,
             'status': getattr(table, 'status', 'VALID'),
             'pk_columns': pk_columns,
             'comment': getattr(table, 'table_comment', None),
-            'columns': table_columns,
-            'sample_joins': sample_joins
+            'columns': table_columns
         }
         
         node_id = f"table:{table_key}"
@@ -168,7 +197,7 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
         full_table_name = f"{owner}.{table_name}" if owner else table_name
         full_name_to_node_id_map[full_table_name] = node_id
 
-    # Build FK relationships from join patterns or infer from column names
+    # Build relationships from joins table
     edges_list = []
     processed_relationships = set()  # 중복 관계 방지용 집합
     
@@ -184,21 +213,35 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
         r_pk_cols = r_node['meta'].get('pk_columns', [])
         
         # PK 컬럼을 모두 조인 조건에 포함하는지 확인
-        l_has_all_pk = l_col.upper() in [pk.upper() for pk in l_pk_cols] if l_pk_cols else False
-        r_has_all_pk = r_col.upper() in [pk.upper() for pk in r_pk_cols] if r_pk_cols else False
+        l_cols = [l_col] if isinstance(l_col, str) else l_col
+        r_cols = [r_col] if isinstance(r_col, str) else r_col
         
-        # 우선순위에 따른 화살표 방향 결정
-        # 1. 한쪽만 PK인 경우 - PK 쪽으로 화살표
-        if r_has_all_pk and not l_has_all_pk:
-            return r_node_id, True
-        elif l_has_all_pk and not r_has_all_pk:  
-            return l_node_id, True
-        # 2. 양쪽 다 PK가 아니면 일반선
-        elif not l_has_all_pk and not r_has_all_pk:
-            return None, False
-        # 3. 양쪽 다 PK면 일반선 
+        l_has_pk = any(col in l_pk_cols for col in l_cols)
+        r_has_pk = any(col in r_pk_cols for col in r_cols)
+        
+        # FK → PK 방향으로 화살표 (FK가 PK를 참조)
+        if l_has_pk and not r_has_pk:
+            return r_node_id, True  # 오른쪽(FK)에서 왼쪽(PK)으로 화살표
+        elif r_has_pk and not l_has_pk:
+            return l_node_id, True  # 왼쪽(FK)에서 오른쪽(PK)으로 화살표
+        elif l_has_pk and r_has_pk:
+            return None, False  # 양쪽 모두 PK면 관계만 표시
         else:
-            return None, False
+            return None, False  # PK가 없으면 관계만 표시
+    
+    def create_edge(edge_id, source, target, edge_type, confidence, meta=None):
+        """엣지 생성 헬퍼 함수"""
+        return {
+            'id': edge_id,
+            'source': source,
+            'target': target,
+            'kind': edge_type,
+            'confidence': confidence,
+            'meta': meta or {}
+        }
+    
+    # joins 테이블에서 테이블 관계 추출
+    print(f"# joins 테이블에서 테이블 관계 추출 시작")
     
     if joins:
         # Count join frequency to infer FK relationships
@@ -209,14 +252,20 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                           join.r_table.upper(), join.r_col.upper())
                 join_patterns[pattern] += 1
         
+        print(f"# 조인 패턴 분석: {len(join_patterns)}개 패턴")
+        
         # Create FK edges for frequently used joins
+        edge_id = 1
         for (l_table, l_col, r_table, r_col), frequency in join_patterns.items():
-            if frequency >= 2:  # Threshold for FK inference
+            if frequency >= 1:  # 임계값을 1로 설정 - 더 많은 관계 인식
+                print(f"# 조인 패턴: {l_table}.{l_col} -> {r_table}.{r_col} (빈도: {frequency})")
+                
                 # Use the helper function to resolve abbreviated table names to node_ids
                 l_node_id = resolve_abbreviation_to_node_id(l_table, nodes_dict)
                 r_node_id = resolve_abbreviation_to_node_id(r_table, nodes_dict)
 
                 if not l_node_id or not r_node_id:
+                    print(f"# 노드 ID를 찾을 수 없음: {l_table} -> {l_node_id}, {r_table} -> {r_node_id}")
                     continue
                 
                 # 중복 관계 방지 - 테이블 쌍이 이미 처리되었는지 확인
@@ -234,106 +283,42 @@ def build_erd_json(config: Dict[str, Any], project_id: int, project_name: Option
                         # 화살표가 있는 경우: FK -> PK 관계
                         source_node = r_node_id if target_node == l_node_id else l_node_id
                         edges_list.append(create_edge(
-                            f"fk_{len(edges_list)+1}",
+                            f"fk_{edge_id}",
                             source_node,
                             target_node,
                             "foreign_key",
                             0.8,
-                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": True}
+                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": True, "source": "joins_table"}
                         ))
                     else:
                         # 일반선인 경우
                         edges_list.append(create_edge(
-                            f"rel_{len(edges_list)+1}",
+                            f"rel_{edge_id}",
                             l_node_id,
                             r_node_id,
                             "relationship", 
                             0.7,
-                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": False}
+                            {"left_column": l_col, "right_column": r_col, "frequency": frequency, "arrow": False, "source": "joins_table"}
                         ))
-    else:
-        # No joins data - infer FK relationships from column name patterns
-        edge_id = 1
-        for node1_id, node1 in nodes_dict.items():
-            table1_name = node1['meta']['table_name']
-            table1_columns = [col['name'] for col in node1['meta']['columns']]
-            
-            for node2_id, node2 in nodes_dict.items():
-                if node1_id == node2_id:
-                    continue
-                
-                # 중복 관계 방지
-                table_pair = tuple(sorted([node1_id, node2_id]))
-                if table_pair in processed_relationships:
-                    continue
-                    
-                table2_name = node2['meta']['table_name'] 
-                table2_pk = node2['meta']['pk_columns']
-                
-                # Look for FK patterns: table2_name + _ID in table1 columns
-                relationship_found = False
-                for col_name in table1_columns:
-                    col_upper = col_name.upper()
-                    table2_upper = table2_name.upper()
-                    
-                    # Pattern 1: TABLE_ID (e.g., USER_ID, ORDER_ID)
-                    if col_upper == f"{table2_upper}_ID" and f"{table2_upper}_ID" in [pk.upper() for pk in table2_pk]:
-                        processed_relationships.add(table_pair)
-                        target_node, has_arrow = should_show_arrow(node1_id, node2_id, col_name, f"{table2_upper}_ID")
-                        
-                        if has_arrow and target_node:
-                            source_node = node2_id if target_node == node1_id else node1_id
-                            edges_list.append(create_edge(
-                                f"fk_{edge_id}",
-                                source_node,
-                                target_node,
-                                "foreign_key",
-                                0.7,
-                                {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True, "arrow": True}
-                            ))
-                        else:
-                            edges_list.append(create_edge(
-                                f"rel_{edge_id}",
-                                node1_id,
-                                node2_id,
-                                "relationship",
-                                0.6,
-                                {"column": col_name, "references": f"{table2_name}.{table2_upper}_ID", "inferred": True, "arrow": False}
-                            ))
-                        edge_id += 1
-                        relationship_found = True
-                        break
-                    
-                    # Pattern 2: Exact PK match (e.g., ID -> ID)
-                    elif col_upper in [pk.upper() for pk in table2_pk] and table1_name != table2_name:
-                        processed_relationships.add(table_pair)
-                        target_node, has_arrow = should_show_arrow(node1_id, node2_id, col_name, col_name)
-                        
-                        if has_arrow and target_node:
-                            source_node = node2_id if target_node == node1_id else node1_id
-                            edges_list.append(create_edge(
-                                f"fk_{edge_id}",
-                                source_node,
-                                target_node,
-                                "foreign_key",
-                                0.6,
-                                {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True, "arrow": True}
-                            ))
-                        else:
-                            edges_list.append(create_edge(
-                                f"rel_{edge_id}",
-                                node1_id,
-                                node2_id,
-                                "relationship",
-                                0.5,
-                                {"column": col_name, "references": f"{table2_name}.{col_name}", "inferred": True, "arrow": False}
-                            ))
-                        edge_id += 1
-                        relationship_found = True
-                        break
+                    edge_id += 1
     
-    # Convert nodes_dict values to list
+    print(f"# 생성된 관계선 개수: {len(edges_list)}")
+    
+    # 디버그: 생성된 관계선 상세 정보 출력
+    print(f"# === 생성된 관계선 상세 정보 ===")
+    for i, edge in enumerate(edges_list):
+        print(f"# 관계선 {i+1}: {edge['source']} -> {edge['target']} (타입: {edge['kind']})")
+    
+    # Create the final graph structure
     nodes_list = list(nodes_dict.values())
     
-    # Create graph using schema
-    return create_graph(nodes_list, edges_list)
+    result_graph = create_graph(
+        nodes_list,
+        edges_list
+    )
+    
+    print(f"# === 최종 그래프 구조 ===")
+    print(f"# 노드 개수: {len(result_graph.get('nodes', []))}")
+    print(f"# 엣지 개수: {len(result_graph.get('edges', []))}")
+    
+    return result_graph

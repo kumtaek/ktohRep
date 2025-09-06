@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전자상거래 시스템 ERD - correct_erd.html 스타일</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .info {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+    <script src="../static/vendor/mermaid.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🏪 전자상거래 시스템 ERD</h1>
+        
+        <div class="info">
+            <strong>📋 설명:</strong> 이 ERD는 전자상거래 시스템의 데이터베이스 구조를 보여줍니다.
+            고객, 주문, 상품, 재고 등의 핵심 엔티티와 그들 간의 관계를 포함합니다.
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">13</div>
+                <div class="stat-label">테이블</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">13</div>
+                <div class="stat-label">관계</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">0</div>
+                <div class="stat-label">PK 테이블</div>
+            </div>
+        </div>
+        
+        <div class="mermaid">
+            erDiagram
+                CUSTOMERS {
+                    VARCHAR2 CUSTOMER_ID PK "고객ID"
+                    VARCHAR2 CUSTOMER_NAME "고객명"
+                    VARCHAR2 EMAIL "이메일"
+                    VARCHAR2 PHONE "전화번호"
+                    VARCHAR2 ADDRESS "주소"
+                    DATE CREATED_DATE "생성일"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                ORDERS {
+                    VARCHAR2 ORDER_ID PK "주문ID"
+                    VARCHAR2 CUSTOMER_ID FK "고객ID"
+                    VARCHAR2 USER_ID FK "사용자ID"
+                    DATE ORDER_DATE "주문일"
+                    VARCHAR2 STATUS "상태"
+                    NUMBER TOTAL_AMOUNT "총금액"
+                    NUMBER TAX_AMOUNT "세금"
+                    NUMBER DISCOUNT_AMOUNT "할인금액"
+                    DATE CREATED_DATE "생성일"
+                    DATE UPDATED_DATE "수정일"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                ORDER_ITEMS {
+                    VARCHAR2 ORDER_ITEM_ID PK "주문항목ID"
+                    VARCHAR2 ORDER_ID FK "주문ID"
+                    VARCHAR2 PRODUCT_ID FK "상품ID"
+                    NUMBER QUANTITY "수량"
+                    NUMBER UNIT_PRICE "단가"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                PRODUCTS {
+                    VARCHAR2 PRODUCT_ID PK "상품ID"
+                    VARCHAR2 PRODUCT_NAME "상품명"
+                    VARCHAR2 DESCRIPTION "설명"
+                    NUMBER PRICE "가격"
+                    NUMBER STOCK_QUANTITY "재고수량"
+                    VARCHAR2 STATUS "상태"
+                    VARCHAR2 CATEGORY_ID FK "분류ID"
+                    VARCHAR2 BRAND_ID FK "브랜드ID"
+                    VARCHAR2 SUPPLIER_ID FK "공급업체ID"
+                    VARCHAR2 WAREHOUSE_ID FK "창고ID"
+                    DATE CREATED_DATE "생성일"
+                    DATE UPDATED_DATE "수정일"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                INVENTORIES {
+                    VARCHAR2 INVENTORY_ID PK "재고ID"
+                    VARCHAR2 PRODUCT_ID FK "상품ID"
+                    NUMBER CURRENT_STOCK "현재재고"
+                    DATE UPDATED_DATE "수정일"
+                }
+                
+                PRODUCT_REVIEWS {
+                    VARCHAR2 REVIEW_ID PK "리뷰ID"
+                    VARCHAR2 PRODUCT_ID FK "상품ID"
+                    VARCHAR2 CUSTOMER_ID FK "고객ID"
+                    NUMBER RATING "평점"
+                    CLOB REVIEW_TEXT "리뷰내용"
+                    DATE CREATED_DATE "생성일"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                DISCOUNTS {
+                    VARCHAR2 DISCOUNT_ID PK "할인ID"
+                    VARCHAR2 PRODUCT_ID FK "상품ID"
+                    NUMBER DISCOUNT_RATE "할인율"
+                    DATE START_DATE "시작일"
+                    DATE END_DATE "종료일"
+                    CHAR ACTIVE_YN "활성여부"
+                }
+                
+                CATEGORIES {
+                    VARCHAR2 CATEGORY_ID PK "분류ID"
+                    VARCHAR2 CATEGORY_CODE "분류코드"
+                    VARCHAR2 CATEGORY_NAME "분류명"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                BRANDS {
+                    VARCHAR2 BRAND_ID PK "브랜드ID"
+                    VARCHAR2 BRAND_CODE "브랜드코드"
+                    VARCHAR2 BRAND_NAME "브랜드명"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                SUPPLIERS {
+                    VARCHAR2 SUPPLIER_ID PK "공급업체ID"
+                    VARCHAR2 SUPPLIER_NAME "공급업체명"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                WAREHOUSES {
+                    VARCHAR2 WAREHOUSE_ID PK "창고ID"
+                    VARCHAR2 WAREHOUSE_NAME "창고명"
+                    VARCHAR2 LOCATION "위치"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                USERS {
+                    VARCHAR2 USER_ID PK "사용자ID"
+                    VARCHAR2 USER_NAME "사용자명"
+                    VARCHAR2 EMAIL "이메일"
+                    VARCHAR2 PHONE "전화번호"
+                    VARCHAR2 STATUS "상태"
+                    DATE CREATED_DATE "생성일"
+                    DATE UPDATED_DATE "수정일"
+                    CHAR DEL_YN "삭제여부"
+                }
+                
+                USER_ROLE {
+                    NUMBER USER_ID PK "사용자ID"
+                    NUMBER ROLE_ID PK "역할ID"
+                }
+                
+                CUSTOMERS ||--o{ ORDERS : "주문"
+                ORDERS ||--o{ ORDER_ITEMS : "주문항목"
+                PRODUCTS ||--o{ ORDER_ITEMS : "상품정보"
+                PRODUCTS ||--o{ INVENTORIES : "재고관리"
+                PRODUCTS ||--o{ PRODUCT_REVIEWS : "상품리뷰"
+                PRODUCTS ||--o{ DISCOUNTS : "할인정보"
+                CUSTOMERS ||--o{ PRODUCT_REVIEWS : "리뷰작성"
+                CATEGORIES ||--o{ PRODUCTS : "분류"
+                BRANDS ||--o{ PRODUCTS : "브랜드"
+                SUPPLIERS ||--o{ PRODUCTS : "공급업체"
+                WAREHOUSES ||--o{ PRODUCTS : "창고"
+                USERS ||--o{ ORDERS : "사용자 주문"
+                USERS ||--o{ USER_ROLE : "사용자 역할"
+        </div>
+        
+        <div class="info">
+            <strong>🔗 관계 설명:</strong>
+            <ul>
+                <li><strong>1:N (||--o{):</strong> 한쪽 엔티티가 여러 개의 다른 엔티티를 가질 수 있음</li>
+                <li><strong>FK:</strong> Foreign Key (외래키) 관계</li>
+                <li><strong>PK:</strong> Primary Key (기본키)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            erDiagram: {
+                useMaxWidth: true,
+                diagramPadding: 20
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,11 +14,9 @@ from pathlib import Path
 from typing import Dict, Any
 import yaml
 
-# Add phase1 to path
+# 상대경로 import를 위한 경로 설정
 phase1_root = Path(__file__).parent.parent
 project_root = phase1_root.parent
-sys.path.insert(0, str(phase1_root))
-sys.path.insert(0, str(project_root))
 
 # 로깅 설정
 logging.basicConfig(

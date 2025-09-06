@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>의존성 그래프 분석</title>
+    <link rel="stylesheet" href="./static/css/woori-brand-theme.css">
+    <style>
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
+        }
+        
+        .woori-header {
+            background: var(--woori-gradient-header);
+            color: var(--woori-text-on-primary);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--woori-shadow-medium);
+        }
+        
+        .woori-logo {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        #toolbar { 
+            padding: 16px 24px; 
+            background: white;
+            border-bottom: var(--woori-border-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(25,118,210,0.08);
+        }
+        #cy { 
+            width: 100%; 
+            height: calc(100% - 60px); 
+        }
+        
+        button {
+            background: var(--woori-gradient-main);
+            border: none;
+            color: var(--woori-text-on-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: var(--woori-shadow-light);
+        }
+        button:hover {
+            background: var(--woori-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--woori-shadow-medium);
+        }
+        
+        #search {
+            padding: 10px 12px;
+            border: 2px solid rgba(25,118,210,0.2);
+            border-radius: var(--woori-border-radius-small);
+            font-size: 14px;
+            min-width: 220px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        #search:focus {
+            outline: none;
+            border-color: var(--woori-primary);
+            box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 120px;
+            right: 24px;
+            background: white;
+            border: var(--woori-border-light);
+            border-radius: var(--woori-border-radius);
+            padding: 20px;
+            max-width: 320px;
+            box-shadow: var(--woori-shadow-heavy);
+            display: none;
+            z-index: 1000;
+        }
+        .info-panel h4 {
+            color: var(--woori-primary);
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .stats {
+            background: var(--woori-primary-pale);
+            color: var(--woori-primary);
+            padding: 10px 16px;
+            border-radius: var(--woori-border-radius-small);
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(25,118,210,0.15);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+    </style>
+    <!-- Offline assets (relative to output dir: output/visualize -> ../static) -->
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script>
+        const DATA = {
+  "nodes": [
+    {
+      "id": "component:Config",
+      "type": "component",
+      "label": "Config (17)",
+      "group": "Config",
+      "meta": {
+        "entity_count": 17,
+        "entities": [
+          {
+            "id": "file:1",
+            "type": "file",
+            "label": "DatabaseConfig.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\config\\DatabaseConfig.java"
+          },
+          {
+            "id": "file:2",
+            "type": "file",
+            "label": "SecurityConfig.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\config\\SecurityConfig.java"
+          },
+          {
+            "id": "method:1",
+            "type": "method",
+            "label": "dateUtil()",
+            "class": "com.example.config.DatabaseConfig"
+          },
+          {
+            "id": "method:2",
+            "type": "method",
+            "label": "getConnectionString()",
+            "class": "com.example.config.DatabaseConfig"
+          },
+          {
+            "id": "method:3",
+            "type": "method",
+            "label": "initializeDatabase()",
+            "class": "com.example.config.DatabaseConfig"
+          },
+          {
+            "id": "method:4",
+            "type": "method",
+            "label": "filterChain()",
+            "class": "com.example.config.SecurityConfig"
+          },
+          {
+            "id": "method:5",
+            "type": "method",
+            "label": "passwordEncoder()",
+            "class": "com.example.config.SecurityConfig"
+          },
+          {
+            "id": "method:6",
+            "type": "method",
+            "label": "jwtAuthenticationFilter()",
+            "class": "com.example.config.SecurityConfig"
+          },
+          {
+            "id": "method:7",
+            "type": "method",
+            "label": "customAuthenticationEntryPoint()",
+            "class": "com.example.config.SecurityConfig"
+          },
+          {
+            "id": "method:8",
+            "type": "method",
+            "label": "customAccessDeniedHandler()",
+            "class": "com.example.config.SecurityConfig"
+          }
+        ],
+        "total_entities": 17
+      }
+    },
+    {
+      "id": "component:Controller",
+      "type": "component",
+      "label": "Controller (24)",
+      "group": "Controller",
+      "meta": {
+        "entity_count": 24,
+        "entities": [
+          {
+            "id": "file:3",
+            "type": "file",
+            "label": "ApiController.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\ApiController.java"
+          },
+          {
+            "id": "file:4",
+            "type": "file",
+            "label": "MainController.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\MainController.java"
+          },
+          {
+            "id": "file:5",
+            "type": "file",
+            "label": "OrderController.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\OrderController.java"
+          },
+          {
+            "id": "file:6",
+            "type": "file",
+            "label": "PaymentController.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\PaymentController.java"
+          },
+          {
+            "id": "method:16",
+            "type": "method",
+            "label": "healthCheck()",
+            "class": "com.example.controller.ApiController"
+          },
+          {
+            "id": "method:17",
+            "type": "method",
+            "label": "processData()",
+            "class": "com.example.controller.ApiController"
+          },
+          {
+            "id": "method:18",
+            "type": "method",
+            "label": "generateReports()",
+            "class": "com.example.controller.ApiController"
+          },
+          {
+            "id": "method:19",
+            "type": "method",
+            "label": "home()",
+            "class": "com.example.controller.MainController"
+          },
+          {
+            "id": "method:20",
+            "type": "method",
+            "label": "getUsers()",
+            "class": "com.example.controller.MainController"
+          },
+          {
+            "id": "method:21",
+            "type": "method",
+            "label": "createOrder()",
+            "class": "com.example.controller.MainController"
+          }
+        ],
+        "total_entities": 24
+      }
+    },
+    {
+      "id": "component:Mapper",
+      "type": "component",
+      "label": "Mapper (85)",
+      "group": "Mapper",
+      "meta": {
+        "entity_count": 85,
+        "entities": [
+          {
+            "id": "file:7",
+            "type": "file",
+            "label": "IntegratedMapper.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java"
+          },
+          {
+            "id": "file:10",
+            "type": "file",
+            "label": "OrderMapper.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java"
+          },
+          {
+            "id": "file:11",
+            "type": "file",
+            "label": "ProductMapper.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java"
+          },
+          {
+            "id": "file:12",
+            "type": "file",
+            "label": "UserMapper.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java"
+          },
+          {
+            "id": "file:26",
+            "type": "file",
+            "label": "IntegratedMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\IntegratedMapper.xml"
+          },
+          {
+            "id": "file:27",
+            "type": "file",
+            "label": "OrderMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\OrderMapper.xml"
+          },
+          {
+            "id": "file:28",
+            "type": "file",
+            "label": "ProductMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\ProductMapper.xml"
+          },
+          {
+            "id": "file:29",
+            "type": "file",
+            "label": "TestJoinMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\TestJoinMapper.xml"
+          },
+          {
+            "id": "file:30",
+            "type": "file",
+            "label": "UserMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\UserMapper.xml"
+          },
+          {
+            "id": "file:31",
+            "type": "file",
+            "label": "UserMapper.xml",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\resources\\mybatis\\mapper\\UserMapper.xml"
+          }
+        ],
+        "total_entities": 85
+      }
+    },
+    {
+      "id": "component:Service",
+      "type": "component",
+      "label": "Service (49)",
+      "group": "Service",
+      "meta": {
+        "entity_count": 49,
+        "entities": [
+          {
+            "id": "file:8",
+            "type": "file",
+            "label": "IntegratedService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java"
+          },
+          {
+            "id": "file:9",
+            "type": "file",
+            "label": "VulnerabilityTestService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java"
+          },
+          {
+            "id": "file:13",
+            "type": "file",
+            "label": "ListService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ListService.java"
+          },
+          {
+            "id": "file:14",
+            "type": "file",
+            "label": "OrderService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java"
+          },
+          {
+            "id": "file:15",
+            "type": "file",
+            "label": "OverloadService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OverloadService.java"
+          },
+          {
+            "id": "file:16",
+            "type": "file",
+            "label": "ProductService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ProductService.java"
+          },
+          {
+            "id": "file:17",
+            "type": "file",
+            "label": "UserService.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java"
+          },
+          {
+            "id": "file:20",
+            "type": "file",
+            "label": "ListServiceImpl1.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\impl\\ListServiceImpl1.java"
+          },
+          {
+            "id": "method:40",
+            "type": "method",
+            "label": "startProcess()",
+            "class": "com.example.integrated.IntegratedService"
+          },
+          {
+            "id": "method:41",
+            "type": "method",
+            "label": "doWork()",
+            "class": "com.example.integrated.IntegratedService"
+          }
+        ],
+        "total_entities": 49
+      }
+    },
+    {
+      "id": "component:Util",
+      "type": "component",
+      "label": "Util (6)",
+      "group": "Util",
+      "meta": {
+        "entity_count": 6,
+        "entities": [
+          {
+            "id": "file:18",
+            "type": "file",
+            "label": "DateUtil.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\DateUtil.java"
+          },
+          {
+            "id": "file:19",
+            "type": "file",
+            "label": "Texts.java",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java"
+          },
+          {
+            "id": "method:97",
+            "type": "method",
+            "label": "getCurrentDate()",
+            "class": "com.example.util.DateUtil"
+          },
+          {
+            "id": "method:98",
+            "type": "method",
+            "label": "convertDateFormat()",
+            "class": "com.example.util.DateUtil"
+          },
+          {
+            "id": "method:99",
+            "type": "method",
+            "label": "daysBetween()",
+            "class": "com.example.util.DateUtil"
+          },
+          {
+            "id": "method:100",
+            "type": "method",
+            "label": "isEmpty()",
+            "class": "com.example.util.Texts"
+          }
+        ],
+        "total_entities": 6
+      }
+    },
+    {
+      "id": "component:View",
+      "type": "component",
+      "label": "View (8)",
+      "group": "View",
+      "meta": {
+        "entity_count": 8,
+        "entities": [
+          {
+            "id": "file:21",
+            "type": "file",
+            "label": "IntegratedView.jsp",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\webapp\\WEB-INF\\jsp\\IntegratedView.jsp"
+          },
+          {
+            "id": "file:22",
+            "type": "file",
+            "label": "userList.jsp",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\webapp\\WEB-INF\\views\\userList.jsp"
+          },
+          {
+            "id": "file:23",
+            "type": "file",
+            "label": "orderView.jsp",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\webapp\\WEB-INF\\jsp\\order\\orderView.jsp"
+          },
+          {
+            "id": "file:24",
+            "type": "file",
+            "label": "productSearch.jsp",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\webapp\\WEB-INF\\jsp\\product\\productSearch.jsp"
+          },
+          {
+            "id": "file:25",
+            "type": "file",
+            "label": "userList.jsp",
+            "path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\webapp\\WEB-INF\\jsp\\user\\userList.jsp"
+          },
+          {
+            "id": "sql_unit:1",
+            "type": "sql_unit",
+            "label": "None.jsp_sql_12_1"
+          },
+          {
+            "id": "sql_unit:2",
+            "type": "sql_unit",
+            "label": "None.jsp_sql_49_1"
+          },
+          {
+            "id": "sql_unit:3",
+            "type": "sql_unit",
+            "label": "None.jsp_sql_33_1"
+          }
+        ],
+        "total_entities": 8
+      }
+    },
+    {
+      "id": "component:DB",
+      "type": "component",
+      "label": "DB (5)",
+      "group": "DB",
+      "meta": {
+        "entity_count": 5,
+        "entities": [
+          {
+            "id": "table:ORDERS",
+            "type": "table",
+            "label": "ORDERS"
+          },
+          {
+            "id": "table:PRODUCTS",
+            "type": "table",
+            "label": "PRODUCTS"
+          },
+          {
+            "id": "table:USERS",
+            "type": "table",
+            "label": "USERS"
+          },
+          {
+            "id": "table:CATEGORIES",
+            "type": "table",
+            "label": "CATEGORIES"
+          },
+          {
+            "id": "table:INVENTORIES",
+            "type": "table",
+            "label": "INVENTORIES"
+          }
+        ],
+        "total_entities": 5
+      }
+    },
+    {
+      "id": "component:Model",
+      "type": "component",
+      "label": "Model (Virtual)",
+      "group": "Model",
+      "meta": {
+        "entity_count": 0,
+        "entities": [],
+        "total_entities": 0,
+        "virtual": true
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "comp_edge:Config-Util",
+      "source": "component:Config",
+      "target": "component:Util",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "count": 1,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.8
+      }
+    },
+    {
+      "id": "comp_edge:Config-Service",
+      "source": "component:Config",
+      "target": "component:Service",
+      "kind": "call",
+      "confidence": 0.8,
+      "meta": {
+        "count": 4,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.8
+      }
+    },
+    {
+      "id": "comp_edge:Controller-Service",
+      "source": "component:Controller",
+      "target": "component:Service",
+      "kind": "call",
+      "confidence": 0.7999999999999995,
+      "meta": {
+        "count": 54,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.7999999999999995
+      }
+    },
+    {
+      "id": "comp_edge:Controller-Model",
+      "source": "component:Controller",
+      "target": "component:Model",
+      "kind": "call",
+      "confidence": 0.8000000000000004,
+      "meta": {
+        "count": 33,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.8000000000000004
+      }
+    },
+    {
+      "id": "comp_edge:Service-Mapper",
+      "source": "component:Service",
+      "target": "component:Mapper",
+      "kind": "call",
+      "confidence": 0.8000000000000002,
+      "meta": {
+        "count": 3,
+        "kinds": [
+          "call"
+        ],
+        "avg_confidence": 0.8000000000000002
+      }
+    },
+    {
+      "id": "comp_edge:Mapper-DB",
+      "source": "component:Mapper",
+      "target": "component:DB",
+      "kind": "use_table",
+      "confidence": 0.8000000000000003,
+      "meta": {
+        "count": 18,
+        "kinds": [
+          "use_table"
+        ],
+        "avg_confidence": 0.8000000000000003
+      }
+    }
+  ],
+  "metadata": {
+    "node_count": 8,
+    "edge_count": 6,
+    "node_types": [
+      "component"
+    ],
+    "edge_kinds": [
+      "use_table",
+      "call"
+    ]
+  }
+};
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btns = [
+                { sel: 'button[onclick="cy.fit()"]', text: '화면맞춤', title: '화면에 맞추기' },
+                { sel: 'button[onclick="cy.center()"]', text: '중앙정렬', title: '중앙 정렬' },
+                { sel: 'button[onclick="exportPng()"]', text: 'PNG 저장', title: 'PNG로 내보내기' },
+                { sel: 'button[onclick="resetView()"]', text: '레이아웃 초기화', title: '레이아웃 초기화' },
+                { sel: 'button[onclick="togglePhysics()"]', text: '물리 레이아웃', title: '물리 레이아웃 토글' }
+            ];
+            btns.forEach(b => { const el = document.querySelector(b.sel); if (el) { el.textContent = b.text; el.title = b.title; } });
+            const search = document.getElementById('search'); if (search) search.placeholder = '노드 검색...';
+            const stats = document.getElementById('stats'); if (stats) stats.innerHTML = '노드: <span id="node-count">0</span> | 엣지: <span id="edge-count">0</span>';
+            const h = document.getElementById('info-title'); if (h) h.textContent = '노드 정보';
+            document.title = 'Source Analyzer - 의존성 그래프';
+        });
+    </script>
+</head>
+<body>
+    <!--  헤더 -->
+    <header class="woori-header">
+        <div class="header-title">
+            <div class="woori-logo">우</div>
+            <span>Source Analyzer - 의존성 분석</span>
+        </div>
+        <div style="font-size: 14px; opacity: 0.9;">Enterprise Solution</div>
+    </header>
+    
+    <div id="toolbar">
+        <button onclick="cy.fit()" title="화면에 맞추기">🔍 화면맞춤</button>
+        <button onclick="cy.center()" title="중앙 정렬">🎯 중앙정렬</button>
+        <button onclick="exportPng()" title="PNG로 내보내기">📷 PNG 저장</button>
+        <button onclick="resetView()" title="레이아웃 초기화">🔄 초기화</button>
+        <button onclick="togglePhysics()" title="물리 레이아웃 토글">⚡ 물리모드</button>
+        <input id="search" placeholder="노드 이름으로 검색..." oninput="searchNode(this.value)" />
+        <div class="stats" id="stats">
+            노드: <span id="node-count">0</span> | 
+            연결: <span id="edge-count">0</span>
+        </div>
+        <div class="legend" id="legend"></div>
+    </div>
+    
+    <div id="cy"></div>
+    
+    <div id="info-panel" class="info-panel">
+        <h4 id="info-title">Node Info</h4>
+        <div id="info-content"></div>
+    </div>
+
+    <script>
+        // Build Cytoscape elements
+        const elements = [];
+        
+        // Add nodes
+        for (const node of DATA.nodes || []) {
+            elements.push({
+                data: {
+                    id: node.id,
+                    label: node.label,
+                    type: node.type,
+                    group: node.group,
+                    meta: node.meta
+                }
+            });
+        }
+        
+        // Add edges
+        for (const edge of DATA.edges || []) {
+            elements.push({
+                data: {
+                    id: edge.id,
+                    source: edge.source,
+                    target: edge.target,
+                    kind: edge.kind,
+                    confidence: edge.confidence,
+                    meta: edge.meta
+                }
+            });
+        }
+
+        let usePhysics = false;
+
+        // Initialize Cytoscape
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elements,
+            style: [
+                // Node styles
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '10px',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '150px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'background-color': '#f0f0f0',
+                        'border-width': 1,
+                        'border-color': '#999',
+                        'width': 'mapData(label.length, 5, 50, 30, 120)',
+                        'height': 'mapData(label.length, 5, 50, 20, 40)',
+                        'font-family': 'monospace'
+                    }
+                },
+                
+                // Group-specific node colors
+                {
+                    selector: 'node[group = "Controller"]',
+                    style: { 'background-color': '#e3f2fd', 'border-color': '#1976d2' }
+                },
+                {
+                    selector: 'node[group = "Service"]',
+                    style: { 'background-color': '#e8f5e8', 'border-color': '#388e3c' }
+                },
+                {
+                    selector: 'node[group = "Repository"]',
+                    style: { 'background-color': '#fff3e0', 'border-color': '#f57c00' }
+                },
+                {
+                    selector: 'node[group = "Mapper"]',
+                    style: { 'background-color': '#f3e5f5', 'border-color': '#7b1fa2' }
+                },
+                {
+                    selector: 'node[group = "JSP"]',
+                    style: { 'background-color': '#ffebee', 'border-color': '#d32f2f' }
+                },
+                {
+                    selector: 'node[group = "DB"]',
+                    style: { 'background-color': '#fff9c4', 'border-color': '#f9a825', 'shape': 'round-rectangle' }
+                },
+                {
+                    selector: 'node[group = "Code"]',
+                    style: { 'background-color': '#f5f5f5', 'border-color': '#616161' }
+                },
+                {
+                    selector: 'node[type = "component"]',
+                    style: { 
+                        'background-color': '#80deea', 
+                        'border-color': '#00acc1',
+                        'shape': 'round-rectangle',
+                        'width': 'mapData(label.length, 5, 50, 80, 200)',
+                        'height': 60,
+                        'font-size': '12px',
+                        'font-weight': 'bold'
+                    }
+                },
+                
+                // Edge styles
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 'mapData(confidence, 0, 1, 1, 3)',
+                        'line-color': '#666',
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': '#666',
+                        'arrow-scale': 1.2
+                    }
+                },
+                
+                // Edge kind specific colors
+                {
+                    selector: 'edge[kind = "call"]',
+                    style: { 'line-color': '#2196f3', 'target-arrow-color': '#2196f3' }
+                },
+                {
+                    selector: 'edge[kind = "call_unresolved"]',
+                    style: { 
+                        'line-color': '#9e9e9e', 
+                        'target-arrow-color': '#9e9e9e',
+                        'line-style': 'dashed',
+                        'opacity': 0.7
+                    }
+                },
+                {
+                    selector: 'edge[kind = "use_table"]',
+                    style: { 'line-color': '#ff9800', 'target-arrow-color': '#ff9800' }
+                },
+                {
+                    selector: 'edge[kind = "include"]',
+                    style: { 'line-color': '#9c27b0', 'target-arrow-color': '#9c27b0' }
+                },
+                {
+                    selector: 'edge[kind = "extends"]',
+                    style: { 'line-color': '#4caf50', 'target-arrow-color': '#4caf50' }
+                },
+                {
+                    selector: 'edge[kind = "implements"]',
+                    style: { 'line-color': '#4caf50', 'target-arrow-color': '#4caf50', 'line-style': 'dashed' }
+                },
+                {
+                    selector: 'edge[kind = "mixed"]',
+                    style: { 'line-color': '#795548', 'target-arrow-color': '#795548', 'width': 3 }
+                },
+                
+                // Selected/highlighted styles
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': 3,
+                        'border-color': '#ff6b6b',
+                        'background-color': '#ffe0e0'
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff6b6b',
+                        'target-arrow-color': '#ff6b6b',
+                        'width': 4
+                    }
+                }
+            ],
+            layout: {
+                name: 'fcose',
+                quality: 'draft',
+                randomize: true,
+                animate: true,
+                animationDuration: 2000,
+                fit: true,
+                padding: 200,
+                nodeSeparation: 600,
+                idealEdgeLength: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    const kind = edge.data('kind') || '';
+                    if (kind === 'package_relation') {
+                        return Math.max(350, 700 - (confidence * 200));
+                    }
+                    return Math.max(300, 600 - (confidence * 150));
+                },
+                nodeRepulsion: 35000,
+                edgeElasticity: edge => {
+                    const confidence = edge.data('confidence') || 0.5;
+                    return confidence * 0.2;
+                },
+                gravityRange: 10.0,
+                gravity: 0.1,
+                numIter: 1800,
+                initialTemp: 600,
+                coolingFactor: 0.98,
+                minTemp: 2.5
+            },
+            wheelSensitivity: 0.1
+        });
+
+        // Update stats
+        document.getElementById('node-count').textContent = DATA.nodes ? DATA.nodes.length : 0;
+        document.getElementById('edge-count').textContent = DATA.edges ? DATA.edges.length : 0;
+
+        // Create legend
+        function createLegend() {
+            const groups = [...new Set((DATA.nodes || []).map(n => n.group))];
+            const legend = document.getElementById('legend');
+            
+            const groupColors = {
+                'Controller': '#1976d2',
+                'Service': '#388e3c',
+                'Repository': '#f57c00',
+                'Mapper': '#7b1fa2',
+                'JSP': '#d32f2f',
+                'DB': '#f9a825',
+                'Code': '#616161',
+                'Entity': '#9c27b0',
+                'Util': '#607d8b',
+                'Config': '#ff5722'
+            };
+            
+            groups.forEach(group => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = groupColors[group] || '#666';
+                
+                const label = document.createElement('span');
+                label.textContent = group;
+                
+                item.appendChild(color);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+        
+        createLegend();
+
+        // Event handlers
+        function exportPng() {
+            const png64 = cy.png({ 
+                full: true, 
+                scale: 2,
+                bg: 'white'
+            });
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = 'dependency-graph.png';
+            link.click();
+        }
+
+        function resetView() {
+            const layoutOptions = usePhysics ?
+                {
+                    name: 'fcose',
+                    quality: 'draft',
+                    randomize: true,
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 100,
+                    nodeSeparation: 280,
+                    idealEdgeLength: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        const kind = edge.data('kind') || '';
+                        if (kind === 'package_relation') {
+                            return Math.max(200, 450 - (confidence * 200));
+                        }
+                        return Math.max(180, 380 - (confidence * 150));
+                    },
+                    nodeRepulsion: 15000,
+                    edgeElasticity: edge => {
+                        const confidence = edge.data('confidence') || 0.5;
+                        return confidence * 0.3;
+                    },
+                    gravityRange: 6.5,
+                    gravity: 0.2,
+                    numIter: 2500,
+                    initialTemp: 400,
+                    coolingFactor: 0.96,
+                    minTemp: 1.2
+                } :
+                {
+                    name: 'cose',
+                    animate: true,
+                    animationDuration: 1500,
+                    fit: true,
+                    padding: 50,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
+                };
+            
+            try {
+                cy.layout(layoutOptions).run();
+            } catch (e) {
+                console.warn('Advanced layout unavailable, falling back to cose');
+                cy.layout({
+                    name: 'cose',
+                    animate: true,
+                    nodeRepulsion: 4500,
+                    idealEdgeLength: 120,
+                    edgeElasticity: 0.45,
+                    gravity: 0.25
+                }).run();
+            }
+        }
+
+        function togglePhysics() {
+            usePhysics = !usePhysics;
+            resetView();
+        }
+
+        function searchNode(query) {
+            cy.nodes().removeClass('highlighted');
+            
+            if (!query.trim()) {
+                cy.nodes().unselect();
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label') || '';
+                const type = node.data('type') || '';
+                const group = node.data('group') || '';
+                
+                return label.toLowerCase().includes(query.toLowerCase()) ||
+                       type.toLowerCase().includes(query.toLowerCase()) ||
+                       group.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                matchedNodes.select();
+                cy.fit(matchedNodes, 50);
+            }
+        }
+
+        // Node click handler
+        cy.on('tap', 'node', function(evt) {
+            const node = evt.target;
+            const data = node.data();
+            
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('info-title');
+            const content = document.getElementById('info-content');
+            
+            title.textContent = data.label || data.id;
+            
+            let html = `<p><strong>유형:</strong> ${data.type}</p>`;
+            html += `<p><strong>그룹:</strong> ${data.group}</p>`;
+            html += `<p><strong>ID:</strong> ${data.id}</p>`;
+            
+            if (data.meta) {
+                for (const [key, value] of Object.entries(data.meta)) {
+                    if (value !== null && value !== undefined && key !== 'entities') {
+                        if (typeof value === 'object') {
+                            html += `<p><strong>${key}:</strong> <pre>${JSON.stringify(value, null, 2)}</pre></p>`;
+                        } else {
+                            html += `<p><strong>${key}:</strong> ${value}</p>`;
+                        }
+                    }
+                }
+                
+                // Special handling for component entities
+                if (data.meta.entities && data.meta.entities.length > 0) {
+                    html += `<p><strong>엔티티 (${data.meta.total_entities || data.meta.entities.length}):</strong></p>`;
+                    html += '<ul>';
+                    data.meta.entities.forEach(entity => {
+                        html += `<li>${entity.label} (${entity.type})</li>`;
+                    });
+                    if (data.meta.total_entities > data.meta.entities.length) {
+                        html += `<li>... 외 ${data.meta.total_entities - data.meta.entities.length}개</li>`;
+                    }
+                    html += '</ul>';
+                }
+            }
+            
+            content.innerHTML = html;
+            panel.style.display = 'block';
+        });
+
+        // Click outside to hide panel
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#info-panel') && !e.target.closest('#cy')) {
+                document.getElementById('info-panel').style.display = 'none';
+            }
+        });
+
+        // Double-click to focus on node
+        cy.on('dblclick', 'node', function(evt) {
+            const node = evt.target;
+            cy.fit(node, 100);
+        });
+
+        console.log('의존성 그래프 로드 완료:', DATA.nodes?.length || 0, '노드,', DATA.edges?.length || 0, '엣지');
+    </script>
+</body>
+</html>

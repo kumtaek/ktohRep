@@ -1,0 +1,10 @@
+# 테스트 커버리지 관리 (핵심만)
+coverage==7.4.1
+pytest==7.4.3
+
+# 기존 요구사항
+sqlalchemy==1.4.53
+pyyaml==6.0.1
+sqlparse==0.4.4
+lxml==4.9.3
+tree-sitter==0.20.4

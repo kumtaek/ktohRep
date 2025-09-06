@@ -1,0 +1,93 @@
+# Visualization Configuration for Source Analyzer
+# This file contains customizable rules and settings for visualization components
+
+# 데이터베이스 설정
+database:
+  # 데이터베이스 타입 설정
+  type: "sqlite"  # 데이터베이스 타입 (sqlite, mysql, postgresql 등)
+  
+  # 기본 스키마 설정 (프로젝트별로 다를 수 있음)
+  default_schema: "SAMPLE"  # 기본 데이터베이스 스키마 (Oracle의 경우 OWNER)
+  
+  # SQLite 설정
+  sqlite:
+    path: "../project/{project_name}/metadata.db"  # 프로젝트별 분석 결과 (상대경로)
+    wal_mode: true
+
+component_classification:
+  # Component classification rules
+  # Each rule is a list of regex patterns that match file paths or entity types
+  rules:
+    Controller:
+      - '.*\.controller\..*'
+      - '.*Controller\.java$'
+    Service:
+      - '.*\.service\..*' 
+      - '.*Service\.java$'
+    Repository:
+      - '.*\.repository\..*'
+      - '.*Repository\.java$'
+    Mapper:
+      - '.*Mapper\.xml$'
+      - '.*\.mapper\..*'
+    JSP:
+      - '.*/WEB-INF/jsp/.*\.jsp$'
+      - '.*\.jsp$'
+    Entity:
+      - '.*\.entity\..*'
+      - '.*\.model\..*'
+      - '.*\.domain\..*'
+    Util:
+      - '.*\.util\..*'
+      - '.*Utils?\.java$'
+    Config:
+      - '.*\.config\..*'
+      - '.*Config\.java$'
+    DB:
+      - '^TABLE:.*'
+  
+  # Default component for unmatched entities
+  default_component: 'Other'
+  
+  # Enable logging for mismatched classifications
+  log_mismatches: true
+
+layout_options:
+  # Default layout for each visualization type
+  default_layouts:
+    erd: 'dagre'
+    graph: 'cose-bilkent'
+    component: 'circle'
+    sequence: 'dagre'
+  
+  # Available layouts for each type
+  available_layouts:
+    erd: ['dagre', 'circle', 'cose-bilkent', 'grid']
+    graph: ['dagre', 'circle', 'cose-bilkent', 'concentric']
+    component: ['circle', 'dagre', 'cose-bilkent', 'concentric']
+    sequence: ['dagre', 'breadthfirst']
+
+ui_settings:
+  # Search and navigation
+  search:
+    highlight_color: '#00c851'
+    max_results: 100
+  
+  # Keyboard shortcuts
+  shortcuts:
+    search: '/'
+    focus_search: 'Ctrl+F'
+    toggle_layout: 'L'
+    reset_view: 'R'
+    export_png: 'Ctrl+S'
+  
+  # Performance settings
+  performance:
+    max_nodes_default: 2000
+    lazy_rendering_threshold: 500
+    animation_duration: 1000
+
+# 로깅 설정
+logging:
+  level: "DEBUG"
+  log_file: "../logs/visualize_{timestamp}.log"

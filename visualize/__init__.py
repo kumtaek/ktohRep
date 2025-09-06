@@ -1,1 +1,3 @@
-# Empty __init__.py for visualize package
+"""
+Visualize: 시각화 모듈
+"""

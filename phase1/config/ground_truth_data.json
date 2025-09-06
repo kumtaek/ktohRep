@@ -1,0 +1,26 @@
+{
+  "total_files": 32,
+  "total_classes": 15,
+  "total_methods": 74,
+  "total_sql_queries": 37,
+  "total_sql_injections": 54,
+  "analysis_date": "2025-01-04",
+  "analyst": "Manual Analysis",
+  "notes": "Based on previous ground truth analysis results",
+  "file_breakdown": {
+    "java_files": 20,
+    "jsp_files": 6,
+    "xml_files": 6
+  },
+  "method_breakdown": {
+    "public_methods": 45,
+    "private_methods": 20,
+    "protected_methods": 9
+  },
+  "sql_breakdown": {
+    "select_queries": 20,
+    "insert_queries": 8,
+    "update_queries": 6,
+    "delete_queries": 3
+  }
+}

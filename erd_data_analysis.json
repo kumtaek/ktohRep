@@ -1,0 +1,1629 @@
+{
+  "nodes": [
+    {
+      "id": "table:PUBLIC.USER_ROLE",
+      "type": "table",
+      "label": "PUBLIC.USER_ROLE",
+      "group": "DB",
+      "meta": {
+        "owner": "PUBLIC",
+        "table_name": "USER_ROLE",
+        "status": "VALID",
+        "pk_columns": [
+          "USER_ID",
+          "ROLE_ID"
+        ],
+        "comment": "사용자역할",
+        "columns": [
+          {
+            "name": "ROLE_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "ROLE_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.BRANDS",
+      "type": "table",
+      "label": "SAMPLE.BRANDS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "BRANDS",
+        "status": "VALID",
+        "pk_columns": [
+          "BRAND_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "BRAND_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.CATEGORIES",
+      "type": "table",
+      "label": "SAMPLE.CATEGORIES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "CATEGORIES",
+        "status": "VALID",
+        "pk_columns": [
+          "CATEGORY_ID"
+        ],
+        "comment": "분류코드",
+        "columns": [
+          {
+            "name": "CATEGORY_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_CODE",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.CUSTOMERS",
+      "type": "table",
+      "label": "SAMPLE.CUSTOMERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "CUSTOMERS",
+        "status": "VALID",
+        "pk_columns": [
+          "CUSTOMER_ID"
+        ],
+        "comment": "고객정보",
+        "columns": [
+          {
+            "name": "ADDRESS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ADDRESS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.DISCOUNTS",
+      "type": "table",
+      "label": "SAMPLE.DISCOUNTS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "DISCOUNTS",
+        "status": "VALID",
+        "pk_columns": [
+          "DISCOUNT_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ACTIVE_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_RATE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "END_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "START_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ACTIVE_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_RATE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "END_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "START_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.INVENTORIES",
+      "type": "table",
+      "label": "SAMPLE.INVENTORIES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "INVENTORIES",
+        "status": "VALID",
+        "pk_columns": [
+          "INVENTORY_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "CURRENT_STOCK",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "INVENTORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CURRENT_STOCK",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "INVENTORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.ORDERS",
+      "type": "table",
+      "label": "SAMPLE.ORDERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "ORDERS",
+        "status": "VALID",
+        "pk_columns": [
+          "ORDER_ID"
+        ],
+        "comment": "주문",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DISCOUNT_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TAX_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "TOTAL_AMOUNT",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.ORDER_ITEMS",
+      "type": "table",
+      "label": "SAMPLE.ORDER_ITEMS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "ORDER_ITEMS",
+        "status": "VALID",
+        "pk_columns": [
+          "ORDER_ITEM_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ITEM_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UNIT_PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ORDER_ITEM_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UNIT_PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.PRODUCTS",
+      "type": "table",
+      "label": "SAMPLE.PRODUCTS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "PRODUCTS",
+        "status": "VALID",
+        "pk_columns": [
+          "PRODUCT_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DESCRIPTION",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STOCK_QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "BRAND_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CATEGORY_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DESCRIPTION",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRICE",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STOCK_QUANTITY",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.PRODUCT_REVIEWS",
+      "type": "table",
+      "label": "SAMPLE.PRODUCT_REVIEWS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "PRODUCT_REVIEWS",
+        "status": "VALID",
+        "pk_columns": [
+          "REVIEW_ID"
+        ],
+        "comment": "상품리뷰",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "RATING",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_TEXT",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "RATING",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "REVIEW_TEXT",
+            "data_type": "CLOB",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SUPPLIERS",
+      "type": "table",
+      "label": "SAMPLE.SUPPLIERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SUPPLIERS",
+        "status": "VALID",
+        "pk_columns": [
+          "SUPPLIER_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "SUPPLIER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.USERS",
+      "type": "table",
+      "label": "SAMPLE.USERS",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "USERS",
+        "status": "VALID",
+        "pk_columns": [
+          "USER_ID"
+        ],
+        "comment": "사용자",
+        "columns": [
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "CREATED_DATE",
+            "data_type": "DATE",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "EMAIL",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "PHONE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "UPDATED_DATE",
+            "data_type": "DATE",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "USER_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "USER_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.WAREHOUSES",
+      "type": "table",
+      "label": "SAMPLE.WAREHOUSES",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "WAREHOUSES",
+        "status": "VALID",
+        "pk_columns": [
+          "WAREHOUSE_ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "LOCATION",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "DEL_YN",
+            "data_type": "CHAR",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "LOCATION",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_ID",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "WAREHOUSE_NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SCOTT.DYNAMIC_DATA",
+      "type": "table",
+      "label": "SCOTT.DYNAMIC_DATA",
+      "group": "DB",
+      "meta": {
+        "owner": "SCOTT",
+        "table_name": "DYNAMIC_DATA",
+        "status": "VALID",
+        "pk_columns": [
+          "ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "NAME",
+            "data_type": "VARCHAR2",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "STATUS",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SCOTT.RELATED_DATA",
+      "type": "table",
+      "label": "SCOTT.RELATED_DATA",
+      "group": "DB",
+      "meta": {
+        "owner": "SCOTT",
+        "table_name": "RELATED_DATA",
+        "status": "VALID",
+        "pk_columns": [
+          "ID"
+        ],
+        "comment": "",
+        "columns": [
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "RELATED_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "VALUE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": true,
+            "comment": ""
+          },
+          {
+            "name": "RELATED_ID",
+            "data_type": "NUMBER",
+            "nullable": "N",
+            "is_pk": false,
+            "comment": ""
+          },
+          {
+            "name": "VALUE",
+            "data_type": "VARCHAR2",
+            "nullable": "Y",
+            "is_pk": false,
+            "comment": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SAMPLE.O",
+      "type": "table",
+      "label": "SAMPLE.SAMPLE.O",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SAMPLE.O",
+        "status": "INFERRED",
+        "pk_columns": [],
+        "comment": "[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: sample.oi, 조인 필드: ORDER_ID)",
+        "columns": [
+          {
+            "name": "ORDER_ID",
+            "data_type": "UNKNOWN",
+            "nullable": null,
+            "is_pk": false,
+            "comment": "조인 필드로 발견됨 (파트너 테이블: sample.oi.ORDER_ID)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SAMPLE.OI",
+      "type": "table",
+      "label": "SAMPLE.SAMPLE.OI",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SAMPLE.OI",
+        "status": "INFERRED",
+        "pk_columns": [],
+        "comment": "[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: sample.o, 조인 필드: ORDER_ID)",
+        "columns": [
+          {
+            "name": "ORDER_ID",
+            "data_type": "UNKNOWN",
+            "nullable": null,
+            "is_pk": false,
+            "comment": "조인 필드로 발견됨 (파트너 테이블: sample.o.ORDER_ID)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SAMPLE.P",
+      "type": "table",
+      "label": "SAMPLE.SAMPLE.P",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SAMPLE.P",
+        "status": "INFERRED",
+        "pk_columns": [],
+        "comment": "[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: sample.oi, 조인 필드: PRODUCT_ID)",
+        "columns": [
+          {
+            "name": "PRODUCT_ID",
+            "data_type": "UNKNOWN",
+            "nullable": null,
+            "is_pk": false,
+            "comment": "조인 필드로 발견됨 (파트너 테이블: sample.oi.PRODUCT_ID)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SAMPLE.C",
+      "type": "table",
+      "label": "SAMPLE.SAMPLE.C",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SAMPLE.C",
+        "status": "INFERRED",
+        "pk_columns": [],
+        "comment": "[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: sample.o, 조인 필드: CUSTOMER_ID)",
+        "columns": [
+          {
+            "name": "CUSTOMER_ID",
+            "data_type": "UNKNOWN",
+            "nullable": null,
+            "is_pk": false,
+            "comment": "조인 필드로 발견됨 (파트너 테이블: sample.o.CUSTOMER_ID)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "table:SAMPLE.SAMPLE.U",
+      "type": "table",
+      "label": "SAMPLE.SAMPLE.U",
+      "group": "DB",
+      "meta": {
+        "owner": "SAMPLE",
+        "table_name": "SAMPLE.U",
+        "status": "INFERRED",
+        "pk_columns": [],
+        "comment": "[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: sample.o, 조인 필드: USER_ID)",
+        "columns": [
+          {
+            "name": "USER_ID",
+            "data_type": "UNKNOWN",
+            "nullable": null,
+            "is_pk": false,
+            "comment": "조인 필드로 발견됨 (파트너 테이블: sample.o.USER_ID)"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "fk_1",
+      "source": "table:SAMPLE.ORDERS",
+      "target": "table:SAMPLE.ORDER_ITEMS",
+      "kind": "foreign_key",
+      "confidence": 0.8,
+      "meta": {
+        "left_column": "ORDER_ID",
+        "right_column": "ORDER_ID",
+        "frequency": 2,
+        "arrow": true,
+        "source": "joins_table"
+      }
+    },
+    {
+      "id": "fk_2",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.ORDER_ITEMS",
+      "kind": "foreign_key",
+      "confidence": 0.8,
+      "meta": {
+        "left_column": "PRODUCT_ID",
+        "right_column": "PRODUCT_ID",
+        "frequency": 4,
+        "arrow": true,
+        "source": "joins_table"
+      }
+    },
+    {
+      "id": "fk_3",
+      "source": "table:SAMPLE.CUSTOMERS",
+      "target": "table:SAMPLE.ORDERS",
+      "kind": "foreign_key",
+      "confidence": 0.8,
+      "meta": {
+        "left_column": "CUSTOMER_ID",
+        "right_column": "CUSTOMER_ID",
+        "frequency": 4,
+        "arrow": true,
+        "source": "joins_table"
+      }
+    },
+    {
+      "id": "rel_4",
+      "source": "table:SAMPLE.PRODUCTS",
+      "target": "table:SAMPLE.CUSTOMERS",
+      "kind": "relationship",
+      "confidence": 0.7,
+      "meta": {
+        "left_column": "CATEGORY_ID",
+        "right_column": "CATEGORY_ID",
+        "frequency": 2,
+        "arrow": false,
+        "source": "joins_table"
+      }
+    },
+    {
+      "id": "fk_5",
+      "source": "table:SAMPLE.USERS",
+      "target": "table:SAMPLE.ORDERS",
+      "kind": "foreign_key",
+      "confidence": 0.8,
+      "meta": {
+        "left_column": "USER_ID",
+        "right_column": "USER_ID",
+        "frequency": 4,
+        "arrow": true,
+        "source": "joins_table"
+      }
+    }
+  ],
+  "metadata": {
+    "node_count": 20,
+    "edge_count": 5,
+    "node_types": [
+      "table"
+    ],
+    "edge_kinds": [
+      "relationship",
+      "foreign_key"
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+# AI 모델 설정 파일
+# 개발환경과 운영환경을 구분하여 설정
+
+# 환경 설정 (development, production)
+environment: development
+
+# 모델별 설정
+models:
+  # 개발환경용 Ollama 설정
+  ollama:
+    name: gemma3:1b
+    url: http://localhost:11434
+    timeout: 120
+    max_tokens: 2000
+    temperature: 0.7
+  
+  # 운영환경용 vLLM 설정
+  vllm:
+    name: qwen2.5-7b
+    url: http://localhost:8000
+    timeout: 60
+    max_tokens: 4000
+    temperature: 0.7
+
+# 분석 설정
+analysis:
+  # 프롬프트 최적화
+  prompt_optimization:
+    max_components_per_layer: 3
+    max_methods_per_component: 5
+    max_annotations_per_component: 3
+  
+  # 출력 설정
+  output:
+    format: markdown
+    include_statistics: true
+    include_improvements: true
+    include_diagrams: true
+
+# 로깅 설정
+logging:
+  level: INFO
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+  file: ../logs/ai_component_analysis.log
+
+# 성능 설정
+performance:
+  # 타임아웃 설정 (초)
+  timeouts:
+    ollama: 30
+    vllm: 60
+  
+  # 재시도 설정
+  retry:
+    max_attempts: 3
+    delay: 1
+
+# 보안 설정
+security:
+  # API 키 설정 (필요시)
+  api_keys:
+    ollama: ""
+    vllm: ""
+  
+  # 허용된 호스트
+  allowed_hosts:
+    - localhost
+    - 127.0.0.1

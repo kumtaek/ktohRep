@@ -44,7 +44,8 @@ COMPONENT_RULES = {
         r'.*/model/.*',
         r'.*/entity/.*',
         r'.*/dto/.*',
-        r'.*/vo/.*'
+        r'.*/vo/.*',
+        r'ResponseEntity'
     ],
     'View': [
         r'.*\.jsp$',
@@ -175,25 +176,8 @@ def build_component_graph_json(config: Dict[str, Any], project_id: int, project_
     # Aggregate edges between components
     component_edges = defaultdict(lambda: {'count': 0, 'confidence_sum': 0.0, 'kinds': set()})
     
-    # Create artificial cross-component relationships for demonstration
-    # Since the current data has method->method calls without proper destinations,
-    # let's create some reasonable cross-component relationships
-    artificial_edges = [
-        ('Service', 'Mapper', 'call', 0.8, 15),  # Services call Mappers
-        ('Service', 'Util', 'call', 0.7, 8),    # Services use Utilities
-        ('Mapper', 'DB', 'use_table', 0.9, 12)   # Mappers access database
-    ]
-    
-    for src_comp, dst_comp, kind, conf, count in artificial_edges:
-        # Only add if both components exist
-        if src_comp in component_entities and dst_comp in component_entities:
-            edge_key = (src_comp, dst_comp)
-            component_edges[edge_key]['count'] = count
-            component_edges[edge_key]['confidence_sum'] = conf * count
-            component_edges[edge_key]['kinds'].add(kind)
-            print(f"  GENERATED_RELATIONSHIP: {src_comp} -> {dst_comp} ({kind}, count={count})")
-    
-    # Also process actual edges if they create cross-component relationships
+    # Process actual edges to create cross-component relationships
+    print(f"Processing {len(edges)} actual edges for component relationships...")
     for edge in edges:
         src_id = f"{edge.src_type}:{edge.src_id}"
         dst_id = f"{edge.dst_type}:{edge.dst_id}" if edge.dst_id else None
@@ -201,13 +185,71 @@ def build_component_graph_json(config: Dict[str, Any], project_id: int, project_
         src_component = entity_to_component.get(src_id)
         dst_component = entity_to_component.get(dst_id) if dst_id else None
         
+        
+        # 메서드 호출의 경우 meta 정보를 통해 컴포넌트 관계 추론
+        if edge.src_type == 'method' and edge.edge_kind == 'call':
+            try:
+                # meta 정보에서 대상 클래스 추출
+                import json
+                meta = json.loads(edge.meta) if isinstance(edge.meta, str) else edge.meta
+                callee_qualifier = meta.get('callee_qualifier_type', '')
+                
+                if callee_qualifier:
+                    # 클래스명으로 컴포넌트 추론
+                    dst_component_inferred = decide_component_group('', callee_qualifier)
+                    if dst_component_inferred != 'Other':
+                        dst_component = dst_component_inferred
+                        
+            except Exception as e:
+                pass
+        
+        # dst_id가 있는 경우의 기존 로직도 유지
+        elif edge.src_type == 'method' and edge.dst_type == 'method' and dst_id:
+            # 대상 메서드의 컴포넌트를 클래스명으로 추론
+            try:
+                dst_method_id = edge.dst_id
+                # 데이터베이스에서 대상 메서드의 클래스 정보 조회
+                dst_method_details = db.get_node_details('method', dst_method_id)
+                if dst_method_details and dst_method_details.get('file'):
+                    dst_component_inferred = decide_component_group(dst_method_details['file'], dst_method_details.get('class'))
+                    if dst_component_inferred != 'Other':
+                        dst_component = dst_component_inferred
+                        
+                # 이미 매핑된 entity_to_component에 추가
+                if dst_id not in entity_to_component:
+                    entity_to_component[dst_id] = dst_component
+                    
+            except Exception as e:
+                pass
+        
+        # SQL unit -> table 관계도 처리
+        if edge.src_type == 'sql_unit' and edge.dst_type == 'table':
+            if not dst_component:
+                dst_component = 'DB'
+                entity_to_component[dst_id] = dst_component
+        
         if src_component and dst_component and src_component != dst_component:
             edge_key = (src_component, dst_component)
             component_edges[edge_key]['count'] += 1
             component_edges[edge_key]['confidence_sum'] += edge.confidence
             component_edges[edge_key]['kinds'].add(edge.edge_kind)
-            print(f"  REAL_COMPONENT_EDGE: {src_component} -> {dst_component} ({edge.edge_kind})")
     
+    # 참조되는 컴포넌트 중 실제 노드가 없는 경우 가상 노드 생성
+    referenced_components = set()
+    for edge_key in component_edges.keys():
+        referenced_components.add(edge_key[0])  # source
+        referenced_components.add(edge_key[1])  # target
+    
+    existing_components = set(component_entities.keys())
+    missing_components = referenced_components - existing_components
+    
+    for missing_comp in missing_components:
+        print(f"  가상 컴포넌트 노드 생성: {missing_comp}")
+        component_nodes.append(create_node(
+            f"component:{missing_comp}", 'component', f"{missing_comp} (Virtual)", missing_comp, 
+            {'entity_count': 0, 'entities': [], 'total_entities': 0, 'virtual': True}
+        ))
+
     # Create component edges
     edges_list = []
     for (src_comp, dst_comp), edge_data in component_edges.items():

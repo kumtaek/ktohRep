@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 다이어그램 분석</title>
+    <style>
+        /* 브랜드 스타일 */
+        :root {
+            --woori-primary: #1976d2;
+            --woori-primary-dark: #0d47a1;
+            --woori-primary-light: #42a5f5;
+            --woori-accent: #2196f3;
+            --woori-pale: #e3f2fd;
+            --woori-ice: #f1f8ff;
+            --woori-gradient: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--woori-ice);
+            color: #212121;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .woori-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--woori-primary);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* 컨트롤 패널 */
+        .controls {
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--woori-primary);
+            font-size: 14px;
+        }
+
+        .woori-input, .woori-select {
+            padding: 10px 12px;
+            border: 2px solid rgba(25, 118, 210, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .woori-input:focus, .woori-select:focus {
+            outline: none;
+            border-color: var(--woori-primary);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .woori-btn {
+            background: var(--woori-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .woori-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        /* 시각화 컨테이너 */
+        .visualization-container {
+            background: white;
+            margin: 0 auto;
+            max-width: 1200px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.12);
+            overflow: hidden;
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .viz-header {
+            background: var(--woori-gradient);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .viz-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .viz-toolbar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #cy {
+            width: 100%;
+            height: 600px;
+            background: #fafafa;
+        }
+
+        /* 정보 패널 */
+        .info-panel {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+            max-width: 400px;
+            max-height: 70vh;
+            display: none;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .info-panel.active {
+            display: block;
+        }
+
+        .info-title {
+            color: var(--woori-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .info-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 범례 */
+        .legend {
+            background: white;
+            margin: 24px auto;
+            max-width: 1200px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            border: 1px solid rgba(25, 118, 210, 0.12);
+        }
+
+        .legend h3 {
+            color: var(--woori-primary);
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--woori-ice);
+            border-radius: 6px;
+            border: 1px solid rgba(25, 118, 210, 0.1);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid currentColor;
+        }
+
+        .legend-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                padding: 0 16px;
+            }
+            
+            .controls, .visualization-container, .legend {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+            
+            .info-panel {
+                position: static;
+                transform: none;
+                margin: 16px;
+                max-width: none;
+            }
+        }
+    </style>
+    
+    <!-- Cytoscape.js and extensions -->
+    <script src="./static/vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="./static/vendor/dagre/dagre.min.js"></script>
+    <script src="./static/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="./static/vendor/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script>
+        const DATA = {
+  "nodes": [
+    {
+      "id": "class:1",
+      "type": "class",
+      "label": "DatabaseConfig",
+      "group": "Code",
+      "meta": {
+        "fqn": "com.example.config.DatabaseConfig",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\config\\DatabaseConfig.java",
+        "line_number": 8,
+        "line_range": "8-18",
+        "methods": [
+          {
+            "name": "dateUtil",
+            "signature": "dateUtil()",
+            "line": 11
+          },
+          {
+            "name": "getConnectionString",
+            "signature": "getConnectionString()",
+            "line": 15
+          },
+          {
+            "name": "initializeDatabase",
+            "signature": "initializeDatabase()",
+            "line": 21
+          }
+        ],
+        "method_count": 3,
+        "total_methods": 3,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:2",
+      "type": "class",
+      "label": "SecurityConfig",
+      "group": "Code",
+      "meta": {
+        "fqn": "com.example.config.SecurityConfig",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\config\\SecurityConfig.java",
+        "line_number": 18,
+        "line_range": "18-28",
+        "methods": [
+          {
+            "name": "filterChain",
+            "signature": "filterChain(HttpSecurity http)",
+            "line": 30
+          },
+          {
+            "name": "passwordEncoder",
+            "signature": "passwordEncoder()",
+            "line": 54
+          },
+          {
+            "name": "jwtAuthenticationFilter",
+            "signature": "jwtAuthenticationFilter()",
+            "line": 62
+          },
+          {
+            "name": "customAuthenticationEntryPoint",
+            "signature": "customAuthenticationEntryPoint()",
+            "line": 70
+          },
+          {
+            "name": "customAccessDeniedHandler",
+            "signature": "customAccessDeniedHandler()",
+            "line": 78
+          },
+          {
+            "name": "authenticationManager",
+            "signature": "authenticationManager(AuthenticationConfiguration authConfig)",
+            "line": 86
+          },
+          {
+            "name": "userDetailsService",
+            "signature": "userDetailsService()",
+            "line": 95
+          },
+          {
+            "name": "corsConfigurationSource",
+            "signature": "corsConfigurationSource()",
+            "line": 103
+          },
+          {
+            "name": "handleAuthenticationSuccess",
+            "signature": "handleAuthenticationSuccess(AuthenticationSuccessEvent event)",
+            "line": 119
+          },
+          {
+            "name": "handleAuthenticationFailure",
+            "signature": "handleAuthenticationFailure(AbstractAuthenticationFailureEvent event)",
+            "line": 131
+          }
+        ],
+        "method_count": 10,
+        "total_methods": 12,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:3",
+      "type": "class",
+      "label": "ApiController",
+      "group": "Controller",
+      "meta": {
+        "fqn": "com.example.controller.ApiController",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\ApiController.java",
+        "line_number": 15,
+        "line_range": "15-25",
+        "methods": [
+          {
+            "name": "healthCheck",
+            "signature": "healthCheck()",
+            "line": 27
+          },
+          {
+            "name": "processData",
+            "signature": "processData(String data)",
+            "line": 32
+          },
+          {
+            "name": "generateReports",
+            "signature": "generateReports()",
+            "line": 46
+          }
+        ],
+        "method_count": 3,
+        "total_methods": 3,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:4",
+      "type": "class",
+      "label": "MainController",
+      "group": "Controller",
+      "meta": {
+        "fqn": "com.example.controller.MainController",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\MainController.java",
+        "line_number": 13,
+        "line_range": "13-23",
+        "methods": [
+          {
+            "name": "home",
+            "signature": "home()",
+            "line": 25
+          },
+          {
+            "name": "getUsers",
+            "signature": "getUsers(String userId)",
+            "line": 30
+          },
+          {
+            "name": "createOrder",
+            "signature": "createOrder(String userId, String productId)",
+            "line": 35
+          },
+          {
+            "name": "dashboard",
+            "signature": "dashboard()",
+            "line": 47
+          }
+        ],
+        "method_count": 4,
+        "total_methods": 4,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:5",
+      "type": "class",
+      "label": "OrderController",
+      "group": "Controller",
+      "meta": {
+        "fqn": "com.example.controller.OrderController",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\OrderController.java",
+        "line_number": 17,
+        "line_range": "17-27",
+        "methods": [
+          {
+            "name": "createOrder",
+            "signature": "createOrder(OrderRequest request)",
+            "line": 32
+          },
+          {
+            "name": "getOrders",
+            "signature": "getOrders(String status, Long userId, int page, int size)",
+            "line": 69
+          },
+          {
+            "name": "getOrderDetail",
+            "signature": "getOrderDetail(Long orderId)",
+            "line": 96
+          },
+          {
+            "name": "updateOrderStatus",
+            "signature": "updateOrderStatus(Long orderId, Map statusUpdate)",
+            "line": 122
+          },
+          {
+            "name": "cancelOrder",
+            "signature": "cancelOrder(Long orderId)",
+            "line": 152
+          },
+          {
+            "name": "updateInventory",
+            "signature": "updateInventory(List items)",
+            "line": 186
+          },
+          {
+            "name": "restoreInventory",
+            "signature": "restoreInventory(List items)",
+            "line": 195
+          },
+          {
+            "name": "getOrderStatistics",
+            "signature": "getOrderStatistics(String startDate, String endDate)",
+            "line": 205
+          }
+        ],
+        "method_count": 8,
+        "total_methods": 8,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:6",
+      "type": "class",
+      "label": "PaymentController",
+      "group": "Controller",
+      "meta": {
+        "fqn": "com.example.controller.PaymentController",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\controller\\PaymentController.java",
+        "line_number": 15,
+        "line_range": "15-25",
+        "methods": [
+          {
+            "name": "processPayment",
+            "signature": "processPayment(PaymentRequest request)",
+            "line": 30
+          },
+          {
+            "name": "getPaymentStatus",
+            "signature": "getPaymentStatus(String paymentId)",
+            "line": 78
+          },
+          {
+            "name": "processRefund",
+            "signature": "processRefund(String paymentId, RefundRequest request)",
+            "line": 98
+          },
+          {
+            "name": "validatePaymentAmount",
+            "signature": "validatePaymentAmount(Order order, PaymentRequest request)",
+            "line": 143
+          },
+          {
+            "name": "processPartialRefund",
+            "signature": "processPartialRefund(String paymentId, PartialRefundRequest request)",
+            "line": 159
+          }
+        ],
+        "method_count": 5,
+        "total_methods": 5,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:7",
+      "type": "class",
+      "label": "IntegratedMapper",
+      "group": "Mapper",
+      "meta": {
+        "fqn": "com.example.integrated.IntegratedMapper",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedMapper.java",
+        "line_number": 6,
+        "line_range": "6-16",
+        "methods": [
+          {
+            "name": "findDynamicData",
+            "signature": "findDynamicData(Map params)",
+            "line": 7
+          },
+          {
+            "name": "getComplexReport",
+            "signature": "getComplexReport(Map params)",
+            "line": 8
+          },
+          {
+            "name": "getOrdersWithCustomerAnsiJoin",
+            "signature": "getOrdersWithCustomerAnsiJoin(String customerId)",
+            "line": 9
+          },
+          {
+            "name": "getOrdersWithCustomerImplicitJoin",
+            "signature": "getOrdersWithCustomerImplicitJoin(String customerId)",
+            "line": 10
+          }
+        ],
+        "method_count": 4,
+        "total_methods": 4,
+        "modifiers": "[\"interface\", \"public\"]"
+      }
+    },
+    {
+      "id": "class:8",
+      "type": "class",
+      "label": "IntegratedService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.integrated.IntegratedService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\IntegratedService.java",
+        "line_number": 7,
+        "line_range": "7-17",
+        "methods": [
+          {
+            "name": "startProcess",
+            "signature": "startProcess()",
+            "line": 9
+          },
+          {
+            "name": "doWork",
+            "signature": "doWork()",
+            "line": 13
+          },
+          {
+            "name": "getStaticUserData",
+            "signature": "getStaticUserData(String id)",
+            "line": 24
+          },
+          {
+            "name": "calculateOrderTotal",
+            "signature": "calculateOrderTotal(List items)",
+            "line": 28
+          },
+          {
+            "name": "getFormattedId",
+            "signature": "getFormattedId(String id)",
+            "line": 36
+          },
+          {
+            "name": "log",
+            "signature": "log(String msg)",
+            "line": 40
+          }
+        ],
+        "method_count": 6,
+        "total_methods": 6,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:9",
+      "type": "class",
+      "label": "VulnerabilityTestService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.integrated.VulnerabilityTestService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\integrated\\VulnerabilityTestService.java",
+        "line_number": 13,
+        "line_range": "13-23",
+        "methods": [
+          {
+            "name": "getUsersByName_VULNERABLE",
+            "signature": "getUsersByName_VULNERABLE(String userName)",
+            "line": 21
+          },
+          {
+            "name": "getUsersByName_SAFE",
+            "signature": "getUsersByName_SAFE(String userName)",
+            "line": 30
+          },
+          {
+            "name": "searchUsers_VULNERABLE",
+            "signature": "searchUsers_VULNERABLE(String searchTerm, String category)",
+            "line": 38
+          },
+          {
+            "name": "displayUserInfo_VULNERABLE",
+            "signature": "displayUserInfo_VULNERABLE(String userInput)",
+            "line": 50
+          },
+          {
+            "name": "readFile_VULNERABLE",
+            "signature": "readFile_VULNERABLE(String filename)",
+            "line": 58
+          },
+          {
+            "name": "hashPassword_WEAK",
+            "signature": "hashPassword_WEAK(String password)",
+            "line": 71
+          },
+          {
+            "name": "authenticateAdmin_VULNERABLE",
+            "signature": "authenticateAdmin_VULNERABLE(String username, String password)",
+            "line": 88
+          },
+          {
+            "name": "connectToDatabase_VULNERABLE",
+            "signature": "connectToDatabase_VULNERABLE()",
+            "line": 98
+          },
+          {
+            "name": "executeCommand_VULNERABLE",
+            "signature": "executeCommand_VULNERABLE(String userCommand)",
+            "line": 114
+          },
+          {
+            "name": "searchLDAP_VULNERABLE",
+            "signature": "searchLDAP_VULNERABLE(String username)",
+            "line": 135
+          }
+        ],
+        "method_count": 10,
+        "total_methods": 12,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:10",
+      "type": "class",
+      "label": "OrderMapper",
+      "group": "Mapper",
+      "meta": {
+        "fqn": "com.example.mapper.OrderMapper",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\OrderMapper.java",
+        "line_number": 10,
+        "line_range": "10-20",
+        "methods": [
+          {
+            "name": "selectOrderById",
+            "signature": "selectOrderById(String orderId)",
+            "line": 12
+          },
+          {
+            "name": "calculateOrderAmount",
+            "signature": "calculateOrderAmount(String orderId)",
+            "line": 14
+          },
+          {
+            "name": "selectOrdersByStatus",
+            "signature": "selectOrdersByStatus(String status)",
+            "line": 16
+          },
+          {
+            "name": "getOrdersWithCustomerImplicitJoin",
+            "signature": "getOrdersWithCustomerImplicitJoin(String status)",
+            "line": 18
+          },
+          {
+            "name": "getComplexOrderReport",
+            "signature": "getComplexOrderReport(Map params)",
+            "line": 20
+          },
+          {
+            "name": "searchOrdersWithCriteria",
+            "signature": "searchOrdersWithCriteria(Map criteria)",
+            "line": 22
+          },
+          {
+            "name": "executeDynamicQuery",
+            "signature": "executeDynamicQuery(String sql)",
+            "line": 25
+          }
+        ],
+        "method_count": 7,
+        "total_methods": 7,
+        "modifiers": "[\"interface\", \"public\"]"
+      }
+    },
+    {
+      "id": "class:11",
+      "type": "class",
+      "label": "ProductMapper",
+      "group": "Mapper",
+      "meta": {
+        "fqn": "com.example.mapper.ProductMapper",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\ProductMapper.java",
+        "line_number": 9,
+        "line_range": "9-19",
+        "methods": [
+          {
+            "name": "selectAllProducts",
+            "signature": "selectAllProducts()",
+            "line": 11
+          },
+          {
+            "name": "selectProductById",
+            "signature": "selectProductById(String productId)",
+            "line": 13
+          },
+          {
+            "name": "searchProductsWithCriteria",
+            "signature": "searchProductsWithCriteria(Map criteria)",
+            "line": 15
+          },
+          {
+            "name": "getComplexProductAnalysis",
+            "signature": "getComplexProductAnalysis(Map params)",
+            "line": 17
+          },
+          {
+            "name": "executeDynamicQuery",
+            "signature": "executeDynamicQuery(String sql)",
+            "line": 20
+          }
+        ],
+        "method_count": 5,
+        "total_methods": 5,
+        "modifiers": "[\"interface\", \"public\"]"
+      }
+    },
+    {
+      "id": "class:12",
+      "type": "class",
+      "label": "UserMapper",
+      "group": "Mapper",
+      "meta": {
+        "fqn": "com.example.mapper.UserMapper",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\mapper\\UserMapper.java",
+        "line_number": 9,
+        "line_range": "9-19",
+        "methods": [
+          {
+            "name": "selectUserById",
+            "signature": "selectUserById(String userId)",
+            "line": 11
+          },
+          {
+            "name": "selectActiveUsers",
+            "signature": "selectActiveUsers()",
+            "line": 13
+          },
+          {
+            "name": "searchUsersByCondition",
+            "signature": "searchUsersByCondition(Map params)",
+            "line": 15
+          },
+          {
+            "name": "findUsersWithDynamicConditions",
+            "signature": "findUsersWithDynamicConditions(Map conditions)",
+            "line": 17
+          },
+          {
+            "name": "insertUser",
+            "signature": "insertUser(Object user)",
+            "line": 19
+          },
+          {
+            "name": "executeDynamicQuery",
+            "signature": "executeDynamicQuery(String sql)",
+            "line": 22
+          }
+        ],
+        "method_count": 6,
+        "total_methods": 6,
+        "modifiers": "[\"interface\", \"public\"]"
+      }
+    },
+    {
+      "id": "class:13",
+      "type": "class",
+      "label": "ListService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.ListService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ListService.java",
+        "line_number": 3,
+        "line_range": "3-13",
+        "methods": [
+          {
+            "name": "list",
+            "signature": "list()",
+            "line": 4
+          }
+        ],
+        "method_count": 1,
+        "total_methods": 1,
+        "modifiers": "[\"interface\", \"public\"]"
+      }
+    },
+    {
+      "id": "class:14",
+      "type": "class",
+      "label": "OrderService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.OrderService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OrderService.java",
+        "line_number": 11,
+        "line_range": "11-21",
+        "methods": [
+          {
+            "name": "calculateOrderTotal",
+            "signature": "calculateOrderTotal(String orderId, BigDecimal discountRate)",
+            "line": 23
+          },
+          {
+            "name": "getOrdersByStatus",
+            "signature": "getOrdersByStatus(String status)",
+            "line": 40
+          },
+          {
+            "name": "generateOrderReport",
+            "signature": "generateOrderReport(String startDate, String endDate)",
+            "line": 47
+          },
+          {
+            "name": "largeOrderMethod1",
+            "signature": "largeOrderMethod1()",
+            "line": 52
+          },
+          {
+            "name": "largeOrderMethod2",
+            "signature": "largeOrderMethod2()",
+            "line": 58
+          },
+          {
+            "name": "largeOrderMethod3",
+            "signature": "largeOrderMethod3()",
+            "line": 64
+          }
+        ],
+        "method_count": 6,
+        "total_methods": 6,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:15",
+      "type": "class",
+      "label": "OverloadService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.OverloadService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\OverloadService.java",
+        "line_number": 6,
+        "line_range": "6-16",
+        "methods": [
+          {
+            "name": "find",
+            "signature": "find(int id)",
+            "line": 7
+          },
+          {
+            "name": "find",
+            "signature": "find(String id)",
+            "line": 11
+          },
+          {
+            "name": "process",
+            "signature": "process()",
+            "line": 15
+          }
+        ],
+        "method_count": 3,
+        "total_methods": 3,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:16",
+      "type": "class",
+      "label": "ProductService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.ProductService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\ProductService.java",
+        "line_number": 9,
+        "line_range": "9-19",
+        "methods": [
+          {
+            "name": "getProductList",
+            "signature": "getProductList()",
+            "line": 14
+          },
+          {
+            "name": "getProductDetails",
+            "signature": "getProductDetails(String productId)",
+            "line": 22
+          },
+          {
+            "name": "searchProducts",
+            "signature": "searchProducts(Map criteria)",
+            "line": 32
+          },
+          {
+            "name": "processComplexBusiness",
+            "signature": "processComplexBusiness(String input)",
+            "line": 37
+          },
+          {
+            "name": "unsafeProductSearch",
+            "signature": "unsafeProductSearch(String category)",
+            "line": 56
+          }
+        ],
+        "method_count": 5,
+        "total_methods": 5,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:17",
+      "type": "class",
+      "label": "UserService",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.UserService",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\UserService.java",
+        "line_number": 9,
+        "line_range": "9-19",
+        "methods": [
+          {
+            "name": "getUserById",
+            "signature": "getUserById(String userId)",
+            "line": 20
+          },
+          {
+            "name": "getActiveUsers",
+            "signature": "getActiveUsers()",
+            "line": 30
+          },
+          {
+            "name": "createUser",
+            "signature": "createUser(Object user)",
+            "line": 38
+          },
+          {
+            "name": "processWithReflection",
+            "signature": "processWithReflection(String className)",
+            "line": 43
+          },
+          {
+            "name": "getDynamicUserData",
+            "signature": "getDynamicUserData(String condition)",
+            "line": 54
+          },
+          {
+            "name": "updateUserStatus",
+            "signature": "updateUserStatus(String userId, String newStatus)",
+            "line": 65
+          }
+        ],
+        "method_count": 6,
+        "total_methods": 6,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:20",
+      "type": "class",
+      "label": "ListServiceImpl1",
+      "group": "Service",
+      "meta": {
+        "fqn": "com.example.service.impl.ListServiceImpl1",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\service\\impl\\ListServiceImpl1.java",
+        "line_number": 5,
+        "line_range": "5-15",
+        "methods": [
+          {
+            "name": "list",
+            "signature": "list()",
+            "line": 7
+          },
+          {
+            "name": "helper",
+            "signature": "helper()",
+            "line": 11
+          }
+        ],
+        "method_count": 2,
+        "total_methods": 2,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:18",
+      "type": "class",
+      "label": "DateUtil",
+      "group": "Util",
+      "meta": {
+        "fqn": "com.example.util.DateUtil",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\DateUtil.java",
+        "line_number": 7,
+        "line_range": "7-17",
+        "methods": [
+          {
+            "name": "getCurrentDate",
+            "signature": "getCurrentDate()",
+            "line": 15
+          },
+          {
+            "name": "convertDateFormat",
+            "signature": "convertDateFormat(String dateString, String originalFormat, String targetFormat)",
+            "line": 26
+          },
+          {
+            "name": "daysBetween",
+            "signature": "daysBetween(String startDateString, String endDateString)",
+            "line": 42
+          }
+        ],
+        "method_count": 3,
+        "total_methods": 3,
+        "modifiers": "[\"public\"]"
+      }
+    },
+    {
+      "id": "class:19",
+      "type": "class",
+      "label": "Texts",
+      "group": "Util",
+      "meta": {
+        "fqn": "com.example.util.Texts",
+        "file_path": "E:\\SourceAnalyzer.git\\project\\sampleSrc\\src\\main\\java\\com\\example\\util\\Texts.java",
+        "line_number": 3,
+        "line_range": "3-13",
+        "methods": [
+          {
+            "name": "isEmpty",
+            "signature": "isEmpty(String s)",
+            "line": 4
+          }
+        ],
+        "method_count": 1,
+        "total_methods": 1,
+        "modifiers": "[\"public\"]"
+      }
+    }
+  ],
+  "edges": [],
+  "stats": {
+    "total_classes": 20,
+    "total_methods": 102,
+    "displayed_nodes": 20,
+    "relationships": 0,
+    "packages": 7
+  },
+  "metadata": {
+    "diagram_type": "class",
+    "project_id": 1,
+    "modules_filter": null,
+    "max_methods": 10,
+    "language": "java"
+  }
+};
+        
+        // Register extensions
+        if (typeof cytoscape !== 'undefined' && typeof dagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeFcose !== 'undefined') {
+            cytoscape.use(cytoscapeFcose);
+        }
+    </script>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <div class="woori-logo">우</div>
+                클래스 다이어그램 분석
+            </h1>
+            <div style="font-size: 14px; opacity: 0.9;">
+                Source Analyzer - 우리금융지주 스타일
+            </div>
+        </div>
+    </header>
+
+    <!-- 컨트롤 패널 -->
+    <div class="controls">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>레이아웃 방식</label>
+                <select id="layoutType" class="woori-select" onchange="changeLayout(this.value)">
+                    <option value="dagre">계층형 (dagre)</option>
+                    <option value="fcose">물리 기반 (fcose)</option>
+                    <option value="circle">원형 (circle)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>검색</label>
+                <input type="text" id="searchInput" class="woori-input" 
+                       placeholder="클래스명으로 검색..." 
+                       oninput="searchNodes(this.value)">
+            </div>
+            
+            <div class="control-group">
+                <button class="woori-btn" onclick="exportToPng()">
+                    📷 PNG 내보내기
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <button class="woori-btn" onclick="fitToScreen()">
+                    🔍 화면 맞춤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 시각화 컨테이너 -->
+    <div class="visualization-container">
+        <div class="viz-header">
+            <div class="viz-title">클래스 관계 네트워크</div>
+            <div class="viz-toolbar">
+                <button class="toolbar-btn" onclick="cy.fit()" title="화면에 맞춤">🔍</button>
+                <button class="toolbar-btn" onclick="cy.center()" title="중앙 정렬">🎯</button>
+                <button class="toolbar-btn" onclick="resetLayout()" title="레이아웃 재설정">🔄</button>
+                <button class="toolbar-btn" onclick="toggleEdges()" title="엣지 표시/숨김">🔗</button>
+            </div>
+        </div>
+        <div id="cy"></div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend">
+        <h3>클래스 관계 범례</h3>
+        <div class="legend-grid">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #1976d2; border-color: #0d47a1;"></div>
+                <span class="legend-label">일반 클래스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2196f3; border-color: #1565c0;"></div>
+                <span class="legend-label">인터페이스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #42a5f5; border-color: #1976d2;"></div>
+                <span class="legend-label">추상 클래스</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #81d4fa; border-color: #42a5f5;"></div>
+                <span class="legend-label">상속 관계</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 정보 패널 -->
+    <div class="info-panel" id="infoPanel">
+        <div class="info-title" id="infoTitle">클래스 정보</div>
+        <div class="info-content" id="infoContent">
+            클래스를 클릭하면 상세 정보가 표시됩니다.
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let cy = null;
+        let currentLayout = 'dagre';
+        let edgesVisible = true;
+
+        // 우리금융지주 브랜드 색상
+        const WOORI_COLORS = {
+            primary: '#1976d2',
+            primaryDark: '#0d47a1', 
+            primaryLight: '#42a5f5',
+            accent: '#2196f3'
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            if (DATA && DATA.nodes && DATA.nodes.length > 0) {
+                initializeVisualization();
+            } else {
+                showNoDataMessage();
+            }
+        });
+
+        function initializeVisualization() {
+            const elements = buildCytoscapeElements();
+            const styles = buildWooriStyles();
+            
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: styles,
+                layout: getLayoutConfig('dagre'),
+                wheelSensitivity: 0.05
+            });
+
+            setupEventHandlers();
+        }
+
+        function buildCytoscapeElements() {
+            const elements = [];
+
+            // 노드 추가
+            if (DATA.nodes) {
+                DATA.nodes.forEach(node => {
+                    elements.push({
+                        data: {
+                            id: node.id,
+                            label: node.label,
+                            type: node.type,
+                            group: node.group || 'default',
+                            meta: node.meta || {}
+                        }
+                    });
+                });
+            }
+
+            // 엣지 추가
+            if (DATA.edges) {
+                DATA.edges.forEach(edge => {
+                    elements.push({
+                        data: {
+                            id: edge.id,
+                            source: edge.source,
+                            target: edge.target,
+                            kind: edge.kind,
+                            meta: edge.meta || {}
+                        }
+                    });
+                });
+            }
+
+            return elements;
+        }
+
+        function buildWooriStyles() {
+            return [
+                // 기본 노드 스타일
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'font-size': '12px',
+                        'font-weight': '600',
+                        'font-family': 'Malgun Gothic, sans-serif',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '120px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'color': '#ffffff',
+                        'text-outline-width': '1px',
+                        'text-outline-color': '#000000',
+                        'text-outline-opacity': 0.3,
+                        'background-color': WOORI_COLORS.primary,
+                        'border-width': '2px',
+                        'border-color': WOORI_COLORS.primaryDark,
+                        'width': '60px',
+                        'height': '60px',
+                        'shape': 'round-rectangle',
+                        'overlay-opacity': 0
+                    }
+                },
+
+                // 클래스 타입별 색상
+                {
+                    selector: 'node[type = "class"]',
+                    style: {
+                        'background-color': WOORI_COLORS.primary,
+                        'border-color': WOORI_COLORS.primaryDark
+                    }
+                },
+                {
+                    selector: 'node[type = "interface"]',
+                    style: {
+                        'background-color': WOORI_COLORS.accent,
+                        'border-color': '#1565c0'
+                    }
+                },
+                {
+                    selector: 'node[type = "abstract"]',
+                    style: {
+                        'background-color': WOORI_COLORS.primaryLight,
+                        'border-color': WOORI_COLORS.primary
+                    }
+                },
+
+                // 엣지 스타일
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 2,
+                        'line-color': WOORI_COLORS.primary,
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': WOORI_COLORS.primary,
+                        'arrow-scale': 1.2,
+                        'opacity': 0.8
+                    }
+                },
+
+                // 상속 관계
+                {
+                    selector: 'edge[kind = "inheritance"]',
+                    style: {
+                        'line-color': '#81d4fa',
+                        'target-arrow-color': '#81d4fa',
+                        'width': 3,
+                        'line-style': 'solid'
+                    }
+                },
+
+                // 구현 관계
+                {
+                    selector: 'edge[kind = "implementation"]',
+                    style: {
+                        'line-color': WOORI_COLORS.accent,
+                        'target-arrow-color': WOORI_COLORS.accent,
+                        'width': 2,
+                        'line-style': 'dashed'
+                    }
+                },
+
+                // 선택 상태
+                {
+                    selector: 'node:selected',
+                    style: {
+                        'border-width': '4px',
+                        'border-color': '#ff6b35'
+                    }
+                },
+                {
+                    selector: 'edge:selected',
+                    style: {
+                        'line-color': '#ff6b35',
+                        'target-arrow-color': '#ff6b35',
+                        'width': 4
+                    }
+                },
+
+                // 하이라이트 상태
+                {
+                    selector: '.highlighted',
+                    style: {
+                        'border-width': '3px',
+                        'border-color': '#ffd700',
+                        'z-index': 10
+                    }
+                }
+            ];
+        }
+
+        function getLayoutConfig(layoutType) {
+            const configs = {
+                dagre: {
+                    name: 'dagre',
+                    rankDir: 'TB',
+                    nodeSep: 120,
+                    rankSep: 160,
+                    animate: true,
+                    animationDuration: 1000
+                },
+                fcose: {
+                    name: 'fcose',
+                    quality: 'proof',
+                    randomize: true,
+                    animate: true,
+                    animationDuration: 2000,
+                    fit: true,
+                    padding: 200,
+                    nodeSeparation: 600,
+                    idealEdgeLength: 400
+                },
+                circle: {
+                    name: 'circle',
+                    animate: true,
+                    animationDuration: 1500,
+                    radius: Math.max(200, Math.sqrt((DATA.nodes || []).length) * 80)
+                }
+            };
+            return configs[layoutType] || configs.dagre;
+        }
+
+        function setupEventHandlers() {
+            // 노드 클릭 이벤트
+            cy.on('tap', 'node', function(evt) {
+                const node = evt.target;
+                showNodeInfo(node);
+                highlightConnectedNodes(node);
+            });
+
+            // 배경 클릭 시 정보 패널 숨기기
+            cy.on('tap', function(evt) {
+                if (evt.target === cy) {
+                    hideNodeInfo();
+                    clearHighlights();
+                }
+            });
+
+            // 노드 호버 효과
+            cy.on('mouseover', 'node', function(evt) {
+                this.style('cursor', 'pointer');
+            });
+        }
+
+        function showNodeInfo(node) {
+            const data = node.data();
+            const panel = document.getElementById('infoPanel');
+            const title = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+
+            title.textContent = data.label || data.id;
+            
+            let info = `<div style="margin-bottom: 12px;"><strong>타입:</strong> ${data.type}</div>`;
+            
+            const degree = node.degree();
+            info += `<div style="margin-bottom: 12px;"><strong>연결 수:</strong> ${degree}</div>`;
+            
+            if (data.meta && Object.keys(data.meta).length > 0) {
+                info += '<div style="margin-bottom: 8px;"><strong>상세 정보:</strong></div>';
+                info += '<div style="font-size: 12px; color: #616161;">';
+                Object.entries(data.meta).forEach(([key, value]) => {
+                    if (value) {
+                        info += `<div>${key}: ${value}</div>`;
+                    }
+                });
+                info += '</div>';
+            }
+
+            content.innerHTML = info;
+            panel.classList.add('active');
+        }
+
+        function hideNodeInfo() {
+            document.getElementById('infoPanel').classList.remove('active');
+        }
+
+        function highlightConnectedNodes(node) {
+            clearHighlights();
+            
+            const connectedEdges = node.connectedEdges();
+            const connectedNodes = connectedEdges.connectedNodes();
+            
+            node.addClass('highlighted');
+            connectedNodes.addClass('highlighted');
+            connectedEdges.addClass('highlighted');
+        }
+
+        function clearHighlights() {
+            cy.elements().removeClass('highlighted');
+        }
+
+        function changeLayout(layoutType) {
+            currentLayout = layoutType;
+            cy.layout(getLayoutConfig(layoutType)).run();
+        }
+
+        function resetLayout() {
+            cy.layout(getLayoutConfig(currentLayout)).run();
+        }
+
+        function toggleEdges() {
+            edgesVisible = !edgesVisible;
+            if (edgesVisible) {
+                cy.edges().style('display', 'element');
+            } else {
+                cy.edges().style('display', 'none');
+            }
+        }
+
+        function searchNodes(query) {
+            clearHighlights();
+            
+            if (!query.trim()) {
+                return;
+            }
+            
+            const matchedNodes = cy.nodes().filter(node => {
+                const label = node.data('label') || '';
+                const type = node.data('type') || '';
+                return label.toLowerCase().includes(query.toLowerCase()) ||
+                       type.toLowerCase().includes(query.toLowerCase());
+            });
+            
+            if (matchedNodes.length > 0) {
+                matchedNodes.addClass('highlighted');
+                cy.fit(matchedNodes, 50);
+            }
+        }
+
+        function fitToScreen() {
+            cy.fit();
+        }
+
+        function exportToPng() {
+            const png64 = cy.png({
+                full: true,
+                scale: 2,
+                bg: 'white'
+            });
+            
+            const link = document.createElement('a');
+            link.href = png64;
+            link.download = '클래스_다이어그램.png';
+            link.click();
+        }
+
+        function showNoDataMessage() {
+            document.getElementById('cy').innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #616161;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div style="font-size: 18px; margin-bottom: 8px;">클래스 다이어그램 데이터가 없습니다</div>
+                    <div style="font-size: 14px;">먼저 클래스 분석을 실행해주세요.</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -152,6 +152,11 @@ def main():
     args = parser.parse_args()
     project_name = args.project_name
     
+    # 프로젝트명 검증
+    if not project_name or project_name.strip() == '':
+        print(f"오류: 프로젝트명이 유효하지 않습니다: '{project_name}'")
+        return 1
+    
     print(f"Auto-generating sequence diagrams for project: {project_name}")
     
     # Load configuration

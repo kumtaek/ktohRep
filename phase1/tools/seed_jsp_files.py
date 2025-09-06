@@ -31,23 +31,19 @@ def main(argv=None) -> int:
     cfg = load_config()
     dbm = DatabaseManager(cfg)
     dbm.initialize()
-    sess = dbm.get_session()
-    try:
+    with dbm.get_auto_commit_session() as sess:
         base = REPO_ROOT / 'tests' / 'samples' / 'jsp'
         paths = list(base.glob('*.jsp'))
         added = 0
-        with sess.begin():
-            for p in paths:
-                p_str = str(p.resolve())
-                exists = sess.query(File).filter(File.path == p_str).first()
-                if exists:
-                    continue
-                f = File(project_id=1, path=p_str, language='jsp')
-                sess.add(f)
-                added += 1
+        for p in paths:
+            p_str = str(p.resolve())
+            exists = sess.query(File).filter(File.path == p_str).first()
+            if exists:
+                continue
+            f = File(project_id=1, path=p_str, language='jsp')
+            sess.add(f)
+            added += 1
         print(f"Seeded JSP files: {added}")
-    finally:
-        sess.close()
     return 0
 
 

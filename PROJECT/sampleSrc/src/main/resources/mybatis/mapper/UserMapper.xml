@@ -1,65 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.example.mapper.UserMapper">
-
-    <!-- 사용자 ID로 사용자 정보를 조회하는 쿼리 -->
-    <select id="selectUserById" parameterType="String" resultType="com.example.model.User">
-        SELECT
-            user_id AS id,
-            user_name AS name,
-            user_email AS email,
-            status
-        FROM
-            users
-        WHERE
-            user_id = #{userId}
+    
+    <!-- 기본 사용자 조회 -->
+    <select id="selectUserById" parameterType="long" resultType="com.example.model.User">
+        SELECT * FROM users WHERE id = #{id}
     </select>
-
-    <!-- 모든 활성 사용자 목록을 조회하는 쿼리 -->
-    <select id="selectActiveUsers" resultType="com.example.model.User">
-        SELECT
-            user_id AS id,
-            user_name AS name,
-            user_email AS email,
-            status
-        FROM
-            users
-        WHERE
-            del_yn = 'N'
-        ORDER BY
-            user_name
+    
+    <!-- 조건부 사용자 조회 (다이나믹 쿼리) -->
+    <select id="selectUsersByCondition" parameterType="map" resultType="com.example.model.User">
+        SELECT * FROM users
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE #{name}
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE #{email}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY created_date DESC
     </select>
-
-    <!-- 새로운 사용자 정보를 삽입하는 쿼리 -->
-    <insert id="insertUser" parameterType="com.example.model.User">
+    
+    <!-- 고급 조건부 사용자 조회 (복잡한 다이나믹 쿼리) -->
+    <select id="selectUsersByAdvancedCondition" parameterType="map" resultType="com.example.model.User">
+        SELECT u.*, ut.type_name
+        FROM users u
+        LEFT JOIN user_types ut ON u.user_type = ut.type_code
+        <where>
+            <if test="userType != null and userType != ''">
+                AND u.user_type = #{userType}
+            </if>
+            <if test="minAge != null">
+                AND u.age >= #{minAge}
+            </if>
+            <if test="maxAge != null">
+                AND u.age &lt;= #{maxAge}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND u.created_date >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND u.created_date &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND u.status IN
+                <foreach collection="statusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY u.created_date DESC
+    </select>
+    
+    <!-- 타입별 사용자 조회 -->
+    <select id="selectUsersByType" parameterType="string" resultType="com.example.model.User">
+        SELECT * FROM users 
+        WHERE user_type = #{type}
+        ORDER BY name
+    </select>
+    
+    <!-- 동적 사용자 업데이트 -->
+    <update id="updateUserDynamic" parameterType="com.example.model.User">
+        UPDATE users
+        <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            updated_date = SYSDATE
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 동적 사용자 삽입 -->
+    <insert id="insertUserDynamic" parameterType="com.example.model.User" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO users (
-            user_id,
-            user_name,
-            user_email,
-            status,
-            reg_date
+            <trim suffixOverrides=",">
+                <if test="username != null and username != ''">username,</if>
+                <if test="email != null and email != ''">email,</if>
+                <if test="password != null and password != ''">password,</if>
+                <if test="name != null and name != ''">name,</if>
+                <if test="age != null">age,</if>
+                <if test="status != null and status != ''">status,</if>
+                <if test="userType != null and userType != ''">user_type,</if>
+                <if test="phone != null and phone != ''">phone,</if>
+                <if test="address != null and address != ''">address,</if>
+                created_date,
+                updated_date
+            </trim>
         ) VALUES (
-            #{id},
-            #{name},
-            #{email},
-            #{status},
-            NOW()
+            <trim suffixOverrides=",">
+                <if test="username != null and username != ''">#{username},</if>
+                <if test="email != null and email != ''">#{email},</if>
+                <if test="password != null and password != ''">#{password},</if>
+                <if test="name != null and name != ''">#{name},</if>
+                <if test="age != null">#{age},</if>
+                <if test="status != null and status != ''">#{status},</if>
+                <if test="userType != null and userType != ''">#{userType},</if>
+                <if test="phone != null and phone != ''">#{phone},</if>
+                <if test="address != null and address != ''">#{address},</if>
+                SYSDATE,
+                SYSDATE
+            </trim>
         )
     </insert>
-
-    <!-- 사용자 상태를 업데이트하는 쿼리 (UserService에서 호출될 가상 메소드) -->
-    <update id="updateUserStatus" parameterType="map">
-        UPDATE users
-        SET
-            status = #{newStatus},
-            mod_date = NOW()
-        WHERE
-            user_id = #{userId}
-    </update>
-
-    <!-- 동적 쿼리 실행 예시 (보안 취약점 예시) -->
-    <select id="executeDynamicQuery" parameterType="String" resultType="com.example.model.User">
-        ${_parameter}
+    
+    <!-- 조건부 사용자 삭제 -->
+    <delete id="deleteUsersByCondition" parameterType="map">
+        DELETE FROM users
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="userType != null and userType != ''">
+                AND user_type = #{userType}
+            </if>
+            <if test="beforeDate != null and beforeDate != ''">
+                AND created_date &lt; TO_DATE(#{beforeDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </delete>
+    
+    <!-- 동적 COUNT 쿼리 -->
+    <select id="countUsersByCondition" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        <where>
+            <if test="userType != null and userType != ''">
+                AND user_type = #{userType}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="minAge != null">
+                AND age >= #{minAge}
+            </if>
+            <if test="maxAge != null">
+                AND age &lt;= #{maxAge}
+            </if>
+        </where>
     </select>
-
+    
 </mapper>

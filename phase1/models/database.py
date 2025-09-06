@@ -115,6 +115,8 @@ class DbTable(Base):
     table_comment = Column(Text, comment='원본 테이블 설명')  # Table comment/description
     llm_comment = Column(Text, comment='LLM이 보강한 테이블 설명')  # LLM-enhanced comment
     llm_comment_confidence = Column(Float, default=0.0, comment='LLM 보강 설명의 신뢰도')  # Confidence score
+    created_at = Column(DateTime, default=datetime.utcnow, comment='생성 시간')
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='수정 시간')
     
     # Relationships
     columns = relationship("DbColumn", back_populates="table", cascade="all, delete-orphan")
@@ -132,6 +134,8 @@ class DbColumn(Base):
     column_comment = Column(Text, comment='원본 컬럼 설명')  # Column comment/description
     llm_comment = Column(Text, comment='LLM이 보강한 컬럼 설명')  # LLM-enhanced comment
     llm_comment_confidence = Column(Float, default=0.0, comment='LLM 보강 설명의 신뢰도')  # Confidence score
+    created_at = Column(DateTime, default=datetime.utcnow, comment='생성 시간')
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='수정 시간')
     
     # Relationships
     table = relationship("DbTable", back_populates="columns")
@@ -142,6 +146,8 @@ class DbPk(Base):
     table_id = Column(Integer, ForeignKey('db_tables.table_id'), primary_key=True)
     column_name = Column(String(128), primary_key=True)
     pk_pos = Column(Integer)  # Position in composite key
+    created_at = Column(DateTime, default=datetime.utcnow, comment='생성 시간')
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='수정 시간')
     
     # Relationships
     table = relationship("DbTable", back_populates="pk_columns")
@@ -417,6 +423,12 @@ class DatabaseManager:
         # If the configuration nests project/global sections, pick one.
         if 'type' not in cfg:
             cfg = cfg.get(db_scope) or cfg.get('project') or cfg.get('global') or cfg
+        
+        # 디버깅을 위한 로그 추가
+        print(f"DEBUG: db_scope={db_scope}, cfg keys={list(cfg.keys()) if isinstance(cfg, dict) else 'not dict'}")
+        if isinstance(cfg, dict) and 'type' not in cfg:
+            print(f"CRITICAL: 'type' 키가 설정에 없습니다! cfg={cfg}")
+            raise KeyError(f"'type' 키가 설정에 없습니다. db_scope={db_scope}, cfg={cfg}")
  
         db_config = cfg
         db_url = ""
@@ -450,21 +462,90 @@ class DatabaseManager:
         self.engine = create_engine(db_url, **engine_args)
         
         # Create all tables first
-        Base.metadata.create_all(self.engine)
+        try:
+            Base.metadata.create_all(self.engine)
+            print(f"DEBUG: 테이블 생성 완료 - {db_url}")
+        except Exception as e:
+            print(f"CRITICAL: 테이블 생성 실패 - {e}")
+            print(f"DEBUG: DB URL - {db_url}")
+            print(f"DEBUG: Engine args - {engine_args}")
+            raise
         
         # Thread-local scoped session for better concurrency
         self.Session = scoped_session(sessionmaker(
             bind=self.engine,
             expire_on_commit=False,
-            autocommit=False,
-            autoflush=False,
+            autocommit=False,  # SQLAlchemy 2.0에서는 지원되지 않음
+            autoflush=True,    # 즉시 플러시로 변경
         ))
         
     def get_session(self):
         """Get a new database session."""
         return self.Session()
+    
+    def get_auto_commit_session(self):
+        """Get a session that automatically commits after each operation."""
+        return AutoCommitSession(self.Session())
         
     def close(self):
         """Close database connection."""
         if self.engine:
             self.engine.dispose()
+
+
+class AutoCommitSession:
+    """자동 커밋 세션 래퍼 클래스 (중복 커밋 문제 해결)"""
+    
+    def __init__(self, session):
+        self.session = session
+        self._committed = False
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            if exc_type is None and not self._committed:
+                # 예외가 없고 아직 커밋하지 않았으면 커밋
+                self.session.commit()
+                self._committed = True
+            elif exc_type is not None:
+                # 예외가 있으면 롤백
+                self.session.rollback()
+        finally:
+            self.session.close()
+    
+    def add(self, instance):
+        """객체 추가 (즉시 커밋하지 않음)"""
+        self.session.add(instance)
+        return instance
+    
+    def add_all(self, instances):
+        """여러 객체 추가 (즉시 커밋하지 않음)"""
+        self.session.add_all(instances)
+        return instances
+    
+    def delete(self, instance):
+        """객체 삭제 (즉시 커밋하지 않음)"""
+        self.session.delete(instance)
+    
+    def merge(self, instance):
+        """객체 병합 (즉시 커밋하지 않음)"""
+        result = self.session.merge(instance)
+        return result
+    
+    def flush(self):
+        """플러시 (커밋하지 않음)"""
+        self.session.flush()
+    
+    def query(self, *entities, **kwargs):
+        """쿼리 실행 (읽기 전용이므로 커밋 불필요)"""
+        return self.session.query(*entities, **kwargs)
+    
+    def execute(self, statement, parameters=None):
+        """SQL 실행 (즉시 커밋하지 않음)"""
+        from sqlalchemy import text
+        if isinstance(statement, str):
+            statement = text(statement)
+        result = self.session.execute(statement, parameters)
+        return result

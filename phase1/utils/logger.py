@@ -50,18 +50,23 @@ class AnalyzerLogger:
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
         
-        # 파일 핸들러
+        # 파일 핸들러 - 타임스탬프 포함 파일명 생성
         log_file = self.config.get('file', './logs/analyzer.log')
         if log_file:
             # 로그 디렉토리 생성
             os.makedirs(os.path.dirname(log_file), exist_ok=True)
+            
+            # 타임스탬프가 포함된 파일명 생성
+            if '{timestamp}' in log_file:
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                log_file = log_file.replace('{timestamp}', timestamp)
             
             # 회전 파일 핸들러 (최대 100MB, 백업 3개)
             file_handler = logging.handlers.RotatingFileHandler(
                 log_file,
                 maxBytes=100 * 1024 * 1024,  # 100MB
                 backupCount=3,
-                encoding='utf-8'
+                encoding='utf-8-sig'
             )
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
@@ -335,8 +340,9 @@ def setup_logging(config: Dict[str, Any]):
     """
     LoggerFactory.setup_default_config(config)
     
-    # 메인 로거 초기화
-    main_logger = LoggerFactory.get_logger("main")
+    # 메인 로거 초기화 - 로깅 설정을 직접 전달
+    logging_config = config.get('logging', {})
+    main_logger = LoggerFactory.get_logger("main", logging_config)
     main_logger.info("로깅 시스템 초기화 완료")
     
     return main_logger

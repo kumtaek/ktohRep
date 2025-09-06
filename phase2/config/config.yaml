@@ -1,0 +1,31 @@
+# Phase 2: Advanced Analysis Configuration
+# Phase2 전용 설정 파일: 고급 분석 및 추론 기능에 특화된 설정
+
+# 데이터베이스 설정
+database:
+  # 데이터베이스 타입 설정
+  type: "sqlite"  # 데이터베이스 타입 (sqlite, mysql, postgresql 등)
+  
+  # 기본 스키마 설정 (프로젝트별로 다를 수 있음)
+  default_schema: "SAMPLE"  # 기본 데이터베이스 스키마 (Oracle의 경우 OWNER)
+
+# LLM 설정 (Phase2 질의응답용)
+llm:
+  enabled: true             # LLM 기반 질의응답 활성화 여부
+  provider: "ollama"        # LLM 제공자
+  model: "gemma3:1b"        # 기본 LLM 모델
+  temperature: 0.1          # 응답의 무작위성 (낮을수록 결정론적)
+  max_tokens: 2048          # 응답의 최대 토큰 수
+  context_window: 8192      # 컨텍스트 윈도우 크기
+
+# 질의응답 설정
+qa:
+  max_history: 10           # 대화 히스토리 최대 개수
+  confidence_threshold: 0.7 # 응답 신뢰도 임계값
+  include_source: true      # 소스 코드 인용 포함 여부
+  max_source_lines: 20      # 인용할 최대 소스 라인 수
+
+# 로깅 설정
+logging:
+  level: "DEBUG"
+  file: "../logs/phase2_{timestamp}.log"

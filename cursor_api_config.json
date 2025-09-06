@@ -1,0 +1,17 @@
+{
+  "cursor_api": {
+    "base_url": "http://localhost:3000",
+    "endpoints": {
+      "chat": "/api/chat",
+      "message": "/api/message"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_API_KEY"
+    }
+  },
+  "auto_message": {
+    "template": "🚨 A 파일 자동 감지: {filename}이 도착했습니다! 즉시 확인하여 작업을 진행하세요.",
+    "delay": 1000
+  }
+}

@@ -73,29 +73,24 @@ class IntelligentChunker:
         return chunks
     
     def chunk_jsp_file(self, content: str, file_path: str) -> List[CodeChunk]:
-        """JSP 파일을 의미있는 단위로 청킹"""
+        """JSP 파일을 의미있는 단위로 청킹 (SQL이 포함된 스크립틀릿만)"""
         chunks = []
         
-        # 1. JSP 지시어 블록
-        directives = re.findall(r'<%@([^%]|%(?!>))*%>', content, re.DOTALL)
-        if directives:
-            chunks.append(CodeChunk(
-                chunk_type='directive',
-                name='jsp_directives',
-                content='\n'.join(directives),
-                start_line=1,
-                end_line=len(directives),
-                context=f"JSP 파일: {file_path}",
-                metadata={'file_path': file_path, 'count': len(directives)}
-            ))
-        
-        # 2. 스크립틀릿 블록들
+        # 스크립틀릿 중에서 SQL이 포함된 의미있는 코드만 추출
         scriptlet_chunks = self._extract_jsp_scriptlets(content, file_path)
         chunks.extend(scriptlet_chunks)
         
-        # 3. JSTL 태그 블록들  
-        jstl_chunks = self._extract_jstl_blocks(content, file_path)
-        chunks.extend(jstl_chunks)
+        # JSP 파일이 충분히 복잡하면 전체 페이지 요약 추가
+        if len(content) > 1000 and len(scriptlet_chunks) == 0:
+            chunks.append(CodeChunk(
+                chunk_type='jsp_page',
+                name=f'page_{Path(file_path).stem}',
+                content=content[:2000],  # 첫 2000자만
+                start_line=1,
+                end_line=content.count('\n') + 1,
+                context=f"JSP 파일: {file_path}",
+                metadata={'file_path': file_path, 'page_type': 'view'}
+            ))
         
         return chunks
     
@@ -231,43 +226,63 @@ class IntelligentChunker:
         return chunks
     
     def _extract_jsp_scriptlets(self, content: str, file_path: str) -> List[CodeChunk]:
-        """JSP 파일에서 스크립틀릿 블록들 추출"""
+        """JSP 파일에서 의미있는 스크립틀릿 블록들만 추출"""
         chunks = []
-        scriptlets = re.finditer(r'<%([^%@=](?:[^%]|%(?!>))*?)%>', content, re.DOTALL)
+        
+        # 실제 Java 코드가 있는 스크립틀릿만 추출 (주석 제외)
+        scriptlets = re.finditer(r'<%([^%@=\-](?:[^%]|%(?!>))*?)%>', content, re.DOTALL)
         
         for i, match in enumerate(scriptlets):
-            scriptlet_content = match.group(0)
-            chunks.append(CodeChunk(
-                chunk_type='scriptlet',
-                name=f'scriptlet_{i+1}',
-                content=scriptlet_content,
-                start_line=content[:match.start()].count('\n') + 1,
-                end_line=content[:match.end()].count('\n') + 1,
-                context=f"JSP 파일: {file_path}",
-                metadata={'file_path': file_path, 'index': i+1}
-            ))
+            scriptlet_content = match.group(0).strip()
+            inner_content = match.group(1).strip()
+            
+            # SQL이 포함되거나 충분히 복잡한 로직만 청킹
+            has_sql = any(keyword in inner_content.upper() for keyword in ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE'])
+            has_logic = any(keyword in inner_content for keyword in ['if', 'for', 'while', 'try', 'catch', '='])
+            
+            if (inner_content and 
+                not inner_content.startswith('//') and 
+                not inner_content.startswith('/*') and
+                len(inner_content) > 50 and  # 최소 50자 이상
+                (has_sql or has_logic)):  # SQL이나 로직이 있는 경우만
+                
+                chunks.append(CodeChunk(
+                    chunk_type='scriptlet',
+                    name=f'jsp_script_{i+1}',
+                    content=scriptlet_content,
+                    start_line=content[:match.start()].count('\n') + 1,
+                    end_line=content[:match.end()].count('\n') + 1,
+                    context=f"JSP 파일: {file_path}",
+                    metadata={'file_path': file_path, 'index': i+1}
+                ))
         
         return chunks
     
     def _extract_jstl_blocks(self, content: str, file_path: str) -> List[CodeChunk]:
-        """JSP 파일에서 JSTL 태그 블록들 추출"""
+        """JSP 파일에서 의미있는 JSTL 태그 블록들만 추출"""
         chunks = []
-        jstl_pattern = r'<c:(\w+)[^>]*>(.*?)</c:\1>'
-        jstl_blocks = re.finditer(jstl_pattern, content, re.DOTALL)
         
-        for i, match in enumerate(jstl_blocks):
-            tag_name = match.group(1)
-            block_content = match.group(0)
+        # 의미있는 JSTL 태그만 추출 (단순 조건문 제외)
+        meaningful_tags = ['forEach', 'choose', 'when', 'otherwise', 'set']
+        
+        for tag in meaningful_tags:
+            jstl_pattern = rf'<c:{tag}[^>]*>(.*?)</c:{tag}>'
+            jstl_blocks = re.finditer(jstl_pattern, content, re.DOTALL)
             
-            chunks.append(CodeChunk(
-                chunk_type='jstl',
-                name=f'jstl_{tag_name}_{i+1}',
-                content=block_content,
-                start_line=content[:match.start()].count('\n') + 1,
-                end_line=content[:match.end()].count('\n') + 1,
-                context=f"JSP 파일: {file_path}",
-                metadata={'tag_name': tag_name, 'file_path': file_path, 'index': i+1}
-            ))
+            for i, match in enumerate(jstl_blocks):
+                block_content = match.group(0)
+                
+                # 내용이 충분히 길고 의미있는 경우만 청킹
+                if len(block_content.strip()) > 100:  # 최소 100자 이상
+                    chunks.append(CodeChunk(
+                        chunk_type='jstl',
+                        name=f'jstl_{tag}_{i+1}',
+                        content=block_content,
+                        start_line=content[:match.start()].count('\n') + 1,
+                        end_line=content[:match.end()].count('\n') + 1,
+                        context=f"JSP 파일: {file_path}",
+                        metadata={'tag_name': tag, 'file_path': file_path, 'index': i+1}
+                    ))
         
         return chunks
     
@@ -311,7 +326,7 @@ class IntelligentChunker:
             # 기본 청킹 (라인 기반)
             return self._chunk_by_lines(content, file_path)
     
-    def _chunk_by_lines(self, content: str, file_path: str, max_lines: int = 50) -> List[CodeChunk]:
+    def _chunk_by_lines(self, content: str, file_path: str, max_lines: int = 50000) -> List[CodeChunk]:
         """라인 기반 기본 청킹"""
         lines = content.split('\n')
         chunks = []

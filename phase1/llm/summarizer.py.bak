@@ -10,10 +10,12 @@ from pathlib import Path
 try:
     from ..llm.client import get_client
     from ..models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
+    from ..utils.logger import handle_critical_error, handle_non_critical_error
 except ImportError:
     # If relative imports fail, try direct imports
     from llm.client import get_client
     from models.database import DatabaseManager, File, Class, Method, SqlUnit, DbTable, DbColumn, Join
+    from utils.logger import handle_critical_error, handle_non_critical_error
 from sqlalchemy import text
 import logging
 from sqlalchemy.orm import joinedload
@@ -50,9 +52,11 @@ class CodeSummarizer:
         # Add Korean system prompt
         korean_system = {
             "role": "system",
-            "content": "모든 응답을 한국어로 해주세요. 간결하고 명확하게 답변해주세요.\n" + \
+            "content": "모든 응답을 한국어로 해주세요. 정중하고 공식적인 말투로 간결하고 명확하고 중복되지 않도록 답변해주세요.\n" + \
                        "딱 필요한 답변만 하고 네, 알겠습니다 같은 군더더기 말은 하지 마세요.\n" + \
-                       "만약 이해가 안되거나 답변이 불가한 경우 '-'를 답변주세요."
+                       "근거 없이 추정해서 답하면 안됩니다. 충분한 근거가 있는 답변만 합니다. 정보가 부족하거나, 이해가 안되거나, 답변이 불가한 경우 '-'를 답변주세요.\n" + \
+                       "군더더기 없이 할말만 하고, 잘 알지 못하는 내용이나 자신이 없는 답변은 굳이 하지 않습니다.\n" + \
+                       "'정보가 부족하므로 상세한 설명은 제공할 수 없습니다' -> 이런 불필요한 말은 하지 않습니다.\n"
         }
 
         # Insert system message at the beginning
@@ -136,17 +140,16 @@ class CodeSummarizer:
         finally:
             session.close()
 
-    def _read_project_file_content(self, file_path: str, max_size: int = 4096) -> str:
+    def _read_project_file_content(self, file_path: str, max_size: int = 10000) -> str:
         """프로젝트 폴더에서 파일 내용을 읽어옴 (최대 4KB)"""
         if not file_path:
             return ""
 
         # PROJECT/ 접두사가 있는 경우 실제 프로젝트 폴더 경로로 변환
-        if file_path.startswith('PROJECT\\') or file_path.startswith('PROJECT/'):
-            print('fullpath')
+        if Path(file_path).is_absolute() :
+            #file_path.startswith('PROJECT\\') or file_path.startswith('PROJECT/'):
             actual_path = file_path
         else:
-            print('# 상대 경로인 경우 PROJECT 하위에서 찾기')
             actual_path = f"PROJECT/{file_path}"
 
         full_path = Path(actual_path)
@@ -159,11 +162,11 @@ class CodeSummarizer:
             with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read(max_size)
                 if len(content) == max_size:
-                    logger.info(f"파일 내용이 4KB로 제한됨: {full_path}")
+                    logger.info(f"파일 내용이 {max_size}로 제한됨: {full_path}")
                 return content
         except Exception as e:
             logger.warning(f"파일 읽기 실패 {full_path}: {e}")
-            raise
+            return ""
 
     def summarize_file(self, file: File) -> Optional[str]:
         """청킹 기반 LLM 파일 요약 생성"""
@@ -200,7 +203,7 @@ class CodeSummarizer:
 
 {chr(10).join(chunk_summaries)}
 
-이 정보를 바탕으로 파일 전체의 목적과 역할을 2-3문장으로 종합 요약해주세요:"""
+이 정보를 바탕으로 파일 전체의 목적과 역할을 2-1~2문장으로 종합 요약해주세요:"""
 
                 final_summary = self._chat_with_debug(client, [{"role": "user", "content": combined_prompt}], max_tokens=150, temperature=0.3)
 
@@ -233,7 +236,7 @@ class CodeSummarizer:
 
             elif chunk.chunk_type.startswith('mybatis_'):
                 query_type = chunk.chunk_type.replace('mybatis_', '').upper()
-                prompt = f"""다음 MyBatis {query_type} 쿼리의 목적을 1문장으로 요약해주세요:
+                prompt = f"""다음 MyBatis {query_type} 쿼리의 목적을 1~2문장 이내로 요약해주세요:
 
 쿼리 ID: {chunk.name}
 위치: {chunk.context}
@@ -244,7 +247,7 @@ class CodeSummarizer:
 요약:"""
 
             elif chunk.chunk_type == 'class':
-                prompt = f"""다음 Java 클래스의 역할을 1문장으로 요약해주세요:
+                prompt = f"""다음 Java 클래스의 역할을 1~2문장 이내로 요약해주세요:
 
 클래스: {chunk.name}
 위치: {chunk.context}
@@ -255,7 +258,7 @@ class CodeSummarizer:
 요약:"""
 
             elif chunk.chunk_type == 'scriptlet':
-                prompt = f"""다음 JSP 스크립틀릿의 기능을 1문장으로 요약해주세요:
+                prompt = f"""다음 JSP 스크립틀릿의 기능을 1~2문장 이내로 요약해주세요:
 
 위치: {chunk.context}
 
@@ -265,7 +268,7 @@ class CodeSummarizer:
 요약:"""
 
             else:
-                prompt = f"""다음 코드 블록의 목적을 1문장으로 요약해주세요:
+                prompt = f"""다음 코드 블록의 목적을 1~2문장 이내로 요약해주세요:
 
 타입: {chunk.chunk_type}
 이름: {chunk.name}
@@ -276,7 +279,7 @@ class CodeSummarizer:
 
 요약:"""
 
-            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=100, temperature=0.3)
+            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=1000, temperature=0.3)
             return summary.strip() if isinstance(summary, str) else str(summary).strip()
 
         except Exception as e:
@@ -290,15 +293,15 @@ class CodeSummarizer:
             client = get_client(self.llm_config)
             file_extension = Path(file.path or "").suffix.lower()
 
-            prompt = f"""파일을 분석하고 목적과 기능을 간략하게 요약해주세요:
+            prompt = f"""파일을 분석하고 목적과 기능을 1~2문장 이내로 요약해주세요:
 
 파일: {file.path}
 내용:
 {file_content[:3000]}
 
-이 파일의 주요 목적과 기능을 2문장으로 요약해주세요:"""
+이 파일의 주요 목적과 기능을 1~2문장 이내로 요약해주세요:"""
 
-            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=150, temperature=0.3)
+            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=1500, temperature=0.3)
             return summary.strip() if isinstance(summary, str) else str(summary).strip()
 
         except Exception as e:
@@ -316,27 +319,48 @@ class CodeSummarizer:
 
             # Get method details - 메소드 소스코드를 프로젝트 폴더에서 읽어옴
             method_code = getattr(method, 'code_snippet', '') or getattr(method, 'source_code', '') or ''
+            logger.debug(f"메서드 {method.name}: method_code = '{method_code[:100]}'")
 
             # 만약 코드가 없고 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
             if not method_code and hasattr(method, 'file') and method.file and method.file.path:
+                logger.debug(f"파일에서 메서드 코드 읽기 시도: {method.file.path}")
                 file_content = self._read_project_file_content(method.file.path)
-                # 메소드 이름으로 코드 추출 시도 (간단한 휴리스틱)
+                logger.debug(f"파일 내용 읽기 결과: {len(file_content) if file_content else 0}자")
+                
+                # 메소드 이름으로 코드 추출 시도 (start_line, end_line 활용)
                 if file_content and method.name:
                     lines = file_content.split('\n')
-                    method_start = -1
-                    for i, line in enumerate(lines):
-                        if method.name in line and ('public' in line or 'private' in line or 'protected' in line):
-                            method_start = i
-                            break
-                    if method_start >= 0:
-                        # 메소드 시작부터 최대 50줄까지 추출
-                        method_lines = lines[method_start:method_start + 50]
-                        method_code = '\n'.join(method_lines)
+                    
+                    # start_line, end_line이 있으면 우선 사용
+                    if hasattr(method, 'start_line') and hasattr(method, 'end_line') and method.start_line and method.end_line:
+                        logger.debug(f"start_line: {method.start_line}, end_line: {method.end_line}")
+                        if method.start_line <= len(lines) and method.end_line <= len(lines):
+                            method_lines = lines[method.start_line-1:method.end_line]
+                            method_code = '\n'.join(method_lines)
+                            logger.debug(f"start_line/end_line으로 추출: {len(method_code)}자")
+                    
+                    # start_line/end_line이 없으면 휴리스틱 사용
+                    if not method_code:
+                        method_start = -1
+                        for i, line in enumerate(lines):
+                            if method.name in line and ('public' in line or 'private' in line or 'protected' in line):
+                                method_start = i
+                                break
+                        if method_start >= 0:
+                            max_len_method = 1000
+                            logger.debug(f"휴리스틱으로 메서드 시작 찾음: {method_start}행")
+                            method_lines = lines[method_start:method_start + max_len_method]
+                            method_code = '\n'.join(method_lines)
+                            logger.debug(f"휴리스틱으로 추출: {len(method_code)}자")
+
+            # 메서드 코드가 없으면 건너뛰기
+            if not method_code:
+                logger.warning(f"메서드 코드를 찾을 수 없음: {method.name}")
+                return None
 
             prompt = f"""
-다음 Java 메서드를 분석하고 기능을 간략하게 요약해주세요.
+다음 Java 메서드를 분석하고 기능을 1~2문장 이내로 요약해주세요.
 성능개선이나 더 효율적으로 리팩토링할 수 있는 방법이 있으면 추가적으로 제안해줘도 됩니다.
-
 
 메서드: {method.name}
 클래스: {method.class_fqn if hasattr(method, 'class_fqn') else 'Unknown'}
@@ -344,17 +368,18 @@ class CodeSummarizer:
 반환 타입: {method.return_type if hasattr(method, 'return_type') else 'Unknown'}
 
 코드:
-{method_code[:2000]}...
+{method_code[:3000]}
 
-이 메서드가 하는 일과 목적에 대해 간결한 요약(1문장)을 제공해주세요.
+이 메서드가 하는 일과 목적에 대해 1~2문장 이내로 요약 제공해주세요.
 
 요약:
 
-혹시 리팩토링 제안할 내용이 있으면 간결한 요약(2~3문장)으로 제공해주세요.
+혹시 리팩토링 제안할 내용이 있으면 1~2문장 이내로 요약 제공해주세요.
+제안할게 없으면 굳이 억지로 제안을 하지 않아도 됩니다. 할말 없으면 '-'로 답변.
 
 개선제안:"""
 
-            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=150, temperature=0.3)
+            summary = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=1500, temperature=0.3)
             return summary.strip() if isinstance(summary, str) else str(summary).strip()
 
         except Exception as e:
@@ -364,41 +389,52 @@ class CodeSummarizer:
     def summarize_sql_unit(self, sql_unit: SqlUnit) -> Optional[str]:
         """LLM을 사용하여 SQL 단위에 대한 요약 생성"""
         try:
+            max_sql_len = 10000
             if not self.llm_config.get('enabled', True):
                 return None
 
             client = get_client(self.llm_config)
 
             # SQL 내용을 프로젝트 폴더에서 읽어옴
-            sql_content = sql_unit.normalized_fingerprint if sql_unit.normalized_fingerprint else ''
+            sql_content = ''
 
-            # SQL 내용이 없고 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
-            if not sql_content and hasattr(sql_unit, 'file') and sql_unit.file and sql_unit.file.path:
+            # 파일 경로가 있다면 프로젝트 폴더에서 읽기 시도
+            if hasattr(sql_unit, 'file') and sql_unit.file and sql_unit.file.path:
                 file_content = self._read_project_file_content(sql_unit.file.path)
-                # MyBatis XML에서 statement ID로 SQL 추출 시도
-                if file_content and sql_unit.stmt_id:
+                # 파일에서 SQL 내용 추출 시도
+                if file_content:
                     import re
-                    # MyBatis select/insert/update/delete 태그에서 해당 ID 찾기
-                    pattern = rf'<(?:select|insert|update|delete)[^>]*id\s*=\s*["\']?{re.escape(sql_unit.stmt_id)}["\']?[^>]*>(.*?)</(?:select|insert|update|delete)>'
-                    match = re.search(pattern, file_content, re.DOTALL | re.IGNORECASE)
-                    if match:
-                        sql_content = match.group(1).strip()[:2000]  # 최대 2KB
+                    
+                    # MyBatis XML에서 statement ID로 SQL 추출 시도
+                    if sql_unit.stmt_id:
+                        pattern = rf'<(?:select|insert|update|delete)[^>]*id\s*=\s*["\']?{re.escape(sql_unit.stmt_id)}["\']?[^>]*>(.*?)</(?:select|insert|update|delete)>'
+                        match = re.search(pattern, file_content, re.DOTALL | re.IGNORECASE)
+                        if match:
+                            sql_content = match.group(1).strip()[:max_sql_len]
+                    
+                    # JSP 파일에서 SQL 추출 시도 (start_line, end_line 활용)
+                    if not sql_content and sql_unit.start_line and sql_unit.end_line:
+                        file_lines = file_content.split('\n')
+                        if sql_unit.start_line <= len(file_lines) and sql_unit.end_line <= len(file_lines):
+                            sql_lines = file_lines[sql_unit.start_line-1:sql_unit.end_line]
+                            sql_content = '\n'.join(sql_lines)[:max_sql_len]  
 
-            # normalized_fingerprint 백업 사용
+            # SQL 내용이 없으면 건너뛰기 (해시값은 사용 안함)
             if not sql_content:
-                sql_content = getattr(sql_unit, 'normalized_fingerprint', '') or 'SQL 내용 없음'
+                logger.warning(f"SQL 내용을 찾을 수 없음: {sql_unit.mapper_ns}.{sql_unit.stmt_id}")
+                return None
 
             prompt = f"""
-다음 SQL 쿼리/문을 분석하고 기능을 간략하게 요약해주세요.
+다음 SQL 쿼리/문을 분석하고 기능을 1~2문장 이내로 요약해주세요.
 
 
 매퍼 네임스페이스: {sql_unit.mapper_ns}
 문 ID: {sql_unit.stmt_id}
 문 종류: {sql_unit.stmt_kind}
 SQL 내용:
-{sql_content[:2000]}...
+{sql_content[:max_sql_len]}...
 
-이 SQL 문이 하는 일과 목적에 대해 간결한 요약(1문장)을 제공해주세요.
+이 SQL 문이 하는 일과 목적에 대해 1~2문장 이내로 요약 제공해주세요.
 
 
 요약:"""
@@ -421,7 +457,7 @@ SQL 내용:
             # 테이블과 관련된 청킹 요약 정보 수집
             chunk_context = self._collect_table_related_chunks(table.table_name)
 
-            prompt = f"""데이터베이스 테이블을 종합 분석하여 한글로 향상된 설명을 제공해주세요.
+            prompt = f"""데이터베이스 테이블을 종합 분석하여 한글로 한문장으로 설명을 제공해주세요.
 
 테이블명: {table.table_name}
 기존 코멘트: {table.table_comment or '코멘트 없음'}
@@ -432,14 +468,13 @@ SQL 내용:
 기존 코드 컨텍스트:
 {related_code_context[:1000]}
 
-위 모든 정보를 종합하여 다음을 포함하는 향상된 설명을 한글로 120자 이내로 작성해주세요:
-1. 테이블의 비즈니스 목적과 저장 데이터
-2. 애플리케이션에서의 실제 사용 패턴
-3. 다른 테이블과의 관계나 특별한 제약사항
+위 모든 정보를 종합하여 테이블에 대한 설명을 한 문장으로 간략히 작성해주세요:
 
-향상된 설명:"""
+※ 굳이 할말이 없으면 ' '을 답변해도 됩니다.
 
-            comment = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=250, temperature=0.3)
+설명:"""
+
+            comment = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=2500, temperature=0.3)
             return comment.strip() if isinstance(comment, str) else str(comment).strip()
 
         except Exception as e:
@@ -481,7 +516,7 @@ SQL 내용:
                     related_chunks.append(f"[파일:{Path(file.path).name}] {file.summary}")
 
             session.close()
-            return '\n'.join(related_chunks) if related_chunks else f"{table_name} 테이블 관련 청킹 정보 없음"
+            return '\n'.join(related_chunks) if related_chunks else f"{table_name}"
 
         except Exception as e:
             import traceback
@@ -496,10 +531,13 @@ SQL 내용:
 
             client = get_client(self.llm_config)
 
+            
             # 컬럼과 관련된 청킹 요약 정보 수집
             column_chunk_context = self._collect_column_related_chunks(column.column_name, column.table.table_name)
 
-            prompt = f"""데이터베이스 컬럼을 종합 분석하여 한글로 향상된 설명을 제공해주세요.
+            max_len_code = 10000
+            print(f"max_len_code = {max_len_code}")
+            prompt = f"""데이터베이스 컬럼을 종합 분석하여 한글로 한문장으로 설명을 제공해주세요.
 
 컬럼명: {column.column_name}
 테이블: {column.table.table_name}
@@ -508,17 +546,14 @@ NULL 허용: {column.nullable}
 기존 코멘트: {column.column_comment or '코멘트 없음'}
 
 관련 코드 분석 (청킹 기반):
-{column_chunk_context[:1500]}
+{column_chunk_context[:max_len_code]}
 
 기존 테이블 컨텍스트:
 {table_context[:800]}
 
-위 모든 정보를 종합하여 다음을 포함하는 향상된 설명을 한글로 40자 이내로 작성해주세요:
-1. 이 컬럼이 저장하는 구체적인 데이터
-2. 비즈니스 로직에서의 용도와 의미
-3. 제약사항이나 특별한 고려사항
+위 모든 정보를 종합하여 컬럼을 표현하는 한문장으로 요약 작성해주세요.
 
-향상된 설명:"""
+설명:"""
 
             comment = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=200, temperature=0.3)
             return comment.strip() if isinstance(comment, str) else str(comment).strip()
@@ -593,6 +628,9 @@ NULL 허용: {column.nullable}
 
                 columns_text = '\n'.join(columns_info)
 
+                max_len_context = 10000
+                print(f"max_len_context = {max_len_context}")
+                
                 prompt = f"""다음 데이터베이스 테이블을 분석하여 실질적인 Primary Key 후보 컬럼을 추천해주세요.
 
 테이블명: {table.table_name}
@@ -602,7 +640,7 @@ NULL 허용: {column.nullable}
 {columns_text}
 
 관련 코드 컨텍스트:
-{table_context[:1000]}
+{table_context[:max_len_context]}
 
 다음 기준으로 Primary Key 후보를 분석해주세요:
 1. 고유성이 보장되는 컬럼
@@ -610,11 +648,11 @@ NULL 허용: {column.nullable}
 3. 비즈니스적으로 식별자 역할을 하는 컬럼
 4. 컬럼명이 ID, 번호, 코드 등을 나타내는 컬럼
 
-Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요. 없으면 '없음'이라고 답변해주세요.
+Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요. 없으면 '-'이라고 답변해주세요.
 
 추천 Primary Key:"""
 
-                response = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=100, temperature=0.3)
+                response = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=1000, temperature=0.3)
                 response_text = response.strip() if isinstance(response, str) else str(response).strip()
 
                 # 응답 파싱
@@ -716,8 +754,7 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
 
         except Exception as e:
             session.rollback()
-            logger.error(f"Error processing project summaries: {e}")
-            raise
+            handle_critical_error(logger, "프로젝트 요약 처리 실패", e)
         finally:
             session.close()
 
@@ -739,8 +776,10 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
                     {"sql_id": sql_unit.sql_id}
                 ).fetchone()
 
+                max_len_sql = 10000
+                print(f"max_len_sql = {max_len_sql}")
                 if chunk_query and chunk_query[0]:
-                    sql_text = chunk_query[0][:5120]  # 5KB 한도
+                    sql_text = chunk_query[0][:max_len_sql]  # 5KB 한도
                 else:
                     # chunks에 없으면 파일에서 다시 추출
                     sql_text = self._extract_sql_from_file(sql_unit)
@@ -751,30 +790,53 @@ Primary Key로 적합한 컬럼명만 쉼표로 구분하여 나열해주세요.
             if not sql_text or sql_text == 'SQL 내용 없음':
                 return []
 
+            dynamicQuery = r'''
+    // Scriptlet building a SQL string (for parser extraction / vuln detector)
+    String productId = request.getParameter("id");
+    String sql = "SELECT * FROM PRODUCTS WHERE DEL_YN = 'N'";
+    if (productId != null) {
+        sql = sql + " AND PRODUCT_ID = '" + productId + "'";
+    }
+        '''        
+ 
             prompt = f"""다음 SQL 쿼리를 분석하여 테이블 간 조인 조건을 추출해주세요.
 
+* JOIN 사례 (아래는 샘플입니다)
+    
+    JOIN customers c ON o.customer_id = c.customer_id and o.cust_name = c.cust_name
+    또는 
+    o.customer_id = c.customer_id and o.cust_name = c.cust_name
+            
+    쿼리에 위와 같은 경우 아래와 같이 답변하면 됩니다.
+    다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "-"이라고 답변)
+        
+    customer_id = customer_id        
+    cust_name = cust_name
 
-SQL 정보:
-- Mapper: {sql_unit.mapper_ns}
-- Statement ID: {sql_unit.stmt_id}
-- SQL 종류: {sql_unit.stmt_kind}
-- SQL 크기: {len(sql_text)} 문자
+* 주의사항 : Mybatis XML화일의 내용으로 다이나믹하게 조합이 되는 경우도 있습니다.
+            조인 조건만 잘 추출해 내주세요.
+            
+{dynamicQuery}
 
-SQL 내용:
-{sql_text}
+    상기와 같은 경우 PRODUCT_ID = productId에서 productId는 변수입니다.  
+    다른 테이블에 컬럼이 아니므로 조인조건이 아닙니다.
 
-다음 형식으로 조인 조건을 추출해주세요 (조인이 없으면 "조인 없음"이라고 답변)
-Mybatis XML화일의 내용으로 다이나믹하게 조합이 되는 경우도 있습니다.
-ANSI JOIN(Explicit Join - JOIN customers c ON o.customer_id = c.customer_id)의 경우도
-아래 같이 '='로 표현하는 Implicit join으로 표기해서 답변해주세요.
+-------------------------------------------------
+* SQL 정보:
+    - Mapper: {sql_unit.mapper_ns}
+    - Statement ID: {sql_unit.stmt_id}
+    - SQL 종류: {sql_unit.stmt_kind}
+    - SQL 크기: {len(sql_text)} 문자
 
-:
-컬럼1 = 컬럼2
-컬럼3 = 컬럼4
+아래 SQL에서 두개 이상 테이블이 있는 경우 조인조건만 추출해주세요.
+아니면 '-'를 답변합니다.
 
-추출된 조인 조건:"""
+* SQL 내용:
+{sql_text}     
 
-            response = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=300, temperature=0.3)
+* 추출된 조인 조건:"""
+
+            response = self._chat_with_debug(client, [{"role": "user", "content": prompt}], max_tokens=3000, temperature=0.3)
             response_text = response.strip() if isinstance(response, str) else str(response).strip()
 
             # Parse the response to extract joins
@@ -847,8 +909,7 @@ ANSI JOIN(Explicit Join - JOIN customers c ON o.customer_id = c.customer_id)의 
 
         except Exception as e:
             session.rollback()
-            logger.error(f"Error processing joins: {e}")
-            raise
+            handle_critical_error(logger, "조인 분석 처리 실패", e)
         finally:
             session.close()
 
@@ -938,9 +999,10 @@ ANSI JOIN(Explicit Join - JOIN customers c ON o.customer_id = c.customer_id)의 
                     related_sql = session.query(SqlUnit).limit(3).all()
 
                 context = f"Related SQL queries:\n"
-                for sql in related_sql:
-                    sql_text = getattr(sql, 'sql_content', '') or getattr(sql, 'normalized_fingerprint', '') or 'No SQL content'
-                    context += f"- {sql.mapper_ns}.{sql.stmt_id}: {sql_text[:200]}...\n"
+                for sql in related_sql:                    
+                    sql_text = getattr(sql, 'sql_content', '') or getattr(sql, 'normalized_fingerprint', '') or 'No SQL content'                    
+                    max_len_sql = 10000
+                    context += f"- {sql.mapper_ns}.{sql.stmt_id}: {sql_text[:max_len_sql]}...\n"
 
                 enhanced_comment = self.enhance_table_comment(table, context)
                 if enhanced_comment:
@@ -992,8 +1054,7 @@ ANSI JOIN(Explicit Join - JOIN customers c ON o.customer_id = c.customer_id)의 
 
         except Exception as e:
             session.rollback()
-            logger.error(f"Error processing table comments: {e}")
-            raise
+            handle_critical_error(logger, "테이블 코멘트 처리 실패", e)
         finally:
             session.close()
 
@@ -1172,7 +1233,7 @@ def generate_table_specification_md(config: Dict[str, Any], output_path: str):
             context = f"Related SQL queries:\n"
             for sql in related_sql:
                 sql_text = getattr(sql, 'sql_content', '') or getattr(sql, 'normalized_fingerprint', '') or 'No SQL content'
-                context += f"- {sql.mapper_ns}.{sql.stmt_id}: {sql_text[:200]}...\n"
+                context += f"- {sql.mapper_ns}.{sql.stmt_id}: {sql_text[:500]}...\n"
 
             # LLM PK 분석 실행
             try:

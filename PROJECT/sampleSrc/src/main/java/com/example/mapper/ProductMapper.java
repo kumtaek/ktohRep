@@ -1,21 +1,29 @@
 package com.example.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
+import com.example.model.Product;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
 import java.util.Map;
 
-@Mapper
 public interface ProductMapper {
     
-    List<Object> selectAllProducts();
+    List<Product> selectProductsByCondition(Map<String, Object> params);
     
-    Object selectProductById(@Param("productId") String productId);
+    List<Product> selectProductsByAdvancedCondition(Map<String, Object> params);
     
-    List<Object> searchProductsWithCriteria(Map<String, Object> criteria);
+    List<Product> selectProductsByCategory(@Param("categoryId") String categoryId);
     
-    List<Map<String, Object>> getComplexProductAnalysis(Map<String, Object> params);
+    Product selectProductById(@Param("productId") String productId);
     
-    // 동적 SQL 실행용
-    List<Map<String, Object>> executeDynamicQuery(@Param("sql") String sql);
+    int updateProductStock(@Param("productId") String productId, @Param("quantity") int quantity);
+    
+    int updateProductDynamic(Product product);
+    
+    int deleteProductsByCondition(Map<String, Object> params);
+    
+    // 동적 INSERT 쿼리
+    int insertProductDynamic(Product product);
+    
+    // 동적 COUNT 쿼리
+    int countProductsByCondition(Map<String, Object> params);
 }

@@ -13,7 +13,7 @@ current_dir = Path(__file__).parent
 project_root = current_dir.parent.parent
 sys.path.insert(0, str(project_root))
 
-from phase1.models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, Project, Relatedness 
+from models.database import DatabaseManager, File, Class, Method, SqlUnit, Edge, DbTable, Project, Relatedness 
 
 class RelatednessStrategy(ABC):
     """
@@ -178,10 +178,10 @@ class RelatednessCalculator:
     def __init__(self, project_name: str, config: dict):
         self.project_name = project_name
         self.config = config
-        db_config = self.config.get('database', {}).get('project', {})
+        db_config = self.config.get('database', {})
         self.dbm = DatabaseManager(db_config)
         self.dbm.initialize()  # Ensure database is initialized
-        self.session = self.dbm.get_session()
+        self.session = self.dbm.get_auto_commit_session()
         self.project_id = self._get_project_id()
 
         if not self.project_id:
@@ -279,17 +279,13 @@ class RelatednessCalculator:
             # Bulk insert the data
             if insert_data:
                 self.session.bulk_insert_mappings(Relatedness, insert_data)
-                self.session.commit()
                 print(f"    Successfully stored {len(insert_data)} new relatedness records.")
             else:
                 print("    No valid new relatedness data to store.")
                 
         except Exception as e:
             print(f"    Error storing scores to database: {e}")
-            self.session.rollback()
             raise
-        finally:
-            self.session.close()
 
 
 # Main execution block

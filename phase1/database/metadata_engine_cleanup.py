@@ -4,7 +4,7 @@
 
 from typing import Set
 from sqlalchemy import and_, or_
-from .metadata_engine import MetadataEngine
+from database.metadata_engine import MetadataEngine
 from models.database import File, Class, Method, SqlUnit, Edge, Join, RequiredFilter, Summary, EnrichmentLog, VulnerabilityFix
 
 
@@ -20,7 +20,7 @@ async def cleanup_deleted_files(self, deleted_file_paths: Set[str], project_id: 
         정리된 파일 수
     """
     
-    session = self.db_manager.get_session()
+    session = self.db_manager.get_auto_commit_session()
     
     try:
         cleaned_count = 0
@@ -124,17 +124,13 @@ async def cleanup_deleted_files(self, deleted_file_paths: Set[str], project_id: 
             cleaned_count += 1
             self.logger.debug(f"삭제된 파일 메타데이터 정리 완료: {file_path}")
         
-        session.commit()
         self.logger.info(f"총 {cleaned_count}개 파일의 메타데이터가 정리되었습니다")
         
         return cleaned_count
         
     except Exception as e:
-        session.rollback()
         self.logger.error("삭제된 파일 메타데이터 정리 중 오류", exception=e)
         raise e
-    finally:
-        session.close()
 
 
 # MetadataEngine 클래스에 메서드 추가

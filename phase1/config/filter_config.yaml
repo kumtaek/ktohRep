@@ -1,0 +1,82 @@
+# 소스 분석 필터 설정
+# 분석에 포함하거나 제외할 파일 및 디렉토리 패턴을 정의합니다.
+
+# 포함할 파일 패턴
+include_patterns:
+  - "**/*.java"
+  - "**/*.jsp"
+  - "**/*.xml"
+  - "**/*.sql"
+  - "**/*.properties"
+  - "**/*.jar"
+
+# 제외할 디렉토리 패턴
+exclude_directories:
+  - "**/target/**"
+  - "**/build/**"
+  - "**/test/**"
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/bin/**"
+  - "**/out/**"
+
+# 제외할 파일 패턴
+exclude_files:
+  - "**/*.class"
+  - "**/*.log"
+  - "**/*.tmp"
+  - "**/*.bak"
+  - "**/*.swp"
+  - "**/*.orig"
+
+# 최대 파일 크기 (바이트)
+max_file_size: 10485760  # 10MB
+
+# 최소 파일 크기 (바이트)
+min_file_size: 1
+
+# 분석할 파일 확장자
+supported_extensions:
+  - ".java"
+  - ".jsp"
+  - ".xml"
+  - ".sql"
+  - ".properties"
+  - ".jar"
+
+# 특정 파일 타입별 설정
+file_type_settings:
+  java:
+    enabled: true
+    max_lines: 10000
+    parse_annotations: true
+    parse_imports: true
+  
+  jsp:
+    enabled: true
+    max_lines: 5000
+    parse_jstl: true
+    parse_scriptlets: true
+  
+  xml:
+    enabled: true
+    max_lines: 5000
+    parse_namespaces: true
+    parse_attributes: true
+  
+  sql:
+    enabled: true
+    max_lines: 1000
+    parse_comments: true
+    parse_hints: true
+  
+  properties:
+    enabled: true
+    max_lines: 1000
+    parse_encodings: true
+  
+  jar:
+    enabled: true
+    max_size: 52428800  # 50MB
+    parse_manifest: true
+    parse_class_files: false  # 성능상 기본적으로 비활성화

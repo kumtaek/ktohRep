@@ -161,17 +161,7 @@ class SourceAnalyzer:
         # 설정 문자열에서 프로젝트 이름 플레이스홀더를 실제 프로젝트 이름으로 대체합니다.
         config_str = json.dumps(config)
         config_str = config_str.replace("{project_name}", project_name)
-        result = json.loads(config_str)
-        
-        # 치환 검증: {project_name} 플레이스홀더가 남아있는지 확인
-        result_str = json.dumps(result)
-        if "{project_name}" in result_str:
-            self.logger.warning(f"플레이스홀더 치환 후에도 {{project_name}}이 남아있습니다: {project_name}")
-            # 재귀적으로 치환 시도
-            result_str = result_str.replace("{project_name}", project_name)
-            result = json.loads(result_str)
-        
-        return result
+        return json.loads(config_str)
 
     def _initialize_parsers(self) -> Dict[str, Any]:
         # 파서 팩토리를 초기화합니다.
@@ -1262,7 +1252,7 @@ class SourceAnalyzer:
             self.logger.info("엣지 생성 시작")
             
             with self.db_manager.get_auto_commit_session() as session:
-                edge_generator = EdgeGenerator(session, self.config)
+                edge_generator = EdgeGenerator(session, project_id, self.config)
                 edge_count = edge_generator.generate_all_edges()
                 
                 self.logger.info(f"엣지 생성 완료: {edge_count}개")
@@ -1490,12 +1480,6 @@ def main():
     # 프로젝트명 검증
     if not project_name or project_name.strip() == '':
         print(f"오류: 프로젝트명이 유효하지 않습니다: '{project_name}'")
-        sys.exit(1)
-    
-    # 프로젝트명에 플레이스홀더가 포함되어 있는지 검증
-    if '{project_name}' in project_name:
-        print(f"오류: 프로젝트명에 플레이스홀더가 포함되어 있습니다: '{project_name}'")
-        print("올바른 프로젝트명을 입력하세요 (예: sampleSrc)")
         sys.exit(1)
 
     global_config_path = Path(args.config).resolve()

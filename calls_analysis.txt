@@ -1,0 +1,14 @@
+MixedErrorController|MixedErrorService|calls
+ProductController|ProductService|calls
+UserController|UserService|calls
+ProductServiceImpl|ProductMapper|calls
+UserServiceImpl|UserMapper|calls
+MixedErrorController|MixedErrorService|calls
+ProductController|ProductService|calls
+UserController|UserService|calls
+ProductService|ProductMapper|calls
+ProductServiceImpl|ProductMapper|calls
+ProductServiceImpl|ProductMapper|calls
+UserService|UserMapper|calls
+UserServiceImpl|UserMapper|calls
+UserServiceImpl|UserMapper|calls

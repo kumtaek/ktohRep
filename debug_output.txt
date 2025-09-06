@@ -1,0 +1,435 @@
+=== 최적화된 메타데이터 시스템 테스트 ===
+
+프로젝트 분석 시작...
+DEBUG: Generating project relationships for project_id: 11
+DEBUG: Total components: 159
+DEBUG: Component names: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService', 'Product', 'ProductController', 'ProductMapper', 'ProductService', 'ProductServiceImpl']
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\controller\ErrorController.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: ErrorController
+DEBUG: Class info: {'name': 'ErrorController', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.User', 'com.example.service.UserService', 'org.springframework.beans.factory.annotation.Autowired', 'org.springframework.stereotype.Controller', 'org.springframework.ui.Model', 'org.springframework.web.bind.annotation.*', 'java.util.List', 'java.util.Map', 'com.example.nonexistent.NonExistentClass  // 컴파일 오류'], 'annotations': ['@Controller', '@RequestMapping("/error")']}
+DEBUG: Found component_id 1921 for ErrorController
+DEBUG: Adding import relationships for ErrorController
+DEBUG: _add_import_relationships - ErrorController, imports: 9
+DEBUG: Checking import User
+DEBUG: Adding import relationship ErrorController -> User
+DEBUG: add_relationship called - project_id:11, src:1921, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserService
+DEBUG: Adding import relationship ErrorController -> UserService
+DEBUG: add_relationship called - project_id:11, src:1921, dst:2091, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Autowired
+DEBUG: Checking import Controller
+DEBUG: Checking import Model
+DEBUG: Checking import *
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Checking import NonExistentClass
+DEBUG: Adding dependency relationships for ErrorController
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\controller\MixedErrorController.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: MixedErrorController
+DEBUG: Class info: {'name': 'MixedErrorController', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['org.springframework.stereotype.Controller', 'org.springframework.web.bind.annotation.RequestMapping', 'org.springframework.web.bind.annotation.RequestMethod', 'org.springframework.web.bind.annotation.ResponseBody', 'org.springframework.web.bind.annotation.RequestParam', 'com.example.model.User', 'com.example.service.UserService', 'java.util.List'], 'annotations': ['@Controller', '@RequestMapping("/mixed-error")']}
+DEBUG: Found component_id 1926 for MixedErrorController
+DEBUG: Adding import relationships for MixedErrorController
+DEBUG: _add_import_relationships - MixedErrorController, imports: 8
+DEBUG: Checking import Controller
+DEBUG: Checking import RequestMapping
+DEBUG: Checking import RequestMethod
+DEBUG: Checking import ResponseBody
+DEBUG: Checking import RequestParam
+DEBUG: Checking import User
+DEBUG: Adding import relationship MixedErrorController -> User
+DEBUG: add_relationship called - project_id:11, src:1926, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserService
+DEBUG: Adding import relationship MixedErrorController -> UserService
+DEBUG: add_relationship called - project_id:11, src:1926, dst:2091, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Adding dependency relationships for MixedErrorController
+DEBUG: add_relationship called - project_id:11, src:1926, dst:2061, type:dependency
+DEBUG: relationship added successfully
+DEBUG: Adding method call relationships
+DEBUG: add_relationship called - project_id:11, src:1926, dst:2061, type:calls
+DEBUG: relationship added successfully
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\controller\ProductController.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: ProductController
+DEBUG: Class info: {'name': 'ProductController', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.Product', 'com.example.service.ProductService', 'org.springframework.beans.factory.annotation.Autowired', 'org.springframework.stereotype.Controller', 'org.springframework.ui.Model', 'org.springframework.web.bind.annotation.*', 'java.util.List', 'java.util.Map'], 'annotations': ['@Controller', '@RequestMapping("/product")']}
+DEBUG: Found component_id 1931 for ProductController
+DEBUG: Adding import relationships for ProductController
+DEBUG: _add_import_relationships - ProductController, imports: 8
+DEBUG: Checking import Product
+DEBUG: Adding import relationship ProductController -> Product
+DEBUG: add_relationship called - project_id:11, src:1931, dst:1951, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import ProductService
+DEBUG: Adding import relationship ProductController -> ProductService
+DEBUG: add_relationship called - project_id:11, src:1931, dst:2066, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Autowired
+DEBUG: Checking import Controller
+DEBUG: Checking import Model
+DEBUG: Checking import *
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for ProductController
+DEBUG: add_relationship called - project_id:11, src:1931, dst:2066, type:dependency
+DEBUG: relationship added successfully
+DEBUG: Adding method call relationships
+DEBUG: add_relationship called - project_id:11, src:1931, dst:2066, type:calls
+DEBUG: relationship added successfully
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\controller\SyntaxErrorController.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: SyntaxErrorController
+DEBUG: Class info: {'name': 'SyntaxErrorController', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['org.springframework.stereotype.Controller', 'org.springframework.web.bind.annotation.RequestMapping', 'org.springframework.web.bind.annotation.RequestMethod', 'org.springframework.web.bind.annotation.ResponseBody', 'org.springframework.web.bind.annotation.RequestParam', 'com.example.model.User', 'com.example.service.UserService', 'java.util.List'], 'annotations': ['@Controller', '@RequestMapping("/syntax-fixed")']}
+DEBUG: Found component_id 1934 for SyntaxErrorController
+DEBUG: Adding import relationships for SyntaxErrorController
+DEBUG: _add_import_relationships - SyntaxErrorController, imports: 8
+DEBUG: Checking import Controller
+DEBUG: Checking import RequestMapping
+DEBUG: Checking import RequestMethod
+DEBUG: Checking import ResponseBody
+DEBUG: Checking import RequestParam
+DEBUG: Checking import User
+DEBUG: Adding import relationship SyntaxErrorController -> User
+DEBUG: add_relationship called - project_id:11, src:1934, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserService
+DEBUG: Adding import relationship SyntaxErrorController -> UserService
+DEBUG: add_relationship called - project_id:11, src:1934, dst:2091, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Adding dependency relationships for SyntaxErrorController
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\controller\UserController.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: UserController
+DEBUG: Class info: {'name': 'UserController', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.User', 'com.example.service.UserService', 'org.springframework.beans.factory.annotation.Autowired', 'org.springframework.stereotype.Controller', 'org.springframework.ui.Model', 'org.springframework.web.bind.annotation.*', 'java.util.List', 'java.util.Map'], 'annotations': ['@Controller', '@RequestMapping("/user")']}
+DEBUG: Found component_id 1939 for UserController
+DEBUG: Adding import relationships for UserController
+DEBUG: _add_import_relationships - UserController, imports: 8
+DEBUG: Checking import User
+DEBUG: Adding import relationship UserController -> User
+DEBUG: add_relationship called - project_id:11, src:1939, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserService
+DEBUG: Adding import relationship UserController -> UserService
+DEBUG: add_relationship called - project_id:11, src:1939, dst:2091, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Autowired
+DEBUG: Checking import Controller
+DEBUG: Checking import Model
+DEBUG: Checking import *
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for UserController
+DEBUG: add_relationship called - project_id:11, src:1939, dst:2091, type:dependency
+DEBUG: relationship added successfully
+DEBUG: Adding method call relationships
+DEBUG: add_relationship called - project_id:11, src:1939, dst:2091, type:calls
+DEBUG: relationship added successfully
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\mapper\BrokenMapper.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: BrokenMapper
+DEBUG: Class info: {'name': 'BrokenMapper', 'type': 'interface', 'line_start': 13, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['org.apache.ibatis.annotations.Mapper', 'org.apache.ibatis.annotations.Select', 'org.apache.ibatis.annotations.Insert', 'org.apache.ibatis.annotations.Update', 'org.apache.ibatis.annotations.Delete', 'com.example.model.Product', 'java.util.List'], 'annotations': ['@Mapper']}
+DEBUG: Found component_id 1946 for BrokenMapper
+DEBUG: Adding import relationships for BrokenMapper
+DEBUG: _add_import_relationships - BrokenMapper, imports: 7
+DEBUG: Checking import Mapper
+DEBUG: Checking import Select
+DEBUG: Checking import Insert
+DEBUG: Checking import Update
+DEBUG: Checking import Delete
+DEBUG: Checking import Product
+DEBUG: Adding import relationship BrokenMapper -> Product
+DEBUG: add_relationship called - project_id:11, src:1946, dst:1951, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Adding dependency relationships for BrokenMapper
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\mapper\ProductMapper.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: ProductMapper
+DEBUG: Class info: {'name': 'ProductMapper', 'type': 'interface', 'line_start': 8, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.Product', 'org.apache.ibatis.annotations.Param', 'java.util.List', 'java.util.Map'], 'annotations': []}
+DEBUG: Found component_id 1947 for ProductMapper
+DEBUG: Adding import relationships for ProductMapper
+DEBUG: _add_import_relationships - ProductMapper, imports: 4
+DEBUG: Checking import Product
+DEBUG: Adding import relationship ProductMapper -> Product
+DEBUG: add_relationship called - project_id:11, src:1947, dst:1951, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Param
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for ProductMapper
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: add_relationship called - project_id:11, src:1947, dst:1951, type:foreign_key
+DEBUG: relationship added successfully
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\mapper\UserMapper.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: UserMapper
+DEBUG: Class info: {'name': 'UserMapper', 'type': 'interface', 'line_start': 8, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.User', 'org.apache.ibatis.annotations.Param', 'java.util.List', 'java.util.Map'], 'annotations': []}
+DEBUG: Found component_id 1948 for UserMapper
+DEBUG: Adding import relationships for UserMapper
+DEBUG: _add_import_relationships - UserMapper, imports: 4
+DEBUG: Checking import User
+DEBUG: Adding import relationship UserMapper -> User
+DEBUG: add_relationship called - project_id:11, src:1948, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Param
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for UserMapper
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: add_relationship called - project_id:11, src:1948, dst:2010, type:foreign_key
+DEBUG: relationship added successfully
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\model\Product.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: Product
+DEBUG: Class info: {'name': 'Product', 'type': 'class', 'line_start': 6, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['java.util.Date', 'java.util.Objects'], 'annotations': []}
+DEBUG: Found component_id 1951 for Product
+DEBUG: Adding import relationships for Product
+DEBUG: _add_import_relationships - Product, imports: 2
+DEBUG: Checking import Date
+DEBUG: Checking import Objects
+DEBUG: Adding dependency relationships for Product
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\model\User.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: User
+DEBUG: Class info: {'name': 'User', 'type': 'class', 'line_start': 6, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['java.util.Date', 'java.util.Objects'], 'annotations': []}
+DEBUG: Found component_id 2010 for User
+DEBUG: Adding import relationships for User
+DEBUG: _add_import_relationships - User, imports: 2
+DEBUG: Checking import Date
+DEBUG: Checking import Objects
+DEBUG: Adding dependency relationships for User
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\LogicErrorService.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: LogicErrorService
+DEBUG: Class info: {'name': 'LogicErrorService', 'type': 'class', 'line_start': 12, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['org.springframework.stereotype.Service', 'org.springframework.beans.factory.annotation.Autowired', 'com.example.model.User', 'com.example.mapper.UserMapper', 'java.util.List', 'java.util.ArrayList'], 'annotations': ['@Service']}
+DEBUG: Found component_id 2055 for LogicErrorService
+DEBUG: Adding import relationships for LogicErrorService
+DEBUG: _add_import_relationships - LogicErrorService, imports: 6
+DEBUG: Checking import Service
+DEBUG: Checking import Autowired
+DEBUG: Checking import User
+DEBUG: Adding import relationship LogicErrorService -> User
+DEBUG: add_relationship called - project_id:11, src:2055, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserMapper
+DEBUG: Adding import relationship LogicErrorService -> UserMapper
+DEBUG: add_relationship called - project_id:11, src:2055, dst:1948, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Checking import ArrayList
+DEBUG: Adding dependency relationships for LogicErrorService
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\MixedErrorService.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: MixedErrorService
+DEBUG: Class info: {'name': 'MixedErrorService', 'type': 'class', 'line_start': 11, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['org.springframework.stereotype.Service', 'com.example.model.User', 'com.example.mapper.UserMapper', 'java.util.List', 'java.util.ArrayList'], 'annotations': ['@Service']}
+DEBUG: Found component_id 2061 for MixedErrorService
+DEBUG: Adding import relationships for MixedErrorService
+DEBUG: _add_import_relationships - MixedErrorService, imports: 5
+DEBUG: Checking import Service
+DEBUG: Checking import User
+DEBUG: Adding import relationship MixedErrorService -> User
+DEBUG: add_relationship called - project_id:11, src:2061, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import UserMapper
+DEBUG: Adding import relationship MixedErrorService -> UserMapper
+DEBUG: add_relationship called - project_id:11, src:2061, dst:1948, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Checking import ArrayList
+DEBUG: Adding dependency relationships for MixedErrorService
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\ProductService.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: ProductService
+DEBUG: Class info: {'name': 'ProductService', 'type': 'interface', 'line_start': 7, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.Product', 'java.util.List', 'java.util.Map'], 'annotations': []}
+DEBUG: Found component_id 2066 for ProductService
+DEBUG: Adding import relationships for ProductService
+DEBUG: _add_import_relationships - ProductService, imports: 3
+DEBUG: Checking import Product
+DEBUG: Adding import relationship ProductService -> Product
+DEBUG: add_relationship called - project_id:11, src:2066, dst:1951, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for ProductService
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\ProductServiceImpl.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: ProductServiceImpl
+DEBUG: Class info: {'name': 'ProductServiceImpl', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': ['ProductService '], 'imports': ['com.example.mapper.ProductMapper', 'com.example.model.Product', 'org.springframework.beans.factory.annotation.Autowired', 'org.springframework.stereotype.Service', 'org.springframework.transaction.annotation.Transactional', 'org.springframework.util.StringUtils', 'java.util.*', 'java.util.stream.Collectors'], 'annotations': ['@Service', '@Transactional']}
+DEBUG: Found component_id 2067 for ProductServiceImpl
+DEBUG: add_relationship called - project_id:11, src:2067, dst:2066, type:implements
+DEBUG: relationship added successfully
+DEBUG: Adding import relationships for ProductServiceImpl
+DEBUG: _add_import_relationships - ProductServiceImpl, imports: 8
+DEBUG: Checking import ProductMapper
+DEBUG: Adding import relationship ProductServiceImpl -> ProductMapper
+DEBUG: add_relationship called - project_id:11, src:2067, dst:1947, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Product
+DEBUG: Adding import relationship ProductServiceImpl -> Product
+DEBUG: add_relationship called - project_id:11, src:2067, dst:1951, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Autowired
+DEBUG: Checking import Service
+DEBUG: Checking import Transactional
+DEBUG: Checking import StringUtils
+DEBUG: Checking import *
+DEBUG: Checking import Collectors
+DEBUG: Adding dependency relationships for ProductServiceImpl
+DEBUG: add_relationship called - project_id:11, src:2067, dst:2066, type:dependency
+DEBUG: relationship added successfully
+DEBUG: add_relationship called - project_id:11, src:2067, dst:1947, type:dependency
+DEBUG: relationship added successfully
+DEBUG: Adding method call relationships
+DEBUG: add_relationship called - project_id:11, src:2067, dst:1947, type:calls
+DEBUG: relationship added successfully
+DEBUG: Adding foreign key relationships
+DEBUG: add_relationship called - project_id:11, src:2067, dst:1947, type:foreign_key
+DEBUG: relationship added successfully
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\UserService.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: UserService
+DEBUG: Class info: {'name': 'UserService', 'type': 'interface', 'line_start': 7, 'line_end': None, 'extends': None, 'implements': [], 'imports': ['com.example.model.User', 'java.util.List', 'java.util.Map'], 'annotations': []}
+DEBUG: Found component_id 2091 for UserService
+DEBUG: Adding import relationships for UserService
+DEBUG: _add_import_relationships - UserService, imports: 3
+DEBUG: Checking import User
+DEBUG: Adding import relationship UserService -> User
+DEBUG: add_relationship called - project_id:11, src:2091, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import List
+DEBUG: Checking import Map
+DEBUG: Adding dependency relationships for UserService
+DEBUG: Adding method call relationships
+DEBUG: Adding foreign key relationships
+DEBUG: Processing file: sampleSrc\src\main\java\com\example\service\UserServiceImpl.java
+DEBUG: _add_basic_relationships called with 1 classes
+DEBUG: component_ids keys: ['BrokenMapper', 'ErrorController', 'LogicErrorService', 'MixedErrorController', 'MixedErrorService']
+DEBUG: Processing class: UserServiceImpl
+DEBUG: Class info: {'name': 'UserServiceImpl', 'type': 'class', 'line_start': 15, 'line_end': None, 'extends': None, 'implements': ['UserService '], 'imports': ['com.example.mapper.UserMapper', 'com.example.model.User', 'org.springframework.beans.factory.annotation.Autowired', 'org.springframework.stereotype.Service', 'org.springframework.transaction.annotation.Transactional', 'org.springframework.util.StringUtils', 'java.util.*', 'java.util.stream.Collectors'], 'annotations': ['@Service', '@Transactional']}
+DEBUG: Found component_id 2092 for UserServiceImpl
+DEBUG: add_relationship called - project_id:11, src:2092, dst:2091, type:implements
+DEBUG: relationship added successfully
+DEBUG: Adding import relationships for UserServiceImpl
+DEBUG: _add_import_relationships - UserServiceImpl, imports: 8
+DEBUG: Checking import UserMapper
+DEBUG: Adding import relationship UserServiceImpl -> UserMapper
+DEBUG: add_relationship called - project_id:11, src:2092, dst:1948, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import User
+DEBUG: Adding import relationship UserServiceImpl -> User
+DEBUG: add_relationship called - project_id:11, src:2092, dst:2010, type:imports
+DEBUG: relationship added successfully
+DEBUG: Checking import Autowired
+DEBUG: Checking import Service
+DEBUG: Checking import Transactional
+DEBUG: Checking import StringUtils
+DEBUG: Checking import *
+DEBUG: Checking import Collectors
+DEBUG: Adding dependency relationships for UserServiceImpl
+DEBUG: add_relationship called - project_id:11, src:2092, dst:2091, type:dependency
+DEBUG: relationship added successfully
+DEBUG: add_relationship called - project_id:11, src:2092, dst:1948, type:dependency
+DEBUG: relationship added successfully
+DEBUG: Adding method call relationships
+DEBUG: add_relationship called - project_id:11, src:2092, dst:1948, type:calls
+DEBUG: relationship added successfully
+DEBUG: Adding foreign key relationships
+DEBUG: add_relationship called - project_id:11, src:2092, dst:1948, type:foreign_key
+DEBUG: relationship added successfully
+분석 완료 (소요시간: 1.50초)
+
+분석 결과:
+  - 처리된 파일: 16개
+  - 생성된 컴포넌트: 186개
+  - 에러 수: 0개
+
+메타DB 통계:
+  - 파일 수: 16
+  - 컴포넌트 수: 192
+  - 관계 수: 41
+  - 컴포넌트 분포: {'class': 11, 'interface': 5, 'method': 176}
+
+검색 테스트:
+  - 'User' 검색 결과: 407개 (1.9ms)
+    * User (class) - sampleSrc\src\main\java\com\example\model\User.java
+    * User (class) - sampleSrc\src\main\java\com\example\model\User.java
+    * User (class) - sampleSrc\src\main\java\com\example\model\User.java
+
+상세 분석 테스트:
+  - 'User' 상세 분석 (4.6ms)
+    * 파일: sampleSrc\src\main\java\com\example\model\User.java
+    * 타입: class
+    * 도메인: user
+    * 레이어: None
+    * 관계 수: 10
+
+성능 요약:
+  - 전체 분석 시간: 1.50초
+  - 평균 파일당 처리 시간: 0.094초
+  - 빠른 검색 시간: 1.9ms
+  - 상세 분석 시간: 4.6ms
+  - 메타DB 크기: 396.0KB
+  - 컴포넌트당 평균: 2112bytes
+
+=== 테스트 완료 ===
+
+=== 기존 시스템과 비교 ===
+크기 비교:
+  - 최적화된 메타DB: 396.0KB
+
+예상 효과:
+  - 대규모 프로젝트(1000파일) 예상 메타DB 크기: 24.2MB
+  - 검색 성능: 메타DB 인덱스 활용으로 <10ms
+  - 메모리 사용량: 필요한 정보만 로드하여 70% 절약
+  - 동기화 문제: 실시간 파일 읽기로 해결
+
+추가 테스트 옵션:
+  1. analyzer.quick_search('클래스명') - 빠른 검색
+  2. analyzer.detailed_analysis('컴포넌트명') - 상세 분석
+  3. analyzer.metadata_engine.search_with_context('검색어', True) - 컨텍스트 포함 검색
+
+예제:
+  analyzer.quick_search('Controller')
+  analyzer.detailed_analysis('UserController')

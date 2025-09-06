@@ -19,7 +19,7 @@ def test_optimized_system():
     analyzer = OptimizedProjectAnalyzer("./project")
     
     # 2. 프로젝트 분석 실행
-    print("🔍 프로젝트 분석 시작...")
+    print("프로젝트 분석 시작...")
     start_time = time.time()
     
     results = analyzer.analyze_project("SampleProject_Optimized")
@@ -28,8 +28,8 @@ def test_optimized_system():
     analysis_time = end_time - start_time
     
     # 3. 분석 결과 출력
-    print(f"✅ 분석 완료 (소요시간: {analysis_time:.2f}초)\n")
-    print("📊 분석 결과:")
+    print(f"분석 완료 (소요시간: {analysis_time:.2f}초)\n")
+    print("분석 결과:")
     print(f"  - 처리된 파일: {results['files_processed']}개")
     print(f"  - 생성된 컴포넌트: {results['components_created']}개")
     print(f"  - 에러 수: {len(results['errors'])}개")
@@ -40,7 +40,7 @@ def test_optimized_system():
             print(f"  - {error['file']}: {error['error']}")
     
     # 4. 메타DB 통계
-    print(f"\n📈 메타DB 통계:")
+    print(f"\n메타DB 통계:")
     stats = results['statistics']
     print(f"  - 파일 수: {stats['file_count']}")
     print(f"  - 컴포넌트 수: {stats['component_count']}")
@@ -48,7 +48,7 @@ def test_optimized_system():
     print(f"  - 컴포넌트 분포: {stats['component_distribution']}")
     
     # 5. 검색 테스트
-    print(f"\n🔍 검색 테스트:")
+    print(f"\n검색 테스트:")
     
     # 빠른 검색 (메타DB만)
     search_start = time.time()
@@ -63,7 +63,7 @@ def test_optimized_system():
     
     # 6. 상세 분석 테스트
     if quick_results:
-        print(f"\n🔬 상세 분석 테스트:")
+        print(f"\n상세 분석 테스트:")
         component_name = quick_results[0]['component_name']
         
         detail_start = time.time()
@@ -87,7 +87,7 @@ def test_optimized_system():
                 print(f"    * 코드 미리보기: {context['target'][:100]}...")
     
     # 7. 성능 비교 요약
-    print(f"\n⚡ 성능 요약:")
+    print(f"\n성능 요약:")
     print(f"  - 전체 분석 시간: {analysis_time:.2f}초")
     print(f"  - 평균 파일당 처리 시간: {analysis_time/max(results['files_processed'], 1):.3f}초")
     print(f"  - 빠른 검색 시간: {search_time*1000:.1f}ms")
@@ -123,14 +123,14 @@ def compare_with_existing():
         if os.path.exists("metadata_optimized.db"):
             new_db_size = os.path.getsize("metadata_optimized.db")
             
-        print(f"📊 크기 비교:")
+        print(f"크기 비교:")
         print(f"  - 최적화된 메타DB: {new_db_size/1024:.1f}KB")
         
         if old_db_size > 0:
             reduction = ((old_db_size - new_db_size) / old_db_size) * 100
             print(f"  - 크기 감소: {reduction:.1f}%")
         
-        print(f"\n💡 예상 효과:")
+        print(f"\n예상 효과:")
         print(f"  - 대규모 프로젝트(1000파일) 예상 메타DB 크기: {(new_db_size/16)*1000/1024/1024:.1f}MB")
         print(f"  - 검색 성능: 메타DB 인덱스 활용으로 <10ms")
         print(f"  - 메모리 사용량: 필요한 정보만 로드하여 70% 절약")
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         compare_with_existing()
         
         # 추가 테스트 메뉴
-        print(f"\n🔧 추가 테스트 옵션:")
+        print(f"\n추가 테스트 옵션:")
         print(f"  1. analyzer.quick_search('클래스명') - 빠른 검색")
         print(f"  2. analyzer.detailed_analysis('컴포넌트명') - 상세 분석")
         print(f"  3. analyzer.metadata_engine.search_with_context('검색어', True) - 컨텍스트 포함 검색")

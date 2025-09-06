@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 class EdgeGenerator:
     """엣지 생성기 클래스"""
     
-    def __init__(self, db_session: Session, config: dict = None):
+    def __init__(self, db_session: Session, project_id: int, config: dict = None):
         self.db_session = db_session
+        self.project_id = project_id
         self.edge_count = 0
         self.config = config or {}
         
@@ -421,11 +422,11 @@ class EdgeGenerator:
         return None
     
     def _create_edge(self, source_type: str, source_id: int, target_type: str, 
-                    target_id: int, edge_type: str, description: str, project_id: int = 1):
+                    target_id: int, edge_type: str, description: str):
         """엣지를 생성합니다."""
         try:
             edge = Edge(
-                project_id=project_id,
+                project_id=self.project_id,
                 src_type=source_type,
                 src_id=source_id,
                 dst_type=target_type,
@@ -434,6 +435,7 @@ class EdgeGenerator:
                 meta=description
             )
             self.db_session.add(edge)
+            self.db_session.flush()  # 즉시 DB에 반영하여 제약조건 위반 감지
             self.edge_count += 1
             
             if self.edge_count % 10 == 0:
@@ -441,6 +443,11 @@ class EdgeGenerator:
                 
         except Exception as e:
             logger.error(f"엣지 생성 실패: {e}")
+            logger.error(f"실패한 엣지 정보: src_type={source_type}, src_id={source_id}, dst_type={target_type}, dst_id={target_id}, edge_kind={edge_type}")
+            logger.error(f"프로젝트 ID: {self.project_id}")
+            # 지침규정에 따라 에러 발생 시 즉시 중단
+            import sys
+            sys.exit(1)
     
     def _create_dummy_table(self, table_name: str):
         """더미 테이블을 생성합니다."""

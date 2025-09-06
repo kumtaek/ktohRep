@@ -18,7 +18,7 @@ from utils.dynamic_file_reader import DynamicFileReader
 class OptimizedMetadataEngine:
     """최적화된 메타데이터 엔진"""
     
-    def __init__(self, db_path: str = "metadata_optimized.db", project_path: str = "./project"):
+    def __init__(self, db_path: str = "./project/sampleSrc/metadata_optimized.db", project_path: str = "./project"):
         self.db_path = db_path
         self.project_path = Path(project_path)
         self.file_reader = DynamicFileReader(project_path)
@@ -81,13 +81,18 @@ class OptimizedMetadataEngine:
     def add_relationship(self, project_id: int, src_component_id: int, dst_component_id: int,
                         relationship_type: str, confidence: float = 1.0):
         """관계 추가"""
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO relationships (project_id, src_component_id, dst_component_id, relationship_type, confidence)
-                VALUES (?, ?, ?, ?, ?)
-            """, (project_id, src_component_id, dst_component_id, relationship_type, confidence))
-            conn.commit()
+        print(f"DEBUG: add_relationship called - project_id:{project_id}, src:{src_component_id}, dst:{dst_component_id}, type:{relationship_type}")
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO relationships (project_id, src_component_id, dst_component_id, relationship_type, confidence)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (project_id, src_component_id, dst_component_id, relationship_type, confidence))
+                conn.commit()
+                print(f"DEBUG: relationship added successfully")
+        except Exception as e:
+            print(f"DEBUG: Error adding relationship: {e}")
     
     def add_business_tag(self, project_id: int, component_id: int, 
                         domain: str = None, layer: str = None, priority: int = 3):
@@ -285,6 +290,50 @@ class OptimizedMetadataEngine:
                 'relationship_count': relationship_count,
                 'component_distribution': component_distribution
             }
+    
+    def get_all_components(self, project_id: int) -> List[Dict]:
+        """프로젝트의 모든 컴포넌트 조회"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT c.component_id, c.component_name, c.component_type, f.file_path
+                FROM components c
+                JOIN files f ON c.file_id = f.file_id
+                WHERE c.project_id = ?
+                ORDER BY c.component_name
+            """, (project_id,))
+            
+            components = []
+            for row in cursor.fetchall():
+                components.append({
+                    'component_id': row[0],
+                    'component_name': row[1],
+                    'component_type': row[2],
+                    'file_path': row[3]
+                })
+            
+            return components
+    
+    def get_all_files(self, project_id: int) -> List[Dict]:
+        """프로젝트의 모든 파일 조회"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT file_id, file_path, file_type
+                FROM files 
+                WHERE project_id = ?
+                ORDER BY file_path
+            """, (project_id,))
+            
+            files = []
+            for row in cursor.fetchall():
+                files.append({
+                    'file_id': row[0],
+                    'file_path': row[1],
+                    'file_type': row[2]
+                })
+            
+            return files
     
     def cleanup_metadata(self, project_id: int):
         """메타데이터 정리 (해시값으로 변경 감지)"""

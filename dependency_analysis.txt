@@ -1,0 +1,7 @@
+MixedErrorController|MixedErrorService|dependency
+ProductController|ProductService|dependency
+UserController|UserService|dependency
+ProductServiceImpl|ProductService|dependency
+ProductServiceImpl|ProductMapper|dependency
+UserServiceImpl|UserService|dependency
+UserServiceImpl|UserMapper|dependency

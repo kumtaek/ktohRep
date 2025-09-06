@@ -1,0 +1,10 @@
+ProductMapper|Product|foreign_key
+UserMapper|User|foreign_key
+ProductServiceImpl|ProductMapper|foreign_key
+UserServiceImpl|UserMapper|foreign_key
+ProductMapper|Product|foreign_key
+ProductMapper|Product|foreign_key
+UserMapper|User|foreign_key
+UserMapper|User|foreign_key
+ProductServiceImpl|ProductMapper|foreign_key
+UserServiceImpl|UserMapper|foreign_key

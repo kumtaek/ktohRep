@@ -163,4 +163,236 @@
         </where>
     </select>
     
+    <!-- 복잡한 사용자 통계 쿼리 -->
+    <select id="getUserStatistics" parameterType="map" resultType="map">
+        SELECT 
+            COUNT(*) as total_users,
+            COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) as active_users,
+            COUNT(CASE WHEN status = 'INACTIVE' THEN 1 END) as inactive_users,
+            COUNT(CASE WHEN user_type = 'ADMIN' THEN 1 END) as admin_users,
+            COUNT(CASE WHEN user_type = 'PREMIUM' THEN 1 END) as premium_users,
+            AVG(age) as average_age,
+            MIN(age) as min_age,
+            MAX(age) as max_age,
+            COUNT(CASE WHEN created_date >= TRUNC(SYSDATE - 30) THEN 1 END) as new_users_last_30_days,
+            COUNT(CASE WHEN updated_date >= TRUNC(SYSDATE - 7) THEN 1 END) as updated_users_last_7_days
+        FROM users
+        <where>
+            <if test="userType != null and userType != ''">
+                AND user_type = #{userType}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND created_date >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND created_date &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </select>
+    
+    <!-- 사용자 연령대별 분포 쿼리 -->
+    <select id="getUserAgeDistribution" parameterType="map" resultType="map">
+        SELECT 
+            CASE 
+                WHEN age &lt; 20 THEN '10대'
+                WHEN age &lt; 30 THEN '20대'
+                WHEN age &lt; 40 THEN '30대'
+                WHEN age &lt; 50 THEN '40대'
+                WHEN age &lt; 60 THEN '50대'
+                ELSE '60대 이상'
+            END as age_group,
+            COUNT(*) as user_count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM users), 2) as percentage
+        FROM users
+        <where>
+            age IS NOT NULL
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        GROUP BY 
+            CASE 
+                WHEN age &lt; 20 THEN '10대'
+                WHEN age &lt; 30 THEN '20대'
+                WHEN age &lt; 40 THEN '30대'
+                WHEN age &lt; 50 THEN '40대'
+                WHEN age &lt; 60 THEN '50대'
+                ELSE '60대 이상'
+            END
+        ORDER BY 
+            CASE 
+                WHEN age &lt; 20 THEN 1
+                WHEN age &lt; 30 THEN 2
+                WHEN age &lt; 40 THEN 3
+                WHEN age &lt; 50 THEN 4
+                WHEN age &lt; 60 THEN 5
+                ELSE 6
+            END
+    </select>
+    
+    <!-- 사용자 활동 분석 쿼리 -->
+    <select id="getUserActivityAnalysis" parameterType="map" resultType="map">
+        SELECT 
+            u.user_id,
+            u.username,
+            u.name,
+            u.status,
+            u.user_type,
+            u.created_date,
+            u.updated_date,
+            DATEDIFF(day, u.created_date, SYSDATE) as account_age_days,
+            DATEDIFF(day, u.updated_date, SYSDATE) as days_since_last_update,
+            CASE 
+                WHEN u.updated_date IS NULL THEN 'Never Updated'
+                WHEN DATEDIFF(day, u.updated_date, SYSDATE) &lt;= 7 THEN 'Active'
+                WHEN DATEDIFF(day, u.updated_date, SYSDATE) &lt;= 30 THEN 'Moderate'
+                ELSE 'Inactive'
+            END as activity_level
+        FROM users u
+        <where>
+            <if test="userType != null and userType != ''">
+                AND u.user_type = #{userType}
+            </if>
+            <if test="status != null and status != ''">
+                AND u.status = #{status}
+            </if>
+            <if test="activityLevel != null and activityLevel != ''">
+                AND CASE 
+                    WHEN u.updated_date IS NULL THEN 'Never Updated'
+                    WHEN DATEDIFF(day, u.updated_date, SYSDATE) &lt;= 7 THEN 'Active'
+                    WHEN DATEDIFF(day, u.updated_date, SYSDATE) &lt;= 30 THEN 'Moderate'
+                    ELSE 'Inactive'
+                END = #{activityLevel}
+            </if>
+        </where>
+        ORDER BY u.updated_date DESC NULLS LAST
+    </select>
+    
+    <!-- 복잡한 사용자 검색 쿼리 (다중 조건) -->
+    <select id="searchUsersAdvanced" parameterType="map" resultType="com.example.model.User">
+        SELECT 
+            u.id,
+            u.username,
+            u.email,
+            u.password,
+            u.name,
+            u.age,
+            u.status,
+            u.user_type,
+            u.phone,
+            u.address,
+            u.created_date,
+            u.updated_date,
+            ut.type_name,
+            ut.description as type_description
+        FROM users u
+        LEFT JOIN user_types ut ON u.user_type = ut.type_code
+        <where>
+            <if test="searchText != null and searchText != ''">
+                AND (
+                    UPPER(u.username) LIKE UPPER('%' || #{searchText} || '%')
+                    OR UPPER(u.name) LIKE UPPER('%' || #{searchText} || '%')
+                    OR UPPER(u.email) LIKE UPPER('%' || #{searchText} || '%')
+                )
+            </if>
+            <if test="userTypes != null and userTypes.size() > 0">
+                AND u.user_type IN
+                <foreach collection="userTypes" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND u.status IN
+                <foreach collection="statusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="ageRange != null">
+                AND u.age BETWEEN #{ageRange.minAge} AND #{ageRange.maxAge}
+            </if>
+            <if test="dateRange != null">
+                AND u.created_date BETWEEN 
+                    TO_DATE(#{dateRange.startDate}, 'YYYY-MM-DD') 
+                    AND TO_DATE(#{dateRange.endDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="hasPhone != null">
+                <choose>
+                    <when test="hasPhone == true">
+                        AND u.phone IS NOT NULL AND u.phone != ''
+                    </when>
+                    <otherwise>
+                        AND (u.phone IS NULL OR u.phone = '')
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="hasAddress != null">
+                <choose>
+                    <when test="hasAddress == true">
+                        AND u.address IS NOT NULL AND u.address != ''
+                    </when>
+                    <otherwise>
+                        AND (u.address IS NULL OR u.address = '')
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        <choose>
+            <when test="sortBy != null and sortBy != ''">
+                <choose>
+                    <when test="sortBy == 'name'">
+                        ORDER BY u.name
+                        <if test="sortOrder != null and sortOrder == 'desc'">DESC</if>
+                    </when>
+                    <when test="sortBy == 'age'">
+                        ORDER BY u.age
+                        <if test="sortOrder != null and sortOrder == 'desc'">DESC</if>
+                    </when>
+                    <when test="sortBy == 'created_date'">
+                        ORDER BY u.created_date
+                        <if test="sortOrder != null and sortOrder == 'desc'">DESC</if>
+                    </when>
+                    <when test="sortBy == 'updated_date'">
+                        ORDER BY u.updated_date
+                        <if test="sortOrder != null and sortOrder == 'desc'">DESC</if>
+                    </when>
+                    <otherwise>
+                        ORDER BY u.created_date DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                ORDER BY u.created_date DESC
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+    
+    <!-- 사용자 그룹별 집계 쿼리 -->
+    <select id="getUserGroupStatistics" parameterType="map" resultType="map">
+        SELECT 
+            user_type,
+            status,
+            COUNT(*) as user_count,
+            AVG(age) as avg_age,
+            MIN(created_date) as first_created,
+            MAX(created_date) as last_created,
+            COUNT(CASE WHEN updated_date IS NOT NULL THEN 1 END) as updated_count
+        FROM users
+        <where>
+            <if test="startDate != null and startDate != ''">
+                AND created_date >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND created_date &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+        GROUP BY user_type, status
+        ORDER BY user_type, status
+    </select>
+    
 </mapper>

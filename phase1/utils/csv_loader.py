@@ -94,7 +94,7 @@ class CsvLoader:
                 comments = (row.get('COMMENTS') or '').strip()
                 status = (row.get('STATUS') or 'VALID').strip()
 
-                # 기존 레코드 확인
+                # 기존 레코드 확인 (중복 방지 강화)
                 existing = session.query(DbTable).filter(
                     DbTable.owner == owner,
                     DbTable.table_name == table_name
@@ -104,14 +104,18 @@ class CsvLoader:
                     # CSV 업로드는 최신 정보이므로 기존 정보를 모든 필드 덮어쓰기
                     was_inferred = existing.status == 'INFERRED'
                     
-                    # 모든 필드를 CSV 값으로 무조건 덮어쓰기 (비어있어도)
-                    existing.table_comment = comments  # 빈 값이어도 덮어쓰기
-                    existing.status = status if status else 'VALID'  # CSV 정보이므로 실제 테이블로 설정
-                    
+                    # INFERRED 테이블의 경우만 CSV 정보로 업데이트 (실제 테이블 정보 우선)
                     if was_inferred:
-                        self.logger.info(f"CSV에서 테이블 정보 덮어쓰기: {table_name} (조인 추론 → 실제 정보)")
+                        existing.table_comment = comments
+                        existing.status = status if status else 'VALID'  # CSV 정보이므로 실제 테이블로 설정
+                        self.logger.info(f"CSV에서 테이블 정보 덮어쓰기: {table_name} (INFERRED → VALID)")
                     else:
-                        self.logger.info(f"CSV에서 테이블 정보 업데이트: {table_name} (최신 정보로 갱신)")
+                        # 이미 VALID 상태인 테이블의 경우 중복 처리 방지
+                        if existing.table_comment != comments:
+                            existing.table_comment = comments
+                            self.logger.info(f"CSV에서 테이블 코멘트 업데이트: {table_name}")
+                        else:
+                            self.logger.debug(f"CSV 테이블 정보 동일하여 건너뛰기: {table_name}")
                 else:
                     table = DbTable(
                         owner=owner,
@@ -176,7 +180,7 @@ class CsvLoader:
                     column_comment=col_comments
                 )
                 
-                # 기존 컬럼 확인 및 업데이트
+                # 기존 컬럼 확인 및 업데이트 (중복 방지 강화)
                 existing = session.query(DbColumn).filter(
                     DbColumn.table_id == column.table_id,
                     DbColumn.column_name == column.column_name
@@ -186,14 +190,19 @@ class CsvLoader:
                     # CSV는 최신 정보이므로 기존 컬럼 정보 덮어쓰기
                     was_inferred = getattr(existing, 'data_type', '') == 'UNKNOWN'
                     
-                    existing.data_type = row.get('DATA_TYPE', '').strip()
-                    existing.nullable = row.get('NULLABLE', 'Y').strip()
-                    existing.column_comment = col_comments
-                    
                     if was_inferred:
-                        self.logger.info(f"CSV에서 컬럼 정보 덮어쓰기: {owner}.{table_name}.{column_name} (조인 추론 → 실제 정보)")
+                        # INFERRED 컬럼의 경우만 CSV 정보로 업데이트
+                        existing.data_type = row.get('DATA_TYPE', '').strip()
+                        existing.nullable = row.get('NULLABLE', 'Y').strip()
+                        existing.column_comment = col_comments
+                        self.logger.info(f"CSV에서 컬럼 정보 덮어쓰기: {owner}.{table_name}.{column_name} (UNKNOWN → {row.get('DATA_TYPE', '').strip()})")
                     else:
-                        self.logger.debug(f"CSV에서 컬럼 정보 업데이트: {owner}.{table_name}.{column_name}")
+                        # 이미 유효한 데이터 타입을 가진 컬럼의 경우 코멘트만 업데이트
+                        if existing.column_comment != col_comments:
+                            existing.column_comment = col_comments
+                            self.logger.debug(f"CSV에서 컬럼 코멘트 업데이트: {owner}.{table_name}.{column_name}")
+                        else:
+                            self.logger.debug(f"CSV 컬럼 정보 동일하여 건너뛰기: {owner}.{table_name}.{column_name}")
                 else:
                     session.add(column)
                     session.flush()
@@ -348,13 +357,20 @@ class CsvLoader:
                     pk_pos=pk_position
                 )
                 
-                # 중복 확인
+                # 중복 확인 (강화)
                 existing = session.query(DbPk).filter(
                     DbPk.table_id == pk_info.table_id,
                     DbPk.column_name == pk_info.column_name
                 ).first()
                 
-                if not existing:
+                if existing:
+                    # 이미 존재하는 PK 정보의 경우 위치 정보만 업데이트
+                    if existing.pk_pos != pk_position:
+                        existing.pk_pos = pk_position
+                        self.logger.debug(f"PK 위치 정보 업데이트: {owner}.{table_name}.{column_name} (pos={pk_position})")
+                    else:
+                        self.logger.debug(f"PK 정보 동일하여 건너뛰기: {owner}.{table_name}.{column_name}")
+                else:
                     session.add(pk_info)
                     loaded_count += 1
                     
@@ -379,13 +395,20 @@ class CsvLoader:
                     text=row.get('TEXT', '').strip()  # 뷰 정의 SQL
                 )
                 
-                # 중복 확인
+                # 중복 확인 (강화)
                 existing = session.query(DbView).filter(
                     DbView.owner == view.owner,
                     DbView.view_name == view.view_name
                 ).first()
                 
-                if not existing:
+                if existing:
+                    # 이미 존재하는 뷰의 경우 SQL 정의만 업데이트
+                    if existing.text != view.text:
+                        existing.text = view.text
+                        self.logger.debug(f"VIEW SQL 정의 업데이트: {view.owner}.{view.view_name}")
+                    else:
+                        self.logger.debug(f"VIEW 정보 동일하여 건너뛰기: {view.owner}.{view.view_name}")
+                else:
                     session.add(view)
                     session.flush()
                     loaded_count += 1

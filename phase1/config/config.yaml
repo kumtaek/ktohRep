@@ -14,11 +14,7 @@ database:
     type: "sqlite"  # 프로젝트별 데이터베이스 타입
     default_schema: "SAMPLE"  # 프로젝트별 기본 스키마
     sqlite:
-      path: "../project/{project_name}/metadata.db"  # 프로젝트별 메타데이터베이스 경로 (상위 디렉토리)
-    
-  # SQLite 설정
-  sqlite:
-    path: "./project/{project_name}/metadata.db"  # 프로젝트별 메타데이터베이스 경로 (상대경로)
+      path: "./project/{project_name}/metadata.db"  # 프로젝트별 메타데이터베이스 경로
 
 # 파서 설정
 # 다양한 언어 및 파일 유형에 대한 파서 활성화 및 유형을 설정합니다.
@@ -132,7 +128,7 @@ db_schema:
     - "ALL_TABLES.csv"
     - "ALL_TAB_COLUMNS.csv"
     - "PK_INFO.csv"
-  path_template: "./PROJECT/{project_name}/DB_SCHEMA/" # DB 스키마 파일 경로 템플릿
+  path_template: "./project/{project_name}/db_schema/" # DB 스키마 파일 경로 템플릿
 
 # LLM Assist (Phase1) — LLM 기반 보강 기능 설정
 # LLM을 활용한 코드 메타데이터 보강 기능의 세부 설정을 정의합니다.
@@ -146,7 +142,7 @@ llm_assist:
   max_tokens: 512           # LLM 응답의 최대 토큰 수
   strict_json: true         # LLM 응답이 엄격한 JSON 형식이어야 하는지 여부
   cache: true               # LLM 응답 캐싱 활성화 여부
-  cache_dir: ../project/{project_name}/llm_cache # LLM 캐시 디렉토리 경로
+  cache_dir: ./project/{project_name}/llm_cache # LLM 캐시 디렉토리 경로
   log_prompt: false         # LLM 프롬프트 로깅 활성화 여부
   dry_run: false            # 실제 LLM 호출 없이 드라이 런 모드 활성화 여부
   fallback_to_ollama: true  # vLLM 실패 시 Ollama로 대체할지 여부

@@ -486,22 +486,34 @@ class MetadataEngine:
                     if target and target in fqn_to_class_id:
                         edge.dst_id = fqn_to_class_id[target]
 
-            # 의존성 엣지 저장: call/extends/implements 엣지는 dst 미해결 상태도 저장
+            # 의존성 엣지 저장 (중복 방지 기능 추가)
             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             count_edges = 0
+            saved_edge_fingerprints = set()  # 중복 방지를 위한 집합
+            
             for edge in edges:
+                # 엣지 중복 방지를 위한 지문 생성
+                edge_fingerprint = f"{edge.src_type}:{edge.src_id}:{edge.edge_kind}:{edge.dst_type}:{edge.dst_id}"
+                
+                if edge_fingerprint in saved_edge_fingerprints:
+                    self.logger.debug(f"중복 엣지 건너뛰기: {edge_fingerprint}")
+                    continue
+                
                 if edge.edge_kind in ('call', 'extends', 'implements'):
                     if edge.src_id is not None:
                         session.add(edge)
+                        saved_edge_fingerprints.add(edge_fingerprint)
                         count_edges += 1
                 else:
                     if (edge.src_id is not None and edge.dst_id is not None
                         and edge.src_id != 0 and edge.dst_id != 0
                         and edge.confidence >= confidence_threshold):
                         session.add(edge)
+                        saved_edge_fingerprints.add(edge_fingerprint)
                         count_edges += 1
+                        
             saved_counts['edges'] += count_edges
-            self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 저장 엣지: {count_edges}")
+            self.logger.debug(f"Java 분석 - 전체 엣지: {len(edges)}, 저장 엣지: {count_edges}, 중복 제거: {len(edges) - len(saved_edge_fingerprints)}")
                 
             session.commit()
             return saved_counts
@@ -730,18 +742,30 @@ class MetadataEngine:
             saved_counts['joins'] = len(joins)
             saved_counts['filters'] = len(filters)
             
-            # 의존성 엣지 저장 (유효한 엣지만)
+            # 의존성 엣지 저장 (중복 방지 기능 추가)
             confidence_threshold = self.config.get('processing', {}).get('confidence_threshold', 0.5)
             valid_edges = [edge for edge in edges 
                           if edge.src_id is not None and edge.dst_id is not None 
                           and edge.src_id != 0 and edge.dst_id != 0
                           and edge.confidence >= confidence_threshold]
             
-            self.logger.debug(f"JSP/MyBatis 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}")
+            # 중복 방지를 위한 집합
+            saved_edge_fingerprints = set()
+            count_saved = 0
             
             for edge in valid_edges:
-                session.add(edge)
-                saved_counts['edges'] += 1
+                # 엣지 중복 방지를 위한 지문 생성
+                edge_fingerprint = f"{edge.src_type}:{edge.src_id}:{edge.edge_kind}:{edge.dst_type}:{edge.dst_id}"
+                
+                if edge_fingerprint not in saved_edge_fingerprints:
+                    session.add(edge)
+                    saved_edge_fingerprints.add(edge_fingerprint)
+                    count_saved += 1
+                else:
+                    self.logger.debug(f"중복 엣지 건너뛰기 (JSP/XML): {edge_fingerprint}")
+            
+            saved_counts['edges'] = count_saved
+            self.logger.debug(f"JSP/MyBatis 분석 - 전체 엣지: {len(edges)}, 유효한 엣지: {len(valid_edges)}, 저장된 엣지: {count_saved}")
             
             # 취약점 저장 (새로운 기능)
             saved_counts['vulnerabilities'] = 0
@@ -964,7 +988,7 @@ class MetadataEngine:
                     session.commit()
                     self.logger.info(f"메서드 호출 관계 해결 완료: {len(unresolved_calls)}개 처리")
 
-                async def _resolve_table_usage(self, session, project_id: int):
+    async def _resolve_table_usage(self, session, project_id: int):
 
                         # 기존 전역 검색 (패키지/임포트 기반) 보조
                         if not target_method:
@@ -1054,7 +1078,7 @@ class MetadataEngine:
             ).all()
             
             for join in joins:
-                # SQL -> 테이블 사용 엣지 생성 (유효한 테이블 ID가 있을 때만)
+                # SQL -> 테이블 사용 엣지 생성 (중복 방지 기능 추가)
                 if join.l_table:
                     # 테이블 별칭을 실제 테이블명으로 변환
                     actual_table_name = self._resolve_table_alias(join.l_table)
@@ -1076,20 +1100,18 @@ class MetadataEngine:
                         db_table = session.query(DbTable).filter(DbTable.table_name == join.l_table.upper()).first()
                     
                     if db_table:
-                        table_edge = Edge(
-                            project_id=project_id,
-                            src_type='sql_unit',
-                            src_id=sql_unit.sql_id,
-                            dst_type='table',
-                            dst_id=db_table.table_id,
-                            edge_kind='use_table',
-                            confidence=0.8
-                        )
-                        session.add(table_edge)
-                    else:
-                        # CSV에 없는 테이블이지만 조인에서 발견됨 - 최소 메타정보 생성
-                        db_table = self._create_minimal_table_from_join(session, join, default_owner, project_id)
-                        if db_table:
+                        # 중복 엣지 방지 검사
+                        existing_edge = session.query(Edge).filter(
+                            and_(
+                                Edge.src_type == 'sql_unit',
+                                Edge.src_id == sql_unit.sql_id,
+                                Edge.dst_type == 'table',
+                                Edge.dst_id == db_table.table_id,
+                                Edge.edge_kind == 'use_table'
+                            )
+                        ).first()
+                        
+                        if not existing_edge:
                             table_edge = Edge(
                                 project_id=project_id,
                                 src_type='sql_unit',
@@ -1097,14 +1119,40 @@ class MetadataEngine:
                                 dst_type='table',
                                 dst_id=db_table.table_id,
                                 edge_kind='use_table',
-                                confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                                confidence=0.8
                             )
                             session.add(table_edge)
+                    else:
+                        # CSV에 없는 테이블이지만 조인에서 발견됨 - 최소 메타정보 생성
+                        db_table = self._create_minimal_table_from_join(session, join, default_owner, project_id)
+                        if db_table:
+                            # 중복 엣지 방지 검사
+                            existing_edge = session.query(Edge).filter(
+                                and_(
+                                    Edge.src_type == 'sql_unit',
+                                    Edge.src_id == sql_unit.sql_id,
+                                    Edge.dst_type == 'table',
+                                    Edge.dst_id == db_table.table_id,
+                                    Edge.edge_kind == 'use_table'
+                                )
+                            ).first()
+                            
+                            if not existing_edge:
+                                table_edge = Edge(
+                                    project_id=project_id,
+                                    src_type='sql_unit',
+                                    src_id=sql_unit.sql_id,
+                                    dst_type='table',
+                                    dst_id=db_table.table_id,
+                                    edge_kind='use_table',
+                                    confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                                )
+                                session.add(table_edge)
                             self.logger.info(f"조인에서 발견된 테이블 메타정보 생성: {join.l_table}")
                         else:
                             self.logger.warning(f"테이블을 찾을 수 없음_1 - (조인 대상 더미 정보는 생성됨): {join.l_table} (스키마: {default_owner})")
                 
-                # r_table(오른쪽 테이블)도 동일하게 처리
+                # r_table(오른쪽 테이블)도 동일하게 처리 (중복 방지 기능 추가)
                 if join.r_table:
                     # 테이블 별칭을 실제 테이블명으로 변환
                     actual_r_table_name = self._resolve_table_alias(join.r_table)
@@ -1117,20 +1165,18 @@ class MetadataEngine:
                         db_table = session.query(DbTable).filter(DbTable.table_name == join.r_table.upper()).first()
                     
                     if db_table:
-                        table_edge = Edge(
-                            project_id=project_id,
-                            src_type='sql_unit',
-                            src_id=sql_unit.sql_id,
-                            dst_type='table',
-                            dst_id=db_table.table_id,
-                            edge_kind='use_table',
-                            confidence=0.8
-                        )
-                        session.add(table_edge)
-                    else:
-                        # 오른쪽 테이블도 최소 메타정보 생성
-                        db_table = self._create_minimal_table_from_join_right(session, join, default_owner, project_id)
-                        if db_table:
+                        # 중복 엣지 방지 검사
+                        existing_edge = session.query(Edge).filter(
+                            and_(
+                                Edge.src_type == 'sql_unit',
+                                Edge.src_id == sql_unit.sql_id,
+                                Edge.dst_type == 'table',
+                                Edge.dst_id == db_table.table_id,
+                                Edge.edge_kind == 'use_table'
+                            )
+                        ).first()
+                        
+                        if not existing_edge:
                             table_edge = Edge(
                                 project_id=project_id,
                                 src_type='sql_unit',
@@ -1138,9 +1184,35 @@ class MetadataEngine:
                                 dst_type='table',
                                 dst_id=db_table.table_id,
                                 edge_kind='use_table',
-                                confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                                confidence=0.8
                             )
                             session.add(table_edge)
+                    else:
+                        # 오른쪽 테이블도 최소 메타정보 생성
+                        db_table = self._create_minimal_table_from_join_right(session, join, default_owner, project_id)
+                        if db_table:
+                            # 중복 엣지 방지 검사
+                            existing_edge = session.query(Edge).filter(
+                                and_(
+                                    Edge.src_type == 'sql_unit',
+                                    Edge.src_id == sql_unit.sql_id,
+                                    Edge.dst_type == 'table',
+                                    Edge.dst_id == db_table.table_id,
+                                    Edge.edge_kind == 'use_table'
+                                )
+                            ).first()
+                            
+                            if not existing_edge:
+                                table_edge = Edge(
+                                    project_id=project_id,
+                                    src_type='sql_unit',
+                                    src_id=sql_unit.sql_id,
+                                    dst_type='table',
+                                    dst_id=db_table.table_id,
+                                    edge_kind='use_table',
+                                    confidence=0.3  # 조인에서만 추론된 테이블이므로 낮은 신뢰도
+                                )
+                                session.add(table_edge)
                             self.logger.info(f"조인에서 발견된 테이블 메타정보 생성 (오른쪽): {join.r_table}")
                         else:
                             self.logger.warning(f"테이블을 찾을 수 없음_2 - (조인 대상 더미 정보는 생성됨): {join.r_table} (스키마: {default_owner})")
@@ -1162,12 +1234,17 @@ class MetadataEngine:
                 join_patterns[pattern_key] = []
             join_patterns[pattern_key].append(join)
             
-        # 빈도가 높은 조인 패턴을 PK-FK로 추론
+        # 빈도가 높은 조인 패턴을 PK-FK로 추론 (중복 방지)
         for pattern, pattern_joins in join_patterns.items():
             if len(pattern_joins) >= 2:  # 2번 이상 나타나는 패턴
                 for join in pattern_joins:
-                    join.inferred_pkfk = 1
-                    join.confidence = min(1.0, join.confidence + 0.2)
+                    # 이미 inferred_pkfk가 설정된 경우 중복 방지
+                    if not join.inferred_pkfk:
+                        join.inferred_pkfk = 1
+                        join.confidence = min(1.0, join.confidence + 0.2)
+                        self.logger.debug(f"PK-FK 관계 추론: {pattern} (pattern_count={len(pattern_joins)})")
+                    else:
+                        self.logger.debug(f"PK-FK 중복 설정 건너뛰기: {pattern}")
                     
     async def generate_project_summary(self, project_id: int) -> Dict[str, Any]:
         """
@@ -1630,7 +1707,8 @@ class MetadataEngine:
     
     def _create_minimal_table_from_join(self, session, join, default_owner: str, project_id: int) -> Optional[DbTable]:
         """
-        조인에서 발견된 누락 테이블의 최소 메타정보 생성
+        조인에서 발견된 누락 테이블의 최소 메타정보 생성 (개선됨)
+        CSV 파일에 없는 테이블만 INFERRED로 생성하여 중복 방지
         
         Args:
             session: 데이터베이스 세션
@@ -1642,7 +1720,7 @@ class MetadataEngine:
             생성된 DbTable 객체 또는 None
         """
         try:
-            # 중복 생성 방지를 위해 다시 한 번 확인
+            # 1차: 기본 스키마에서 검색
             existing_table = session.query(DbTable).filter(
                 and_(
                     DbTable.table_name == join.l_table.upper(),
@@ -1653,32 +1731,51 @@ class MetadataEngine:
             if existing_table:
                 return existing_table
             
-            # 조인 정보로부터 최소 메타정보 생성
+            # 2차: 전역 검색 (다른 스키마에 있을 수 있음)
+            global_table = session.query(DbTable).filter(
+                DbTable.table_name == join.l_table.upper()
+            ).first()
+            
+            if global_table:
+                # 다른 스키마에 존재하는 테이블 발견
+                self.logger.info(f"다른 스키마에서 테이블 발견: {global_table.owner}.{join.l_table}")
+                return global_table
+            
+            # 3차: 실제로 CSV에 없는 테이블인지 마지막 확인
+            # 조인에서만 발견되는 임시 테이블이나 별칭일 가능성
+            common_aliases = ['A', 'B', 'C', 'T', 'T1', 'T2', 'U', 'P', 'M']
+            if join.l_table.upper() in common_aliases:
+                self.logger.debug(f"테이블 별칭으로 추정되어 INFERRED 테이블 생성 건너뛰기: {join.l_table}")
+                return None
+            
+            # 실제로 누락된 테이블만 INFERRED로 생성 (엄격한 조건)
+            self.logger.warning(f"CSV에 없는 실제 테이블로 추정되어 INFERRED 생성: {join.l_table}")
+            
             new_table = DbTable(
                 table_name=join.l_table.upper(),
                 owner=default_owner.upper(),
-                status='INFERRED',  # 추론된 테이블임을 표시
-                table_comment=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.r_table}, 조인 필드: {join.l_col})",
+                status='INFERRED',
+                table_comment=f"[INFERRED] 조인에서 발견된 테이블 (CSV 누락, 조인파트너: {join.r_table})",
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
             
             session.add(new_table)
-            session.flush()  # ID 할당을 위해 flush
+            session.flush()
             
-            # 조인 필드에 대한 최소 컬럼 정보도 생성
+            # 조인 필드 컬럼도 생성 (필수 컬럼만)
             if join.l_col and join.l_col.strip():
                 join_column = DbColumn(
                     table_id=new_table.table_id,
                     column_name=join.l_col.upper(),
-                    data_type='UNKNOWN',  # 타입 정보가 없으므로 UNKNOWN
-                    column_comment=f"조인 필드로 발견됨 (파트너 테이블: {join.r_table}.{join.r_col})",
+                    data_type='UNKNOWN',
+                    column_comment=f"조인 필드 (파트너: {join.r_table}.{join.r_col})",
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
                 )
                 session.add(join_column)
             
-            self.logger.debug(f"조인에서 발견된 테이블 메타정보 생성: {join.l_table} (ID: {new_table.table_id})")
+            self.logger.info(f"누락 테이블 INFERRED 생성: {join.l_table} (ID: {new_table.table_id})")
             return new_table
             
         except Exception as e:
@@ -1687,7 +1784,8 @@ class MetadataEngine:
     
     def _create_minimal_table_from_join_right(self, session, join, default_owner: str, project_id: int) -> Optional[DbTable]:
         """
-        조인에서 발견된 오른쪽 테이블의 최소 메타정보 생성
+        조인에서 발견된 오른쪽 테이블의 최소 메타정보 생성 (개선됨)
+        CSV 파일에 없는 테이블만 INFERRED로 생성하여 중복 방지
         
         Args:
             session: 데이터베이스 세션
@@ -1699,7 +1797,7 @@ class MetadataEngine:
             생성된 DbTable 객체 또는 None
         """
         try:
-            # 중복 생성 방지를 위해 다시 한 번 확인
+            # 1차: 기본 스키마에서 검색
             existing_table = session.query(DbTable).filter(
                 and_(
                     DbTable.table_name == join.r_table.upper(),
@@ -1710,12 +1808,31 @@ class MetadataEngine:
             if existing_table:
                 return existing_table
             
-            # 조인 정보로부터 최소 메타정보 생성 (오른쪽 테이블)
+            # 2차: 전역 검색 (다른 스키마에 있을 수 있음)
+            global_table = session.query(DbTable).filter(
+                DbTable.table_name == join.r_table.upper()
+            ).first()
+            
+            if global_table:
+                # 다른 스키마에 존재하는 테이블 발견
+                self.logger.info(f"다른 스키마에서 테이블 발견: {global_table.owner}.{join.r_table}")
+                return global_table
+            
+            # 3차: 실제로 CSV에 없는 테이블인지 마지막 확인
+            # 조인에서만 발견되는 임시 테이블이나 별칭일 가능성
+            common_aliases = ['A', 'B', 'C', 'T', 'T1', 'T2', 'U', 'P', 'M']
+            if join.r_table.upper() in common_aliases:
+                self.logger.debug(f"테이블 별칭으로 추정되어 INFERRED 테이블 생성 건너뛰기: {join.r_table}")
+                return None
+            
+            # 실제로 누락된 테이블만 INFERRED로 생성 (엄격한 조건)
+            self.logger.warning(f"CSV에 없는 실제 테이블로 추정되어 INFERRED 생성: {join.r_table}")
+            
             new_table = DbTable(
                 table_name=join.r_table.upper(),
                 owner=default_owner.upper(),
-                status='INFERRED',  # 추론된 테이블임을 표시
-                table_comment=f"[INFERRED] 조인 관계에서 발견된 테이블 (조인 파트너: {join.l_table}, 조인 필드: {join.r_col})",
+                status='INFERRED',
+                table_comment=f"[INFERRED] 조인에서 발견된 테이블 (CSV 누락, 조인파트너: {join.l_table})",
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
@@ -1723,19 +1840,19 @@ class MetadataEngine:
             session.add(new_table)
             session.flush()
             
-            # 조인 필드에 대한 최소 컬럼 정보도 생성
+            # 조인 필드 컬럼도 생성 (필수 컬럼만)
             if join.r_col and join.r_col.strip():
                 join_column = DbColumn(
                     table_id=new_table.table_id,
                     column_name=join.r_col.upper(),
                     data_type='UNKNOWN',
-                    column_comment=f"조인 필드로 발견됨 (파트너 테이블: {join.l_table}.{join.l_col})",
+                    column_comment=f"조인 필드 (파트너: {join.l_table}.{join.l_col})",
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
                 )
                 session.add(join_column)
             
-            self.logger.debug(f"조인에서 발견된 오른쪽 테이블 메타정보 생성: {join.r_table} (ID: {new_table.table_id})")
+            self.logger.info(f"누락 테이블 INFERRED 생성 (오른쪽): {join.r_table} (ID: {new_table.table_id})")
             return new_table
             
         except Exception as e:

@@ -235,16 +235,24 @@ class JavaParserEnhanced(BaseParser):
         """클래스에서 메서드들을 추출합니다."""
         methods = []
         
-        if not class_decl.methods:
+        # javalang에서는 메서드가 body 안에 있습니다
+        if not class_decl.body:
             return methods
         
-        for method_decl in class_decl.methods:
+        for member in class_decl.body:
             try:
-                method_obj = self._extract_method_from_javalang(method_decl, file_path, project_id, class_fqn)
-                if method_obj:
-                    methods.append(method_obj)
+                # 멤버가 메서드인지 확인
+                if isinstance(member, tree.MethodDeclaration):
+                    method_obj = self._extract_method_from_javalang(member, file_path, project_id, class_fqn)
+                    if method_obj:
+                        methods.append(method_obj)
+                # 생성자도 메서드로 처리
+                elif isinstance(member, tree.ConstructorDeclaration):
+                    method_obj = self._extract_constructor_from_javalang(member, file_path, project_id, class_fqn)
+                    if method_obj:
+                        methods.append(method_obj)
             except Exception as e:
-                print(f"Error extracting method from class: {e}")
+                print(f"Error extracting method from class body: {e}")
                 continue
         
         return methods
@@ -253,16 +261,19 @@ class JavaParserEnhanced(BaseParser):
         """인터페이스에서 메서드들을 추출합니다."""
         methods = []
         
-        if not interface_decl.methods:
+        # javalang에서는 인터페이스 메서드도 body 안에 있습니다
+        if not interface_decl.body:
             return methods
         
-        for method_decl in interface_decl.methods:
+        for member in interface_decl.body:
             try:
-                method_obj = self._extract_method_from_javalang(method_decl, file_path, project_id, interface_fqn)
-                if method_obj:
-                    methods.append(method_obj)
+                # 맴버가 메서드인지 확인
+                if isinstance(member, tree.MethodDeclaration):
+                    method_obj = self._extract_method_from_javalang(member, file_path, project_id, interface_fqn)
+                    if method_obj:
+                        methods.append(method_obj)
             except Exception as e:
-                print(f"Error extracting method from interface: {e}")
+                print(f"Error extracting method from interface body: {e}")
                 continue
         
         return methods
@@ -333,6 +344,53 @@ class JavaParserEnhanced(BaseParser):
             
         except Exception as e:
             print(f"Error extracting method from javalang: {e}")
+            return None
+    
+    def _extract_constructor_from_javalang(self, constructor_decl, file_path: str, project_id: int, owner_fqn: str) -> Optional[Method]:
+        """JavaParser AST에서 생성자 정보를 추출합니다."""
+        try:
+            # 생성자 이름은 클래스 이름과 동일
+            constructor_name = constructor_decl.name
+            
+            # 매개변수
+            parameters = []
+            if constructor_decl.parameters:
+                for param in constructor_decl.parameters:
+                    param_type = param.type.name if param.type else 'Object'
+                    param_name = param.name
+                    parameters.append(f"{param_type} {param_name}")
+            
+            # 어노테이션
+            annotations = []
+            if constructor_decl.annotations:
+                for ann in constructor_decl.annotations:
+                    annotations.append(ann.name)
+            
+            # 수정자
+            modifiers = constructor_decl.modifiers or []
+            
+            # 시그너처 생성
+            signature = f"{constructor_name}({','.join(parameters) if parameters else ''})"
+            
+            constructor_obj = Method(
+                class_id=None,  # 나중에 설정됨
+                name=constructor_name,
+                signature=signature,
+                return_type='void',  # 생성자는 반환 타입이 없음
+                start_line=0,  # TODO: 정확한 라인 번호 계산
+                end_line=0,    # TODO: 정확한 라인 번호 계산
+                annotations=json.dumps(annotations) if annotations else None,
+                parameters=json.dumps(parameters) if parameters else None,
+                modifiers=json.dumps(list(modifiers)) if modifiers else None
+            )
+            
+            # MetadataEngine에서 필요한 속성 추가
+            constructor_obj.owner_fqn = owner_fqn
+            
+            return constructor_obj
+            
+        except Exception as e:
+            print(f"Error extracting constructor from javalang: {e}")
             return None
     
     def _extract_dependencies_from_javalang(self, tree, file_path: str, project_id: int, methods: List[Method]) -> List[Edge]:

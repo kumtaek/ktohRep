@@ -1,0 +1,21 @@
+메타데이터베이스 분석: ./project/sampleSrc/metadata.db
+============================================================
+테이블 목록: ['projects', 'db_tables', 'db_views', 'summaries', 'enrichment_logs', 'chunks', 'vulnerability_fixes', 'code_metrics', 'duplicates', 'files', 'db_columns', 'db_pk', 'edges', 'embeddings', 'edge_hints', 'relatedness', 'classes', 'sql_units', 'java_imports', 'duplicate_instances', 'parse_results', 'methods', 'joins', 'required_filters', 'sqlite_stat1']
+
+프로젝트: 1개
+  - sampleSrc (생성: 2025-09-06 07:18:03.445252)
+파일: 32개
+  언어별 분포:
+    - .csv: 4개
+    - .java: 16개
+    - .xml: 4개
+    - jsp: 8개
+클래스: 16개
+메서드: 242개
+SQL Units: 35개
+관계(Edges): 0개
+청크: 2543개
+DB 테이블: 30개
+DB 컬럼: 91개
+
+메타데이터베이스 분석 완료

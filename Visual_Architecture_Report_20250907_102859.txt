@@ -1,0 +1,188 @@
+  시스템 아키텍처 구조
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                  Controller Layer                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  Controller                    ErrorController                │
+  │  MixedErrorController          ProductController              │
+  │  SyntaxErrorController         UserController                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                    Service Layer                                │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  LogicErrorService             MixedErrorService              │
+  │  ProductService                ProductServiceImpl             │
+  │  Service                       UserService                    │
+  │  UserServiceImpl                                                │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                     Data Layer                                  │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  BrokenMapper                  Mapper                         │
+  │  ProductMapper                 UserMapper                     │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                     Model Layer                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  Model                                                          │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                  Other Components                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  ArrayList                     Arrays                         │
+  │  Autowired                     Collectors                     │
+  │  Date                          Delete                         │
+  │  Double                        IllegalArgumentException       │
+  │  Insert                        Integer                        │
+  │  List                          Long                           │
+  │  Map                           Math                           │
+  │  NonExistentClass              Objects                        │
+  │  Param                         Product                        │
+  │  RequestMapping                RequestMethod                  │
+  │  RequestParam                  ResponseBody                   │
+  │  RuntimeException              Select                         │
+  │  String                        Transactional                  │
+  │  Update                        User                           │
+  │  brands                        categories                     │
+  │  class                         products                       │
+  │  user_types                    users                          │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+  관계 상세 정보
+
+  [D] Dependency 관계 (47개)
+
+  Controller → Service:
+  ├─ ErrorController      → class
+  ├─ ErrorController      → UserService
+  ├─ MixedErrorController → class
+  ├─ MixedErrorController → UserService
+  ├─ MixedErrorController → User
+  └─ ... 외 9개
+
+  Service → Mapper:
+  ├─ LogicErrorService    → class
+  ├─ LogicErrorService    → UserMapper
+  ├─ LogicErrorService    → User
+  ├─ MixedErrorService    → class
+  ├─ MixedErrorService    → UserMapper
+  └─ ... 외 10개
+
+  [I] Implements 관계 (2개)
+
+  Implementation → Interface:
+  ├─ ProductServiceImpl   → ProductService
+  ├─ UserServiceImpl      → UserService
+
+  [C] Calls 관계 (116개)
+
+  Implementation → Interface:
+  ├─ ErrorController      → Integer
+  ├─ LogicErrorService    → IllegalArgumentException
+  ├─ LogicErrorService    → RuntimeException
+  ├─ LogicErrorService    → IllegalArgumentException
+  ├─ LogicErrorService    → IllegalArgumentException
+  ├─ LogicErrorService    → IllegalArgumentException
+  ├─ LogicErrorService    → RuntimeException
+  ├─ MixedErrorController → User
+  ├─ MixedErrorController → Date
+  ├─ MixedErrorService    → IllegalArgumentException
+  └─ ... 외 106개
+
+
+  구성 요소 통계
+
+  ┌─────────────────┬─────────┬─────────────────────────────────┐
+  │ 컴포넌트 타입      │ 수량     │ 구성 요소                        │
+  ├─────────────────┼─────────┼─────────────────────────────────┤
+  │ Class           │   48개   │ Controllers + Services + Models │
+  │ Table           │    5개   │ Database Tables                 │
+  ├─────────────────┼─────────┼─────────────────────────────────┤
+  │ 총 컴포넌트        │   59개   │ 전체 시스템 구성 요소              │
+  └─────────────────┴─────────┴─────────────────────────────────┘
+
+  아키텍처 패턴 분석
+
+  패턴: 계층형 아키텍처 (Layered Architecture)
+
+  ┌─────────────────┐
+  │   Controller    │ ─── 웹 요청 처리, 사용자 인터페이스
+  └─────────────────┘
+           │ dependency
+           ▼
+  ┌─────────────────┐
+  │    Service      │ ─── 비즈니스 로직, 트랜잭션 관리
+  └─────────────────┘
+           │ dependency
+           ▼
+  ┌─────────────────┐
+  │     Mapper      │ ─── 데이터 접근, SQL 처리
+  └─────────────────┘
+           │
+           ▼
+  ┌─────────────────┐
+  │     Model       │ ─── 도메인 엔티티
+  └─────────────────┘
+
+  특징:
+  [OK] 계층 간 단방향 의존성
+  [OK] Spring MVC 패턴 준수
+
+  데이터베이스 테이블 구조
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                    BRANDS TABLE                                     │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ [ID] id                 │ BIGINT       │ Primary Key      │
+  │ [F]  name               │ VARCHAR      │ Name Field       │
+  │ [F]  created_date       │ TIMESTAMP    │ Creation Date    │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                  CATEGORIES TABLE                                   │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ [ID] id                 │ BIGINT       │ Primary Key      │
+  │ [F]  name               │ VARCHAR      │ Name Field       │
+  │ [F]  created_date       │ TIMESTAMP    │ Creation Date    │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                   PRODUCTS TABLE                                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ [ID] id                 │ BIGINT       │ Primary Key      │
+  │ [F]  product_name       │ VARCHAR      │ Product Name     │
+  │ [F]  price              │ DECIMAL      │ Product Price    │
+  │ [ID] category_id        │ VARCHAR(FK)  │ → CATEGORIES     │
+  │ [ID] brand_id           │ VARCHAR(FK)  │ → BRANDS         │
+  │ [F]  status             │ VARCHAR      │ ACTIVE/INACTIVE  │
+  │ [F]  created_date       │ TIMESTAMP    │ Creation Date    │
+  └─────────────────────────────────────────────────────────────────┘
+
+  테이블 관계도
+
+  CATEGORIES <------+
+      |             |
+      | 1:N         | 1:N
+      V             V
+   PRODUCTS <----- BRANDS
+                    |
+                    | N:M
+                    V
+                  USERS
+
+  데이터베이스 설계 특징
+
+  [OK] 정규화 수준: 3NF (Third Normal Form)
+  |-- 코드 테이블 분리
+  |-- 중복 데이터 최소화
+  +-- 참조 무결성 유지
+
+  [OK] 설계 패턴:
+  |-- 타임스탬프 패턴 (created_date, updated_date)
+  |-- 상태 관리 (status 컬럼)
+  +-- 코드 테이블 패턴

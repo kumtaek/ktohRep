@@ -1,0 +1,1 @@
+시각적 리포트 생성 실패: no such column: bt.pattern

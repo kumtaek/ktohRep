@@ -1,0 +1,164 @@
+================================================================================
+SourceAnalyzer 통합 분석 리포트
+================================================================================
+
+========================================
+1. ERD (Entity Relationship Diagram)
+========================================
+ERD - Entity Relationship Diagram
+==================================================
+
+[테이블 목록] - 총 11개
+  실제 테이블 (5개):
+    - brands
+    - categories
+    - products
+    - user_types
+    - users
+  참조 테이블 (6개):
+    - SYSDATE [더미]
+    - orders [더미]
+    - roles [더미]
+    - u [더미]
+    - user_preferences [더미]
+    - user_roles [더미]
+
+[관계 다이어그램] - 총 31개
+  JOIN 관계 (31개):
+    orders --JOIN--> users (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> products (신뢰도: 0.9)
+    users --JOIN--> categories (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> products (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_preferences (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_preferences (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> u (신뢰도: 0.9)
+    users --JOIN--> SYSDATE (신뢰도: 0.9)
+    users --JOIN--> u (신뢰도: 0.9)
+    users --JOIN--> SYSDATE (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+
+[요약]
+  - 실제 테이블: 5개 (CSV 로드)
+  - 참조 테이블: 6개 (MyBatis 분석)
+  - JOIN 관계: 31개
+  - 외래키 관계: 0개
+
+========================================
+2. 시스템 아키텍처 분석 (기본)
+========================================
+시스템 아키텍처 분석 리포트
+==================================================
+
+[통계] 구성 요소 통계
+  - 총 컴포넌트: 59개
+    - class: 48개
+    - table: 5개
+    - table_dummy: 6개
+
+  - 총 관계: 284개
+    - calls: 116개
+    - dependency: 47개
+    - implements: 2개
+    - imports: 88개
+    - join: 31개
+
+[관계] 관계 상세 정보
+
+Calls 관계 (116개)
+  - ErrorController -> Integer (신뢰도: 0.8)
+  - LogicErrorService -> IllegalArgumentException (신뢰도: 0.8)
+  - LogicErrorService -> RuntimeException (신뢰도: 0.8)
+  - LogicErrorService -> IllegalArgumentException (신뢰도: 0.8)
+  - LogicErrorService -> IllegalArgumentException (신뢰도: 0.8)
+  - LogicErrorService -> IllegalArgumentException (신뢰도: 0.8)
+  - LogicErrorService -> RuntimeException (신뢰도: 0.8)
+  - MixedErrorController -> User (신뢰도: 0.8)
+  - MixedErrorController -> Date (신뢰도: 0.8)
+  - MixedErrorService -> IllegalArgumentException (신뢰도: 0.8)
+  ... 외 106개
+
+Dependency 관계 (47개)
+  - ErrorController -> class (신뢰도: 0.8)
+  - ErrorController -> UserService (신뢰도: 0.8)
+  - LogicErrorService -> class (신뢰도: 0.8)
+  - LogicErrorService -> UserMapper (신뢰도: 0.8)
+  - LogicErrorService -> User (신뢰도: 0.8)
+  - MixedErrorController -> class (신뢰도: 0.8)
+  - MixedErrorController -> UserService (신뢰도: 0.8)
+  - MixedErrorController -> User (신뢰도: 0.8)
+  - MixedErrorController -> User (신뢰도: 0.8)
+  - MixedErrorService -> class (신뢰도: 0.8)
+  ... 외 37개
+
+Implements 관계 (2개)
+  - ProductServiceImpl -> ProductService (신뢰도: 0.8)
+  - UserServiceImpl -> UserService (신뢰도: 0.8)
+
+Imports 관계 (88개)
+  - BrokenMapper -> Mapper (신뢰도: 0.8)
+  - BrokenMapper -> Select (신뢰도: 0.8)
+  - BrokenMapper -> Insert (신뢰도: 0.8)
+  - BrokenMapper -> Update (신뢰도: 0.8)
+  - BrokenMapper -> Delete (신뢰도: 0.8)
+  - BrokenMapper -> Product (신뢰도: 0.8)
+  - BrokenMapper -> List (신뢰도: 0.8)
+  - ErrorController -> User (신뢰도: 0.8)
+  - ErrorController -> UserService (신뢰도: 0.8)
+  - ErrorController -> Autowired (신뢰도: 0.8)
+  ... 외 78개
+
+Join 관계 (31개)
+  - orders -> users (신뢰도: 0.9)
+  - products -> categories (신뢰도: 0.9)
+  - products -> brands (신뢰도: 0.9)
+  - products -> categories (신뢰도: 0.9)
+  - products -> brands (신뢰도: 0.9)
+  - products -> categories (신뢰도: 0.9)
+  - products -> brands (신뢰도: 0.9)
+  - users -> user_types (신뢰도: 0.9)
+  - users -> user_types (신뢰도: 0.9)
+  - users -> products (신뢰도: 0.9)
+  ... 외 21개
+
+[패턴] 아키텍처 패턴 분석
+  * 계층형 아키텍처 (Layered Architecture)
+  * 의존성 주입 패턴
+
+[핵심] 핵심 컴포넌트 (허브)
+  - IllegalArgumentException : 38개 참조
+  - Date : 21개 참조
+  - User : 20개 참조
+  - RuntimeException : 16개 참조
+  - StringUtils : 13개 참조
+
+[의존성] 의존성 중심 컴포넌트
+  - ProductServiceImpl : 47개 의존
+  - UserServiceImpl : 44개 의존
+  - UserController : 26개 의존
+  - users : 24개 의존
+  - MixedErrorService : 20개 의존
+
+========================================
+3. 시스템 아키텍처 분석 (시각적)
+========================================
+시각적 리포트 생성 실패: no such column: bt.pattern

@@ -8,7 +8,12 @@ alwaysApply: true
 
 ### ⚠️ 필수 규칙 (절대 위반 불가)
 
-- 절대 이모지 사용 금지!!! - 인코딩 에러 발생함.
+🚫 중요: 유니코드 이모지 사용 금지 지침
+**절대로 유니코드 이모지를 사용하지 말 것** (✅, ❌, 🚀, 📊, 💡, 🔗, 🎯, 📋, 🏗️ 등)
+- Windows cp949 인코딩 환경에서 UnicodeEncodeError 발생 방지
+- 콘솔 출력 시 ASCII 호환 문자만 사용: [OK], [ERROR], [INFO], [WARNING]
+- HTML/마크다운 파일 내용에서만 이모지 허용, 파이썬 print() 출력에서는 금지
+
 - 개선작업 중 : 메타정보 사용시 /project폴더를 참고하고, 정보수집에 시간이 오래 걸리는 정보만 메타디비에 생성하도록 개선 작업 중.
 - 실행 스크립트 - python test_optimized_metadata.py  
 - main.py는 과거화일. test_optimized_metadata.py가 작업 화일임.

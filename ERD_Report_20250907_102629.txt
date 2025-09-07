@@ -1,0 +1,57 @@
+ERD - Entity Relationship Diagram
+==================================================
+
+[테이블 목록] - 총 11개
+  실제 테이블 (5개):
+    - brands
+    - categories
+    - products
+    - user_types
+    - users
+  참조 테이블 (6개):
+    - SYSDATE [더미]
+    - orders [더미]
+    - roles [더미]
+    - u [더미]
+    - user_preferences [더미]
+    - user_roles [더미]
+
+[관계 다이어그램] - 총 31개
+  JOIN 관계 (31개):
+    orders --JOIN--> users (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    products --JOIN--> categories (신뢰도: 0.9)
+    products --JOIN--> brands (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> products (신뢰도: 0.9)
+    users --JOIN--> categories (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> products (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_preferences (신뢰도: 0.9)
+    users --JOIN--> user_roles (신뢰도: 0.9)
+    users --JOIN--> roles (신뢰도: 0.9)
+    users --JOIN--> user_preferences (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> u (신뢰도: 0.9)
+    users --JOIN--> SYSDATE (신뢰도: 0.9)
+    users --JOIN--> u (신뢰도: 0.9)
+    users --JOIN--> SYSDATE (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+    users --JOIN--> user_types (신뢰도: 0.9)
+
+[요약]
+  - 실제 테이블: 5개 (CSV 로드)
+  - 참조 테이블: 6개 (MyBatis 분석)
+  - JOIN 관계: 31개
+  - 외래키 관계: 0개

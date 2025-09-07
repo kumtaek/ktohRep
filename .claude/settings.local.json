@@ -3,7 +3,8 @@
     "allow": [
       "Bash(sqlite3:*)",
       "Bash(python:*)",
-      "Bash(set PYTHONPATH=%cd%)"
+      "Bash(set PYTHONPATH=%cd%)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
